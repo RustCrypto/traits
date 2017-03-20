@@ -1,0 +1,60 @@
+#![no_std]
+extern crate generic_array;
+use generic_array::{GenericArray, ArrayLength};
+
+/// Trait for processing input data
+pub trait DigestInput {
+    type BlockSize: ArrayLength<u8>;
+
+    /// Digest input data. This method can be called repeatedly
+    /// for use with streaming messages.
+    fn digest(&mut self, input: &[u8]);
+}
+
+/// Trait for returning digest result with the fixed size
+pub trait DigestFixedOutput {
+    type OutputSize: ArrayLength<u8>;
+
+    /// Retrieve the digest result. This method consumes digest instance.
+    fn fixed_result(self) -> GenericArray<u8, Self::OutputSize>;
+}
+
+/// The error type for variable digest outpur
+pub struct InvalidLength;
+
+/// Trait for returning digest result with the varaible size
+pub trait DigestVariableOutput {
+
+    /// Retrieve the digest result into provided buffer. Length of the output
+    /// equals to the input buffer size. In case of invalid length
+    /// `Err(InvalidLength)` will be returned.
+    /// This method consumes digest instance.
+    fn variable_result(self, buffer: &mut [u8]) -> Result<&[u8], InvalidLength>;
+}
+
+/// The Digest trait specifies an interface common to digest functions. It's a
+/// convinience wrapper around `DigestInput` and `DigestFixedResult`
+pub trait Digest: DigestInput + DigestFixedOutput {
+    type OutputSize: ArrayLength<u8>;
+    type BlockSize: ArrayLength<u8>;
+
+    /// Digest input data. This method can be called repeatedly
+    /// for use with streaming messages.
+    fn input(&mut self, input: &[u8]);
+
+    /// Retrieve the digest result. This method consumes digest instance.
+    fn result(self) -> GenericArray<u8, <Self as Digest>::OutputSize>;
+}
+
+impl<T: DigestInput + DigestFixedOutput> Digest for T {
+    type OutputSize = <T as DigestFixedOutput>::OutputSize;
+    type BlockSize = <T as DigestInput>::BlockSize;
+
+    fn input(&mut self, input: &[u8]) {
+        self.digest(input);
+    }
+
+    fn result(self) -> GenericArray<u8, <T as Digest>::OutputSize> {
+        self.fixed_result()
+    }
+}
