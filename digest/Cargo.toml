@@ -9,4 +9,4 @@ repository = "https://github.com/RustCrypto/hashes"
 keywords = ["digest", "crypto", "hash"]
 
 [dependencies]
-generic-array = "0.6"
+generic-array = "0.7"
