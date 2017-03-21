@@ -20,6 +20,7 @@ pub trait DigestFixedOutput {
 }
 
 /// The error type for variable digest output
+#[derive(Copy, Clone, Debug)]
 pub struct InvalidLength;
 
 #[must_use]
