@@ -22,6 +22,9 @@ pub trait DigestFixedOutput {
 /// The error type for variable digest outpur
 pub struct InvalidLength;
 
+#[must_use]
+pub type VariableResult<'a> = Result<&'a [u8], InvalidLength>;
+
 /// Trait for returning digest result with the varaible size
 pub trait DigestVariableOutput {
 
@@ -29,7 +32,7 @@ pub trait DigestVariableOutput {
     /// equals to the input buffer size. In case of invalid length
     /// `Err(InvalidLength)` will be returned.
     /// This method consumes digest instance.
-    fn variable_result(self, buffer: &mut [u8]) -> Result<&[u8], InvalidLength>;
+    fn variable_result(self, buffer: &mut [u8]) -> VariableResult;
 }
 
 /// The Digest trait specifies an interface common to digest functions. It's a
