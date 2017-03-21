@@ -3,7 +3,7 @@ extern crate generic_array;
 use generic_array::{GenericArray, ArrayLength};
 
 /// Trait for processing input data
-pub trait DigestInput {
+pub trait Input {
     type BlockSize: ArrayLength<u8>;
 
     /// Digest input data. This method can be called repeatedly
@@ -12,7 +12,7 @@ pub trait DigestInput {
 }
 
 /// Trait for returning digest result with the fixed size
-pub trait DigestFixedOutput {
+pub trait FixedOutput {
     type OutputSize: ArrayLength<u8>;
 
     /// Retrieve the digest result. This method consumes digest instance.
@@ -27,7 +27,7 @@ pub struct InvalidLength;
 pub type VariableResult<'a> = Result<&'a [u8], InvalidLength>;
 
 /// Trait for returning digest result with the varaible size
-pub trait DigestVariableOutput {
+pub trait VariableOutput {
 
     /// Retrieve the digest result into provided buffer. Length of the output
     /// equals to the input buffer size. In case of invalid length
@@ -38,7 +38,7 @@ pub trait DigestVariableOutput {
 
 /// The Digest trait specifies an interface common to digest functions. It's a
 /// convinience wrapper around `DigestInput` and `DigestFixedResult`
-pub trait Digest: DigestInput + DigestFixedOutput {
+pub trait Digest: Input + FixedOutput {
     type OutputSize: ArrayLength<u8>;
     type BlockSize: ArrayLength<u8>;
 
@@ -50,9 +50,9 @@ pub trait Digest: DigestInput + DigestFixedOutput {
     fn result(self) -> GenericArray<u8, <Self as Digest>::OutputSize>;
 }
 
-impl<T: DigestInput + DigestFixedOutput> Digest for T {
-    type OutputSize = <T as DigestFixedOutput>::OutputSize;
-    type BlockSize = <T as DigestInput>::BlockSize;
+impl<T: Input + FixedOutput> Digest for T {
+    type OutputSize = <T as FixedOutput>::OutputSize;
+    type BlockSize = <T as Input>::BlockSize;
 
     fn input(&mut self, input: &[u8]) {
         self.digest(input);

@@ -1,6 +1,6 @@
 [package]
 name = "digest"
-version = "0.5.0-gamma"
+version = "0.5.0-delta"
 authors = ["The Rust-Crypto Project Developers"]
 license = "MIT/Apache-2.0"
 description = "Digest trait for cryptographic hash functions"
