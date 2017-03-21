@@ -19,7 +19,7 @@ pub trait DigestFixedOutput {
     fn fixed_result(self) -> GenericArray<u8, Self::OutputSize>;
 }
 
-/// The error type for variable digest outpur
+/// The error type for variable digest output
 pub struct InvalidLength;
 
 #[must_use]
