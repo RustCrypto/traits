@@ -37,7 +37,7 @@ pub trait VariableOutput {
 }
 
 /// The Digest trait specifies an interface common to digest functions. It's a
-/// convinience wrapper around `DigestInput` and `DigestFixedResult`
+/// convinience wrapper around `Input` and `FixedResult` traits
 pub trait Digest: Input + FixedOutput {
     type OutputSize: ArrayLength<u8>;
     type BlockSize: ArrayLength<u8>;
