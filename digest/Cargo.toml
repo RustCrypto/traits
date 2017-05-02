@@ -1,6 +1,6 @@
 [package]
 name = "digest"
-version = "0.5.0"
+version = "0.5.1rc1"
 authors = ["The Rust-Crypto Project Developers"]
 license = "MIT/Apache-2.0"
 description = "Digest trait for cryptographic hash functions"
@@ -10,3 +10,6 @@ keywords = ["digest", "crypto", "hash"]
 
 [dependencies]
 generic-array = "0.7"
+
+[features]
+std = []

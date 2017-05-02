@@ -1,6 +1,11 @@
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 extern crate generic_array;
 use generic_array::{GenericArray, ArrayLength};
+
+#[cfg(feature = "std")]
+mod reader;
+#[cfg(feature = "std")]
+pub use reader::DigestReader;
 
 /// Trait for processing input data
 pub trait Input {
