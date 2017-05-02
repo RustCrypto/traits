@@ -5,7 +5,7 @@ use generic_array::{GenericArray, ArrayLength};
 #[cfg(feature = "std")]
 mod reader;
 #[cfg(feature = "std")]
-pub use reader::DigestReader;
+pub use reader::{DigestReader, digest_reader};
 
 /// Trait for processing input data
 pub trait Input {
