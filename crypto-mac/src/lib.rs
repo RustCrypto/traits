@@ -6,7 +6,7 @@ use constant_time_eq::constant_time_eq;
 use generic_array::{GenericArray, ArrayLength};
 
 /// The Mac trait defines methods for a Message Authentication function.
-pub trait Mac {
+pub trait Mac: core::marker::Sized {
     type OutputSize: ArrayLength<u8>;
 
     /// Create new MAC instance. DO NOT USE low-entropy keys (e.g. passwords)!
