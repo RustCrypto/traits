@@ -1,12 +1,12 @@
 [package]
 name = "crypto-mac"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["The RustCrypto Devs"]
 license = "MIT/Apache-2.0"
 description = "Trait for Message Authentication Code (MAC) algorithms"
 documentation = "https://docs.rs/crypto-mac"
 repository = "https://github.com/RustCrypto/traits"
-keywords = ["crypto", "mac", "hmac", "digest"]
+keywords = ["crypto", "mac"]
 
 [dependencies]
 generic-array = "0.7"

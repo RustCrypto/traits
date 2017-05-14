@@ -20,6 +20,11 @@ pub trait Mac {
 
     /// Obtain the result of a `Mac` computation as a `MacResult`.
     fn result(self) -> MacResult<Self::OutputSize>;
+
+    /// Check if code is correct for the processed input
+    fn verify(self, code: &[u8]) -> bool {
+        MacResult::from_slice(code) == self.result()
+    }
 }
 
 /// `MacResult` wraps a Mac code and provides a safe Eq implementation that runs
@@ -34,7 +39,7 @@ impl<N> MacResult<N> where N: ArrayLength<u8> {
         MacResult{code: code}
     }
 
-    pub fn new_from_slice(code: &[u8]) -> MacResult<N> {
+    pub fn from_slice(code: &[u8]) -> MacResult<N> {
         assert_eq!(code.len(), N::to_usize());
         let mut arr = GenericArray::default();
         arr.copy_from_slice(code);
