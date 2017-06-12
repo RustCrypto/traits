@@ -2,18 +2,24 @@
 extern crate generic_array;
 use generic_array::{GenericArray, ArrayLength};
 
-#[cfg(feature = "std")]
-mod reader;
-#[cfg(feature = "std")]
-pub use reader::{DigestReader, digest_reader};
+mod digest;
+
+pub use digest::Digest;
+
+// `process` is choosen to not overlap with `input` method in the digest trait
+// change it on trait alias stabilization
 
 /// Trait for processing input data
 pub trait Input {
-    type BlockSize: ArrayLength<u8>;
-
     /// Digest input data. This method can be called repeatedly
     /// for use with streaming messages.
-    fn digest(&mut self, input: &[u8]);
+    fn process(&mut self, input: &[u8]);
+}
+
+/// Trait to indicate that digest function processes data in blocks of size
+/// `BlockSize`. Main usage of this trait is for implementing HMAC generically.
+pub trait BlockInput {
+    type BlockSize: ArrayLength<u8>;
 }
 
 /// Trait for returning digest result with the fixed size
@@ -25,11 +31,8 @@ pub trait FixedOutput {
 }
 
 /// The error type for variable digest output
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct InvalidLength;
-
-#[must_use]
-pub type VariableResult<'a> = Result<&'a [u8], InvalidLength>;
 
 /// Trait for returning digest result with the varaible size
 pub trait VariableOutput {
@@ -38,32 +41,30 @@ pub trait VariableOutput {
     /// equals to the input buffer size. In case of invalid length
     /// `Err(InvalidLength)` will be returned.
     /// This method consumes digest instance.
-    fn variable_result(self, buffer: &mut [u8]) -> VariableResult;
+    fn variable_result(self, buffer: &mut [u8]) -> Result<&[u8], InvalidLength>;
 }
 
-/// The Digest trait specifies an interface common to digest functions. It's a
-/// convinience wrapper around `Input` and `FixedOutput` traits
-pub trait Digest: Input + FixedOutput {
-    type OutputSize: ArrayLength<u8>;
-    type BlockSize: ArrayLength<u8>;
-
-    /// Digest input data. This method can be called repeatedly
-    /// for use with streaming messages.
-    fn input(&mut self, input: &[u8]);
-
-    /// Retrieve the digest result. This method consumes digest instance.
-    fn result(self) -> GenericArray<u8, <Self as Digest>::OutputSize>;
+/// Trait for decribing readers which are used to extract extendable output
+/// from the resulting state of hash function.
+pub trait XofReader: core::marker::Sized {
+    /// Read output into the `buffer`. Can be called unlimited number of times.
+    fn read(&mut self, buffer: &mut [u8]);
 }
 
-impl<T: Input + FixedOutput> Digest for T {
-    type OutputSize = <T as FixedOutput>::OutputSize;
-    type BlockSize = <T as Input>::BlockSize;
+/// Trait which describes extendable output (XOF) of hash functions. Using this
+/// trait you first need to get structure which implements `XofReader`, using
+/// which you can read extendable output.
+pub trait ExtendableOutput {
+    type Reader: XofReader;
 
-    fn input(&mut self, input: &[u8]) {
-        self.digest(input);
-    }
+    /// Finalize hash function and return XOF reader
+    fn xof_result(self) -> Self::Reader;
+}
 
-    fn result(self) -> GenericArray<u8, <T as Digest>::OutputSize> {
-        self.fixed_result()
+impl<D: ExtendableOutput> VariableOutput for D {
+    fn variable_result(self, buffer: &mut [u8]) -> Result<&[u8], InvalidLength> {
+        let mut reader = self.xof_result();
+        reader.read(buffer);
+        Ok(buffer)
     }
 }
