@@ -1,6 +1,6 @@
 [package]
 name = "digest"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
 description = "Digest trait for cryptographic hash functions"

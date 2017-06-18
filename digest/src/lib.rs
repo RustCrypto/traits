@@ -1,5 +1,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 extern crate generic_array;
+
+#[cfg(feature = "std")]
+use std as core;
 use generic_array::{GenericArray, ArrayLength};
 
 mod digest;

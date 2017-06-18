@@ -61,14 +61,14 @@ pub trait Digest: Input + BlockInput + FixedOutput + Default {
     #[cfg(feature = "std")]
     #[inline]
     fn digest_reader(source: &mut io::Read)
-        -> io::Result<Output<<Self as Digest>::OutputSize>>
+        -> io::Result<Output<Self::OutputSize>>
     {
         let mut hasher = Self::default();
 
         let mut buffer = [0u8; 1024];
         loop {
             let bytes_read = source.read(&mut buffer)?;
-            Input::input(&mut hasher, &buffer[..bytes_read]);
+            hasher.input(&buffer[..bytes_read]);
             if bytes_read != buffer.len() {
                 break;
             }
