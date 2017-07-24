@@ -54,8 +54,11 @@ pub trait Digest: Input + BlockInput + FixedOutput + Default {
     /// Usage example:
     ///
     /// ```rust,ignore
-    /// let file = fs::File::open(&path)?;
-    /// let result = digest_reader<blake2::Blake2b>(&mut file)?;
+    /// use std::fs;
+    /// use sha2::{Sha256, Digest};
+    ///
+    /// let mut file = fs::File::open("Cargo.toml")?;
+    /// let result = Sha256::digest_reader(&mut file)?;
     /// println!("{:x}", result);
     /// ```
     #[cfg(feature = "std")]
@@ -69,7 +72,7 @@ pub trait Digest: Input + BlockInput + FixedOutput + Default {
         loop {
             let bytes_read = source.read(&mut buffer)?;
             hasher.input(&buffer[..bytes_read]);
-            if bytes_read != buffer.len() {
+            if bytes_read == 0 {
                 break;
             }
         }

@@ -1,3 +1,9 @@
+//! This crate provides traits for describing funcionality of cryptographic hash
+//! functions.
+//!
+//! By default std functionality in this crate disabled. (e.g. method for
+//! hashing `Read`ers) To enable it turn on `std` feature in your `Cargo.toml`
+//! for this crate.
 #![cfg_attr(not(feature = "std"), no_std)]
 extern crate generic_array;
 
