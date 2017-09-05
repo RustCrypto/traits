@@ -18,6 +18,44 @@ pub trait BlockCipher {
 
     /// Decrypt block in-place
     fn decrypt_block(&self, block: &mut Block<Self::BlockSize>);
+
+    /// Encrypt several blocks in-place. Will panic if slice length is not
+    /// multiple of block size.
+    ///
+    /// Default implementations will just iterate over blocks and will use
+    /// `encrypt_block` on them, but some ciphers could utilize instruction
+    /// level parallelism to speed-up computations
+    #[inline]
+    fn encrypt_blocks(&self, blocks: &mut [u8]) {
+        let bs = Self::BlockSize::to_usize();
+        assert_eq!(blocks.len() % bs, 0,
+            "blocks slice length is not multiple of block size");
+        for block in blocks.chunks_mut(bs) {
+            let block = unsafe {
+                &mut *(block.as_mut_ptr() as *mut Block<Self::BlockSize>)
+            };
+            self.encrypt_block(block);
+        }
+    }
+
+    /// Decrypt several blocks in-place. Will panic if slice length is not
+    /// multiple of block size.
+    ///
+    /// Default implementations will just iterate over blocks and will use
+    /// `decrypt_block` on them, but some ciphers could utilize instruction
+    /// level parallelism to speed-up computations
+    #[inline]
+    fn decrypt_blocks(&self, blocks: &mut [u8]) {
+        let bs = Self::BlockSize::to_usize();
+        assert_eq!(blocks.len() % bs, 0,
+            "blocks slice length is not multiple of block size");
+        for block in blocks.chunks_mut(bs) {
+            let block = unsafe {
+                &mut *(block.as_mut_ptr() as *mut Block<Self::BlockSize>)
+            };
+            self.decrypt_block(block);
+        }
+    }
 }
 
 /// Trait for creation of block cipher with fixed size key
