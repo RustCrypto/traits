@@ -1,7 +1,7 @@
 //! This crate defines a set of simple traits used to define functionality of
 //! block ciphers.
 #![no_std]
-extern crate generic_array;
+pub extern crate generic_array;
 
 use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;
