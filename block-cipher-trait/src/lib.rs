@@ -8,6 +8,11 @@ use generic_array::typenum::Unsigned;
 
 type Block<BlockSize> = GenericArray<u8, BlockSize>;
 
+/// Error used in `encrypt_blocks` and `decrypt_blocks` to indicate
+/// that buffer length is not multiple of the block size.
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct InvalidBufLength;
+
 /// Main block cipher trait which defines in-place encryption and decryption
 /// over single block
 pub trait BlockCipher {
@@ -19,42 +24,42 @@ pub trait BlockCipher {
     /// Decrypt block in-place
     fn decrypt_block(&self, block: &mut Block<Self::BlockSize>);
 
-    /// Encrypt several blocks in-place. Will panic if slice length is not
-    /// multiple of block size.
+    /// Encrypt several blocks in-place. Will return an error if buffer size is
+    /// not multiple of the block size.
     ///
-    /// Default implementations will just iterate over blocks and will use
-    /// `encrypt_block` on them, but some ciphers could utilize instruction
-    /// level parallelism to speed-up computations
+    /// Default implementations will sequentially iterate over blocks and will
+    /// apply `encrypt_block` on them, but some ciphers could utilize
+    /// instruction level parallelism to speed-up computations.
     #[inline]
-    fn encrypt_blocks(&self, blocks: &mut [u8]) {
+    fn encrypt_blocks(&self, buf: &mut [u8]) -> Result<(), InvalidBufLength> {
         let bs = Self::BlockSize::to_usize();
-        assert_eq!(blocks.len() % bs, 0,
-            "blocks slice length is not multiple of block size");
-        for block in blocks.chunks_mut(bs) {
+        if buf.len() % bs != 0 { return Err(InvalidBufLength); }
+        for block in buf.chunks_mut(bs) {
             let block = unsafe {
                 &mut *(block.as_mut_ptr() as *mut Block<Self::BlockSize>)
             };
             self.encrypt_block(block);
         }
+        Ok(())
     }
 
-    /// Decrypt several blocks in-place. Will panic if slice length is not
-    /// multiple of block size.
+    /// Decrypt several blocks in-place. Will return an error if buffer size is
+    /// not multiple of the block size.
     ///
-    /// Default implementations will just iterate over blocks and will use
-    /// `decrypt_block` on them, but some ciphers could utilize instruction
-    /// level parallelism to speed-up computations
+    /// Default implementations will sequentially iterate over blocks and will
+    /// apply `decrypt_block` on them, but some ciphers could utilize
+    /// instruction level parallelism to speed-up computations.
     #[inline]
-    fn decrypt_blocks(&self, blocks: &mut [u8]) {
+    fn decrypt_blocks(&self, buf: &mut [u8]) -> Result<(), InvalidBufLength> {
         let bs = Self::BlockSize::to_usize();
-        assert_eq!(blocks.len() % bs, 0,
-            "blocks slice length is not multiple of block size");
-        for block in blocks.chunks_mut(bs) {
+        if buf.len() % bs != 0 { return Err(InvalidBufLength); }
+        for block in buf.chunks_mut(bs) {
             let block = unsafe {
                 &mut *(block.as_mut_ptr() as *mut Block<Self::BlockSize>)
             };
             self.decrypt_block(block);
         }
+        Ok(())
     }
 }
 
