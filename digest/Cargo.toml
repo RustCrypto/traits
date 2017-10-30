@@ -9,7 +9,7 @@ repository = "https://github.com/RustCrypto/traits"
 keywords = ["digest", "crypto", "hash"]
 
 [dependencies]
-generic-array = "0.8"
+generic-array = "0.9"
 
 [features]
 std = []
