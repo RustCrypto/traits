@@ -44,18 +44,24 @@ pub trait FixedOutput {
 pub struct InvalidLength;
 
 /// Trait for returning digest result with the varaible size
-pub trait VariableOutput {
+pub trait VariableOutput: core::marker::Sized {
+    /// Create new hasher instance with given output size. Will return
+    /// `Err(InvalidLength)` in case if hasher can not work with the given
+    /// output size. Will always return an error if output size equals to zero.
+    fn new(output_size: usize) -> Result<Self, InvalidLength>;
 
-    /// Retrieve the digest result into provided buffer. Length of the output
-    /// equals to the input buffer size. In case of invalid length
-    /// `Err(InvalidLength)` will be returned.
-    /// This method consumes digest instance.
+    /// Get output size of the hasher instance provided to the `new` method
+    fn output_size(&self) -> usize;
+
+    /// Retrieve the digest result into provided buffer. Length of the buffer
+    /// must be equal to output size provided to the `new` method, otherwise
+    /// `Err(InvalidLength)` will be returned
     fn variable_result(self, buffer: &mut [u8]) -> Result<&[u8], InvalidLength>;
 }
 
 /// Trait for decribing readers which are used to extract extendable output
 /// from the resulting state of hash function.
-pub trait XofReader: core::marker::Sized {
+pub trait XofReader {
     /// Read output into the `buffer`. Can be called unlimited number of times.
     fn read(&mut self, buffer: &mut [u8]);
 }
@@ -68,12 +74,4 @@ pub trait ExtendableOutput {
 
     /// Finalize hash function and return XOF reader
     fn xof_result(self) -> Self::Reader;
-}
-
-impl<D: ExtendableOutput> VariableOutput for D {
-    fn variable_result(self, buffer: &mut [u8]) -> Result<&[u8], InvalidLength> {
-        let mut reader = self.xof_result();
-        reader.read(buffer);
-        Ok(buffer)
-    }
 }
