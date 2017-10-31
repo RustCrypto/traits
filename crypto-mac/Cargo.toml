@@ -1,6 +1,6 @@
 [package]
 name = "crypto-mac"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
 description = "Trait for Message Authentication Code (MAC) algorithms"
@@ -9,5 +9,5 @@ repository = "https://github.com/RustCrypto/traits"
 keywords = ["crypto", "mac"]
 
 [dependencies]
-generic-array = "0.8"
+generic-array = "0.9"
 constant_time_eq = "0.1"
