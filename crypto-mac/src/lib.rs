@@ -4,6 +4,15 @@ extern crate generic_array;
 
 use constant_time_eq::constant_time_eq;
 use generic_array::{GenericArray, ArrayLength};
+use generic_array::typenum::Unsigned;
+
+/// Error type for signaling failed MAC verification
+#[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
+pub struct MacError;
+
+/// Error type for signaling invalid key length for MAC initialization
+#[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
+pub struct InvalidKeyLength;
 
 /// The Mac trait defines methods for a Message Authentication function.
 pub trait Mac: core::marker::Sized {
@@ -13,7 +22,7 @@ pub trait Mac: core::marker::Sized {
     ///
     /// For low-entropy keys first use an appropriate key derivation
     /// function (KDF), e.g. argon2, scrypt or PBKDF2
-    fn new(key: &[u8]) -> Self;
+    fn new(key: &[u8]) -> Result<Self, InvalidKeyLength>;
 
     /// Process input data.
     fn input(&mut self, data: &[u8]);
@@ -22,8 +31,14 @@ pub trait Mac: core::marker::Sized {
     fn result(self) -> MacResult<Self::OutputSize>;
 
     /// Check if code is correct for the processed input
-    fn verify(self, code: &[u8]) -> bool {
-        MacResult::from_slice(code) == self.result()
+    fn verify(self, code: &[u8]) -> Result<(), MacError> {
+        if Self::OutputSize::to_usize() != code.len() {
+            Err(MacError)
+        } else if MacResult::from_slice(code) != self.result() {
+            Err(MacError)
+        } else {
+            Ok(())
+        }
     }
 }
 
