@@ -6,60 +6,40 @@ pub extern crate generic_array;
 use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;
 
-type Block<BlockSize> = GenericArray<u8, BlockSize>;
+type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
 
-/// Error used in `encrypt_blocks` and `decrypt_blocks` to indicate
-/// that buffer length is not multiple of the block size.
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct InvalidBufLength;
-
-/// Main block cipher trait which defines in-place encryption and decryption
-/// over single block
+/// The trait which defines in-place encryption and decryption
+/// over single block or several blocks in parallel.
 pub trait BlockCipher {
     type BlockSize: ArrayLength<u8>;
+    type ParBlocks: ArrayLength<GenericArray<u8, Self::BlockSize>>;
 
     /// Encrypt block in-place
-    fn encrypt_block(&self, block: &mut Block<Self::BlockSize>);
+    fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>);
 
     /// Decrypt block in-place
-    fn decrypt_block(&self, block: &mut Block<Self::BlockSize>);
+    fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>);
 
-    /// Encrypt several blocks in-place. Will return an error if buffer size is
-    /// not multiple of the block size.
+    /// Encrypt several blocks in parallel using instruction level parallelism
+    /// if possible.
     ///
-    /// Default implementations will sequentially iterate over blocks and will
-    /// apply `encrypt_block` on them, but some ciphers could utilize
-    /// instruction level parallelism to speed-up computations.
+    /// If `ParBlocks` equals to 1 it's equivalent to `encrypt_block`.
     #[inline]
-    fn encrypt_blocks(&self, buf: &mut [u8]) -> Result<(), InvalidBufLength> {
-        let bs = Self::BlockSize::to_usize();
-        if buf.len() % bs != 0 { return Err(InvalidBufLength); }
-        for block in buf.chunks_mut(bs) {
-            let block = unsafe {
-                &mut *(block.as_mut_ptr() as *mut Block<Self::BlockSize>)
-            };
-            self.encrypt_block(block);
-        }
-        Ok(())
+    fn encrypt_blocks(&self,
+        blocks: &mut ParBlocks<Self::BlockSize, Self::ParBlocks>)
+    {
+        for block in blocks.iter_mut() { self.encrypt_block(block); }
     }
 
-    /// Decrypt several blocks in-place. Will return an error if buffer size is
-    /// not multiple of the block size.
+    /// Decrypt several blocks in parallel using instruction level parallelism
+    /// if possible.
     ///
-    /// Default implementations will sequentially iterate over blocks and will
-    /// apply `decrypt_block` on them, but some ciphers could utilize
-    /// instruction level parallelism to speed-up computations.
+    /// If `ParBlocks` equals to 1 it's equivalent to `decrypt_block`.
     #[inline]
-    fn decrypt_blocks(&self, buf: &mut [u8]) -> Result<(), InvalidBufLength> {
-        let bs = Self::BlockSize::to_usize();
-        if buf.len() % bs != 0 { return Err(InvalidBufLength); }
-        for block in buf.chunks_mut(bs) {
-            let block = unsafe {
-                &mut *(block.as_mut_ptr() as *mut Block<Self::BlockSize>)
-            };
-            self.decrypt_block(block);
-        }
-        Ok(())
+    fn decrypt_blocks(&self,
+        blocks: &mut ParBlocks<Self::BlockSize, Self::ParBlocks>)
+    {
+        for block in blocks.iter_mut() { self.decrypt_block(block); }
     }
 }
 
