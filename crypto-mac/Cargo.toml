@@ -13,5 +13,8 @@ categories = ["cryptography", "no-std"]
 generic-array = "0.9"
 constant_time_eq = "0.1"
 
+[features]
+dev = []
+
 [badges]
 travis-ci = { repository = "RustCrypto/traits" }

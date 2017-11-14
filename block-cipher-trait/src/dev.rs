@@ -2,7 +2,7 @@ use generic_array::GenericArray;
 
 use super::{NewVarKey, BlockCipher};
 
-pub struct BlockCipherTest {
+pub struct Test {
     pub name: &'static str,
     pub key: &'static [u8],
     pub input: &'static [u8],
