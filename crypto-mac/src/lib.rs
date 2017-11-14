@@ -1,3 +1,4 @@
+//! This crate provides trait for Message Authentication Code (MAC) algorithms.
 #![no_std]
 extern crate constant_time_eq;
 extern crate generic_array;
@@ -14,7 +15,7 @@ pub struct MacError;
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
 pub struct InvalidKeyLength;
 
-/// The Mac trait defines methods for a Message Authentication function.
+/// The `Mac` trait defines methods for a Message Authentication algorithm.
 pub trait Mac: core::marker::Sized {
     type OutputSize: ArrayLength<u8>;
 
@@ -34,16 +35,20 @@ pub trait Mac: core::marker::Sized {
     fn verify(self, code: &[u8]) -> Result<(), MacError> {
         if Self::OutputSize::to_usize() != code.len() {
             Err(MacError)
-        } else if MacResult::from_slice(code) != self.result() {
-            Err(MacError)
         } else {
-            Ok(())
+            let result = MacResult::new(GenericArray::clone_from_slice(code));
+            if result != self.result() {
+                Err(MacError)
+            } else {
+                Ok(())
+            }
         }
     }
 }
 
 /// `MacResult` wraps a Mac code and provides a safe Eq implementation that runs
 /// in fixed time.
+#[derive(Clone)]
 pub struct MacResult<N: ArrayLength<u8>> {
     code: GenericArray<u8, N>
 }
@@ -54,18 +59,11 @@ impl<N> MacResult<N> where N: ArrayLength<u8> {
         MacResult{code: code}
     }
 
-    pub fn from_slice(code: &[u8]) -> MacResult<N> {
-        assert_eq!(code.len(), N::to_usize());
-        let mut arr = GenericArray::default();
-        arr.copy_from_slice(code);
-        MacResult{code: arr}
-    }
-
-    /// Get the code value. Be very careful using this method, since incorrect use
-    /// of the code value may permit timing attacks which defeat the security
-    /// provided by the Mac function.
-    pub fn code(&self) -> &[u8] {
-        &self.code[..]
+    /// Get the code value as a bytes array. Be very careful using this method,
+    /// since incorrect use of the code value may permit timing attacks which
+    /// defeat the security provided by the `Mac` trait.
+    pub fn code(self) -> GenericArray<u8, N> {
+        self.code
     }
 }
 
