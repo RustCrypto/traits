@@ -7,9 +7,13 @@ description = "Traits for cryptographic hash functions"
 documentation = "https://docs.rs/digest"
 repository = "https://github.com/RustCrypto/traits"
 keywords = ["digest", "crypto", "hash"]
+categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = "0.9"
 
 [features]
 std = []
+
+[badges]
+travis-ci = { repository = "RustCrypto/traits" }
