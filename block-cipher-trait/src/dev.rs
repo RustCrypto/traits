@@ -13,7 +13,7 @@ pub struct Test {
 macro_rules! new_block_cipher_tests {
     ( $( $name:expr ),*  ) => {
         [$(
-            BlockCipherTest {
+            Test {
                 name: $name,
                 key: include_bytes!(concat!("data/", $name, ".key.bin")),
                 input: include_bytes!(concat!("data/", $name, ".input.bin")),
@@ -23,7 +23,7 @@ macro_rules! new_block_cipher_tests {
     };
 }
 
-pub fn encrypt_decrypt<B: NewVarKey + BlockCipher>(tests: &[BlockCipherTest]) {
+pub fn encrypt_decrypt<B: NewVarKey + BlockCipher>(tests: &[Test]) {
     // test encryption
     for test in tests {
         let state = B::new(test.key).unwrap();
