@@ -21,7 +21,7 @@ macro_rules! new_mac_tests {
     };
 }
 
-pub fn mac_test<M: Mac>(tests: &[MacTest]) {
+pub fn mac_test<M: Mac>(tests: &[Test]) {
     for test in tests.iter() {
         let mut mac = M::new(test.key).unwrap();
         mac.input(&test.input[..]);
