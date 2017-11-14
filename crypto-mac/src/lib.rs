@@ -46,8 +46,8 @@ pub trait Mac: core::marker::Sized {
     }
 }
 
-/// `MacResult` wraps a Mac code and provides a safe Eq implementation that runs
-/// in fixed time.
+/// `MacResult` is a thin wrapper around bytes array which provides a safe `Eq`
+/// implementation that runs in a fixed time.
 #[derive(Clone)]
 pub struct MacResult<N: ArrayLength<u8>> {
     code: GenericArray<u8, N>
@@ -56,7 +56,7 @@ pub struct MacResult<N: ArrayLength<u8>> {
 impl<N> MacResult<N> where N: ArrayLength<u8> {
     /// Create a new MacResult.
     pub fn new(code: GenericArray<u8, N>) -> MacResult<N> {
-        MacResult{code: code}
+        MacResult { code }
     }
 
     /// Get the code value as a bytes array. Be very careful using this method,
