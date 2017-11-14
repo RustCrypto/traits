@@ -45,7 +45,6 @@ pub fn encrypt_decrypt<B: NewVarKey + BlockCipher>(tests: &[BlockCipherTest]) {
 macro_rules! bench_block_cipher {
     ($cipher:path, $key_len:expr) => {
         extern crate test;
-        extern crate block_cipher_trait;
 
         use test::Bencher;
         use block_cipher_trait::{BlockCipher, NewVarKey};

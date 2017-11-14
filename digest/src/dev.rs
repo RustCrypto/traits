@@ -143,7 +143,6 @@ macro_rules! bench_digest {
 
     ($engine:path) => {
         extern crate test;
-        extern crate digest;
 
         use test::Bencher;
         use digest::Digest;
