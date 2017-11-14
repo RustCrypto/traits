@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "block-cipher-trait",
+    "crypto-mac",
+    "digest",
+]
+
