@@ -12,6 +12,8 @@ use std as core;
 use generic_array::{GenericArray, ArrayLength};
 
 mod digest;
+#[cfg(feature = "dev")]
+pub mod dev;
 
 pub use digest::Digest;
 
