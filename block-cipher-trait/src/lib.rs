@@ -11,7 +11,10 @@ type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
 /// The trait which defines in-place encryption and decryption
 /// over single block or several blocks in parallel.
 pub trait BlockCipher {
+    /// Size of the block in bytes
     type BlockSize: ArrayLength<u8>;
+    /// Number of blocks which can be processed in parallel by
+    /// cipher implementation
     type ParBlocks: ArrayLength<GenericArray<u8, Self::BlockSize>>;
 
     /// Encrypt block in-place
