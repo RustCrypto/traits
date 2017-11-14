@@ -6,6 +6,9 @@ pub extern crate generic_array;
 use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;
 
+#[cfg(feature = "dev")]
+pub mod dev;
+
 type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
 
 /// The trait which defines in-place encryption and decryption
@@ -47,7 +50,7 @@ pub trait BlockCipher {
 }
 
 /// Trait for creation of block cipher with fixed size key
-pub trait NewFixKey: BlockCipher {
+pub trait NewFixKey {
     type KeySize: ArrayLength<u8>;
 
     /// Create new block cipher instance with given fixed size key
@@ -61,7 +64,7 @@ pub struct InvalidKeyLength;
 /// Trait for creation of block cipher with variable size keys.
 ///
 /// This trait is auto implemented for `NewFixKey`.
-pub trait NewVarKey: BlockCipher + Sized {
+pub trait NewVarKey: Sized {
     /// Create new block cipher instance with given key, if length of given
     /// key is unsupported by implementation error will be returned.
     fn new(key: &[u8]) -> Result<Self, InvalidKeyLength>;
