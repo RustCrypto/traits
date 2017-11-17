@@ -112,6 +112,20 @@ pub fn xof_test<D>(tests: &[Test])
 
         assert_eq!(out[..], t.output[..]);
     }
+
+    // Test reeading from reader byte by byte
+    for t in tests.iter() {
+        let mut sh = D::default();
+        sh.process(t.input);
+
+        let mut reader = sh.xof_result();
+        let out = &mut buf[..t.output.len()];
+        for chunk in out.chunks_mut(1) {
+            reader.read(chunk);
+        }
+
+        assert_eq!(out[..], t.output[..]);
+    }
 }
 
 pub fn one_million_a<D: Digest + Default + Debug + Clone>(expected: &[u8]) {
