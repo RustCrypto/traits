@@ -60,8 +60,8 @@ macro_rules! bench {
         use test::Bencher;
         use crypto_mac::Mac;
 
-        bench!(bench3_100, $engine, $key_size, 100);
-        bench!(bench4_1000, $engine, $key_size, 1000);
-        bench!(bench5_10000, $engine, $key_size, 10000);
+        bench!(bench1_100, $engine, $key_size, 100);
+        bench!(bench2_1000, $engine, $key_size, 1000);
+        bench!(bench3_10000, $engine, $key_size, 10000);
     }
 }
