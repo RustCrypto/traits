@@ -37,3 +37,31 @@ pub fn mac_test<M: Mac>(tests: &[Test]) {
         mac.verify(test.output).unwrap();
     }
 }
+
+#[macro_export]
+macro_rules! bench {
+    ($name:ident, $engine:path, $key_size:expr, $bs:expr) => {
+        #[bench]
+        fn $name(b: &mut Bencher) {
+            let mut m = <$engine>::new(&[0; $key_size]).unwrap();
+            let data = [0; $bs];
+
+            b.iter(|| {
+                m.input(&data);
+            });
+
+            b.bytes = $bs;
+        }
+    };
+
+    ($engine:path, $key_size:expr) => {
+        extern crate test;
+
+        use test::Bencher;
+        use crypto_mac::Mac;
+
+        bench!(bench3_100, $engine, $key_size, 100);
+        bench!(bench4_1000, $engine, $key_size, 1000);
+        bench!(bench5_10000, $engine, $key_size, 10000);
+    }
+}
