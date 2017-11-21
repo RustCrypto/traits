@@ -17,7 +17,7 @@ pub struct InvalidKeyLength;
 
 /// The trait which defines in-place encryption and decryption
 /// over single block or several blocks in parallel.
-pub trait BlockCipher {
+pub trait BlockCipher: core::marker::Sized {
     /// Key size in bytes with which cipher guaranteed to be initialized
     type KeySize: ArrayLength<u8>;
     /// Size of the block in bytes
