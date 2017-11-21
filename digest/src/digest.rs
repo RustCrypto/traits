@@ -1,4 +1,4 @@
-use super::{Input, BlockInput, FixedOutput};
+use super::{Input, FixedOutput};
 use generic_array::GenericArray;
 #[cfg(feature = "std")]
 use std::io;
@@ -9,7 +9,7 @@ type Output<N> = GenericArray<u8, N>;
 ///
 /// It's a convinience wrapper around `Input`, `FixedOutput`, `BlockInput` and
 /// `Default` traits. It also provides additional convinience methods.
-pub trait Digest: Input + BlockInput + FixedOutput + Default {
+pub trait Digest: Input + FixedOutput + Default {
     /// Create new hasher instance
     fn new() -> Self {
         Self::default()
@@ -82,4 +82,4 @@ pub trait Digest: Input + BlockInput + FixedOutput + Default {
     }
 }
 
-impl<D: Input + FixedOutput + BlockInput + Default> Digest for D {}
+impl<D: Input + FixedOutput + Default> Digest for D {}
