@@ -11,7 +11,7 @@ pub struct Test {
 
 #[macro_export]
 macro_rules! new_block_cipher_tests {
-    ( $( $name:expr ),*  ) => {
+    [ $( $name:expr ),*  ] => {
         [$(
             Test {
                 name: $name,
@@ -21,6 +21,7 @@ macro_rules! new_block_cipher_tests {
             },
         )*]
     };
+    [ $( $name:expr ),+, ] => (new_tests!($($name),+))
 }
 
 pub fn encrypt_decrypt<B: BlockCipher>(tests: &[Test]) {
