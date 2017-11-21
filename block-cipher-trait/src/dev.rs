@@ -10,7 +10,7 @@ pub struct Test {
 }
 
 #[macro_export]
-macro_rules! new_block_cipher_tests {
+macro_rules! new_tests {
     [ $( $name:expr ),*  ] => {
         [$(
             Test {
@@ -21,10 +21,10 @@ macro_rules! new_block_cipher_tests {
             },
         )*]
     };
-    [ $( $name:expr ),+, ] => (new_tests!($($name),+))
+    [ $( $name:expr ),+, ] => (new_tests![$($name),+])
 }
 
-pub fn encrypt_decrypt<B: BlockCipher>(tests: &[Test]) {
+pub fn run_tests<B: BlockCipher>(tests: &[Test]) {
     // test encryption
     for test in tests {
         let state = B::new_varkey(test.key).unwrap();

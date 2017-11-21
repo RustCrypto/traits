@@ -8,7 +8,7 @@ pub struct Test {
 }
 
 #[macro_export]
-macro_rules! new_mac_tests {
+macro_rules! new_tests {
     ( $( $name:expr ),*  ) => {
         [$(
             Test {
@@ -21,7 +21,7 @@ macro_rules! new_mac_tests {
     };
 }
 
-pub fn mac_test<M: Mac>(tests: &[Test]) {
+pub fn run_tests<M: Mac>(tests: &[Test]) {
     for test in tests.iter() {
         let mut mac = M::new(test.key).unwrap();
         mac.input(&test.input[..]);
@@ -60,8 +60,9 @@ macro_rules! bench {
         use test::Bencher;
         use crypto_mac::Mac;
 
-        bench!(bench1_100, $engine, $key_size, 100);
-        bench!(bench2_1000, $engine, $key_size, 1000);
+        bench!(bench1_10,    $engine, $key_size, 10);
+        bench!(bench2_100,   $engine, $key_size, 100);
+        bench!(bench3_1000,  $engine, $key_size, 1000);
         bench!(bench3_10000, $engine, $key_size, 10000);
     }
 }
