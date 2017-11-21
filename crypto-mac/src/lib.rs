@@ -21,21 +21,30 @@ pub struct InvalidKeyLength;
 /// The `Mac` trait defines methods for a Message Authentication algorithm.
 pub trait Mac: core::marker::Sized {
     type OutputSize: ArrayLength<u8>;
+    type KeySize: ArrayLength<u8>;
 
-    /// Create new MAC instance. DO NOT USE low-entropy keys (e.g. passwords)!
-    ///
-    /// For low-entropy keys first use an appropriate key derivation
-    /// function (KDF), e.g. argon2, scrypt or PBKDF2
-    fn new(key: &[u8]) -> Result<Self, InvalidKeyLength>;
+    /// Create a new MAC instance from key with fixed size.
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self;
+
+    /// Create a new MAC instance from variable sized key.
+    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+        if key.len() != Self::KeySize::to_usize() {
+            Err(InvalidKeyLength)
+        } else {
+            Ok(Self::new(GenericArray::from_slice(key)))
+        }
+    }
 
     /// Process input data.
     fn input(&mut self, data: &[u8]);
 
-    /// Obtain the result of a `Mac` computation as a `MacResult`.
-    fn result(self) -> MacResult<Self::OutputSize>;
+    /// Obtain the result of a `Mac` computation as a `MacResult` and reset
+    /// `Mac` instance.
+    fn result(&mut self) -> MacResult<Self::OutputSize>;
 
-    /// Check if code is correct for the processed input
-    fn verify(self, code: &[u8]) -> Result<(), MacError> {
+    /// Check if code is correct for the processed input and reset
+    /// `Mac` instance.
+    fn verify(&mut self, code: &[u8]) -> Result<(), MacError> {
         if Self::OutputSize::to_usize() != code.len() {
             Err(MacError)
         } else {
