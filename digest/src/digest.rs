@@ -7,8 +7,8 @@ type Output<N> = GenericArray<u8, N>;
 
 /// The `Digest` trait specifies an interface common for digest functions.
 ///
-/// It's a convinience wrapper around `Input`, `FixedOutput`, `BlockInput` and
-/// `Default` traits. It also provides additional convinience methods.
+/// It's a convinience wrapper around `Input`, `FixedOutput` and `Default`
+/// traits. It also provides additional convinience methods.
 pub trait Digest: Input + FixedOutput + Default {
     /// Create new hasher instance
     fn new() -> Self {
