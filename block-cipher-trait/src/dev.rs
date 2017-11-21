@@ -1,6 +1,6 @@
 use generic_array::GenericArray;
 
-use super::{NewVarKey, BlockCipher};
+use super::BlockCipher;
 
 pub struct Test {
     pub name: &'static str,
@@ -23,10 +23,10 @@ macro_rules! new_block_cipher_tests {
     };
 }
 
-pub fn encrypt_decrypt<B: NewVarKey + BlockCipher>(tests: &[Test]) {
+pub fn encrypt_decrypt<B: BlockCipher>(tests: &[Test]) {
     // test encryption
     for test in tests {
-        let state = B::new(test.key).unwrap();
+        let state = B::new_varkey(test.key).unwrap();
         let mut block = GenericArray::clone_from_slice(test.input);
         state.encrypt_block(&mut block);
         assert_eq!(test.output, block.as_slice());
@@ -34,7 +34,7 @@ pub fn encrypt_decrypt<B: NewVarKey + BlockCipher>(tests: &[Test]) {
 
     // test decription
     for test in tests {
-        let state = B::new(test.key).unwrap();
+        let state = B::new_varkey(test.key).unwrap();
         let mut block = GenericArray::clone_from_slice(test.output);
         state.decrypt_block(&mut block);
         assert_eq!(test.input, block.as_slice());
@@ -42,16 +42,16 @@ pub fn encrypt_decrypt<B: NewVarKey + BlockCipher>(tests: &[Test]) {
 }
 
 #[macro_export]
-macro_rules! bench_block_cipher {
+macro_rules! bench {
     ($cipher:path, $key_len:expr) => {
         extern crate test;
 
         use test::Bencher;
-        use block_cipher_trait::{BlockCipher, NewVarKey};
+        use block_cipher_trait::BlockCipher;
 
         #[bench]
         pub fn encrypt(bh: &mut Bencher) {
-            let state = <$cipher>::new(&[1u8; $key_len]).unwrap();
+            let state = <$cipher>::new_varkey(&[1u8; $key_len]).unwrap();
             let mut block = Default::default();
 
             bh.iter(|| {
@@ -63,7 +63,7 @@ macro_rules! bench_block_cipher {
 
         #[bench]
         pub fn decrypt(bh: &mut Bencher) {
-            let state = <$cipher>::new(&[1u8; $key_len]).unwrap();
+            let state = <$cipher>::new_varkey(&[1u8; $key_len]).unwrap();
             let mut block = Default::default();
 
             bh.iter(|| {
