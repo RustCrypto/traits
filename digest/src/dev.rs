@@ -9,7 +9,7 @@ pub struct Test {
 
 #[macro_export]
 macro_rules! new_tests {
-    ( $( $name:expr ),*  ) => {
+    [ $( $name:expr ),*  ] => {
         [$(
             Test {
                 name: $name,
@@ -18,7 +18,7 @@ macro_rules! new_tests {
             },
         )*]
     };
-    ( $( $name:expr ),+, ) => (new_tests!($($name),+))
+    [ $( $name:expr ),+, ] => (new_tests!($($name),+))
 }
 
 pub fn main_test<D: Digest + Debug + Clone>(tests: &[Test]) {
@@ -140,7 +140,7 @@ pub fn one_million_a<D: Digest + Default + Debug + Clone>(expected: &[u8]) {
 
 
 #[macro_export]
-macro_rules! bench_digest {
+macro_rules! bench {
     ($name:ident, $engine:path, $bs:expr) => {
         #[bench]
         fn $name(b: &mut Bencher) {
