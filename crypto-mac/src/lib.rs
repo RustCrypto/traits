@@ -23,10 +23,13 @@ pub trait Mac: core::marker::Sized {
     type OutputSize: ArrayLength<u8>;
     type KeySize: ArrayLength<u8>;
 
-    /// Create a new MAC instance from key with fixed size.
+    /// Create new MAC instance from key with fixed size.
     fn new(key: &GenericArray<u8, Self::KeySize>) -> Self;
 
-    /// Create a new MAC instance from variable sized key.
+    /// Create new MAC instance from key with variable size.
+    ///
+    /// Default implementation will accept only keys with length equal to
+    /// `KeySize`, but some MACs can accept range of key lengths.
     fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
         if key.len() != Self::KeySize::to_usize() {
             Err(InvalidKeyLength)
