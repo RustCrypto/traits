@@ -44,8 +44,8 @@ macro_rules! new_test {
                 let ciphertext = &ciphertexts[
                     (idx[2][0] as usize)..(idx[2][1] as usize)];
                 if !run_test(key, plaintext, ciphertext) {
-                    panic!(
-                        "Failed at test number {}:\nkey: {:?}\nplaintext: {:?}\n ciphertext: {:?}",
+                    panic!("\nFailed at test number {}:\n\
+                        key: {:?}\nplaintext: {:?}\nciphertext: {:?}\n",
                         i, key, plaintext, ciphertext
                     );
                 }
