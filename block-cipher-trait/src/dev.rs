@@ -42,11 +42,12 @@ macro_rules! new_test {
                 let plaintext = &plaintexts[
                     (idx[1][0] as usize)..(idx[1][1] as usize)];
                 let ciphertext = &ciphertexts[
-                    (idx[2][0] as usize)..(idx[2][1] as usize)]
+                    (idx[2][0] as usize)..(idx[2][1] as usize)];
                 if !run_test(key, plaintext, ciphertext) {
                     panic!(
                         "Failed at test number {}:\nkey: {:?}\nplaintext: {:?}\n ciphertext: {:?}",
-                        i, key, plaintext, ciphertext);
+                        i, key, plaintext, ciphertext
+                    );
                 }
 
             }
