@@ -40,7 +40,7 @@ macro_rules! new_test {
                 };
                 // convert to LE for BE machine
                 for val in idx.iter_mut() {
-                    for i in in val.iter_mut() { *i = i.to_le(); }
+                    for i in val.iter_mut() { *i = i.to_le(); }
                 }
                 let key = &keys[(idx[0][0] as usize)..(idx[0][1] as usize)];
                 let plaintext = &plaintexts[
