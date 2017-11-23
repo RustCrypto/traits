@@ -1,44 +1,50 @@
-use generic_array::GenericArray;
-
-use super::BlockCipher;
-
-pub struct Test {
-    pub name: &'static str,
-    pub key: &'static [u8],
-    pub input: &'static [u8],
-    pub output: &'static [u8],
-}
 
 #[macro_export]
-macro_rules! new_tests {
-    [ $( $name:expr ),*  ] => {
-        [$(
-            Test {
-                name: $name,
-                key: include_bytes!(concat!("data/", $name, ".key.bin")),
-                input: include_bytes!(concat!("data/", $name, ".input.bin")),
-                output: include_bytes!(concat!("data/", $name, ".output.bin")),
-            },
-        )*]
-    };
-    [ $( $name:expr ),+, ] => (new_tests![$($name),+])
-}
+macro_rules! new_test {
+    ($name:ident, $test_name:expr, $cipher:ty) => {
+        #[test]
+        fn $name() {
+            fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
+                let state = <$cipher as BlockCipher>::new_varkey(key).unwrap();
 
-pub fn run_tests<B: BlockCipher>(tests: &[Test]) {
-    // test encryption
-    for test in tests {
-        let state = B::new_varkey(test.key).unwrap();
-        let mut block = GenericArray::clone_from_slice(test.input);
-        state.encrypt_block(&mut block);
-        assert_eq!(test.output, block.as_slice());
-    }
+                let mut block = GenericArray::clone_from_slice(pt);
+                state.encrypt_block(&mut block);
+                if ct != block.as_slice() {
+                    return false;
+                }
 
-    // test decription
-    for test in tests {
-        let state = B::new_varkey(test.key).unwrap();
-        let mut block = GenericArray::clone_from_slice(test.output);
-        state.decrypt_block(&mut block);
-        assert_eq!(test.input, block.as_slice());
+                state.decrypt_block(&mut block);
+                if pt != block.as_slice() {
+                    return false;
+                }
+                true
+            }
+
+            let keys = include_bytes!(
+                concat!("data/", $test_name, ".keys.bin"));
+            let plaintexts = include_bytes!(
+                concat!("data/", $test_name, ".plaintexts.bin"));
+            let ciphertexts = include_bytes!(
+                concat!("data/", $test_name, ".ciphertexts.bin"));
+            let index = include_bytes!(
+                concat!("data/", $test_name, ".index.bin"));
+            // u32 (2 bytes); start + end (x2); key, plaintext, ciphertext (x3)
+            assert_eq!(index.len() % (2*3*2), 0, "invlaid index length");
+            for i, chunk in index.chunks(2*3*2).enumerate() {
+                // proper aligment is assumed here
+                let idx = unsafe {
+                    &*(chunk.as_ptr() as *const [[u16; 2]; 3])
+                };
+                if !run_test(
+                    &keys[(idx[0][0] as usize)..(idx[0][1] as usize)],
+                    &plaintexts[(idx[1][0] as usize)..(idx[1][1] as usize)],
+                    &ciphertexts[(idx[2][0] as usize)..(idx[2][1] as usize)],
+                ) {
+                    panic!("Failed at test number: {}", i);
+                }
+
+            }
+        }
     }
 }
 
