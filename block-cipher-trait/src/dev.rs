@@ -38,6 +38,10 @@ macro_rules! new_test {
                 let idx = unsafe {
                     &*(chunk.as_ptr() as *const [[u16; 2]; 3])
                 };
+                // convert to LE for BE machine
+                for val in idx.iter_mut() {
+                    for i in in val.iter_mut() { *i = i.to_le(); }
+                }
                 let key = &keys[(idx[0][0] as usize)..(idx[0][1] as usize)];
                 let plaintext = &plaintexts[
                     (idx[1][0] as usize)..(idx[1][1] as usize)];
