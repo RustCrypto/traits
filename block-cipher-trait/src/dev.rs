@@ -46,9 +46,9 @@ macro_rules! new_test {
                 if !run_test(key, plaintext, ciphertext) {
                     panic!("\n\
                         Failed at test number {}:\n\
-                        key: [{}..{}]{:?}\n\
-                        plaintext: {:?}\n\
-                        ciphertext: {:?}\n",
+                        key: [{}..{}]\t{:?}\n\
+                        plaintext: [{}..{}]\t{:?}\n\
+                        ciphertext: [{}..{}]\t{:?}\n",
                         i, idx[0][0], idx[0][1], key,
                         idx[1][0], idx[1][1], plaintext,
                         idx[2][0], idx[2][1], ciphertext,
