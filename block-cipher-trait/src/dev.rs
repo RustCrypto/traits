@@ -38,12 +38,15 @@ macro_rules! new_test {
                 let idx = unsafe {
                     &*(chunk.as_ptr() as *const [[u16; 2]; 3])
                 };
-                if !run_test(
-                    &keys[(idx[0][0] as usize)..(idx[0][1] as usize)],
-                    &plaintexts[(idx[1][0] as usize)..(idx[1][1] as usize)],
-                    &ciphertexts[(idx[2][0] as usize)..(idx[2][1] as usize)],
-                ) {
-                    panic!("Failed at test number: {}", i);
+                let key = &keys[(idx[0][0] as usize)..(idx[0][1] as usize)];
+                let plaintext = &plaintexts[
+                    (idx[1][0] as usize)..(idx[1][1] as usize)];
+                let ciphertext = &ciphertexts[
+                    (idx[2][0] as usize)..(idx[2][1] as usize)]
+                if !run_test(key, plaintext, ciphertext) {
+                    panic!(
+                        "Failed at test number {}:\nkey: {:?}\nplaintext: {:?}\n ciphertext: {:?}",
+                        i, key, plaintext, ciphertext);
                 }
 
             }
