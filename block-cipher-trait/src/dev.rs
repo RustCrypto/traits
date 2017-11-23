@@ -35,8 +35,8 @@ macro_rules! new_test {
             assert_eq!(index.len() % (2*3*2), 0, "invlaid index length");
             for (i, chunk) in index.chunks(2*3*2).enumerate() {
                 // proper aligment is assumed here
-                let idx = unsafe {
-                    &*(chunk.as_ptr() as *const [[u16; 2]; 3])
+                let mut idx = unsafe {
+                    *(chunk.as_ptr() as *const [[u16; 2]; 3])
                 };
                 // convert to LE for BE machine
                 for val in idx.iter_mut() {
