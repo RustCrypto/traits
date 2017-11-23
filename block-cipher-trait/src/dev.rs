@@ -45,7 +45,7 @@ macro_rules! new_test {
                     (idx[2][0] as usize)..(idx[2][1] as usize)];
                 if !run_test(key, plaintext, ciphertext) {
                     panic!("\n\
-                        Failed at test number {}:\n\
+                        Failed test №{}\n\
                         key: [{}..{}]\t{:?}\n\
                         plaintext: [{}..{}]\t{:?}\n\
                         ciphertext: [{}..{}]\t{:?}\n",
