@@ -4,7 +4,7 @@ macro_rules! new_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
         #[test]
         fn $name() {
-            use des::BlockCipher;
+            use block_cipher_trait::BlockCipher;
             use block_cipher_trait::generic_array::GenericArray;
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
