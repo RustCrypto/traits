@@ -48,15 +48,11 @@ pub trait Mac: core::marker::Sized {
     /// Check if code is correct for the processed input and reset
     /// `Mac` instance.
     fn verify(&mut self, code: &[u8]) -> Result<(), MacError> {
-        if Self::OutputSize::to_usize() != code.len() {
-            Err(MacError)
+        let result = self.result();
+        if result.is_equal(code) {
+            Ok(())
         } else {
-            let result = MacResult::new(GenericArray::clone_from_slice(code));
-            if result != self.result() {
-                Err(MacError)
-            } else {
-                Ok(())
-            }
+            Err(MacError)
         }
     }
 }
@@ -79,6 +75,16 @@ impl<N> MacResult<N> where N: ArrayLength<u8> {
     /// defeat the security provided by the `Mac` trait.
     pub fn code(self) -> GenericArray<u8, N> {
         self.code
+    }
+
+    /// Check if equality to provided slice in constant time
+    pub fn is_equal(&self, code: &[u8]) -> bool {
+        if N::to_usize() != code.len() {
+            false
+        } else {
+            let result = MacResult::new(GenericArray::clone_from_slice(code));
+            self.eq(&result)
+        }
     }
 }
 

@@ -1,4 +1,3 @@
-use super::Mac;
 
 #[macro_export]
 macro_rules! new_test {
@@ -9,11 +8,10 @@ macro_rules! new_test {
             use crypto_mac::generic_array::GenericArray;
 
             fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> bool {
-                let mut mac = <$mac as Mac>::new(key).unwrap();
+                let mut mac = <$mac as Mac>::new_varkey(key).unwrap();
                 mac.input(input);
                 let result = mac.result();
-                let atag = GenericArray::clone_from_slice(tag);
-                if result != MacResult::new(atag) {
+                if !result.is_equal(tag) {
                     return false;
                 }
                 // test if reset worked correctly
@@ -27,6 +25,7 @@ macro_rules! new_test {
                     mac.input(&input[i..i + 1]);
                 }
                 mac.verify(tag).unwrap();
+                true
             }
 
             let keys = include_bytes!(
