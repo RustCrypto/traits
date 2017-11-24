@@ -91,9 +91,9 @@ macro_rules! bench {
         use test::Bencher;
         use crypto_mac::Mac;
 
-        bench!(bench1_10,    $engine, $key_size, 10);
-        bench!(bench2_100,   $engine, $key_size, 100);
-        bench!(bench3_1000,  $engine, $key_size, 1000);
-        bench!(bench3_10000, $engine, $key_size, 10000);
+        bench!(bench1_10,    $engine, 10);
+        bench!(bench2_100,   $engine, 100);
+        bench!(bench3_1000,  $engine, 1000);
+        bench!(bench3_10000, $engine, 10000);
     }
 }
