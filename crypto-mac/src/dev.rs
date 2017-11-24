@@ -10,23 +10,23 @@ macro_rules! new_test {
 
             fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> bool {
                 let mut mac = <$mac as Mac>::new(key).unwrap();
-                mac.input(&test.input[..]);
+                mac.input(input);
                 let result = mac.result();
                 let atag = GenericArray::clone_from_slice(tag);
                 if result != MacResult::new(atag) {
                     return false;
                 }
                 // test if reset worked correctly
-                mac.input(&test.input[..]);
+                mac.input(input);
                 if mac.verify(&tag).is_err() {
                     return false;
                 }
 
                 // test reading byte by byte
-                for i in 0..test.input.len() {
-                    mac.input(&test.input[i..i + 1]);
+                for i in 0..input.len() {
+                    mac.input(&input[i..i + 1]);
                 }
-                mac.verify(test.output).unwrap();
+                mac.verify(tag).unwrap();
             }
 
             let keys = include_bytes!(
