@@ -71,10 +71,10 @@ macro_rules! new_test {
 
 #[macro_export]
 macro_rules! bench {
-    ($name:ident, $engine:path, $key_size:expr, $bs:expr) => {
+    ($name:ident, $engine:path, $bs:expr) => {
         #[bench]
         fn $name(b: &mut Bencher) {
-            let mut m = <$engine>::new(&[0; $key_size]).unwrap();
+            let mut m = <$engine>::new(&key);
             let data = [0; $bs];
 
             b.iter(|| {
@@ -85,7 +85,7 @@ macro_rules! bench {
         }
     };
 
-    ($engine:path, $key_size:expr) => {
+    ($engine:path) => {
         extern crate test;
 
         use test::Bencher;
