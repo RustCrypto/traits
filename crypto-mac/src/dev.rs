@@ -32,7 +32,7 @@ macro_rules! new_test {
             let keys = include_bytes!(
                 concat!("data/", $test_name, ".keys.bin"));
             let inputs = include_bytes!(
-                concat!("data/", $test_name, ".plaintexts.bin"));
+                concat!("data/", $test_name, ".inputs.bin"));
             let tags = include_bytes!(
                 concat!("data/", $test_name, ".tags.bin"));
             let index = include_bytes!(
