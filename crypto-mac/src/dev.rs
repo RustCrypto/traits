@@ -74,6 +74,7 @@ macro_rules! bench {
     ($name:ident, $engine:path, $bs:expr) => {
         #[bench]
         fn $name(b: &mut Bencher) {
+            let key = Default::default();
             let mut m = <$engine>::new(&key);
             let data = [0; $bs];
 
