@@ -7,8 +7,8 @@ use constant_time_eq::constant_time_eq;
 use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;
 
-#[cfg(feature = "dev")]
-pub mod dev;
+//#[cfg(feature = "dev")]
+//pub mod dev;
 
 /// Error type for signaling failed MAC verification
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
