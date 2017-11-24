@@ -4,8 +4,7 @@ macro_rules! new_test {
     ($name:ident, $test_name:expr, $mac:ty) => {
         #[test]
         fn $name() {
-            use crypto_mac::{Mac, MacResult};
-            use crypto_mac::generic_array::GenericArray;
+            use crypto_mac::Mac;
 
             fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> bool {
                 let mut mac = <$mac as Mac>::new_varkey(key).unwrap();
