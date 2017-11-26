@@ -9,7 +9,7 @@ pub struct Test {
 
 #[macro_export]
 macro_rules! new_tests {
-    ( $( $name:expr ),*  ) => {
+    [ $( $name:expr ),*  ] => {
         [$(
             Test {
                 name: $name,
@@ -18,10 +18,10 @@ macro_rules! new_tests {
             },
         )*]
     };
-    ( $( $name:expr ),+, ) => (new_tests!($($name),+))
+    [ $( $name:expr ),+, ] => (new_tests![$($name),+])
 }
 
-pub fn main_test<D: Digest + Debug + Clone>(tests: &[Test]) {
+pub fn run_digest_tests<D: Digest + Debug + Clone>(tests: &[Test]) {
     // Test that it works when accepting the message all at once
     for t in tests.iter() {
         let mut sh = D::default();
@@ -49,7 +49,7 @@ pub fn main_test<D: Digest + Debug + Clone>(tests: &[Test]) {
     }
 }
 
-pub fn variable_test<D>(tests: &[Test])
+pub fn run_variable_tests<D>(tests: &[Test])
     where D: Input + VariableOutput + Clone + Debug
 {
     let mut buf = [0u8; 1024];
@@ -81,7 +81,7 @@ pub fn variable_test<D>(tests: &[Test])
 }
 
 
-pub fn xof_test<D>(tests: &[Test])
+pub fn run_xof_tests<D>(tests: &[Test])
     where D: Input + ExtendableOutput + Default + Debug + Clone
 {
     let mut buf = [0u8; 1024];
@@ -128,19 +128,19 @@ pub fn xof_test<D>(tests: &[Test])
     }
 }
 
-pub fn one_million_a<D: Digest + Default + Debug + Clone>(expected: &[u8]) {
+pub fn run_1mil_a_test<D: Digest + Default + Debug + Clone>(expected: &[u8]) {
     let mut sh = D::default();
-    for _ in 0..50000 {
+    for _ in 0..50_000 {
         sh.input(&[b'a'; 10]);
     }
-    sh.input(&[b'a'; 500000]);
+    sh.input(&[b'a'; 500_000]);
     let out = sh.result();
     assert_eq!(out[..], expected[..]);
 }
 
 
 #[macro_export]
-macro_rules! bench_digest {
+macro_rules! bench {
     ($name:ident, $engine:path, $bs:expr) => {
         #[bench]
         fn $name(b: &mut Bencher) {
@@ -161,11 +161,9 @@ macro_rules! bench_digest {
         use test::Bencher;
         use digest::Digest;
 
-        bench_digest!(bench1_16, $engine, 1<<4);
-        bench_digest!(bench2_64, $engine, 1<<6);
-        bench_digest!(bench3_256, $engine, 1<<8);
-        bench_digest!(bench4_1k, $engine, 1<<10);
-        bench_digest!(bench5_4k, $engine, 1<<12);
-        bench_digest!(bench6_16k, $engine, 1<<14);
+        bench_digest!(bench1_10,    $engine, 10);
+        bench_digest!(bench2_100,   $engine, 100);
+        bench_digest!(bench3_1000,  $engine, 1000);
+        bench_digest!(bench4_10000, $engine, 10000);
     }
 }

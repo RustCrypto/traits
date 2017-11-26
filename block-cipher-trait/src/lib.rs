@@ -11,14 +11,35 @@ pub mod dev;
 
 type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
 
+/// Error struct which used with `NewVarKey`
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct InvalidKeyLength;
+
 /// The trait which defines in-place encryption and decryption
 /// over single block or several blocks in parallel.
-pub trait BlockCipher {
+pub trait BlockCipher: core::marker::Sized {
+    /// Key size in bytes with which cipher guaranteed to be initialized
+    type KeySize: ArrayLength<u8>;
     /// Size of the block in bytes
     type BlockSize: ArrayLength<u8>;
     /// Number of blocks which can be processed in parallel by
     /// cipher implementation
     type ParBlocks: ArrayLength<GenericArray<u8, Self::BlockSize>>;
+
+    /// Create new block cipher instance from key with fixed size.
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self;
+
+    /// Create new block cipher instance from key with variable size.
+    ///
+    /// Default implementation will accept only keys with length equal to
+    /// `KeySize`, but some ciphers can accept range of key lengths.
+    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+        if key.len() != Self::KeySize::to_usize() {
+            Err(InvalidKeyLength)
+        } else {
+            Ok(Self::new(GenericArray::from_slice(key)))
+        }
+    }
 
     /// Encrypt block in-place
     fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>);
@@ -46,36 +67,5 @@ pub trait BlockCipher {
         blocks: &mut ParBlocks<Self::BlockSize, Self::ParBlocks>)
     {
         for block in blocks.iter_mut() { self.decrypt_block(block); }
-    }
-}
-
-/// Trait for creation of block cipher with fixed size key
-pub trait NewFixKey {
-    type KeySize: ArrayLength<u8>;
-
-    /// Create new block cipher instance with given fixed size key
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self;
-}
-
-/// Error struct which used with `NewVarKey`
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct InvalidKeyLength;
-
-/// Trait for creation of block cipher with variable size keys.
-///
-/// This trait is auto implemented for `NewFixKey`.
-pub trait NewVarKey: Sized {
-    /// Create new block cipher instance with given key, if length of given
-    /// key is unsupported by implementation error will be returned.
-    fn new(key: &[u8]) -> Result<Self, InvalidKeyLength>;
-}
-
-impl<T: NewFixKey> NewVarKey for T {
-    fn new(key: &[u8]) -> Result<Self, InvalidKeyLength> {
-        if key.len() != T::KeySize::to_usize() {
-            Err(InvalidKeyLength)
-        } else {
-            Ok(T::new(GenericArray::from_slice(key)))
-        }
     }
 }

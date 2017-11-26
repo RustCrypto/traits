@@ -1,4 +1,4 @@
-use super::{Input, BlockInput, FixedOutput};
+use super::{Input, FixedOutput};
 use generic_array::GenericArray;
 #[cfg(feature = "std")]
 use std::io;
@@ -7,9 +7,9 @@ type Output<N> = GenericArray<u8, N>;
 
 /// The `Digest` trait specifies an interface common for digest functions.
 ///
-/// It's a convinience wrapper around `Input`, `FixedOutput`, `BlockInput` and
-/// `Default` traits. It also provides additional convinience methods.
-pub trait Digest: Input + BlockInput + FixedOutput + Default {
+/// It's a convinience wrapper around `Input`, `FixedOutput` and `Default`
+/// traits. It also provides additional convinience methods.
+pub trait Digest: Input + FixedOutput + Default {
     /// Create new hasher instance
     fn new() -> Self {
         Self::default()
@@ -21,8 +21,8 @@ pub trait Digest: Input + BlockInput + FixedOutput + Default {
         self.process(input);
     }
 
-    /// Retrieve the digest result. This method consumes digest instance.
-    fn result(self) -> Output<Self::OutputSize> {
+    /// Retrieve result and reset hasher instance
+    fn result(&mut self) -> Output<Self::OutputSize> {
         self.fixed_result()
     }
 
@@ -44,7 +44,7 @@ pub trait Digest: Input + BlockInput + FixedOutput + Default {
     /// Convinience function to compute hash of the string. It's equivalent to
     /// `digest(input_string.as_bytes())`.
     #[inline]
-    fn digest_str(str: &str) -> Output<Self::OutputSize> {
+    fn input_str(str: &str) -> Output<Self::OutputSize> {
         Self::digest(str.as_bytes())
     }
 
@@ -82,4 +82,4 @@ pub trait Digest: Input + BlockInput + FixedOutput + Default {
     }
 }
 
-impl<D: Input + FixedOutput + BlockInput + Default> Digest for D {}
+impl<D: Input + FixedOutput + Default> Digest for D {}
