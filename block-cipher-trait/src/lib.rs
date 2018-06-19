@@ -1,10 +1,17 @@
 //! This crate defines a set of simple traits used to define functionality of
 //! block ciphers.
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 pub extern crate generic_array;
+
+#[cfg(feature = "std")]
+use std as core;
 
 use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;
+
+use core::fmt;
+#[cfg(feature = "std")]
+use std::{error::Error};
 
 #[cfg(feature = "dev")]
 pub mod dev;
@@ -67,5 +74,18 @@ pub trait BlockCipher: core::marker::Sized {
         blocks: &mut ParBlocks<Self::BlockSize, Self::ParBlocks>)
     {
         for block in blocks.iter_mut() { self.decrypt_block(block); }
+    }
+}
+
+impl fmt::Display for InvalidKeyLength {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("invalid key length")
+    }
+}
+
+#[cfg(feature = "std")]
+impl Error for InvalidKeyLength {
+    fn description(&self) -> &str {
+        "invalid key length"
     }
 }
