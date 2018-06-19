@@ -91,13 +91,13 @@ pub trait ExtendableOutput {
 
 impl fmt::Display for InvalidOutputSize {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "invalid output size")
+        f.write_str("invalid output size")
     }
 }
 
 impl fmt::Display for InvalidBufferLength {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "invalid buffer length")
+        f.write_str("invalid buffer length")
     }
 }
 
