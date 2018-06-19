@@ -11,6 +11,10 @@ pub extern crate generic_array;
 use std as core;
 use generic_array::{GenericArray, ArrayLength};
 
+use core::fmt;
+#[cfg(feature = "std")]
+use std::{error::Error};
+
 mod digest;
 #[cfg(feature = "dev")]
 pub mod dev;
@@ -83,4 +87,30 @@ pub trait ExtendableOutput {
 
     /// Retrieve XOF reader and reset hasher instance.
     fn xof_result(&mut self) -> Self::Reader;
+}
+
+impl fmt::Display for InvalidOutputSize {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "invalid output size")
+    }
+}
+
+impl fmt::Display for InvalidBufferLength {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "invalid buffer length")
+    }
+}
+
+#[cfg(feature = "std")]
+impl Error for InvalidBufferLength {
+    fn description(&self) -> &str {
+        "invalid output size"
+    }
+}
+
+#[cfg(feature = "std")]
+impl Error for InvalidOutputSize {
+    fn description(&self) -> &str {
+        "invalid output size"
+    }
 }
