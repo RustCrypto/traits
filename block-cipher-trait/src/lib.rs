@@ -9,18 +9,13 @@ use std as core;
 use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;
 
-use core::fmt;
-#[cfg(feature = "std")]
-use std::{error::Error};
-
+mod errors;
 #[cfg(feature = "dev")]
 pub mod dev;
 
-type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
+pub use errors::InvalidKeyLength;
 
-/// Error struct which used with `NewVarKey`
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct InvalidKeyLength;
+type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
 
 /// The trait which defines in-place encryption and decryption
 /// over single block or several blocks in parallel.
@@ -74,18 +69,5 @@ pub trait BlockCipher: core::marker::Sized {
         blocks: &mut ParBlocks<Self::BlockSize, Self::ParBlocks>)
     {
         for block in blocks.iter_mut() { self.decrypt_block(block); }
-    }
-}
-
-impl fmt::Display for InvalidKeyLength {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("invalid key length")
-    }
-}
-
-#[cfg(feature = "std")]
-impl Error for InvalidKeyLength {
-    fn description(&self) -> &str {
-        "invalid key length"
     }
 }

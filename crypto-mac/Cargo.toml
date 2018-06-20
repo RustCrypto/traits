@@ -1,6 +1,6 @@
 [package]
 name = "crypto-mac"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
 description = "Trait for Message Authentication Code (MAC) algorithms"
@@ -19,3 +19,6 @@ std = []
 
 [badges]
 travis-ci = { repository = "RustCrypto/traits" }
+
+[package.metadata.docs.rs]
+features = [ "std" ]
