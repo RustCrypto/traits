@@ -15,6 +15,7 @@ constant_time_eq = "0.1"
 
 [features]
 dev = []
+std = []
 
 [badges]
 travis-ci = { repository = "RustCrypto/traits" }

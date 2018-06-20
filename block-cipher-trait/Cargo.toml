@@ -14,6 +14,7 @@ generic-array = "0.9"
 
 [features]
 dev = []
+std = []
 
 [badges]
 travis-ci = { repository = "RustCrypto/traits" }
