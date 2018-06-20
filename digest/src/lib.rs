@@ -12,9 +12,11 @@ use std as core;
 use generic_array::{GenericArray, ArrayLength};
 
 mod digest;
+mod errors;
 #[cfg(feature = "dev")]
 pub mod dev;
 
+pub use errors::{InvalidOutputSize, InvalidBufferLength};
 pub use digest::Digest;
 
 // `process` is choosen to not overlap with `input` method in the digest trait
