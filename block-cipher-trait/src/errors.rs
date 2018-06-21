@@ -1,6 +1,6 @@
 use core::fmt;
 #[cfg(feature = "std")]
-use std::{error::Error};
+use std::error;
 
 /// Error struct which used with `NewVarKey`
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -13,7 +13,7 @@ impl fmt::Display for InvalidKeyLength {
 }
 
 #[cfg(feature = "std")]
-impl Error for InvalidKeyLength {
+impl error::Error for InvalidKeyLength {
     fn description(&self) -> &str {
         "invalid key length"
     }

@@ -1,6 +1,6 @@
 use core::fmt;
 #[cfg(feature = "std")]
-use std::{error::Error};
+use std::error;
 
 /// Error type for signaling failed MAC verification
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
@@ -24,14 +24,14 @@ impl fmt::Display for InvalidKeyLength {
 }
 
 #[cfg(feature = "std")]
-impl Error for MacError {
+impl error::Error for MacError {
     fn description(&self) -> &str {
         "failed MAC verification"
     }
 }
 
 #[cfg(feature = "std")]
-impl Error for InvalidKeyLength {
+impl error::Error for InvalidKeyLength {
     fn description(&self) -> &str {
         "invalid key length"
     }
