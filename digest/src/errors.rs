@@ -1,6 +1,6 @@
 use core::fmt;
 #[cfg(feature = "std")]
-use std::{error::Error};
+use std::error;
 
 /// The error type for variable hasher initialization
 #[derive(Clone, Copy, Debug, Default)]
@@ -23,14 +23,14 @@ impl fmt::Display for InvalidBufferLength {
 }
 
 #[cfg(feature = "std")]
-impl Error for InvalidOutputSize {
+impl error::Error for InvalidOutputSize {
     fn description(&self) -> &str {
         "invalid output size"
     }
 }
 
 #[cfg(feature = "std")]
-impl Error for InvalidBufferLength {
+impl error::Error for InvalidBufferLength {
     fn description(&self) -> &str {
         "invalid buffer size"
     }
