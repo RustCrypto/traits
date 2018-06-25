@@ -4,11 +4,11 @@
 //! By default std functionality in this crate disabled. (e.g. method for
 //! hashing `Read`ers) To enable it turn on `std` feature in your `Cargo.toml`
 //! for this crate.
-#![cfg_attr(not(feature = "std"), no_std)]
+#![no_std]
 pub extern crate generic_array;
 
 #[cfg(feature = "std")]
-use std as core;
+extern crate std;
 use generic_array::{GenericArray, ArrayLength};
 
 mod digest;

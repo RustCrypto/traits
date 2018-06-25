@@ -1,10 +1,10 @@
 //! This crate defines a set of simple traits used to define functionality of
 //! block ciphers.
-#![cfg_attr(not(feature = "std"), no_std)]
+#![no_std]
 pub extern crate generic_array;
 
 #[cfg(feature = "std")]
-use std as core;
+extern crate std;
 
 use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;

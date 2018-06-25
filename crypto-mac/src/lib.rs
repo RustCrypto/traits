@@ -1,10 +1,10 @@
 //! This crate provides trait for Message Authentication Code (MAC) algorithms.
-#![cfg_attr(not(feature = "std"), no_std)]
+#![no_std]
 extern crate constant_time_eq;
 pub extern crate generic_array;
 
 #[cfg(feature = "std")]
-use std as core;
+extern crate std;
 
 use constant_time_eq::constant_time_eq;
 use generic_array::{GenericArray, ArrayLength};
