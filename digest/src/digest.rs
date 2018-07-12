@@ -7,8 +7,8 @@ type Output<N> = GenericArray<u8, N>;
 
 /// The `Digest` trait specifies an interface common for digest functions.
 ///
-/// It's a convinience wrapper around `Input`, `FixedOutput` and `Default`
-/// traits. It also provides additional convinience methods.
+/// It's a convenience wrapper around `Input`, `FixedOutput` and `Default`
+/// traits. It also provides additional convenience methods.
 pub trait Digest: Input + FixedOutput + Default {
     /// Create new hasher instance
     fn new() -> Self {
@@ -26,7 +26,7 @@ pub trait Digest: Input + FixedOutput + Default {
         self.fixed_result()
     }
 
-    /// Convinience function to compute hash of the `data`. It will handle
+    /// Convenience function to compute hash of the `data`. It will handle
     /// hasher creation, data feeding and finalization.
     ///
     /// Example:
@@ -41,14 +41,14 @@ pub trait Digest: Input + FixedOutput + Default {
         hasher.fixed_result()
     }
 
-    /// Convinience function to compute hash of the string. It's equivalent to
+    /// Convenience function to compute hash of the string. It's equivalent to
     /// `digest(input_string.as_bytes())`.
     #[inline]
     fn input_str(str: &str) -> Output<Self::OutputSize> {
         Self::digest(str.as_bytes())
     }
 
-    /// Convinience function which takes `std::io::Read` as a source and computes
+    /// Convenience function which takes `std::io::Read` as a source and computes
     /// value of digest function `D`, e.g. SHA-2, SHA-3, BLAKE2, etc. using 1 KB
     /// blocks.
     ///
