@@ -6,6 +6,7 @@ macro_rules! new_test {
         fn $name() {
             use block_cipher_trait::BlockCipher;
             use block_cipher_trait::generic_array::GenericArray;
+            use block_cipher_trait::generic_array::typenum::Unsigned;
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
                 let state = <$cipher as BlockCipher>::new_varkey(key).unwrap();
@@ -20,6 +21,38 @@ macro_rules! new_test {
                 if pt != block.as_slice() {
                     return false;
                 }
+
+                true
+            }
+
+            fn run_par_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
+                type ParBlocks = <$cipher as BlockCipher>::ParBlocks;
+                type BlockSize = <$cipher as BlockCipher>::BlockSize;
+                type Block = GenericArray<u8, BlockSize>;
+                type ParBlock = GenericArray<Block, ParBlocks>;
+
+                let state = <$cipher as BlockCipher>::new_varkey(key).unwrap();
+
+                let block = Block::clone_from_slice(pt);
+                let mut blocks1 = ParBlock::default();
+                for (i, b) in blocks1.iter_mut().enumerate() {
+                    *b = block;
+                    b[0] = b[0].wrapping_add(i as u8);
+                }
+                let mut blocks2 = blocks1.clone();
+
+                // check that `encrypt_blocks` and `encrypt_block`
+                // result in the same ciphertext
+                state.encrypt_blocks(&mut blocks1);
+                for b in blocks2.iter_mut() { state.encrypt_block(b); }
+                if blocks1 != blocks2 { return false; }
+
+                // check that `encrypt_blocks` and `encrypt_block`
+                // result in the same plaintext
+                state.decrypt_blocks(&mut blocks1);
+                for b in blocks2.iter_mut() { state.decrypt_block(b); }
+                if blocks1 != blocks2 { return false; }
+
                 true
             }
 
@@ -59,6 +92,21 @@ macro_rules! new_test {
                     );
                 }
 
+                /// test parallel blocks encryption/decryption
+                let pb = <$cipher as BlockCipher>::ParBlocks::to_usize();
+                if pb != 1 {
+                    if !run_par_test(key, plaintext, ciphertext) {
+                        panic!("\n\
+                            Failed parallel test №{}\n\
+                            key: [{}..{}]\t{:?}\n\
+                            plaintext: [{}..{}]\t{:?}\n\
+                            ciphertext: [{}..{}]\t{:?}\n",
+                            i, idx[0][0], idx[0][1], key,
+                            idx[1][0], idx[1][1], plaintext,
+                            idx[2][0], idx[2][1], ciphertext,
+                        );
+                    }
+                }
             }
         }
     }
