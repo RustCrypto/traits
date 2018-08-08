@@ -2,7 +2,7 @@
 name = "crypto-mac"
 version = "0.6.2"
 authors = ["RustCrypto Developers"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 description = "Trait for Message Authentication Code (MAC) algorithms"
 documentation = "https://docs.rs/crypto-mac"
 repository = "https://github.com/RustCrypto/traits"
