@@ -6,7 +6,11 @@
 #![no_std]
 pub extern crate generic_array;
 
+#[cfg(feature = "std")]
+extern crate std;
+
 use generic_array::{GenericArray, ArrayLength};
+use core::fmt;
 
 #[cfg(feature = "dev")]
 pub mod dev;
@@ -14,6 +18,15 @@ pub mod dev;
 /// Error which notifies that stream cipher has reached the end of a keystream.
 #[derive(Copy, Clone, Debug)]
 pub struct LoopError;
+
+impl fmt::Display for LoopError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        f.write_str("Loop Error")
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for LoopError {}
 
 /// Synchronous stream cipher core trait
 pub trait StreamCipherCore {
