@@ -69,16 +69,17 @@ pub trait Digest: Input + BlockInput + FixedOutput + Default {
     {
         let mut hasher = Self::default();
 
-        let mut buffer = [0u8; 1024];
-        loop {
-            let bytes_read = source.read(&mut buffer)?;
-            hasher.input(&buffer[..bytes_read]);
-            if bytes_read == 0 {
-                break;
-            }
-        }
+        let mut buf = [0u8; 8 * 1024];
 
-        Ok(hasher.result())
+        loop {
+            let len = match source.read(&mut buf) {
+                Ok(0) => return Ok(hasher.result()),
+                Ok(len) => len,
+                Err(ref e) if e.kind() == io::ErrorKind::Interrupted => continue,
+                Err(e) => Err(e)?,
+            };
+            hasher.process(&buf[..len]);
+        }
     }
 }
 
