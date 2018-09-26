@@ -37,14 +37,14 @@ mod foo {
         // Test that it works when accepting the message all at once
         hasher.input(input);
         let mut hasher2 = hasher.clone();
-        if hasher.clone().as_slice() != output {
+        if hasher.result().as_slice() != output {
             return Some("whole message");
         }
 
         // Test if reset works correctly
         hasher2.reset();
         hasher2.input(input);
-        if hasher.result().as_slice() != output {
+        if hasher2.result().as_slice() != output {
             return Some("whole message after reset");
         }
 
