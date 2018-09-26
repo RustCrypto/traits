@@ -4,31 +4,49 @@
 //! By default std functionality in this crate disabled. (e.g. method for
 //! hashing `Read`ers) To enable it turn on `std` feature in your `Cargo.toml`
 //! for this crate.
-#![cfg_attr(not(feature = "std"), no_std)]
+#![no_std]
+#![doc(html_logo_url =
+    "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 pub extern crate generic_array;
-
 #[cfg(feature = "std")]
-use std as core;
+#[macro_use] extern crate std;
+#[cfg(feature = "dev")]
+pub extern crate blobby;
+
 use generic_array::{GenericArray, ArrayLength};
+#[cfg(feature = "std")]
+use std::vec::Vec;
 
 mod digest;
+mod dyn_digest;
+mod errors;
 #[cfg(feature = "dev")]
 pub mod dev;
 
+pub use errors::InvalidOutputSize;
 pub use digest::Digest;
-
-// `process` is choosen to not overlap with `input` method in the digest trait
-// change it on trait alias stabilization
+#[cfg(feature = "std")]
+pub use dyn_digest::DynDigest;
 
 /// Trait for processing input data
 pub trait Input {
-    /// Digest input data. This method can be called repeatedly, e.g. for
-    /// processing streaming messages.
-    fn process(&mut self, input: &[u8]);
+    /// Digest input data.
+    ///
+    /// This method can be called repeatedly, e.g. for processing streaming
+    /// messages.
+    fn input<B: AsRef<[u8]>>(&mut self, data: B);
+
+    /// Digest input data in a chained manner.
+    fn chain<B: AsRef<[u8]>>(mut self, data: B) -> Self where Self: Sized {
+        self.input(data);
+        self
+    }
 }
 
 /// Trait to indicate that digest function processes data in blocks of size
-/// `BlockSize`. Main usage of this trait is for implementing HMAC generically.
+/// `BlockSize`.
+///
+/// The main usage of this trait is for implementing HMAC generically.
 pub trait BlockInput {
     type BlockSize: ArrayLength<u8>;
 }
@@ -37,50 +55,80 @@ pub trait BlockInput {
 pub trait FixedOutput {
     type OutputSize: ArrayLength<u8>;
 
-    /// Retrieve result and reset hasher instance.
-    fn fixed_result(&mut self) -> GenericArray<u8, Self::OutputSize>;
+    /// Retrieve result and consume hasher instance.
+    fn fixed_result(self) -> GenericArray<u8, Self::OutputSize>;
 }
-
-/// The error type for variable hasher initialization
-#[derive(Clone, Copy, Debug, Default)]
-pub struct InvalidOutputSize;
-
-/// The error type for variable hasher result
-#[derive(Clone, Copy, Debug, Default)]
-pub struct InvalidBufferLength;
 
 /// Trait for returning digest result with the varaible size
 pub trait VariableOutput: core::marker::Sized {
-    /// Create new hasher instance with given output size. Will return
-    /// `Err(InvalidOutputSize)` in case if hasher can not work with the given
-    /// output size. Will always return an error if output size equals to zero.
+    /// Create new hasher instance with the given output size.
+    ///
+    /// It will return `Err(InvalidOutputSize)` in case if hasher can not return
+    /// specified output size. It will always return an error if output size
+    /// equals to zero.
     fn new(output_size: usize) -> Result<Self, InvalidOutputSize>;
 
     /// Get output size of the hasher instance provided to the `new` method
     fn output_size(&self) -> usize;
 
-    /// Retrieve result into provided buffer and reset hasher instance.
+    /// Retrieve result via closure and consume hasher.
     ///
-    /// Length of the buffer must be equal to output size provided to the `new`
-    /// method, otherwise `Err(InvalidBufferLength)` will be returned without
-    /// resetting hasher.
-    fn variable_result(&mut self, buffer: &mut [u8])
-        -> Result<&[u8], InvalidBufferLength>;
+    /// Closure is guaranteed to be called, length of the buffer passed to it
+    /// will be equal to `output_size`.
+    fn variable_result<F: FnOnce(&[u8])>(self, f: F);
+
+    /// Retrieve result into vector and consume hasher.
+    #[cfg(feature = "std")]
+    fn vec_result(self) -> Vec<u8> {
+        let mut buf = Vec::with_capacity(self.output_size());
+        self.variable_result(|res| buf.extend_from_slice(res));
+        buf
+    }
 }
 
 /// Trait for decribing readers which are used to extract extendable output
-/// from the resulting state of hash function.
+/// from XOF (extendable-output function) result.
 pub trait XofReader {
     /// Read output into the `buffer`. Can be called unlimited number of times.
     fn read(&mut self, buffer: &mut [u8]);
 }
 
-/// Trait which describes extendable output (XOF) of hash functions. Using this
-/// trait you first need to get structure which implements `XofReader`, using
-/// which you can read extendable output.
-pub trait ExtendableOutput {
+/// Trait which describes extendable-output functions (XOF).
+pub trait ExtendableOutput: core::marker::Sized {
     type Reader: XofReader;
 
-    /// Retrieve XOF reader and reset hasher instance.
-    fn xof_result(&mut self) -> Self::Reader;
+    /// Retrieve XOF reader and consume hasher instance.
+    fn xof_result(self) -> Self::Reader;
+
+    /// Retrieve result into vector of specified length.
+    #[cfg(feature = "std")]
+    fn vec_result(self, n: usize) -> Vec<u8> {
+        let mut buf = vec![0u8; n];
+        self.xof_result().read(&mut buf);
+        buf
+    }
+}
+
+/// Trait for resetting hash instances
+pub trait Reset {
+    /// Reset hasher instance to its initial state and return current state.
+    fn reset(&mut self);
+}
+
+#[macro_export]
+/// Implements `std::io::Write` trait for implementator of `Input`
+macro_rules! impl_write {
+    ($hasher:ident) => {
+        #[cfg(feature = "std")]
+        impl ::std::io::Write for $hasher {
+            fn write(&mut self, buf: &[u8]) -> ::std::io::Result<usize> {
+                Input::input(self, buf);
+                Ok(buf.len())
+            }
+
+            fn flush(&mut self) -> ::std::io::Result<()> {
+                Ok(())
+            }
+        }
+    }
 }

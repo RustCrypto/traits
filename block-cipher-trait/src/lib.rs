@@ -3,17 +3,19 @@
 #![no_std]
 pub extern crate generic_array;
 
+#[cfg(feature = "std")]
+extern crate std;
+
 use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;
 
+mod errors;
 #[cfg(feature = "dev")]
 pub mod dev;
 
-type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
+pub use errors::InvalidKeyLength;
 
-/// Error struct which used with `NewVarKey`
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct InvalidKeyLength;
+type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
 
 /// The trait which defines in-place encryption and decryption
 /// over single block or several blocks in parallel.
