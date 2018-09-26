@@ -12,7 +12,6 @@ pub extern crate generic_array;
 #[macro_use] extern crate std;
 #[cfg(feature = "dev")]
 pub extern crate blobby;
-
 use generic_array::{GenericArray, ArrayLength};
 #[cfg(feature = "std")]
 use std::vec::Vec;

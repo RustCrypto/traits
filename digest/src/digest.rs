@@ -8,7 +8,6 @@ use generic_array::typenum::Unsigned;
 /// and `Default` traits. It also provides additional convenience methods.
 pub trait Digest {
     type OutputSize: ArrayLength<u8>;
-
     /// Create new hasher instance
     fn new() -> Self;
 
@@ -35,7 +34,7 @@ pub trait Digest {
     /// Get output size of the hasher
     fn output_size() -> usize;
 
-    /// Convinience function to compute hash of the `data`. It will handle
+    /// Convenience function to compute hash of the `data`. It will handle
     /// hasher creation, data feeding and finalization.
     ///
     /// Example:
