@@ -1,9 +1,15 @@
-//! This crate provides traits for describing funcionality of cryptographic hash
+//! This crate provides traits which describe funcionality of cryptographic hash
 //! functions.
 //!
-//! By default std functionality in this crate disabled. (e.g. method for
-//! hashing `Read`ers) To enable it turn on `std` feature in your `Cargo.toml`
-//! for this crate.
+//! Traits in this repository can be separatedin two levels:
+//! - Low level traits: `Input`, `BlockInput`, `Reset`, `FixedOutput`,
+//! `VariableOutput`, `ExtendableOutput`. These traits atomically describe
+//! available functionality of hash function implementations.
+//! - Convinience trait: `Digest`, `DynDigest`. They are wrappers around
+//! low level traits for most common hash-function use-cases.
+//!
+//! Additionally hash functions implement traits from `std`: `Default`, `Clone`,
+//! `Write`. (the latter depends on enabled-by-default `std` crate feature)
 #![no_std]
 #![doc(html_logo_url =
     "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
