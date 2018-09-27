@@ -41,9 +41,8 @@ impl<D: Input + FixedOutput + Reset + Clone> DynDigest for D {
     }
 
     /// Retrieve result and consume boxed hasher instance
-    fn result(mut self: Box<Self>) -> Box<[u8]> {
-        // not the best solution... fix if possible
-        self.result_reset()
+    fn result(self: Box<Self>) -> Box<[u8]> {
+        self.clone().fixed_result().to_vec().into_boxed_slice()
     }
 
     fn reset(&mut self) {
