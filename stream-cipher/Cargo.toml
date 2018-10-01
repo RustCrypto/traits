@@ -1,6 +1,6 @@
 [package]
 name = "stream-cipher"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 description = "Stream cipher traits"
@@ -10,7 +10,7 @@ keywords = ["crypto", "stream-cipher", "trait"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-generic-array = "0.9"
+generic-array = "0.12"
 
 [features]
 dev = []
@@ -18,3 +18,6 @@ std = []
 
 [badges]
 travis-ci = { repository = "RustCrypto/traits" }
+
+[package.metadata.docs.rs]
+features = [ "std" ]

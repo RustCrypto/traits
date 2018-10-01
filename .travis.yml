@@ -1,9 +1,38 @@
 language: rust
-rust:
-  - stable
-  - nightly
-  - 1.21.0
+services: docker
+sudo: required
+
 matrix:
-  allow_failures:
+  include:
+    - rust: 1.21.0
+      script: cargo test --verbose --all --release
+    - rust: stable
+      script: cargo test --verbose --all --release
     - rust: nightly
-script: cargo test --verbose --all
+      script: cargo test --verbose --all --release
+    # tests if crates can be built with std feature
+    - rust: 1.21.0
+      script: ./build_std.sh
+
+    - env: TARGET=i686-unknown-linux-gnu
+      rust: stable
+    - env: TARGET=powerpc-unknown-linux-gnu
+      rust: stable
+    - env: TARGET=powerpc64-unknown-linux-gnu
+      rust: stable
+    # tests if crates truly can be built without std
+    - env: TARGET=thumbv7em-none-eabi
+      rust: nightly
+      script: xargo build --no-default-features --verbose --target $TARGET
+      install:
+        - cargo install xargo || true
+        - rustup target install armv7-unknown-linux-gnueabihf
+        - rustup component add rust-src
+
+install:
+  - cargo install cross || true
+
+script:
+  - cross test --verbose --all --release --target $TARGET
+
+cache: cargo

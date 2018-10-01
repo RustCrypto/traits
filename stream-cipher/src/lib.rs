@@ -26,7 +26,11 @@ impl fmt::Display for LoopError {
 }
 
 #[cfg(feature = "std")]
-impl std::error::Error for LoopError {}
+impl std::error::Error for LoopError {
+    fn description(&self) -> &str {
+        "stream cipher loop detected"
+    }
+}
 
 /// Synchronous stream cipher core trait
 pub trait StreamCipherCore {

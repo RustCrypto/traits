@@ -5,66 +5,50 @@ macro_rules! new_test {
         #[test]
         fn $name() {
             use crypto_mac::Mac;
+            use crypto_mac::blobby::Blob3Iterator;
 
-            fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> bool {
+            fn run_test(key: &[u8], input: &[u8], tag: &[u8])
+                -> Option<&'static str>
+            {
                 let mut mac = <$mac as Mac>::new_varkey(key).unwrap();
                 mac.input(input);
-                let result = mac.result();
-                if !result.is_equal(tag) {
-                    return false;
+                let result = mac.result_reset();
+                if &result.code()[..] != tag {
+                    return Some("whole message");
                 }
                 // test if reset worked correctly
                 mac.input(input);
                 if mac.verify(&tag).is_err() {
-                    return false;
+                    return Some("after reset");
                 }
 
+                let mut mac = <$mac as Mac>::new_varkey(key).unwrap();
                 // test reading byte by byte
                 for i in 0..input.len() {
                     mac.input(&input[i..i + 1]);
                 }
-                mac.verify(tag).unwrap();
-                true
+                if let Err(_) = mac.verify(tag) {
+                    return Some("message byte-by-byte");
+                }
+                None
             }
 
-            let keys = include_bytes!(
-                concat!("data/", $test_name, ".keys.bin"));
-            let inputs = include_bytes!(
-                concat!("data/", $test_name, ".inputs.bin"));
-            let tags = include_bytes!(
-                concat!("data/", $test_name, ".tags.bin"));
-            let index = include_bytes!(
-                concat!("data/", $test_name, ".index.bin"));
+            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
 
-            // u32 (2 bytes); start + end (x2); key, input, tag (x3)
-            assert_eq!(index.len() % (2*3*2), 0, "invlaid index length");
-            for (i, chunk) in index.chunks(2*3*2).enumerate() {
-                // proper aligment is assumed here
-                let mut idx = unsafe {
-                    *(chunk.as_ptr() as *const [[u16; 2]; 3])
-                };
-                // convert to LE for BE machine
-                for val in idx.iter_mut() {
-                    for i in val.iter_mut() { *i = i.to_le(); }
-                }
-                let key = &keys[(idx[0][0] as usize)..(idx[0][1] as usize)];
-                let input = &inputs[
-                    (idx[1][0] as usize)..(idx[1][1] as usize)];
-                let tag = &tags[
-                    (idx[2][0] as usize)..(idx[2][1] as usize)];
-                if !run_test(key, input, tag) {
+            for (i, row) in Blob3Iterator::new(data).unwrap().enumerate() {
+                let key = row[0];
+                let input = row[1];
+                let tag = row[2];
+                if let Some(desc) = run_test(key, input, tag) {
                     panic!("\n\
-                        Failed test №{}\n\
-                        key: [{}..{}]\t{:?}\n\
-                        input: [{}..{}]\t{:?}\n\
-                        tag: [{}..{}]\t{:?}\n",
-                        i, idx[0][0], idx[0][1], key,
-                        idx[1][0], idx[1][1], input,
-                        idx[2][0], idx[2][1], tag,
+                        Failed test №{}: {}\n\
+                        key:\t{:?}\n\
+                        input:\t{:?}\n\
+                        tag:\t{:?}\n",
+                        i, desc, key, input, tag,
                     );
                 }
             }
-
         }
     }
 }
