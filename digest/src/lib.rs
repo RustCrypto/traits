@@ -10,6 +10,8 @@
 //!
 //! Additionally hash functions implement traits from `std`: `Default`, `Clone`,
 //! `Write`. (the latter depends on enabled-by-default `std` crate feature)
+//!
+//! The `Digest` trait is the most commonly used trait.
 #![no_std]
 #![doc(html_logo_url =
     "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
