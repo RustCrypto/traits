@@ -92,7 +92,7 @@ macro_rules! new_test {
                     );
                 }
 
-                /// test parallel blocks encryption/decryption
+                // test parallel blocks encryption/decryption
                 let pb = <$cipher as BlockCipher>::ParBlocks::to_usize();
                 if pb != 1 {
                     if !run_par_test(key, plaintext) {
@@ -108,6 +108,9 @@ macro_rules! new_test {
                     }
                 }
             }
+            // test if cipher can be cloned
+            let key = Default::default();
+            let _ = <$cipher as BlockCipher>::new(&key).clone();
         }
     }
 }
