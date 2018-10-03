@@ -25,7 +25,7 @@ macro_rules! new_test {
                 true
             }
 
-            fn run_par_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
+            fn run_par_test(key: &[u8], pt: &[u8]) -> bool {
                 type ParBlocks = <$cipher as BlockCipher>::ParBlocks;
                 type BlockSize = <$cipher as BlockCipher>::BlockSize;
                 type Block = GenericArray<u8, BlockSize>;
@@ -95,7 +95,7 @@ macro_rules! new_test {
                 /// test parallel blocks encryption/decryption
                 let pb = <$cipher as BlockCipher>::ParBlocks::to_usize();
                 if pb != 1 {
-                    if !run_par_test(key, plaintext, ciphertext) {
+                    if !run_par_test(key, plaintext) {
                         panic!("\n\
                             Failed parallel test №{}\n\
                             key: [{}..{}]\t{:?}\n\
