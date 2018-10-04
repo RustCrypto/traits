@@ -7,23 +7,31 @@ macro_rules! new_core_test {
         fn $name() {
             use stream_cipher::generic_array::GenericArray;
             use stream_cipher::{StreamCipherCore, NewFixStreamCipher};
+            use stream_cipher::blobby::Blob4Iterator;
 
-            let key = GenericArray::from_slice(include_bytes!(
-                concat!("data/", $test_name, ".key.bin")));
-            let iv = GenericArray::from_slice(include_bytes!(
-                concat!("data/", $test_name, ".iv.bin")));
-            let plaintext = include_bytes!(
-                concat!("data/", $test_name, ".plaintext.bin"));
-            let ciphertext = include_bytes!(
-                concat!("data/", $test_name, ".ciphertext.bin"));
+            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
+            for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
+                let key = GenericArray::from_slice(row[0]);
+                let iv = GenericArray::from_slice(row[1]);
+                let plaintext = row[2];
+                let ciphertext = row[3];
 
-            for i in 1..256 {
-                let mut mode = <$cipher>::new(key, iv);
-                let mut pt = plaintext.to_vec();
-                for chunk in pt.chunks_mut(i) {
-                    mode.apply_keystream(chunk);
+                for chunk_n in 1..256 {
+                    let mut mode = <$cipher>::new(key, iv);
+                    let mut pt = plaintext.to_vec();
+                    for chunk in pt.chunks_mut(chunk_n) {
+                        mode.apply_keystream(chunk);
+                    }
+                    if pt != &ciphertext[..] {
+                        panic!("Failed main test №{}, chunk size: {}\n\
+                            key:\t{:?}\n\
+                            iv:\t{:?}\n\
+                            plaintext:\t{:?}\n\
+                            ciphertext:\t{:?}\n",
+                            i, chunk_n, key, iv, plaintext, ciphertext,
+                        );
+                    }
                 }
-                assert_eq!(pt, &ciphertext[..]);
             }
         }
     }
@@ -40,22 +48,30 @@ macro_rules! new_seek_test {
             use stream_cipher::{
                 StreamCipherCore, StreamCipherSeek, NewFixStreamCipher
             };
+            use stream_cipher::blobby::Blob4Iterator;
 
-            let key = GenericArray::from_slice(include_bytes!(
-                concat!("data/", $test_name, ".key.bin")));
-            let iv = GenericArray::from_slice(include_bytes!(
-                concat!("data/", $test_name, ".iv.bin")));
-            let plaintext = include_bytes!(
-                concat!("data/", $test_name, ".plaintext.bin"));
-            let ciphertext = include_bytes!(
-                concat!("data/", $test_name, ".ciphertext.bin"));
+            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
+            for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
+                let key =  GenericArray::from_slice(row[0]);
+                let iv =  GenericArray::from_slice(row[1]);
+                let plaintext = row[2];
+                let ciphertext = row[3];
 
-            let mut mode = <$cipher>::new(key, iv);
-            for i in 0..512 {
-                let mut pt = plaintext[i..].to_vec();
-                mode.seek(i as u64);
-                mode.apply_keystream(&mut pt);
-                assert_eq!(pt, &ciphertext[i..]);
+                let mut mode = <$cipher>::new(key, iv);
+                for seek_n in 0..512 {
+                    let mut pt = plaintext[seek_n..].to_vec();
+                    mode.seek(seek_n as u64);
+                    mode.apply_keystream(&mut pt);
+                    if pt != &ciphertext[seek_n..] {
+                        panic!("Failed seek test №{}, seek pos: {}\n\
+                            key:\t{:?}\n\
+                            iv:\t{:?}\n\
+                            plaintext:\t{:?}\n\
+                            ciphertext:\t{:?}\n",
+                            i, seek_n, key, iv, plaintext, ciphertext,
+                        );
+                    }
+                }
             }
         }
     }

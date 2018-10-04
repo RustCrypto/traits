@@ -5,7 +5,8 @@
 //! for ciphers implementation.
 #![no_std]
 pub extern crate generic_array;
-
+#[cfg(feature = "dev")]
+pub extern crate blobby;
 #[cfg(feature = "std")]
 extern crate std;
 
