@@ -7,6 +7,7 @@ macro_rules! new_test {
             use block_cipher_trait::BlockCipher;
             use block_cipher_trait::generic_array::GenericArray;
             use block_cipher_trait::generic_array::typenum::Unsigned;
+            use block_cipher_trait::blobby::Blob3Iterator;
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
                 let state = <$cipher as BlockCipher>::new_varkey(key).unwrap();
@@ -56,54 +57,31 @@ macro_rules! new_test {
                 true
             }
 
-            let keys = include_bytes!(
-                concat!("data/", $test_name, ".keys.bin"));
-            let plaintexts = include_bytes!(
-                concat!("data/", $test_name, ".plaintexts.bin"));
-            let ciphertexts = include_bytes!(
-                concat!("data/", $test_name, ".ciphertexts.bin"));
-            let index = include_bytes!(
-                concat!("data/", $test_name, ".index.bin"));
-            // u32 (2 bytes); start + end (x2); key, plaintext, ciphertext (x3)
-            assert_eq!(index.len() % (2*3*2), 0, "invlaid index length");
-            for (i, chunk) in index.chunks(2*3*2).enumerate() {
-                // proper aligment is assumed here
-                let mut idx = unsafe {
-                    *(chunk.as_ptr() as *const [[u16; 2]; 3])
-                };
-                // convert to LE for BE machine
-                for val in idx.iter_mut() {
-                    for i in val.iter_mut() { *i = i.to_le(); }
-                }
-                let key = &keys[(idx[0][0] as usize)..(idx[0][1] as usize)];
-                let plaintext = &plaintexts[
-                    (idx[1][0] as usize)..(idx[1][1] as usize)];
-                let ciphertext = &ciphertexts[
-                    (idx[2][0] as usize)..(idx[2][1] as usize)];
+            let pb = <$cipher as BlockCipher>::ParBlocks::to_usize();
+            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
+            for (i, row) in Blob3Iterator::new(data).unwrap().enumerate() {
+                let key = row[0];
+                let plaintext = row[1];
+                let ciphertext = row[2];
                 if !run_test(key, plaintext, ciphertext) {
                     panic!("\n\
                         Failed test №{}\n\
-                        key: [{}..{}]\t{:?}\n\
-                        plaintext: [{}..{}]\t{:?}\n\
-                        ciphertext: [{}..{}]\t{:?}\n",
-                        i, idx[0][0], idx[0][1], key,
-                        idx[1][0], idx[1][1], plaintext,
-                        idx[2][0], idx[2][1], ciphertext,
+                        key:\t{:?}\n\
+                        plaintext:\t{:?}\n\
+                        ciphertext:\t{:?}\n",
+                        i, key, plaintext, ciphertext,
                     );
                 }
 
                 // test parallel blocks encryption/decryption
-                let pb = <$cipher as BlockCipher>::ParBlocks::to_usize();
                 if pb != 1 {
                     if !run_par_test(key, plaintext) {
                         panic!("\n\
                             Failed parallel test №{}\n\
-                            key: [{}..{}]\t{:?}\n\
-                            plaintext: [{}..{}]\t{:?}\n\
-                            ciphertext: [{}..{}]\t{:?}\n",
-                            i, idx[0][0], idx[0][1], key,
-                            idx[1][0], idx[1][1], plaintext,
-                            idx[2][0], idx[2][1], ciphertext,
+                            key:\t{:?}\n\
+                            plaintext:\t{:?}\n\
+                            ciphertext:\t{:?}\n",
+                            i, key, plaintext, ciphertext,
                         );
                     }
                 }
