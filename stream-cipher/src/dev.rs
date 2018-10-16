@@ -11,13 +11,13 @@ macro_rules! new_core_test {
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
-                let key = GenericArray::from_slice(row[0]);
-                let iv = GenericArray::from_slice(row[1]);
+                let key = row[0];
+                let iv = row[1];
                 let plaintext = row[2];
                 let ciphertext = row[3];
 
                 for chunk_n in 1..256 {
-                    let mut mode = <$cipher>::new(key, iv);
+                    let mut mode = <$cipher>::new_var(key, iv).unwrap();
                     let mut pt = plaintext.to_vec();
                     for chunk in pt.chunks_mut(chunk_n) {
                         mode.apply_keystream(chunk);
@@ -52,12 +52,12 @@ macro_rules! new_seek_test {
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
-                let key =  GenericArray::from_slice(row[0]);
-                let iv =  GenericArray::from_slice(row[1]);
+                let key = row[0];
+                let iv = row[1];
                 let plaintext = row[2];
                 let ciphertext = row[3];
 
-                let mut mode = <$cipher>::new(key, iv);
+                let mut mode = <$cipher>::new_var(key, iv).unwrap();
                 for seek_n in 0..512 {
                     let mut pt = plaintext[seek_n..].to_vec();
                     mode.seek(seek_n as u64);

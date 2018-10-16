@@ -4,6 +4,8 @@
 //! See [RustCrypto/stream-ciphers](https://github.com/RustCrypto/stream-ciphers)
 //! for ciphers implementation.
 #![no_std]
+#![doc(html_logo_url =
+    "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 pub extern crate generic_array;
 #[cfg(feature = "dev")]
 pub extern crate blobby;
@@ -11,27 +13,13 @@ pub extern crate blobby;
 extern crate std;
 
 use generic_array::{GenericArray, ArrayLength};
-use core::fmt;
+use generic_array::typenum::Unsigned;
 
 #[cfg(feature = "dev")]
 pub mod dev;
+mod errors;
 
-/// Error which notifies that stream cipher has reached the end of a keystream.
-#[derive(Copy, Clone, Debug)]
-pub struct LoopError;
-
-impl fmt::Display for LoopError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        f.write_str("Loop Error")
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for LoopError {
-    fn description(&self) -> &str {
-        "stream cipher loop detected"
-    }
-}
+pub use errors::{LoopError, InvalidKeyNonceLength};
 
 /// Synchronous stream cipher core trait
 pub trait StreamCipherCore {
@@ -65,16 +53,30 @@ pub trait StreamCipherSeek {
     fn seek(&mut self, pos: u64);
 }
 
+//TODO: rename to NewStreamCipher in next minor release
 /// Synchronous stream cipher creation trait
-pub trait NewFixStreamCipher {
+pub trait NewFixStreamCipher: Sized {
     /// Key size in bytes
     type KeySize: ArrayLength<u8>;
     /// Nonce size in bytes
     type NonceSize: ArrayLength<u8>;
 
-    /// Create new stream cipher instance
+    /// Create new stream cipher instance from variable length key and nonce.
     fn new(
         key: &GenericArray<u8, Self::KeySize>,
         nonce: &GenericArray<u8, Self::NonceSize>,
     ) -> Self;
+
+    /// Create new stream cipher instance from variable length key and nonce.
+    fn new_var(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidKeyNonceLength> {
+        let kl = Self::KeySize::to_usize();
+        let nl = Self::NonceSize::to_usize();
+        if key.len() != kl || nonce.len() != nl {
+            Err(InvalidKeyNonceLength)
+        } else {
+            let key = GenericArray::from_slice(key);
+            let nonce = GenericArray::from_slice(nonce);
+            Ok(Self::new(key, nonce))
+        }
+    }
 }
