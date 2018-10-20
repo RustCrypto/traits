@@ -29,8 +29,8 @@ pub trait StreamCipherCore {
     /// encryption and decryption.
     ///
     /// # Panics
-    /// If end of the keystream will be achieved with the given data length,
-    /// method will panic without modifiyng the provided `data`.
+    /// If end of the keystream will be reached with the given data length,
+    /// method will panic without modifying the provided `data`.
     #[inline]
     fn apply_keystream(&mut self, data: &mut [u8]) {
         self.try_apply_keystream(data)
@@ -41,7 +41,7 @@ pub trait StreamCipherCore {
     /// will be reached.
     ///
     /// If end of the keystream will be achieved with the given data length,
-    /// method will return `Err(LoopError)` without modifiyng provided `data`.
+    /// method will return `Err(LoopError)` without modifying provided `data`.
     fn try_apply_keystream(&mut self, data: &mut [u8]) -> Result<(), LoopError>;
 }
 

@@ -77,7 +77,7 @@ macro_rules! new_seek_test {
     }
 }
 
-/// Create benchmarks for NewFixStreamCipher implementors
+/// Create benchmarks for NewFixStreamCipher implementers
 #[macro_export]
 macro_rules! bench_fixed {
     ($name:ident, $cipher:path, $data_len:expr) => {
