@@ -1,6 +1,6 @@
 [package]
 name = "block-cipher-trait"
-version = "0.6.1"
+version = "0.6.2"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 description = "Traits for description of block ciphers"
