@@ -11,7 +11,7 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = "0.12"
-subtle = { version = "1", default-features = false }
+subtle = { version = "2", default-features = false }
 blobby = { version = "0.1", optional = true }
 
 [features]
