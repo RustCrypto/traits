@@ -2,7 +2,8 @@
 
 #![no_std]
 
-use generic_array::{GenericArray, ArrayLength, typenum::Unsigned};
+use generic_array::typenum::Unsigned;
+use generic_array::{GenericArray, ArrayLength};
 use core::marker::PhantomData;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
