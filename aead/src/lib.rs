@@ -2,213 +2,147 @@
 
 #![no_std]
 
-extern crate alloc;
+use generic_array::{GenericArray, ArrayLength, typenum::Unsigned};
+use core::marker::PhantomData;
 
-use alloc::vec::Vec;
-use core::{
-    convert::TryFrom,
-    fmt::{Debug, Display, Formatter, Result as FmtResult},
-};
-use failure::Fail;
-use generic_array::{
-    typenum::{Unsigned, U0},
-    ArrayLength,
-};
-use rand_core::{CryptoRng, RngCore};
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct Error;
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialze};
+/// A trait which can support a stateful, RFC5116 authenticated encryption
+/// scheme.
+pub trait Aead: Sized {
+    /// The key size in a new method.
+    type KeyLength: ArrayLength<u8> + Unsigned;
+    /// The maximum length a plaintext can be.
+    type PlaintextMax: ArrayLength<u8> + Unsigned;
+    /// The maximum length a ciphertext can be.
+    type CiphertextMax: ArrayLength<u8> + Unsigned;
+    /// The maximum length of the associated data.
+    type AssociatedDataMax: ArrayLength<u8> + Unsigned;
+    /// The minimum length of the nonce.
+    type NonceMin: ArrayLength<u8> + Unsigned;
+    /// The maximum length of the nonce.
+    type NonceMax: ArrayLength<u8> + Unsigned;
 
-/// An enum describing possible failure modes
-#[cfg(feature = "serde")]
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Fail, Hash, Ord, PartialEq, PartialOrd, Serialize)]
-pub enum AeadError {
-    /// The nonce provided is the wrong size for this algorithm.
-    #[fail(display = "The nonce given is the wrong size for the algorithm")]
-    InvalidNonceSize,
-    /// The ciphertext buffer is not a multiple of the block size
-    #[fail(display = "The buffer given is the wrong size for the algorithm")]
-    InvalidBufferSize,
-    /// The "bytes used" provided is larger than the provided buffer
-    #[fail(display = "The buffer usage is larger than the buffer size")]
-    InvalidBufferUsed,
-    /// The authentication tag is not the correct size
-    #[fail(display = "The authentication tag is the wrong size for the algorithm")]
-    InvalidTagSize,
-    /// The cipher key was not the size of a block
-    #[fail(display = "The cipher key given on creation was the wrong size")]
-    InvalidCipherKeySize,
-    /// The initialization vector was not the size of a block
-    #[fail(display = "The IV given on creation was the wrong size")]
-    InvalidIvSize,
-    /// The authentication tag is not the size expected by this algorithm
-    #[fail(display = "The key used for the authentication algorithm was the wrong size")]
-    InvalidTagKeySize,
+    /// An actual type for the nonce
+    type Nonce;
 
-    #[fail(
-        display = "The given ciphertext is larger than the maximum size allowed by this algorithm"
-    )]
-    CiphertextTooLarge,
-    #[fail(
-        display = "The given plaintext is larger than the maximum size allowed by this algorithm"
-    )]
-    PlaintextTooLarge,
+    /// Retrieve the size of the buffer required for plaintext of a given size.
+    fn ciphertext_len(&self, plaintext_used: usize) -> usize;
 
-    /// The MAC failed to validate. This should be used to indicated a modified
-    /// ciphertext, modified additional data, or key mismatch.
-    #[fail(display = "The MAC failed to validate")]
-    MacFailure,
-    /// There was an error parsing the padding of this message
-    #[fail(display = "The padding was not correct")]
-    PaddingFailure,
+    /// Construct a new stateful instance for the given key.
+    fn for_key(key: GenericArray<u8, Self::KeyLength>) -> Self;
+
+    /// Perform an in-place encryption of the given plaintext, which is built
+    /// from the first plaintext_used bytes of the pre-populated plaintext
+    /// buffer.
+    ///
+    /// Implementers are responsible for shifting any existing contents of the
+    /// plaintext, if necessary, and returning a slice trimmed to the
+    /// algorithm-specific ciphertext.
+    fn encrypt<'in_out>(
+        &mut self,
+        additional_data: impl Iterator<Item = impl AsRef<[u8]>>,
+        nonce: &mut Self::Nonce,
+        plaintext: &'in_out mut [u8],
+        plaintext_used: usize,
+    ) -> Result<&'in_out mut [u8], Error>;
+
+    /// Perform an in-place decryption of the given ciphertext, as constructed
+    /// by the algorithm's `encrypt()` method, and returns a slice of the
+    /// plaintext.
+    fn decrypt<'in_out>(
+        &mut self,
+        additional_data: impl Iterator<Item =  impl AsRef<[u8]>>,
+        nonce: &Self::Nonce,
+        ciphertext: &'in_out mut [u8],
+    ) -> Result<&'in_out mut [u8], Error>;
 }
 
-/// An enum describing possible failure modes
-#[cfg(not(feature = "serde"))]
-#[derive(Clone, Copy, Debug, Eq, Fail, Hash, Ord, PartialEq, PartialOrd)]
-pub enum AeadError {
-    /// The nonce provided is the wrong size for this algorithm.
-    #[fail(display = "The nonce given is the wrong size for the algorithm")]
-    InvalidNonceSize,
-    /// The ciphertext buffer is not a multiple of the block size
-    #[fail(display = "The buffer given is the wrong size for the algorithm")]
-    InvalidBufferSize,
-    /// The "bytes used" provided is larger than the provided buffer
-    #[fail(display = "The buffer usage is larger than the buffer size")]
-    InvalidBufferUsed,
-    /// The authentication tag is not the correct size
-    #[fail(display = "The authentication tag is the wrong size for the algorithm")]
-    InvalidTagSize,
-    /// The cipher key was not the size of a block
-    #[fail(display = "The cipher key given on creation was the wrong size")]
-    InvalidCipherKeySize,
-    /// The initialization vector was not the size of a block
-    #[fail(display = "The IV given on creation was the wrong size")]
-    InvalidIvSize,
-    /// The authentication tag is not the size expected by this algorithm
-    #[fail(display = "The key used for the authentication algorithm was the wrong size")]
-    InvalidTagKeySize,
+/// A trait which can support a stateless RFC5116 authenticated encryption
+/// scheme. This is the standard RFC algorithm.
+pub trait StatelessAead {
+    /// The key size in a new method.
+    type KeyLength: ArrayLength<u8> + Unsigned;
+    /// The maximum length a plaintext can be.
+    type PlaintextMax: ArrayLength<u8> + Unsigned;
+    /// The maximum length a ciphertext can be.
+    type CiphertextMax: ArrayLength<u8> + Unsigned;
+    /// The maximum length of the associated data.
+    type AssociatedDataMax: ArrayLength<u8> + Unsigned;
+    /// The minimum length of the nonce.
+    type NonceMin: ArrayLength<u8> + Unsigned;
+    /// The maximum length of the nonce.
+    type NonceMax: ArrayLength<u8> + Unsigned;
 
-    #[fail(
-        display = "The given ciphertext is larger than the maximum size allowed by this algorithm"
-    )]
-    CiphertextTooLarge,
-    #[fail(
-        display = "The given plaintext is larger than the maximum size allowed by this algorithm"
-    )]
-    PlaintextTooLarge,
+    /// An actual type indicating the nonce
+    type Nonce;
 
-    /// The MAC failed to validate. This should be used to indicated a modified
-    /// ciphertext, modified additional data, or key mismatch.
-    #[fail(display = "The MAC failed to validate")]
-    MacFailure,
-    /// There was an error parsing the padding of this message
-    #[fail(display = "The padding was not correct")]
-    PaddingFailure,
-}
-
-/// A trait used to tag ciphertext inputs/outputs for an authenticated block cipher
-pub trait Ciphertext:
-    Clone
-    + Debug
-    + Display
-    + Into<Vec<u8>>
-    + Send
-    + Sized
-    + Sync
-    + for<'bytes> TryFrom<&'bytes [u8], Error = AeadError>
-{
-    /// Retrieve the length of the ciphertext, in bytes
-    fn len(&self) -> usize;
-}
-
-/// An explicit cryptographic nonce, which may be optionally used for
-/// authenticated block ciphers.
-pub trait Nonce:
-    Clone
-    + Debug
-    + Display
-    + Into<Vec<u8>>
-    + Send
-    + Sized
-    + Sync
-    + for<'bytes> TryFrom<&'bytes [u8], Error = AeadError>
-{
-    /// The length of an explicit nonce, in bytes.
-    type Len: ArrayLength<u8> + Unsigned;
-}
-
-/// A standard nonce implementation for AEAD algorithms which do not use
-/// explicit nonces.
-#[cfg(feature = "serde")]
-#[derive(
-    Clone, Copy, Debug, Default, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize,
-)]
-pub struct EmptyNonce;
-#[cfg(not(feature = "serde"))]
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct EmptyNonce;
-
-/// Output an empty-array style string for the EmptyNonce display.
-impl Display for EmptyNonce {
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        write!(f, "[]")
-    }
-}
-
-/// Size restrictions for the Emtpy Nonce type
-impl Nonce for EmptyNonce {
-    type Len = U0;
-}
-
-/// An empty nonce can be converted into an empty vector
-impl Into<Vec<u8>> for EmptyNonce {
-    fn into(self) -> Vec<u8> {
-        Vec::default()
-    }
-}
-
-/// Load this nonce from a byte slice (myst be zero-length)
-impl<'bytes> TryFrom<&'bytes [u8]> for EmptyNonce {
-    type Error = AeadError;
-
-    fn try_from(src: &[u8]) -> Result<Self, Self::Error> {
-        if src.len() != 0 {
-            Err(AeadError::InvalidNonceSize)
-        } else {
-            Ok(EmptyNonce)
-        }
-    }
-}
-
-/// A trait which can support an RFC5116-style authenticated encryption scheme.
-///
-/// In order to reduce the opportunity for misuse, the nonce used for
-/// encryption is meant to be managed internally by the implementation itself.
-pub trait AuthenticatedBlockCipher: Sized + Send + Sync
-where
-    for<'ciphertext> Vec<u8>: From<&'ciphertext Self::Ciphertext>,
-{
-    /// The message encapsulation type
-    type Ciphertext: Ciphertext;
-
-    /// The cryptographic nonce object used for this cipher
-    type Nonce: Nonce;
+    /// Retrieve the size of the buffer required for plaintext of a given size.
+    fn ciphertext_len(plaintext_used: usize) -> usize;
 
     /// Encrypts the given plaintext into a new ciphertext object and the nonce
-    fn encrypt<'ad, RngType: CryptoRng + RngCore>(
-        &mut self,
-        csprng: &mut RngType,
-        additional_data: impl Iterator<Item = &'ad [u8]>,
-        plaintext: &[u8],
-    ) -> Result<(Self::Ciphertext, Self::Nonce), AeadError>;
+    fn encrypt<'in_out>(
+        key: &GenericArray<u8, Self::KeyLength>,
+        additional_data: impl Iterator<Item = impl AsRef<[u8]>>,
+        nonce: &mut Self::Nonce,
+        plaintext: &'in_out mut [u8],
+        plaintext_used: usize,
+    ) -> Result<&'in_out mut [u8], Error>;
 
     /// Authenticates the ciphertext, nonce, and additional data, then
-    /// decrypts the ciphertext contents into plaintext.   
-    fn decrypt<'ad>(
-        &self,
-        additional_data: impl Iterator<Item = &'ad [u8]>,
-        nonce: Self::Nonce,
-        ciphertext: Self::Ciphertext,
-    ) -> Result<Vec<u8>, AeadError>;
+    /// decrypts the ciphertext contents into plaintext.
+    fn decrypt<'in_out>(
+        key: &GenericArray<u8, Self::KeyLength>,
+        additional_data: impl Iterator<Item = impl AsRef<[u8]>>,
+        nonce: &Self::Nonce,
+        ciphertext: &'in_out mut [u8],
+    ) -> Result<&'in_out mut [u8], Error>;
+}
+
+/// A wrapper structure to allow using a stateless AEAD from the stateful
+/// interface.
+pub struct Stateful<Algo: StatelessAead> {
+    key: GenericArray<u8, <Self as Aead>::KeyLength>,
+    _aead: PhantomData<fn() -> Algo>
+}
+
+impl<Algo: StatelessAead> Aead for Stateful<Algo> {
+    type KeyLength = Algo::KeyLength;
+    type PlaintextMax = Algo::PlaintextMax;
+    type CiphertextMax = Algo::CiphertextMax;
+    type AssociatedDataMax = Algo::AssociatedDataMax;
+    type NonceMin = Algo::NonceMin;
+    type NonceMax = Algo::NonceMax;
+    type Nonce = Algo::Nonce;
+
+    fn ciphertext_len(&self, plaintext_used: usize) -> usize {
+        Algo::ciphertext_len(plaintext_used)
+    }
+
+    fn for_key(key: GenericArray<u8, Self::KeyLength>) -> Self {
+        Self {
+            key,
+            _aead: PhantomData::default(),
+        }
+    }
+
+    fn encrypt<'in_out>(
+        &mut self,
+        additional_data: impl Iterator<Item = impl AsRef<[u8]>>,
+        nonce: &mut Self::Nonce,
+        plaintext: &'in_out mut [u8],
+        plaintext_used: usize,
+    ) -> Result<&'in_out mut [u8], Error> {
+        Algo::encrypt(&self.key, additional_data, nonce, plaintext, plaintext_used)
+    }
+
+    fn decrypt<'in_out>(
+        &mut self,
+        additional_data: impl Iterator<Item =  impl AsRef<[u8]>>,
+        nonce: &Self::Nonce,
+        ciphertext: &'in_out mut [u8],
+    ) -> Result<&'in_out mut [u8], Error> {
+        Algo::decrypt(&self.key, additional_data, nonce, ciphertext)
+    }
 }
