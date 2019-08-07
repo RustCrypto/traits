@@ -1,6 +1,6 @@
 //! A set of traits designed to support authenticated encryption.
 
-#![cfg_attr(not(any(feature = "std", feature = "alloc")), no_std)]
+#![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(all(feature = "alloc", not(has_extern_crate_alloc)), feature(alloc))]
 
 #![cfg(feature = "std")]
