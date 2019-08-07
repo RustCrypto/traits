@@ -9,6 +9,7 @@ The RFC5116 AEAD API, as a trait.
 [features]
 std = []
 dev = []
+alloc = []
 
 [dependencies]
 generic-array = { version = "0.12", default-features = false }
