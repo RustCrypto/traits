@@ -2,6 +2,8 @@
 
 #![no_std]
 
+extern crate generic_array;
+
 use generic_array::typenum::Unsigned;
 use generic_array::{GenericArray, ArrayLength};
 use core::marker::PhantomData;
@@ -11,7 +13,7 @@ pub struct Error;
 
 /// A trait which can support a stateful, RFC5116 authenticated encryption
 /// scheme.
-pub trait Aead: Sized {
+pub trait Aead {
     /// The key size in a new method.
     type KeyLength: ArrayLength<u8> + Unsigned;
     /// The maximum length a plaintext can be.
@@ -41,9 +43,9 @@ pub trait Aead: Sized {
     /// Implementers are responsible for shifting any existing contents of the
     /// plaintext, if necessary, and returning a slice trimmed to the
     /// algorithm-specific ciphertext.
-    fn encrypt<'in_out>(
+    fn encrypt<'in_out, AdItem: AsRef<[u8]>, AdIter: Iterator<Item = AdItem>>(
         &mut self,
-        additional_data: impl Iterator<Item = impl AsRef<[u8]>>,
+        additional_data: AdIter,
         nonce: &mut Self::Nonce,
         plaintext: &'in_out mut [u8],
         plaintext_used: usize,
@@ -52,9 +54,9 @@ pub trait Aead: Sized {
     /// Perform an in-place decryption of the given ciphertext, as constructed
     /// by the algorithm's `encrypt()` method, and returns a slice of the
     /// plaintext.
-    fn decrypt<'in_out>(
+    fn decrypt<'in_out, AdItem: AsRef<[u8]>, AdIter: Iterator<Item = AdItem>>(
         &mut self,
-        additional_data: impl Iterator<Item =  impl AsRef<[u8]>>,
+        additional_data: AdIter,
         nonce: &Self::Nonce,
         ciphertext: &'in_out mut [u8],
     ) -> Result<&'in_out mut [u8], Error>;
@@ -83,9 +85,9 @@ pub trait StatelessAead {
     fn ciphertext_len(plaintext_used: usize) -> usize;
 
     /// Encrypts the given plaintext into a new ciphertext object and the nonce
-    fn encrypt<'in_out>(
+    fn encrypt<'in_out, AdItem: AsRef<[u8]>, AdIter: Iterator<Item = AdItem>>(
         key: &GenericArray<u8, Self::KeyLength>,
-        additional_data: impl Iterator<Item = impl AsRef<[u8]>>,
+        additional_data: AdIter,
         nonce: &mut Self::Nonce,
         plaintext: &'in_out mut [u8],
         plaintext_used: usize,
@@ -93,9 +95,9 @@ pub trait StatelessAead {
 
     /// Authenticates the ciphertext, nonce, and additional data, then
     /// decrypts the ciphertext contents into plaintext.
-    fn decrypt<'in_out>(
+    fn decrypt<'in_out, AdItem: AsRef<[u8]>, AdIter: Iterator<Item = AdItem>>(
         key: &GenericArray<u8, Self::KeyLength>,
-        additional_data: impl Iterator<Item = impl AsRef<[u8]>>,
+        additional_data: AdIter,
         nonce: &Self::Nonce,
         ciphertext: &'in_out mut [u8],
     ) -> Result<&'in_out mut [u8], Error>;
@@ -104,7 +106,7 @@ pub trait StatelessAead {
 /// A wrapper structure to allow using a stateless AEAD from the stateful
 /// interface.
 pub struct Stateful<Algo: StatelessAead> {
-    key: GenericArray<u8, <Self as Aead>::KeyLength>,
+    key: GenericArray<u8, Algo::KeyLength>,
     _aead: PhantomData<fn() -> Algo>
 }
 
@@ -128,9 +130,9 @@ impl<Algo: StatelessAead> Aead for Stateful<Algo> {
         }
     }
 
-    fn encrypt<'in_out>(
+    fn encrypt<'in_out, AdItem: AsRef<[u8]>, AdIter: Iterator<Item = AdItem>>(
         &mut self,
-        additional_data: impl Iterator<Item = impl AsRef<[u8]>>,
+        additional_data: AdIter,
         nonce: &mut Self::Nonce,
         plaintext: &'in_out mut [u8],
         plaintext_used: usize,
@@ -138,9 +140,9 @@ impl<Algo: StatelessAead> Aead for Stateful<Algo> {
         Algo::encrypt(&self.key, additional_data, nonce, plaintext, plaintext_used)
     }
 
-    fn decrypt<'in_out>(
+    fn decrypt<'in_out, AdItem: AsRef<[u8]>, AdIter: Iterator<Item = AdItem>>(
         &mut self,
-        additional_data: impl Iterator<Item =  impl AsRef<[u8]>>,
+        additional_data: AdIter,
         nonce: &Self::Nonce,
         ciphertext: &'in_out mut [u8],
     ) -> Result<&'in_out mut [u8], Error> {
