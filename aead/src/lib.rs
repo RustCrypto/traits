@@ -14,7 +14,6 @@ use alloc::vec::Vec;
 #[cfg(all(feature = "std", not(any(feature = "alloc", has_extern_crate_alloc))))]
 use std::vec::Vec;
 
-use generic_array::typenum::Unsigned;
 use generic_array::{GenericArray, ArrayLength};
 use core::marker::PhantomData;
 
@@ -37,71 +36,25 @@ pub trait Aead {
     /// Construct a new stateful instance for the given key.
     fn new(key: GenericArray<u8, Self::KeySize>) -> Self;
 
-    /// Perform an in-place encryption of the given plaintext, which is built
-    /// from the first plaintext_used bytes of the pre-populated plaintext
-    /// buffer.
-    ///
-    /// Implementers are responsible for shifting any existing contents of the
-    /// plaintext, if necessary, and returning a slice trimmed to the
-    /// algorithm-specific ciphertext.
-    fn encrypt<'in_out>(
-        &mut self,
-        additional_data: &[u8],
-        nonce: &GenericArray<u8, Self::NonceSize>,
-        plaintext: &'in_out mut [u8],
-        plaintext_used: usize,
-    ) -> Result<&'in_out [u8], Error>;
-
-    /// Perform an in-place decryption of the given ciphertext, as constructed
-    /// by the algorithm's `encrypt_vec()` method, and returns a slice
-    /// containing the plaintext.
-    fn decrypt<'in_out>(
-        &mut self,
-        additional_data: &[u8],
-        nonce: &GenericArray<u8, Self::NonceSize>,
-        ciphertext: &'in_out mut [u8],
-    ) -> Result<&'in_out [u8], Error>;
-
     #[cfg(any(feature = "alloc", feature = "std"))]
     /// Consume a plaintext vector, encrypt it in-place, and return the
     /// resulting ciphertext.
-    ///
-    /// A default implementation is provided which should be sufficient for
-    /// most cases.
     fn encrypt_vec(
         &mut self,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
         plaintext: Vec<u8>
-    ) -> Result<Vec<u8>, Error> {
-        let used = plaintext.len();
-        let required_len = used + Self::CiphertextOverhead::to_usize();
-        let mut retval = plaintext;
-        retval.resize(required_len, 0);
-
-        let truncate_to = {
-            self.encrypt(additional_data, nonce, retval.as_mut_slice(), used)?.len()
-        };
-        retval.truncate(truncate_to);
-
-        Ok(retval)
-    }
+    ) -> Result<Vec<u8>, Error>;
 
     #[cfg(any(feature = "alloc", feature = "std"))]
     /// Consume a ciphertext vector, decrypt it in-place, and return a copy in
     /// a new vector.
-    ///
-    /// A sub-optimal default implementation is provided, but AEAD implementers
-    /// are welcome to provide more optimized versions as desired.
     fn decrypt_vec(
         &mut self,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
         ciphertext: Vec<u8>
-    ) -> Result<Vec<u8>, Error> {
-        let mut retval = ciphertext;
-        Ok(Vec::from(self.decrypt(additional_data, nonce, retval.as_mut_slice())?))
-    }
+    ) -> Result<Vec<u8>, Error>;
 }
 
 /// A trait which can support a stateless RFC5116 authenticated encryption
@@ -117,43 +70,13 @@ pub trait StatelessAead {
     /// appended to a plaintext to accomodate this cipher's output.
     type CiphertextOverhead: ArrayLength<u8>;
 
-    /// Encrypts the given plaintext into a new ciphertext object and the nonce
-    fn encrypt<'in_out>(
-        key: &GenericArray<u8, Self::KeySize>,
-        additional_data: &[u8],
-        nonce: &GenericArray<u8, Self::NonceSize>,
-        plaintext: &'in_out mut [u8],
-        plaintext_used: usize,
-    ) -> Result<&'in_out [u8], Error>;
-
-    /// Authenticates the ciphertext, nonce, and additional data, then
-    /// decrypts the ciphertext contents into plaintext.
-    fn decrypt<'in_out>(
-        key: &GenericArray<u8, Self::KeySize>,
-        additional_data: &[u8],
-        nonce: &GenericArray<u8, Self::NonceSize>,
-        ciphertext: &'in_out mut [u8],
-    ) -> Result<&'in_out [u8], Error>;
-
     #[cfg(any(feature = "alloc", feature = "std"))]
     fn encrypt_vec(
         key: &GenericArray<u8, Self::KeySize>,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
         plaintext: Vec<u8>
-    ) -> Result<Vec<u8>, Error> {
-        let used = plaintext.len();
-        let required_len = used + Self::CiphertextOverhead::to_usize();
-        let mut retval = plaintext;
-        retval.resize(required_len, 0);
-
-        let truncate_to = {
-            Self::encrypt(key, additional_data, nonce, retval.as_mut_slice(), used)?.len()
-        };
-        retval.truncate(truncate_to);
-
-        Ok(retval)
-    }
+    ) -> Result<Vec<u8>, Error>;
 
     #[cfg(any(feature = "alloc", feature = "std"))]
     fn decrypt_vec(
@@ -161,10 +84,7 @@ pub trait StatelessAead {
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
         ciphertext: Vec<u8>
-    ) -> Result<Vec<u8>, Error> {
-        let mut retval = ciphertext;
-        Ok(Vec::from(Self::decrypt(key, additional_data, nonce, retval.as_mut_slice())?))
-    }
+    ) -> Result<Vec<u8>, Error>;
 }
 
 /// A wrapper structure to allow use of a stateless AEAD through the stateful
@@ -187,22 +107,27 @@ impl<Algo: StatelessAead> Aead for Stateful<Algo> {
         }
     }
 
-    fn encrypt<'in_out>(
+    #[cfg(any(feature = "alloc", feature = "std"))]
+    /// Consume a plaintext vector, encrypt it in-place, and return the
+    /// resulting ciphertext.
+    fn encrypt_vec(
         &mut self,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
-        plaintext: &'in_out mut [u8],
-        plaintext_used: usize,
-    ) -> Result<&'in_out [u8], Error> {
-        Algo::encrypt(&self.key, additional_data, nonce, plaintext, plaintext_used)
+        plaintext: Vec<u8>
+    ) -> Result<Vec<u8>, Error> {
+        Algo::encrypt_vec(&self.key, additional_data, nonce, plaintext)
     }
 
-    fn decrypt<'in_out>(
+    #[cfg(any(feature = "alloc", feature = "std"))]
+    /// Consume a ciphertext vector, decrypt it in-place, and return a copy in
+    /// a new vector.
+    fn decrypt_vec(
         &mut self,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
-        ciphertext: &'in_out mut [u8],
-    ) -> Result<&'in_out [u8], Error> {
-        Algo::decrypt(&self.key, additional_data, nonce, ciphertext)
+        ciphertext: Vec<u8>
+    ) -> Result<Vec<u8>, Error> {
+        Algo::decrypt_vec(&self.key, additional_data, nonce, ciphertext)
     }
 }
