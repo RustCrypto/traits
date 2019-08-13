@@ -15,6 +15,7 @@ use alloc::vec::Vec;
 use std::vec::Vec;
 
 use generic_array::{GenericArray, ArrayLength};
+use generic_array::typenum::Unsigned;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Error;
@@ -38,7 +39,7 @@ pub trait Aead {
     type TagSize: ArrayLength<u8>;
     /// The amount of suffix padding, in bytes, which needs to be appended to
     /// a plaintext to accommodate this cipher's output.
-    type CiphertextOverhead: ArrayLength<u8>;
+    type CiphertextOverhead: ArrayLength<u8> + Unsigned;
 
     #[cfg(any(feature = "alloc", feature = "std"))]
     /// Encrypt the given plaintext and return the ciphertext into a vector.
@@ -48,7 +49,9 @@ pub trait Aead {
         nonce: &GenericArray<u8, Self::NonceSize>,
         plaintext: &[u8]
     ) -> Result<Vec<u8>, Error> {
-        self.encrypt_vec(additional_data, nonce, Vec::from(plaintext))
+        let mut pt_vec = Vec::with_capacity(plaintext.len() + Self::CiphertextOverhead::to_usize());
+        pt_vec.extend(plaintext);
+        self.encrypt_vec(additional_data, nonce, pt_vec)
     }
 
     #[cfg(any(feature = "alloc", feature = "std"))]
