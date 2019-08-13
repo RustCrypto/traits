@@ -37,8 +37,8 @@ pub trait Aead {
     type NonceSize: ArrayLength<u8>;
     /// The maximum length of the nonce.
     type TagSize: ArrayLength<u8>;
-    /// The amount of suffix padding, in bytes, which needs to be appended to
-    /// a plaintext to accommodate this cipher's output.
+    /// The upper bound amount of additional space required to support a
+    /// ciphertext vs. a plaintext.
     type CiphertextOverhead: ArrayLength<u8> + Unsigned;
 
     #[cfg(any(feature = "alloc", feature = "std"))]
@@ -94,9 +94,9 @@ pub trait StatelessAead {
     type NonceSize: ArrayLength<u8>;
     /// The maximum length of the nonce.
     type TagSize: ArrayLength<u8>;
-    /// The amount of suffix padding, in bytes, which needs to be
-    /// appended to a plaintext to accomodate this cipher's output.
-    type CiphertextOverhead: ArrayLength<u8>;
+    /// The upper bound amount of additional space required to support a
+    /// ciphertext vs. a plaintext.
+    type CiphertextOverhead: ArrayLength<u8> + Unsigned;
 
     #[cfg(any(feature = "alloc", feature = "std"))]
     fn encrypt_to_vec(&self,
@@ -104,7 +104,9 @@ pub trait StatelessAead {
         nonce: &GenericArray<u8, Self::NonceSize>,
         plaintext: &[u8]
     ) -> Result<Vec<u8>, Error> {
-        self.encrypt_vec(additional_data, nonce, Vec::from(plaintext))
+        let mut pt_vec = Vec::with_capacity(plaintext.len() + Self::CiphertextOverhead::to_usize());
+        pt_vec.extend(plaintext);
+        self.encrypt_vec(additional_data, nonce, pt_vec)
     }
 
     #[cfg(any(feature = "alloc", feature = "std"))]
