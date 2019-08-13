@@ -99,6 +99,8 @@ pub trait StatelessAead {
     type CiphertextOverhead: ArrayLength<u8> + Unsigned;
 
     #[cfg(any(feature = "alloc", feature = "std"))]
+    /// Encrypt the given plaintext slice, and return the resulting ciphertext
+    /// as a vector of bytes.
     fn encrypt_to_vec(&self,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
@@ -110,6 +112,8 @@ pub trait StatelessAead {
     }
 
     #[cfg(any(feature = "alloc", feature = "std"))]
+    /// Decrypt the given ciphertext, and return the resulting plaintext as a
+    /// vector of bytes.
     fn decrypt_to_vec(&self,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
