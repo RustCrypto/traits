@@ -7,8 +7,5 @@ description = """
 Traits for Authenticated Encryption with Associated Data (AEAD) algorithms
 """
 
-[features]
-alloc = []
-
 [dependencies]
 generic-array = { version = "0.12", default-features = false }

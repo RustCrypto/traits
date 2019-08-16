@@ -2,12 +2,9 @@
 
 #![no_std]
 
-#[cfg(feature = "alloc")]
 extern crate alloc;
 
-#[cfg(feature = "alloc")]
 use alloc::vec::Vec;
-
 use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;
 
@@ -35,7 +32,6 @@ pub trait Aead {
     /// ciphertext vs. a plaintext.
     type CiphertextOverhead: ArrayLength<u8> + Unsigned;
 
-    #[cfg(feature = "alloc")]
     /// Encrypt the given plaintext slice, and return the resulting ciphertext
     /// as a vector of bytes.
     fn encrypt(
@@ -45,7 +41,6 @@ pub trait Aead {
         plaintext: &[u8]
     ) -> Result<Vec<u8>, Error>;
 
-    #[cfg(feature = "alloc")]
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
     /// as a vector of bytes.
     fn decrypt(
@@ -67,7 +62,6 @@ pub trait StatelessAead {
     /// ciphertext vs. a plaintext.
     type CiphertextOverhead: ArrayLength<u8> + Unsigned;
 
-    #[cfg(feature = "alloc")]
     /// Encrypt the given plaintext slice, and return the resulting ciphertext
     /// as a vector of bytes.
     fn encrypt(
@@ -77,7 +71,6 @@ pub trait StatelessAead {
         plaintext: &[u8]
     ) -> Result<Vec<u8>, Error>;
 
-    #[cfg(feature = "alloc")]
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
     /// as a vector of bytes.
     fn decrypt(
@@ -95,7 +88,6 @@ impl<Algo: StatelessAead> Aead for Algo {
     type TagSize = Algo::TagSize;
     type CiphertextOverhead = Algo::CiphertextOverhead;
 
-    #[cfg(feature = "alloc")]
     /// Encrypt the given plaintext slice, and return the resulting ciphertext
     /// as a vector of bytes.
     fn encrypt(
@@ -107,7 +99,6 @@ impl<Algo: StatelessAead> Aead for Algo {
         <Self as StatelessAead>::encrypt(self, additional_data, nonce, plaintext)
     }
 
-    #[cfg(feature = "alloc")]
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
     /// as a vector of bytes.
     fn decrypt(
