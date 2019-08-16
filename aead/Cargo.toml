@@ -2,13 +2,12 @@
 name = "aead"
 version = "0.1.0"
 authors = ["James Cape <james@mobilecoin.com>"]
+edition = "2018"
 description = """
-The RFC5116 AEAD API, as a trait.
+Traits for Authenticated Encryption with Associated Data (AEAD) algorithms
 """
 
 [features]
-std = []
-dev = []
 alloc = []
 
 [dependencies]

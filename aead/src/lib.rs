@@ -1,18 +1,12 @@
 //! A set of traits designed to support authenticated encryption.
 
-#![cfg_attr(not(feature = "std"), no_std)]
+#![no_std]
 
-#![cfg(feature = "alloc")]
+#[cfg(feature = "alloc")]
 extern crate alloc;
 
-#[cfg(feature = "std")]
-extern crate core;
-extern crate generic_array;
-
-#[cfg(any(feature = "alloc", all(feature = "std", has_extern_crate_alloc)))]
+#[cfg(feature = "alloc")]
 use alloc::vec::Vec;
-#[cfg(all(feature = "std", not(any(feature = "alloc", has_extern_crate_alloc))))]
-use std::vec::Vec;
 
 use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;
@@ -41,49 +35,24 @@ pub trait Aead {
     /// ciphertext vs. a plaintext.
     type CiphertextOverhead: ArrayLength<u8> + Unsigned;
 
-    #[cfg(any(feature = "alloc", feature = "std"))]
-    /// Encrypt the given plaintext and return the ciphertext into a vector.
-    fn encrypt_to_vec(
+    #[cfg(feature = "alloc")]
+    /// Encrypt the given plaintext slice, and return the resulting ciphertext
+    /// as a vector of bytes.
+    fn encrypt(
         &mut self,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
         plaintext: &[u8]
-    ) -> Result<Vec<u8>, Error> {
-        let mut pt_vec = Vec::with_capacity(plaintext.len() + Self::CiphertextOverhead::to_usize());
-        pt_vec.extend(plaintext);
-        self.encrypt_vec(additional_data, nonce, pt_vec)
-    }
+    ) -> Result<Vec<u8>, Error>;
 
-    #[cfg(any(feature = "alloc", feature = "std"))]
-    /// Decrypt the given ciphertext, and return the plaintext as a vector of
-    /// bytes.
-    fn decrypt_to_vec(
+    #[cfg(feature = "alloc")]
+    /// Decrypt the given ciphertext slice, and return the resulting plaintext
+    /// as a vector of bytes.
+    fn decrypt(
         &mut self,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
         ciphertext: &[u8]
-    ) -> Result<Vec<u8>, Error> {
-        self.decrypt_vec(additional_data, nonce, Vec::from(ciphertext))
-    }
-
-    #[cfg(any(feature = "alloc", feature = "std"))]
-    /// Consume a plaintext vector, encrypt it, and return the resulting
-    /// ciphertext as a vector.
-    fn encrypt_vec(
-        &mut self,
-        additional_data: &[u8],
-        nonce: &GenericArray<u8, Self::NonceSize>,
-        plaintext: Vec<u8>
-    ) -> Result<Vec<u8>, Error>;
-
-    #[cfg(any(feature = "alloc", feature = "std"))]
-    /// Consume a ciphertext vector, decrypt it, and return the resulting
-    /// plaintext as a vector of bytes.
-    fn decrypt_vec(
-        &mut self,
-        additional_data: &[u8],
-        nonce: &GenericArray<u8, Self::NonceSize>,
-        ciphertext: Vec<u8>
     ) -> Result<Vec<u8>, Error>;
 }
 
@@ -98,48 +67,24 @@ pub trait StatelessAead {
     /// ciphertext vs. a plaintext.
     type CiphertextOverhead: ArrayLength<u8> + Unsigned;
 
-    #[cfg(any(feature = "alloc", feature = "std"))]
+    #[cfg(feature = "alloc")]
     /// Encrypt the given plaintext slice, and return the resulting ciphertext
     /// as a vector of bytes.
-    fn encrypt_to_vec(&self,
+    fn encrypt(
+        &self,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
         plaintext: &[u8]
-    ) -> Result<Vec<u8>, Error> {
-        let mut pt_vec = Vec::with_capacity(plaintext.len() + Self::CiphertextOverhead::to_usize());
-        pt_vec.extend(plaintext);
-        self.encrypt_vec(additional_data, nonce, pt_vec)
-    }
+    ) -> Result<Vec<u8>, Error>;
 
-    #[cfg(any(feature = "alloc", feature = "std"))]
-    /// Decrypt the given ciphertext, and return the resulting plaintext as a
-    /// vector of bytes.
-    fn decrypt_to_vec(&self,
+    #[cfg(feature = "alloc")]
+    /// Decrypt the given ciphertext slice, and return the resulting plaintext
+    /// as a vector of bytes.
+    fn decrypt(
+        &self,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
         ciphertext: &[u8]
-    ) -> Result<Vec<u8>, Error> {
-        self.decrypt_vec(additional_data, nonce, Vec::from(ciphertext))
-    }
-
-    #[cfg(any(feature = "alloc", feature = "std"))]
-    /// Consume a plaintext vector, encrypt it, and return the resulting
-    /// ciphertext as a vector.
-    fn encrypt_vec(
-        &self,
-        additional_data: &[u8],
-        nonce: &GenericArray<u8, Self::NonceSize>,
-        plaintext: Vec<u8>
-    ) -> Result<Vec<u8>, Error>;
-
-    #[cfg(any(feature = "alloc", feature = "std"))]
-    /// Consume a ciphertext vector, decrypt it, and return the resulting
-    /// plaintext as a vector of bytes.
-    fn decrypt_vec(
-        &self,
-        additional_data: &[u8],
-        nonce: &GenericArray<u8, Self::NonceSize>,
-        ciphertext: Vec<u8>
     ) -> Result<Vec<u8>, Error>;
 }
 
@@ -150,51 +95,27 @@ impl<Algo: StatelessAead> Aead for Algo {
     type TagSize = Algo::TagSize;
     type CiphertextOverhead = Algo::CiphertextOverhead;
 
-    #[cfg(any(feature = "alloc", feature = "std"))]
-    /// Consume a plaintext vector, encrypt it, and return the resulting
-    /// ciphertext as a vector.
-    fn encrypt_to_vec(
+    #[cfg(feature = "alloc")]
+    /// Encrypt the given plaintext slice, and return the resulting ciphertext
+    /// as a vector of bytes.
+    fn encrypt(
         &mut self,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
         plaintext: &[u8]
     ) -> Result<Vec<u8>, Error> {
-        <Self as StatelessAead>::encrypt_to_vec(self, additional_data, nonce, plaintext)
+        <Self as StatelessAead>::encrypt(self, additional_data, nonce, plaintext)
     }
 
-    #[cfg(any(feature = "alloc", feature = "std"))]
-    /// Consume a ciphertext vector, decrypt it, and return the resulting
-    /// plaintext as a vector of bytes.
-    fn decrypt_to_vec(
+    #[cfg(feature = "alloc")]
+    /// Decrypt the given ciphertext slice, and return the resulting plaintext
+    /// as a vector of bytes.
+    fn decrypt(
         &mut self,
         additional_data: &[u8],
         nonce: &GenericArray<u8, Self::NonceSize>,
         ciphertext: &[u8]
     ) -> Result<Vec<u8>, Error> {
-        <Self as StatelessAead>::decrypt_to_vec(self, additional_data, nonce, ciphertext)
-    }
-
-    #[cfg(any(feature = "alloc", feature = "std"))]
-    /// Consume a plaintext vector, encrypt it, and return the resulting
-    /// ciphertext as a vector.
-    fn encrypt_vec(
-        &mut self,
-        additional_data: &[u8],
-        nonce: &GenericArray<u8, Self::NonceSize>,
-        plaintext: Vec<u8>
-    ) -> Result<Vec<u8>, Error> {
-        <Self as StatelessAead>::encrypt_vec(self, additional_data, nonce, plaintext)
-    }
-
-    #[cfg(any(feature = "alloc", feature = "std"))]
-    /// Consume a ciphertext vector, decrypt it, and return the resulting
-    /// plaintext as a vector of bytes.
-    fn decrypt_vec(
-        &mut self,
-        additional_data: &[u8],
-        nonce: &GenericArray<u8, Self::NonceSize>,
-        ciphertext: Vec<u8>
-    ) -> Result<Vec<u8>, Error> {
-        <Self as StatelessAead>::decrypt_vec(self, additional_data, nonce, ciphertext)
+        <Self as StatelessAead>::decrypt(self, additional_data, nonce, ciphertext)
     }
 }
