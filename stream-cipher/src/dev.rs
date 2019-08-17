@@ -47,6 +47,7 @@ macro_rules! new_seek_test {
                 SyncStreamCipher, SyncStreamCipherSeek, NewStreamCipher
             };
             use stream_cipher::blobby::Blob4Iterator;
+            use core::cmp;
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
@@ -56,7 +57,7 @@ macro_rules! new_seek_test {
                 let ciphertext = row[3];
 
                 let mut mode = <$cipher>::new_var(key, iv).unwrap();
-                for seek_n in 0..512 {
+                for seek_n in 0..cmp::min(512, plaintext.len()) {
                     let mut pt = plaintext[seek_n..].to_vec();
                     mode.seek(seek_n as u64);
                     mode.apply_keystream(&mut pt);
