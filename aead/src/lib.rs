@@ -4,9 +4,10 @@
 
 extern crate alloc;
 
+pub use generic_array;
+
 use alloc::vec::Vec;
-use generic_array::{GenericArray, ArrayLength};
-use generic_array::typenum::Unsigned;
+use generic_array::{GenericArray, ArrayLength, typenum::Unsigned};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Error;

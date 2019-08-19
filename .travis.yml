@@ -5,7 +5,9 @@ sudo: required
 matrix:
   include:
     - rust: 1.21.0
-      script: cargo test --verbose --all --release
+      script: cargo test --verbose --all --exclude aead --release
+    - rust: 1.36.0
+      script: cargo test --verbose --package aead --release
     - rust: stable
       script: cargo test --verbose --all --release
     - rust: nightly
@@ -23,7 +25,7 @@ matrix:
     # tests if crates truly can be built without std
     - env: TARGET=thumbv7em-none-eabi
       rust: nightly
-      script: xargo build --no-default-features --verbose --target $TARGET
+      script: xargo build --exclude aead --no-default-features --verbose --target $TARGET
       install:
         - cargo install xargo || true
         - rustup target install armv7-unknown-linux-gnueabihf
