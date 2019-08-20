@@ -1,0 +1,11 @@
+[package]
+name = "aead"
+version = "0.1.0"
+authors = ["James Cape <james@mobilecoin.com>"]
+edition = "2018"
+description = """
+Traits for Authenticated Encryption with Associated Data (AEAD) algorithms
+"""
+
+[dependencies]
+generic-array = { version = "0.12", default-features = false }

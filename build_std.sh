@@ -13,7 +13,7 @@ for DIR in $DIRS; do
     fi
     cd $DIR
     echo Building $DIR
-    cargo build --features std,dev || {
+    cargo build --all-features || {
         echo $DIR failed
         exit 1
     }
