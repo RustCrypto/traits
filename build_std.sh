@@ -7,7 +7,7 @@ TARGET="thumbv7em-none-eabi"
 cargo clean
 
 for DIR in $DIRS; do
-    if [ $DIR = "target/" ]
+    if [ $DIR = "target/" -o $DIR = "aead/" ]
     then
         continue
     fi
