@@ -1,11 +1,14 @@
 [package]
 name = "aead"
 version = "0.1.0"
-authors = ["James Cape <james@mobilecoin.com>"]
+authors = ["RustCrypto Developers"]
 edition = "2018"
-description = """
-Traits for Authenticated Encryption with Associated Data (AEAD) algorithms
-"""
+license = "MIT OR Apache-2.0"
+description = "Traits for Authenticated Encryption with Associated Data (AEAD) algorithms"
+documentation = "https://docs.rs/aead"
+repository = "https://github.com/RustCrypto/traits"
+keywords = ["digest", "crypto", "encryption"]
+categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = { version = "0.12", default-features = false }
