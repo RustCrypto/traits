@@ -1,4 +1,16 @@
-//! A set of traits designed to support authenticated encryption.
+//! Authenticated Encryption with Associated Data (AEAD) traits
+//!
+//! This crate provides an abstract interface for AEAD ciphers, which guarantee
+//! both confidentiality and integrity, even from a powerful attacker who is
+//! able to execute [chosen-ciphertext attacks]. The resulting security property,
+//! [ciphertext indistinguishability], is considered a basic requirement for
+//! modern cryptographic implementations.
+//!
+//! See [RustCrypto/AEADs] for cipher implementations which use this trait.
+//!
+//! [chosen-ciphertext attacks]: https://en.wikipedia.org/wiki/Chosen-ciphertext_attack
+//! [ciphertext indistinguishability]: https://en.wikipedia.org/wiki/Ciphertext_indistinguishability
+//! [RustCrypto/AEADs]: https://github.com/RustCrypto/AEADs
 
 #![no_std]
 
@@ -12,7 +24,7 @@ use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Error;
 
-/// Instantiate either a stateless (`Aead`) or stateful (`AeadMut`) algorithm.
+/// Instantiate either a stateless [`Aead`] or stateful [`AeadMut`] algorithm.
 pub trait NewAead {
     /// The size of the key array required by this algorithm.
     type KeySize: ArrayLength<u8>;
@@ -34,11 +46,24 @@ pub trait Aead {
     /// ciphertext vs. a plaintext.
     type CiphertextOverhead: ArrayLength<u8> + Unsigned;
 
-    /// Encrypt the given plaintext slice, and return the resulting ciphertext
-    /// as a vector of bytes.
+    /// Encrypt the given plaintext payload, and return the resulting
+    /// ciphertext as a vector of bytes.
     ///
-    /// See notes on `Aead::encrypt()` about allowable message payloads and
-    /// Associated Additional Data (AAD).
+    /// The [`Payload`] type can be used to provide Additional Associated Data
+    /// (AAD) along with the message: this is an optional bytestring which is
+    /// not encrypted, but *is* authenticated along with the message. Failure
+    /// to pass the same AAD that was used during encryption will cause
+    /// decryption to fail, which is useful if you would like to "bind" the
+    /// ciphertext to some other identifier, like a digital signature key
+    /// or other identifier.
+    ///
+    /// If you don't care about AAD and just want to encrypt a plaintext
+    /// message, `&[u8]` will automatically be coerced into a `Payload`:
+    ///
+    /// ```nobuild
+    /// let plaintext = b"Top secret message, handle with care";
+    /// let ciphertext = cipher.encrypt(nonce, plaintext);
+    /// ```
     fn encrypt<'msg, 'aad>(
         &self,
         nonce: &GenericArray<u8, Self::NonceSize>,
@@ -48,8 +73,15 @@ pub trait Aead {
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
     /// as a vector of bytes.
     ///
-    /// See notes on `Aead::encrypt()` and `Aead::decrypt()` about allowable
-    /// message payloads and Associated Additional Data (AAD).
+    /// See notes on [`Aead::encrypt()`] about allowable message payloads and
+    /// Associated Additional Data (AAD).
+    ///
+    /// If you have no AAD, you can call this as follows:
+    ///
+    /// ```nobuild
+    /// let ciphertext = b"...";
+    /// let plaintext = cipher.decrypt(nonce, ciphertext)?;
+    /// ```
     fn decrypt<'msg, 'aad>(
         &self,
         nonce: &GenericArray<u8, Self::NonceSize>,
@@ -67,24 +99,11 @@ pub trait AeadMut {
     /// ciphertext vs. a plaintext.
     type CiphertextOverhead: ArrayLength<u8> + Unsigned;
 
-    /// Encrypt the given plaintext payload, and return the resulting
-    /// ciphertext as a vector of bytes.
+    /// Encrypt the given plaintext slice, and return the resulting ciphertext
+    /// as a vector of bytes.
     ///
-    /// The `Payload` type can be used to provide Additional Associated Data
-    /// (AAD) along with the message: this is an optional bytestring which is
-    /// not encrypted, but *is* authenticated along with the message. Failure
-    /// to pass the same AAD that was used during encryption will cause
-    /// decryption to fail, which is useful if you would like to "bind" the
-    /// ciphertext to some other identifier, like a digital signature key
-    /// or other identifier.
-    ///
-    /// If you don't care about AAD and just want to encrypt a plaintext
-    /// message, `&[u8]` will automatically be coerced into a `Payload`:
-    ///
-    /// ```nobuild
-    /// let plaintext = b"Top secret message, handle with care";
-    /// let ciphertext = cipher.encrypt(nonce, plaintext);
-    /// ```
+    /// See notes on [`Aead::encrypt()`] about allowable message payloads and
+    /// Associated Additional Data (AAD).
     fn encrypt<'msg, 'aad>(
         &mut self,
         nonce: &GenericArray<u8, Self::NonceSize>,
@@ -94,15 +113,8 @@ pub trait AeadMut {
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
     /// as a vector of bytes.
     ///
-    /// See notes on `Aead::encrypt()` about allowable message payloads and
-    /// Associated Additional Data (AAD).
-    ///
-    /// If you have no AAD, you can call this as follows:
-    ///
-    /// ```nobuild
-    /// let ciphertext = b"...";
-    /// let plaintext = cipher.decrypt(nonce, ciphertext)?;
-    /// ```
+    /// See notes on [`Aead::encrypt()`] and [`Aead::decrypt()`] about allowable
+    /// message payloads and Associated Additional Data (AAD).
     fn decrypt<'msg, 'aad>(
         &mut self,
         nonce: &GenericArray<u8, Self::NonceSize>,
