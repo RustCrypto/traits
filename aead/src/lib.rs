@@ -12,8 +12,7 @@ use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Error;
 
-/// A trait which can be used to create a new RFC5116 authenticated encryption
-/// scheme.
+/// Instantiate either a stateless (`Aead`) or stateful (`AeadMut`) algorithm.
 pub trait NewAead {
     /// The size of the key array required by this algorithm.
     type KeySize: ArrayLength<u8>;
@@ -22,9 +21,44 @@ pub trait NewAead {
     fn new(key: GenericArray<u8, Self::KeySize>) -> Self;
 }
 
-/// A trait which can support a stateful, RFC5116 authenticated encryption
-/// scheme with a fixed-size nonce.
+/// Authenticated Encryption with Associated Data (AEAD) algorithm.
+///
+/// This trait is intended for use with stateless AEAD algorithms. The
+/// `AeadMut` trait provides a stateful interface.
 pub trait Aead {
+    /// The length of a nonce.
+    type NonceSize: ArrayLength<u8>;
+    /// The maximum length of the nonce.
+    type TagSize: ArrayLength<u8>;
+    /// The upper bound amount of additional space required to support a
+    /// ciphertext vs. a plaintext.
+    type CiphertextOverhead: ArrayLength<u8> + Unsigned;
+
+    /// Encrypt the given plaintext slice, and return the resulting ciphertext
+    /// as a vector of bytes.
+    ///
+    /// See notes on `Aead::encrypt()` about allowable message payloads and
+    /// Associated Additional Data (AAD).
+    fn encrypt<'msg, 'aad>(
+        &self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        plaintext: impl Into<Payload<'msg, 'aad>>,
+    ) -> Result<Vec<u8>, Error>;
+
+    /// Decrypt the given ciphertext slice, and return the resulting plaintext
+    /// as a vector of bytes.
+    ///
+    /// See notes on `Aead::encrypt()` and `Aead::decrypt()` about allowable
+    /// message payloads and Associated Additional Data (AAD).
+    fn decrypt<'msg, 'aad>(
+        &self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        ciphertext: impl Into<Payload<'msg, 'aad>>,
+    ) -> Result<Vec<u8>, Error>;
+}
+
+/// Stateful Authenticated Encryption with Associated Data algorithm.
+pub trait AeadMut {
     /// The length of a nonce.
     type NonceSize: ArrayLength<u8>;
     /// The maximum length of the nonce.
@@ -76,43 +110,9 @@ pub trait Aead {
     ) -> Result<Vec<u8>, Error>;
 }
 
-/// A trait which can support a stateless RFC5116 authenticated encryption
-/// scheme. This is the standard RFC algorithm.
-pub trait StatelessAead {
-    /// The length of a nonce.
-    type NonceSize: ArrayLength<u8>;
-    /// The maximum length of the nonce.
-    type TagSize: ArrayLength<u8>;
-    /// The upper bound amount of additional space required to support a
-    /// ciphertext vs. a plaintext.
-    type CiphertextOverhead: ArrayLength<u8> + Unsigned;
-
-    /// Encrypt the given plaintext slice, and return the resulting ciphertext
-    /// as a vector of bytes.
-    ///
-    /// See notes on `Aead::encrypt()` about allowable message payloads and
-    /// Associated Additional Data (AAD).
-    fn encrypt<'msg, 'aad>(
-        &self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
-        plaintext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error>;
-
-    /// Decrypt the given ciphertext slice, and return the resulting plaintext
-    /// as a vector of bytes.
-    ///
-    /// See notes on `Aead::encrypt()` and `Aead::decrypt()` about allowable
-    /// message payloads and Associated Additional Data (AAD).
-    fn decrypt<'msg, 'aad>(
-        &self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
-        ciphertext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error>;
-}
-
 /// A blanket implementation of the Stateful AEAD interface for Stateless
 /// AEAD implementations.
-impl<Algo: StatelessAead> Aead for Algo {
+impl<Algo: Aead> AeadMut for Algo {
     type NonceSize = Algo::NonceSize;
     type TagSize = Algo::TagSize;
     type CiphertextOverhead = Algo::CiphertextOverhead;
@@ -124,7 +124,7 @@ impl<Algo: StatelessAead> Aead for Algo {
         nonce: &GenericArray<u8, Self::NonceSize>,
         plaintext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
-        <Self as StatelessAead>::encrypt(self, nonce, plaintext)
+        <Self as Aead>::encrypt(self, nonce, plaintext)
     }
 
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
@@ -134,7 +134,7 @@ impl<Algo: StatelessAead> Aead for Algo {
         nonce: &GenericArray<u8, Self::NonceSize>,
         ciphertext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
-        <Self as StatelessAead>::decrypt(self, nonce, ciphertext)
+        <Self as Aead>::decrypt(self, nonce, ciphertext)
     }
 }
 
