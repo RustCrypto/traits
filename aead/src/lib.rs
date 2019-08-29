@@ -160,3 +160,15 @@ impl<'msg, 'aad> From<&'msg [u8]> for Payload<'msg, 'aad> {
         Self { msg, aad: b"" }
     }
 }
+
+impl<'msg, 'aad> From<(&'msg [u8], &'aad [u8])> for Payload<'msg, 'aad> {
+    fn from(tuple: (&'msg [u8], &'aad [u8])) -> Self {
+        Self { msg: tuple.0, aad: tuple.1 }
+    }
+}
+
+impl<'msg, 'aad> From<Payload<'msg, 'aad>> for (&'msg [u8], &'aad [u8]) {
+    fn from(payload: Payload<'msg, 'aad>) -> Self {
+        (payload.msg, payload.aad)
+    }
+}
