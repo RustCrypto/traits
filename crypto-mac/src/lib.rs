@@ -1,22 +1,21 @@
 //! This crate provides trait for Message Authentication Code (MAC) algorithms.
 #![no_std]
-#![doc(html_logo_url =
-    "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-extern crate subtle;
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 pub extern crate generic_array;
+extern crate subtle;
 
-#[cfg(feature = "std")]
-extern crate std;
 #[cfg(feature = "dev")]
 pub extern crate blobby;
+#[cfg(feature = "std")]
+extern crate std;
 
-use subtle::{Choice, ConstantTimeEq};
-use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;
+use generic_array::{ArrayLength, GenericArray};
+use subtle::{Choice, ConstantTimeEq};
 
-mod errors;
 #[cfg(feature = "dev")]
 pub mod dev;
+mod errors;
 
 pub use errors::{InvalidKeyLength, MacError};
 
@@ -73,10 +72,13 @@ pub trait Mac: Clone {
 /// implementation that runs in a fixed time.
 #[derive(Clone)]
 pub struct MacResult<N: ArrayLength<u8>> {
-    code: GenericArray<u8, N>
+    code: GenericArray<u8, N>,
 }
 
-impl<N> MacResult<N> where N: ArrayLength<u8> {
+impl<N> MacResult<N>
+where
+    N: ArrayLength<u8>,
+{
     /// Create a new MacResult.
     pub fn new(code: GenericArray<u8, N>) -> MacResult<N> {
         MacResult { code }
@@ -92,16 +94,22 @@ impl<N> MacResult<N> where N: ArrayLength<u8> {
     }
 }
 
-impl<N> ConstantTimeEq for MacResult<N> where N: ArrayLength<u8> {
+impl<N> ConstantTimeEq for MacResult<N>
+where
+    N: ArrayLength<u8>,
+{
     fn ct_eq(&self, other: &Self) -> Choice {
         self.code.ct_eq(&other.code)
     }
 }
 
-impl<N> PartialEq for MacResult<N> where N: ArrayLength<u8> {
+impl<N> PartialEq for MacResult<N>
+where
+    N: ArrayLength<u8>,
+{
     fn eq(&self, x: &MacResult<N>) -> bool {
         self.ct_eq(x).unwrap_u8() == 1
     }
 }
 
-impl<N> Eq for MacResult<N> where N: ArrayLength<u8> { }
+impl<N> Eq for MacResult<N> where N: ArrayLength<u8> {}

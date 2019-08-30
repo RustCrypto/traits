@@ -1,13 +1,12 @@
-
 #[macro_export]
 macro_rules! new_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
         #[test]
         fn $name() {
-            use block_cipher_trait::BlockCipher;
-            use block_cipher_trait::generic_array::GenericArray;
-            use block_cipher_trait::generic_array::typenum::Unsigned;
             use block_cipher_trait::blobby::Blob3Iterator;
+            use block_cipher_trait::generic_array::typenum::Unsigned;
+            use block_cipher_trait::generic_array::GenericArray;
+            use block_cipher_trait::BlockCipher;
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
                 let state = <$cipher as BlockCipher>::new_varkey(key).unwrap();
@@ -45,14 +44,22 @@ macro_rules! new_test {
                 // check that `encrypt_blocks` and `encrypt_block`
                 // result in the same ciphertext
                 state.encrypt_blocks(&mut blocks1);
-                for b in blocks2.iter_mut() { state.encrypt_block(b); }
-                if blocks1 != blocks2 { return false; }
+                for b in blocks2.iter_mut() {
+                    state.encrypt_block(b);
+                }
+                if blocks1 != blocks2 {
+                    return false;
+                }
 
                 // check that `encrypt_blocks` and `encrypt_block`
                 // result in the same plaintext
                 state.decrypt_blocks(&mut blocks1);
-                for b in blocks2.iter_mut() { state.decrypt_block(b); }
-                if blocks1 != blocks2 { return false; }
+                for b in blocks2.iter_mut() {
+                    state.decrypt_block(b);
+                }
+                if blocks1 != blocks2 {
+                    return false;
+                }
 
                 true
             }
@@ -64,11 +71,12 @@ macro_rules! new_test {
                 let plaintext = row[1];
                 let ciphertext = row[2];
                 if !run_test(key, plaintext, ciphertext) {
-                    panic!("\n\
-                        Failed test №{}\n\
-                        key:\t{:?}\n\
-                        plaintext:\t{:?}\n\
-                        ciphertext:\t{:?}\n",
+                    panic!(
+                        "\n\
+                         Failed test №{}\n\
+                         key:\t{:?}\n\
+                         plaintext:\t{:?}\n\
+                         ciphertext:\t{:?}\n",
                         i, key, plaintext, ciphertext,
                     );
                 }
@@ -76,11 +84,12 @@ macro_rules! new_test {
                 // test parallel blocks encryption/decryption
                 if pb != 1 {
                     if !run_par_test(key, plaintext) {
-                        panic!("\n\
-                            Failed parallel test №{}\n\
-                            key:\t{:?}\n\
-                            plaintext:\t{:?}\n\
-                            ciphertext:\t{:?}\n",
+                        panic!(
+                            "\n\
+                             Failed parallel test №{}\n\
+                             key:\t{:?}\n\
+                             plaintext:\t{:?}\n\
+                             ciphertext:\t{:?}\n",
                             i, key, plaintext, ciphertext,
                         );
                     }
@@ -90,7 +99,7 @@ macro_rules! new_test {
             let key = Default::default();
             let _ = <$cipher as BlockCipher>::new(&key).clone();
         }
-    }
+    };
 }
 
 #[macro_export]
@@ -98,8 +107,8 @@ macro_rules! bench {
     ($cipher:path, $key_len:expr) => {
         extern crate test;
 
-        use test::Bencher;
         use block_cipher_trait::BlockCipher;
+        use test::Bencher;
 
         #[bench]
         pub fn encrypt(bh: &mut Bencher) {
@@ -124,5 +133,5 @@ macro_rules! bench {
             });
             bh.bytes = block.len() as u64;
         }
-    }
+    };
 }

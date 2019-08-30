@@ -13,27 +13,27 @@
 //!
 //! The `Digest` trait is the most commonly used trait.
 #![no_std]
-#![doc(html_logo_url =
-    "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 pub extern crate generic_array;
 #[cfg(feature = "std")]
-#[macro_use] extern crate std;
+#[macro_use]
+extern crate std;
 #[cfg(feature = "dev")]
 pub extern crate blobby;
-use generic_array::{GenericArray, ArrayLength};
+use generic_array::{ArrayLength, GenericArray};
 #[cfg(feature = "std")]
 use std::vec::Vec;
 
+#[cfg(feature = "dev")]
+pub mod dev;
 mod digest;
 mod dyn_digest;
 mod errors;
-#[cfg(feature = "dev")]
-pub mod dev;
 
-pub use errors::InvalidOutputSize;
 pub use digest::Digest;
 #[cfg(feature = "std")]
 pub use dyn_digest::DynDigest;
+pub use errors::InvalidOutputSize;
 
 /// Trait for processing input data
 pub trait Input {
@@ -44,7 +44,10 @@ pub trait Input {
     fn input<B: AsRef<[u8]>>(&mut self, data: B);
 
     /// Digest input data in a chained manner.
-    fn chain<B: AsRef<[u8]>>(mut self, data: B) -> Self where Self: Sized {
+    fn chain<B: AsRef<[u8]>>(mut self, data: B) -> Self
+    where
+        Self: Sized,
+    {
         self.input(data);
         self
     }
@@ -137,5 +140,5 @@ macro_rules! impl_write {
                 Ok(())
             }
         }
-    }
+    };
 }

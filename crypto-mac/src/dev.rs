@@ -1,15 +1,12 @@
-
 #[macro_export]
 macro_rules! new_test {
     ($name:ident, $test_name:expr, $mac:ty) => {
         #[test]
         fn $name() {
-            use crypto_mac::Mac;
             use crypto_mac::blobby::Blob3Iterator;
+            use crypto_mac::Mac;
 
-            fn run_test(key: &[u8], input: &[u8], tag: &[u8])
-                -> Option<&'static str>
-            {
+            fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> Option<&'static str> {
                 let mut mac = <$mac as Mac>::new_varkey(key).unwrap();
                 mac.input(input);
                 let result = mac.result_reset();
@@ -40,17 +37,18 @@ macro_rules! new_test {
                 let input = row[1];
                 let tag = row[2];
                 if let Some(desc) = run_test(key, input, tag) {
-                    panic!("\n\
-                        Failed test №{}: {}\n\
-                        key:\t{:?}\n\
-                        input:\t{:?}\n\
-                        tag:\t{:?}\n",
+                    panic!(
+                        "\n\
+                         Failed test №{}: {}\n\
+                         key:\t{:?}\n\
+                         input:\t{:?}\n\
+                         tag:\t{:?}\n",
                         i, desc, key, input, tag,
                     );
                 }
             }
         }
-    }
+    };
 }
 
 #[macro_export]
@@ -73,12 +71,12 @@ macro_rules! bench {
     ($engine:path) => {
         extern crate test;
 
-        use test::Bencher;
         use crypto_mac::Mac;
+        use test::Bencher;
 
-        bench!(bench1_10,    $engine, 10);
-        bench!(bench2_100,   $engine, 100);
-        bench!(bench3_1000,  $engine, 1000);
+        bench!(bench1_10, $engine, 10);
+        bench!(bench2_100, $engine, 100);
+        bench!(bench3_1000, $engine, 1000);
         bench!(bench3_10000, $engine, 10000);
-    }
+    };
 }

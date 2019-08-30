@@ -1,6 +1,6 @@
-use super::{Input, FixedOutput, Reset};
-use generic_array::{GenericArray, ArrayLength};
+use super::{FixedOutput, Input, Reset};
 use generic_array::typenum::Unsigned;
+use generic_array::{ArrayLength, GenericArray};
 
 /// The `Digest` trait specifies an interface common for digest functions.
 ///
@@ -17,7 +17,9 @@ pub trait Digest {
     fn input<B: AsRef<[u8]>>(&mut self, data: B);
 
     /// Digest input data in a chained manner.
-    fn chain<B: AsRef<[u8]>>(self, data: B) -> Self where Self: Sized;
+    fn chain<B: AsRef<[u8]>>(self, data: B) -> Self
+    where
+        Self: Sized;
 
     /// Retrieve result and consume hasher instance.
     fn result(self) -> GenericArray<u8, Self::OutputSize>;
@@ -56,7 +58,10 @@ impl<D: Input + FixedOutput + Reset + Clone + Default> Digest for D {
         Input::input(self, data);
     }
 
-    fn chain<B: AsRef<[u8]>>(self, data: B) -> Self where Self: Sized {
+    fn chain<B: AsRef<[u8]>>(self, data: B) -> Self
+    where
+        Self: Sized,
+    {
         Input::chain(self, data)
     }
 
