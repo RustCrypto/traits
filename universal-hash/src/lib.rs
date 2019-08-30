@@ -10,6 +10,8 @@
 //! When combined with a cipher, such as in Galois/Counter Mode or the
 //! Salsa20 family AEAD constructions, they can provide the core functionality
 //! for a Message Authentication Code (MAC).
+//!
+//! [Universal Hash Functions]: https://en.wikipedia.org/wiki/Universal_hashing
 
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
@@ -22,19 +24,20 @@ pub extern crate generic_array;
 extern crate subtle;
 
 use generic_array::{ArrayLength, GenericArray};
+use generic_array::typenum::Unsigned;
 use subtle::{Choice, ConstantTimeEq};
 
 /// The `UniversalHash` trait defines a generic interface for universal hash
 /// functions.
-pub trait UniversalHash<BlockSize: ArrayLength<u8>>: Clone
-where
-    BlockSize::ArrayType: Copy,
-{
+pub trait UniversalHash: Clone {
+    /// Size of a block (e.g. field element) this universal hash operates on
+    type BlockSize: ArrayLength<u8>;
+
     /// Instantiate a universal hash function with the given key
-    fn new(key: Block<BlockSize>) -> Self;
+    fn new(key: Block<Self::BlockSize>) -> Self;
 
     /// Input a block into the universal hash function
-    fn input_block(&mut self, block: Block<BlockSize>);
+    fn update_block(&mut self, block: Block<Self::BlockSize>);
 
     /// Input data into the universal hash function. If the length of the
     /// data is not a multiple of the block size, the remaining data is
@@ -42,19 +45,20 @@ where
     ///
     /// This approach is frequently used by AEAD modes which use
     /// Message Authentication Codes (MACs) based on universal hashing.
-    fn input_padded(&mut self, data: &[u8]) {
-        let block_size = BlockSize::to_usize();
+    fn update_padded(&mut self, data: &[u8]) {
+        let mut chunks = data.chunks_exact(Self::BlockSize::to_usize());
 
-        for chunk in data.chunks(block_size) {
-            if chunk.len() == block_size {
-                let block_bytes = *GenericArray::from_slice(chunk);
-                self.input_block(block_bytes.into());
-            } else {
-                // Copy the non-aligned chunk into a zero-filled array
-                let mut padded_block = GenericArray::default();
-                padded_block[..chunk.len()].copy_from_slice(chunk);
-                self.input_block(padded_block.into());
-            }
+        for chunk in &mut chunks {
+            let block_bytes = GenericArray::clone_from_slice(chunk);
+            self.update_block(block_bytes.into());
+        }
+
+        let rem = chunks.remainder();
+
+        if !rem.is_empty() {
+            let mut padded_block = GenericArray::default();
+            padded_block[..rem.len()].copy_from_slice(rem);
+            self.update_block(padded_block.into());
         }
     }
 
@@ -62,11 +66,11 @@ where
     fn reset(&mut self);
 
     /// Obtain the output `Block` of a `UniversalHash` function and consume it.
-    fn result(self) -> Block<BlockSize>;
+    fn result(self) -> Block<Self::BlockSize>;
 
     /// Obtain the output `Block` of a `UniversalHash` computation and reset it back
     /// to its initial state.
-    fn result_reset(&mut self) -> Block<BlockSize> {
+    fn result_reset(&mut self) -> Block<Self::BlockSize> {
         let res = self.clone().result();
         self.reset();
         res
@@ -75,7 +79,7 @@ where
     /// Verify the `UniversalHash` of the processed input matches a given output
     /// `Block`. This is useful when constructing Message Authentication Codes (MACs)
     /// from universal hash functions.
-    fn verify(self, output: Block<BlockSize>) -> Result<(), Error> {
+    fn verify(self, output: Block<Self::BlockSize>) -> Result<(), Error> {
         if self.result() == output {
             Ok(())
         } else {
@@ -90,18 +94,14 @@ where
 /// It provides a safe `Eq` implementation that runs in constant time, which
 /// is useful for implementing Message Authentication Codes (MACs) based on
 /// universal hashing.
-#[derive(Copy, Clone)]
-pub struct Block<N: ArrayLength<u8>>
-where
-    N::ArrayType: Copy,
-{
+#[derive(Clone)]
+pub struct Block<N: ArrayLength<u8>> {
     bytes: GenericArray<u8, N>,
 }
 
 impl<N> Block<N>
 where
     N: ArrayLength<u8>,
-    N::ArrayType: Copy,
 {
     /// Create a new `Block`.
     pub fn new(bytes: GenericArray<u8, N>) -> Block<N> {
@@ -112,7 +112,6 @@ where
 impl<N> From<GenericArray<u8, N>> for Block<N>
 where
     N: ArrayLength<u8>,
-    N::ArrayType: Copy,
 {
     fn from(bytes: GenericArray<u8, N>) -> Self {
         Block { bytes }
@@ -122,7 +121,6 @@ where
 impl<N> ConstantTimeEq for Block<N>
 where
     N: ArrayLength<u8>,
-    N::ArrayType: Copy,
 {
     fn ct_eq(&self, other: &Self) -> Choice {
         self.bytes.ct_eq(&other.bytes)
@@ -132,19 +130,13 @@ where
 impl<N> PartialEq for Block<N>
 where
     N: ArrayLength<u8>,
-    N::ArrayType: Copy,
 {
     fn eq(&self, x: &Block<N>) -> bool {
         self.ct_eq(x).unwrap_u8() == 1
     }
 }
 
-impl<N> Eq for Block<N>
-where
-    N: ArrayLength<u8>,
-    N::ArrayType: Copy,
-{
-}
+impl<N: ArrayLength<u8>> Eq for Block<N> {}
 
 /// Error type for when the output `Block` of a `UniversalHash`
 /// is not equal to the expected value.
