@@ -1,20 +1,19 @@
 //! This crate defines a set of simple traits used to define functionality of
 //! block ciphers.
 #![no_std]
-#![doc(html_logo_url =
-    "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-pub extern crate generic_array;
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #[cfg(feature = "dev")]
 pub extern crate blobby;
+pub extern crate generic_array;
 #[cfg(feature = "std")]
 extern crate std;
 
-use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;
+use generic_array::{ArrayLength, GenericArray};
 
-mod errors;
 #[cfg(feature = "dev")]
 pub mod dev;
+mod errors;
 
 pub use errors::InvalidKeyLength;
 
@@ -57,10 +56,10 @@ pub trait BlockCipher: core::marker::Sized {
     ///
     /// If `ParBlocks` equals to 1 it's equivalent to `encrypt_block`.
     #[inline]
-    fn encrypt_blocks(&self,
-        blocks: &mut ParBlocks<Self::BlockSize, Self::ParBlocks>)
-    {
-        for block in blocks.iter_mut() { self.encrypt_block(block); }
+    fn encrypt_blocks(&self, blocks: &mut ParBlocks<Self::BlockSize, Self::ParBlocks>) {
+        for block in blocks.iter_mut() {
+            self.encrypt_block(block);
+        }
     }
 
     /// Decrypt several blocks in parallel using instruction level parallelism
@@ -68,9 +67,9 @@ pub trait BlockCipher: core::marker::Sized {
     ///
     /// If `ParBlocks` equals to 1 it's equivalent to `decrypt_block`.
     #[inline]
-    fn decrypt_blocks(&self,
-        blocks: &mut ParBlocks<Self::BlockSize, Self::ParBlocks>)
-    {
-        for block in blocks.iter_mut() { self.decrypt_block(block); }
+    fn decrypt_blocks(&self, blocks: &mut ParBlocks<Self::BlockSize, Self::ParBlocks>) {
+        for block in blocks.iter_mut() {
+            self.decrypt_block(block);
+        }
     }
 }

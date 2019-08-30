@@ -1,7 +1,7 @@
 #![cfg(feature = "std")]
 use std::boxed::Box;
 
-use super::{Input, FixedOutput, Reset};
+use super::{FixedOutput, Input, Reset};
 use generic_array::typenum::Unsigned;
 
 /// The `DynDigest` trait is a modification of `Digest` trait suitable

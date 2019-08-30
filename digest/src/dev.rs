@@ -1,4 +1,4 @@
-use super::{Input, VariableOutput, ExtendableOutput, Reset, XofReader};
+use super::{ExtendableOutput, Input, Reset, VariableOutput, XofReader};
 use core::fmt::Debug;
 
 #[macro_export]
@@ -13,16 +13,17 @@ macro_rules! new_test {
                 let input = row[0];
                 let output = row[1];
                 if let Some(desc) = $test_func::<$hasher>(input, output) {
-                    panic!("\n\
-                        Failed test №{}: {}\n\
-                        input:\t{:?}\n\
-                        output:\t{:?}\n",
+                    panic!(
+                        "\n\
+                         Failed test №{}: {}\n\
+                         input:\t{:?}\n\
+                         output:\t{:?}\n",
                         i, desc, input, output,
                     );
                 }
             }
         }
-    }
+    };
 }
 
 // module to separate Digest from other traits
@@ -31,7 +32,8 @@ mod foo {
     use core::fmt::Debug;
 
     pub fn digest_test<D>(input: &[u8], output: &[u8]) -> Option<&'static str>
-        where D: Digest + Debug + Clone
+    where
+        D: Digest + Debug + Clone,
     {
         let mut hasher = D::new();
         // Test that it works when accepting the message all at once
@@ -72,9 +74,9 @@ mod foo {
         None
     }
 
-
     pub fn one_million_a<D>(expected: &[u8])
-        where D: Digest + Debug + Clone
+    where
+        D: Digest + Debug + Clone,
     {
         let mut sh = D::new();
         for _ in 0..50_000 {
@@ -88,9 +90,9 @@ mod foo {
 
 pub use self::foo::{digest_test, one_million_a};
 
-pub fn xof_test<D>(input: &[u8], output: &[u8])
-    -> Option<&'static str>
-    where D: Input + ExtendableOutput + Default + Debug + Reset  + Clone
+pub fn xof_test<D>(input: &[u8], output: &[u8]) -> Option<&'static str>
+where
+    D: Input + ExtendableOutput + Default + Debug + Reset + Clone,
 {
     let mut hasher = D::default();
     let mut buf = [0u8; 1024];
@@ -102,7 +104,9 @@ pub fn xof_test<D>(input: &[u8], output: &[u8])
         let out = &mut buf[..output.len()];
         hasher.xof_result().read(out);
 
-        if out != output { return Some("whole message"); }
+        if out != output {
+            return Some("whole message");
+        }
     }
 
     // Test if hasher resets correctly
@@ -113,7 +117,9 @@ pub fn xof_test<D>(input: &[u8], output: &[u8])
         let out = &mut buf[..output.len()];
         hasher2.xof_result().read(out);
 
-        if out != output { return Some("whole message after reset"); }
+        if out != output {
+            return Some("whole message after reset");
+        }
     }
 
     // Test if hasher accepts message in pieces correctly
@@ -129,7 +135,9 @@ pub fn xof_test<D>(input: &[u8], output: &[u8])
     {
         let out = &mut buf[..output.len()];
         hasher.xof_result().read(out);
-        if out != output { return Some("message in pieces"); }
+        if out != output {
+            return Some("message in pieces");
+        }
     }
 
     // Test reading from reader byte by byte
@@ -142,13 +150,15 @@ pub fn xof_test<D>(input: &[u8], output: &[u8])
         reader.read(chunk);
     }
 
-    if out != output { return Some("message in pieces"); }
+    if out != output {
+        return Some("message in pieces");
+    }
     None
 }
 
-pub fn variable_test<D>(input: &[u8], output: &[u8])
-    -> Option<&'static str>
-    where D: Input + VariableOutput  + Reset + Debug + Clone
+pub fn variable_test<D>(input: &[u8], output: &[u8]) -> Option<&'static str>
+where
+    D: Input + VariableOutput + Reset + Debug + Clone,
 {
     let mut hasher = D::new(output.len()).unwrap();
     let mut buf = [0u8; 128];
@@ -157,13 +167,17 @@ pub fn variable_test<D>(input: &[u8], output: &[u8])
     hasher.input(input);
     let mut hasher2 = hasher.clone();
     hasher.variable_result(|res| buf.copy_from_slice(res));
-    if buf != output { return Some("whole message"); }
+    if buf != output {
+        return Some("whole message");
+    }
 
     // Test if reset works correctly
     hasher2.reset();
     hasher2.input(input);
     hasher2.variable_result(|res| buf.copy_from_slice(res));
-    if buf != output { return Some("whole message after reset"); }
+    if buf != output {
+        return Some("whole message after reset");
+    }
 
     // Test that it works when accepting the message in pieces
     let mut hasher = D::new(output.len()).unwrap();
@@ -175,7 +189,9 @@ pub fn variable_test<D>(input: &[u8], output: &[u8])
         left = left - take;
     }
     hasher.variable_result(|res| buf.copy_from_slice(res));
-    if buf != output { return Some("message in pieces"); }
+    if buf != output {
+        return Some("message in pieces");
+    }
 
     // Test processing byte-by-byte
     let mut hasher = D::new(output.len()).unwrap();
@@ -183,10 +199,11 @@ pub fn variable_test<D>(input: &[u8], output: &[u8])
         hasher.input(chunk)
     }
     hasher.variable_result(|res| buf.copy_from_slice(res));
-    if buf != output { return Some("message byte-by-byte"); }
+    if buf != output {
+        return Some("message byte-by-byte");
+    }
     None
 }
-
 
 #[macro_export]
 macro_rules! bench {
@@ -207,12 +224,12 @@ macro_rules! bench {
     ($engine:path) => {
         extern crate test;
 
-        use test::Bencher;
         use digest::Digest;
+        use test::Bencher;
 
-        bench!(bench1_10,    $engine, 10);
-        bench!(bench2_100,   $engine, 100);
-        bench!(bench3_1000,  $engine, 1000);
+        bench!(bench1_10, $engine, 10);
+        bench!(bench2_100, $engine, 100);
+        bench!(bench3_1000, $engine, 1000);
         bench!(bench4_10000, $engine, 10000);
-    }
+    };
 }

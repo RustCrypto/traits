@@ -10,7 +10,6 @@ pub struct MacError;
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
 pub struct InvalidKeyLength;
 
-
 impl fmt::Display for MacError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str("failed MAC verification")
