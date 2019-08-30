@@ -1,0 +1,24 @@
+[package]
+name = "universal-hash"
+version = "0.0.0"
+authors = ["RustCrypto Developers"]
+license = "MIT OR Apache-2.0"
+description = "Trait for universal hash functions"
+documentation = "https://docs.rs/universal-hash"
+repository = "https://github.com/RustCrypto/traits"
+keywords = ["crypto", "mac"]
+categories = ["cryptography", "no-std"]
+edition = "2018"
+
+[dependencies]
+generic-array = "0.12"
+subtle = { version = "2", default-features = false }
+
+[features]
+std = []
+
+[badges]
+travis-ci = { repository = "RustCrypto/traits" }
+
+[package.metadata.docs.rs]
+all-features = true
