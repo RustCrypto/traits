@@ -20,8 +20,10 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-use generic_array::{ArrayLength, GenericArray};
+pub use generic_array;
+
 use generic_array::typenum::Unsigned;
+use generic_array::{ArrayLength, GenericArray};
 use subtle::{Choice, ConstantTimeEq};
 
 /// The `UniversalHash` trait defines a generic interface for universal hash
@@ -75,7 +77,7 @@ pub trait UniversalHash: Clone {
     /// Verify the `UniversalHash` of the processed input matches a given [`Output`].
     /// This is useful when constructing Message Authentication Codes (MACs)
     /// from universal hash functions.
-    fn verify(self, other: impl Into<Output<Self::BlockSize>>) -> Result<(), Error> {
+    fn verify(self, other: &GenericArray<u8, Self::BlockSize>) -> Result<(), Error> {
         if self.result() == other.into() {
             Ok(())
         } else {
