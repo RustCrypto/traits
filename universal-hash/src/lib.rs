@@ -31,10 +31,10 @@ pub trait UniversalHash: Clone {
     type BlockSize: ArrayLength<u8>;
 
     /// Instantiate a universal hash function with the given key
-    fn new(key: GenericArray<u8, Self::BlockSize>) -> Self;
+    fn new(key: &GenericArray<u8, Self::BlockSize>) -> Self;
 
     /// Input a block into the universal hash function
-    fn update_block(&mut self, block: GenericArray<u8, Self::BlockSize>);
+    fn update_block(&mut self, block: &GenericArray<u8, Self::BlockSize>);
 
     /// Input data into the universal hash function. If the length of the
     /// data is not a multiple of the block size, the remaining data is
@@ -46,8 +46,7 @@ pub trait UniversalHash: Clone {
         let mut chunks = data.chunks_exact(Self::BlockSize::to_usize());
 
         for chunk in &mut chunks {
-            let block_bytes = GenericArray::clone_from_slice(chunk);
-            self.update_block(block_bytes.into());
+            self.update_block(GenericArray::from_slice(chunk));
         }
 
         let rem = chunks.remainder();
@@ -55,7 +54,7 @@ pub trait UniversalHash: Clone {
         if !rem.is_empty() {
             let mut padded_block = GenericArray::default();
             padded_block[..rem.len()].copy_from_slice(rem);
-            self.update_block(padded_block.into());
+            self.update_block(&padded_block);
         }
     }
 
@@ -76,8 +75,8 @@ pub trait UniversalHash: Clone {
     /// Verify the `UniversalHash` of the processed input matches a given [`Output`].
     /// This is useful when constructing Message Authentication Codes (MACs)
     /// from universal hash functions.
-    fn verify(self, output: Output<Self::BlockSize>) -> Result<(), Error> {
-        if self.result() == output {
+    fn verify(self, other: impl Into<Output<Self::BlockSize>>) -> Result<(), Error> {
+        if self.result() == other.into() {
             Ok(())
         } else {
             Err(Error)
@@ -110,6 +109,15 @@ where
 {
     fn from(bytes: GenericArray<u8, N>) -> Self {
         Output { bytes }
+    }
+}
+
+impl<'a, N> From<&'a GenericArray<u8, N>> for Output<N>
+where
+    N: ArrayLength<u8>,
+{
+    fn from(bytes: &'a GenericArray<u8, N>) -> Self {
+        bytes.clone().into()
     }
 }
 
