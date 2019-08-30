@@ -31,10 +31,10 @@ pub trait UniversalHash: Clone {
     type BlockSize: ArrayLength<u8>;
 
     /// Instantiate a universal hash function with the given key
-    fn new(key: Block<Self::BlockSize>) -> Self;
+    fn new(key: GenericArray<u8, Self::BlockSize>) -> Self;
 
     /// Input a block into the universal hash function
-    fn update_block(&mut self, block: Block<Self::BlockSize>);
+    fn update_block(&mut self, block: GenericArray<u8, Self::BlockSize>);
 
     /// Input data into the universal hash function. If the length of the
     /// data is not a multiple of the block size, the remaining data is
@@ -62,21 +62,21 @@ pub trait UniversalHash: Clone {
     /// Reset `UniversalHash` instance.
     fn reset(&mut self);
 
-    /// Obtain the output `Block` of a `UniversalHash` function and consume it.
-    fn result(self) -> Block<Self::BlockSize>;
+    /// Obtain the [`Output`] of a `UniversalHash` function and consume it.
+    fn result(self) -> Output<Self::BlockSize>;
 
-    /// Obtain the output `Block` of a `UniversalHash` computation and reset it back
+    /// Obtain the [`Output`] of a `UniversalHash` computation and reset it back
     /// to its initial state.
-    fn result_reset(&mut self) -> Block<Self::BlockSize> {
+    fn result_reset(&mut self) -> Output<Self::BlockSize> {
         let res = self.clone().result();
         self.reset();
         res
     }
 
-    /// Verify the `UniversalHash` of the processed input matches a given output
-    /// `Block`. This is useful when constructing Message Authentication Codes (MACs)
+    /// Verify the `UniversalHash` of the processed input matches a given [`Output`].
+    /// This is useful when constructing Message Authentication Codes (MACs)
     /// from universal hash functions.
-    fn verify(self, output: Block<Self::BlockSize>) -> Result<(), Error> {
+    fn verify(self, output: Output<Self::BlockSize>) -> Result<(), Error> {
         if self.result() == output {
             Ok(())
         } else {
@@ -85,37 +85,35 @@ pub trait UniversalHash: Clone {
     }
 }
 
-/// The `Block` type is used as the input and output of a universal hash
-/// function and provides a thin wrapper around a byte array.
-///
-/// It provides a safe `Eq` implementation that runs in constant time, which
-/// is useful for implementing Message Authentication Codes (MACs) based on
-/// universal hashing.
+/// Outputs of universal hash functions which are a thin wrapper around a
+/// byte array. Provides a safe `Eq` implementation that runs in constant time,
+/// which is useful for implementing Message Authentication Codes (MACs) based
+/// on universal hashing.
 #[derive(Clone)]
-pub struct Block<N: ArrayLength<u8>> {
+pub struct Output<N: ArrayLength<u8>> {
     bytes: GenericArray<u8, N>,
 }
 
-impl<N> Block<N>
+impl<N> Output<N>
 where
     N: ArrayLength<u8>,
 {
     /// Create a new `Block`.
-    pub fn new(bytes: GenericArray<u8, N>) -> Block<N> {
-        Block { bytes }
+    pub fn new(bytes: GenericArray<u8, N>) -> Output<N> {
+        Output { bytes }
     }
 }
 
-impl<N> From<GenericArray<u8, N>> for Block<N>
+impl<N> From<GenericArray<u8, N>> for Output<N>
 where
     N: ArrayLength<u8>,
 {
     fn from(bytes: GenericArray<u8, N>) -> Self {
-        Block { bytes }
+        Output { bytes }
     }
 }
 
-impl<N> ConstantTimeEq for Block<N>
+impl<N> ConstantTimeEq for Output<N>
 where
     N: ArrayLength<u8>,
 {
@@ -124,18 +122,18 @@ where
     }
 }
 
-impl<N> PartialEq for Block<N>
+impl<N> PartialEq for Output<N>
 where
     N: ArrayLength<u8>,
 {
-    fn eq(&self, x: &Block<N>) -> bool {
+    fn eq(&self, x: &Output<N>) -> bool {
         self.ct_eq(x).unwrap_u8() == 1
     }
 }
 
-impl<N: ArrayLength<u8>> Eq for Block<N> {}
+impl<N: ArrayLength<u8>> Eq for Output<N> {}
 
-/// Error type for when the output `Block` of a `UniversalHash`
+/// Error type for when the `Output` of a `UniversalHash`
 /// is not equal to the expected value.
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Error;
