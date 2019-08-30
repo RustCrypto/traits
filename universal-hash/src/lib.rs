@@ -103,6 +103,11 @@ where
     pub fn new(bytes: GenericArray<u8, N>) -> Output<N> {
         Output { bytes }
     }
+
+    /// Get the inner `GenericArray` this type wraps
+    pub fn into_bytes(self) -> GenericArray<u8, N> {
+        self.bytes
+    }
 }
 
 impl<N> From<GenericArray<u8, N>> for Output<N>
