@@ -15,13 +15,10 @@
 
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-#![warn(missing_docs)]
+#![warn(missing_docs, rust_2018_idioms)]
 
 #[cfg(feature = "std")]
 extern crate std;
-
-pub extern crate generic_array;
-extern crate subtle;
 
 use generic_array::{ArrayLength, GenericArray};
 use generic_array::typenum::Unsigned;
