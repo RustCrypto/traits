@@ -29,14 +29,16 @@ use subtle::{Choice, ConstantTimeEq};
 /// The `UniversalHash` trait defines a generic interface for universal hash
 /// functions.
 pub trait UniversalHash: Clone {
-    /// Size of a block (e.g. field element) this universal hash operates on
-    type BlockSize: ArrayLength<u8>;
+    /// Size of the key for the universal hash function
+    type KeySize: ArrayLength<u8>;
+    /// Size of the output from the universal hash function
+    type OutputSize: ArrayLength<u8>;
 
     /// Instantiate a universal hash function with the given key
-    fn new(key: &GenericArray<u8, Self::BlockSize>) -> Self;
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self;
 
     /// Input a block into the universal hash function
-    fn update_block(&mut self, block: &GenericArray<u8, Self::BlockSize>);
+    fn update_block(&mut self, block: &GenericArray<u8, Self::OutputSize>);
 
     /// Input data into the universal hash function. If the length of the
     /// data is not a multiple of the block size, the remaining data is
@@ -45,7 +47,7 @@ pub trait UniversalHash: Clone {
     /// This approach is frequently used by AEAD modes which use
     /// Message Authentication Codes (MACs) based on universal hashing.
     fn update_padded(&mut self, data: &[u8]) {
-        let mut chunks = data.chunks_exact(Self::BlockSize::to_usize());
+        let mut chunks = data.chunks_exact(Self::OutputSize::to_usize());
 
         for chunk in &mut chunks {
             self.update_block(GenericArray::from_slice(chunk));
@@ -64,11 +66,11 @@ pub trait UniversalHash: Clone {
     fn reset(&mut self);
 
     /// Obtain the [`Output`] of a `UniversalHash` function and consume it.
-    fn result(self) -> Output<Self::BlockSize>;
+    fn result(self) -> Output<Self::OutputSize>;
 
     /// Obtain the [`Output`] of a `UniversalHash` computation and reset it back
     /// to its initial state.
-    fn result_reset(&mut self) -> Output<Self::BlockSize> {
+    fn result_reset(&mut self) -> Output<Self::OutputSize> {
         let res = self.clone().result();
         self.reset();
         res
@@ -77,7 +79,7 @@ pub trait UniversalHash: Clone {
     /// Verify the `UniversalHash` of the processed input matches a given [`Output`].
     /// This is useful when constructing Message Authentication Codes (MACs)
     /// from universal hash functions.
-    fn verify(self, other: &GenericArray<u8, Self::BlockSize>) -> Result<(), Error> {
+    fn verify(self, other: &GenericArray<u8, Self::OutputSize>) -> Result<(), Error> {
         if self.result() == other.into() {
             Ok(())
         } else {
