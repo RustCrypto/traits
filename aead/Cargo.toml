@@ -7,12 +7,16 @@ license = "MIT OR Apache-2.0"
 description = "Traits for Authenticated Encryption with Associated Data (AEAD) algorithms"
 documentation = "https://docs.rs/aead"
 repository = "https://github.com/RustCrypto/traits"
-keywords = ["digest", "crypto", "encryption"]
+keywords = ["crypto", "encryption"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = { version = "0.12", default-features = false }
+heapless = { version = "0.5", optional = true }
 
 [features]
 default = ["alloc"]
 alloc = []
+
+[package.metadata.docs.rs]
+all-features = true
