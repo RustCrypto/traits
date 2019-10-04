@@ -12,3 +12,7 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = { version = "0.12", default-features = false }
+
+[features]
+default = ["alloc"]
+alloc = []
