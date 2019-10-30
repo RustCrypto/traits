@@ -1,0 +1,27 @@
+name: block-cipher-trait
+on:
+  push:
+    paths:
+    - 'block-cipher-trait/**'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+          - 1.21.0 # MSRV
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: ${{ matrix.rust }}
+    - run: |
+        cargo check --all-features
+        cargo test --features dev
+        cargo test --features std
+        cargo test --all-features
+      working-directory: block-cipher-trait
