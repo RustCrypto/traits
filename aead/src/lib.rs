@@ -18,48 +18,34 @@
 extern crate alloc;
 
 pub use generic_array;
+#[cfg(feature = "heapless")]
+pub use heapless;
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
-// Define the default implementation for both `Aead::encrypt()` and
-// `AeadMut::encrypt()`. Uses a macro to gloss over `&self` vs `&mut self`.
-#[cfg(feature = "alloc")]
-macro_rules! encrypt_to_postfix_tagged_vec {
-    ($aead:expr, $nonce:expr, $payload:expr) => {{
-        let payload = $payload.into();
-        let mut buffer = Vec::with_capacity(payload.msg.len() + Self::TagSize::to_usize());
-        buffer.extend_from_slice(payload.msg);
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct Error;
 
-        let tag = $aead.encrypt_in_place_detached($nonce, payload.aad, &mut buffer)?;
-        buffer.extend_from_slice(tag.as_slice());
-        Ok(buffer)
-    }};
-}
-
-// Define the default implementation for both `Aead::decrypt()` and
-// `AeadMut::decrypt()`. Uses a macro to gloss over `&self` vs `&mut self`.
-#[cfg(feature = "alloc")]
-macro_rules! decrypt_postfix_tagged_ciphertext_to_vec {
-    ($aead:expr, $nonce:expr, $payload:expr) => {{
-        let payload = $payload.into();
-
-        if payload.msg.len() < Self::TagSize::to_usize() {
+/// Implement the `decrypt_in_place` method on `Aead` and `AeadMut`.
+/// Uses a macro to gloss over `&self` vs `&mut self`.
+///
+/// Assumes a postfix authentication tag. AEAD ciphers which do not use a
+/// postfix authentication tag will need to define their own implementation.
+macro_rules! impl_decrypt_in_place {
+    ($aead:expr, $nonce:expr, $aad:expr, $buffer:expr) => {{
+        if $buffer.len() < Self::TagSize::to_usize() {
             return Err(Error);
         }
 
-        let tag_start = payload.msg.len() - Self::TagSize::to_usize();
-        let mut buffer = Vec::from(&payload.msg[..tag_start]);
-        let tag = GenericArray::from_slice(&payload.msg[tag_start..]);
-        $aead.decrypt_in_place_detached($nonce, payload.aad, &mut buffer, tag)?;
-
-        Ok(buffer)
+        let tag_pos = $buffer.len() - Self::TagSize::to_usize();
+        let (msg, tag) = $buffer.as_mut().split_at_mut(tag_pos);
+        $aead.decrypt_in_place_detached($nonce, $aad, msg, GenericArray::from_slice(tag))?;
+        $buffer.truncate(tag_pos);
+        Ok(())
     }};
 }
-
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Error;
 
 /// Instantiate either a stateless [`Aead`] or stateful [`AeadMut`] algorithm.
 pub trait NewAead {
@@ -112,7 +98,31 @@ pub trait Aead {
         nonce: &GenericArray<u8, Self::NonceSize>,
         plaintext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
-        encrypt_to_postfix_tagged_vec!(self, nonce, plaintext)
+        let payload = plaintext.into();
+        let mut buffer = Vec::with_capacity(payload.msg.len() + Self::TagSize::to_usize());
+        buffer.extend_from_slice(payload.msg);
+        self.encrypt_in_place(nonce, payload.aad, &mut buffer)?;
+        Ok(buffer)
+    }
+
+    /// Encrypt the given buffer containing a plaintext message in-place.
+    ///
+    /// The buffer must have sufficient capacity to store the ciphertext
+    /// message, which will always be larger than the original plaintext.
+    /// The exact size needed is cipher-dependent, but generally includes
+    /// the size of an authentication tag.
+    ///
+    /// Returns an error if the buffer has insufficient capacity to store the
+    /// resulting ciphertext message.
+    fn encrypt_in_place(
+        &self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &mut impl Buffer,
+    ) -> Result<(), Error> {
+        let tag = self.encrypt_in_place_detached(nonce, associated_data, buffer.as_mut())?;
+        buffer.extend_from_slice(tag.as_slice())?;
+        Ok(())
     }
 
     /// Encrypt the data in-place, returning the authentication tag
@@ -146,10 +156,27 @@ pub trait Aead {
         nonce: &GenericArray<u8, Self::NonceSize>,
         ciphertext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
-        decrypt_postfix_tagged_ciphertext_to_vec!(self, nonce, ciphertext)
+        let payload = ciphertext.into();
+        let mut buffer = Vec::from(payload.msg);
+        self.decrypt_in_place(nonce, payload.aad, &mut buffer)?;
+        Ok(buffer)
     }
 
-    /// Decrypt the data in-place, returning an error in the event the provided
+    /// Decrypt the message in-place, returning an error in the event the
+    /// provided authentication tag does not match the given ciphertext.
+    ///
+    /// The buffer will be truncated to the length of the original plaintext
+    /// message upon success.
+    fn decrypt_in_place(
+        &self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &mut impl Buffer,
+    ) -> Result<(), Error> {
+        impl_decrypt_in_place!(self, nonce, associated_data, buffer)
+    }
+
+    /// Decrypt the message in-place, returning an error in the event the provided
     /// authentication tag does not match the given ciphertext (i.e. ciphertext
     /// is modified/unauthentic)
     fn decrypt_in_place_detached(
@@ -182,7 +209,31 @@ pub trait AeadMut {
         nonce: &GenericArray<u8, Self::NonceSize>,
         plaintext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
-        encrypt_to_postfix_tagged_vec!(self, nonce, plaintext)
+        let payload = plaintext.into();
+        let mut buffer = Vec::with_capacity(payload.msg.len() + Self::TagSize::to_usize());
+        buffer.extend_from_slice(payload.msg);
+        self.encrypt_in_place(nonce, payload.aad, &mut buffer)?;
+        Ok(buffer)
+    }
+
+    /// Encrypt the given buffer containing a plaintext message in-place.
+    ///
+    /// The buffer must have sufficient capacity to store the ciphertext
+    /// message, which will always be larger than the original plaintext.
+    /// The exact size needed is cipher-dependent, but generally includes
+    /// the size of an authentication tag.
+    ///
+    /// Returns an error if the buffer has insufficient capacity to store the
+    /// resulting ciphertext message.
+    fn encrypt_in_place(
+        &mut self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &mut impl Buffer,
+    ) -> Result<(), Error> {
+        let tag = self.encrypt_in_place_detached(nonce, associated_data, buffer.as_mut())?;
+        buffer.extend_from_slice(tag.as_slice())?;
+        Ok(())
     }
 
     /// Encrypt the data in-place, returning the authentication tag
@@ -204,7 +255,24 @@ pub trait AeadMut {
         nonce: &GenericArray<u8, Self::NonceSize>,
         ciphertext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
-        decrypt_postfix_tagged_ciphertext_to_vec!(self, nonce, ciphertext)
+        let payload = ciphertext.into();
+        let mut buffer = Vec::from(payload.msg);
+        self.decrypt_in_place(nonce, payload.aad, &mut buffer)?;
+        Ok(buffer)
+    }
+
+    /// Decrypt the message in-place, returning an error in the event the
+    /// provided authentication tag does not match the given ciphertext.
+    ///
+    /// The buffer will be truncated to the length of the original plaintext
+    /// message upon success.
+    fn decrypt_in_place(
+        &mut self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &mut impl Buffer,
+    ) -> Result<(), Error> {
+        impl_decrypt_in_place!(self, nonce, associated_data, buffer)
     }
 
     /// Decrypt the data in-place, returning an error in the event the provided
@@ -237,6 +305,16 @@ impl<Algo: Aead> AeadMut for Algo {
         <Self as Aead>::encrypt(self, nonce, plaintext)
     }
 
+    /// Encrypt the given buffer containing a plaintext message in-place.
+    fn encrypt_in_place(
+        &mut self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &mut impl Buffer,
+    ) -> Result<(), Error> {
+        <Self as Aead>::encrypt_in_place(self, nonce, associated_data, buffer)
+    }
+
     /// Encrypt the data in-place, returning the authentication tag
     fn encrypt_in_place_detached(
         &mut self,
@@ -256,6 +334,17 @@ impl<Algo: Aead> AeadMut for Algo {
         ciphertext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
         <Self as Aead>::decrypt(self, nonce, ciphertext)
+    }
+
+    /// Decrypt the message in-place, returning an error in the event the
+    /// provided authentication tag does not match the given ciphertext.
+    fn decrypt_in_place(
+        &mut self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &mut impl Buffer,
+    ) -> Result<(), Error> {
+        <Self as Aead>::decrypt_in_place(self, nonce, associated_data, buffer)
     }
 
     /// Decrypt the data in-place, returning an error in the event the provided
@@ -292,5 +381,53 @@ pub struct Payload<'msg, 'aad> {
 impl<'msg, 'aad> From<&'msg [u8]> for Payload<'msg, 'aad> {
     fn from(msg: &'msg [u8]) -> Self {
         Self { msg, aad: b"" }
+    }
+}
+
+/// In-place encryption/decryption byte buffers.
+///
+/// This trait defines the set of methods needed to support in-place operations
+/// on a `Vec`-like data type.
+pub trait Buffer: AsRef<[u8]> + AsMut<[u8]> {
+    /// Get the length of the buffer
+    fn len(&self) -> usize {
+        self.as_ref().len()
+    }
+
+    /// Is the buffer empty?
+    fn is_empty(&self) -> bool {
+        self.as_ref().is_empty()
+    }
+
+    /// Extend this buffer from the given slice
+    fn extend_from_slice(&mut self, other: &[u8]) -> Result<(), Error>;
+
+    /// Truncate this buffer to the given size
+    fn truncate(&mut self, len: usize);
+}
+
+#[cfg(feature = "alloc")]
+impl Buffer for Vec<u8> {
+    fn extend_from_slice(&mut self, other: &[u8]) -> Result<(), Error> {
+        Vec::extend_from_slice(self, other);
+        Ok(())
+    }
+
+    fn truncate(&mut self, len: usize) {
+        Vec::truncate(self, len);
+    }
+}
+
+#[cfg(feature = "heapless")]
+impl<N> Buffer for heapless::Vec<u8, N>
+where
+    N: heapless::ArrayLength<u8>,
+{
+    fn extend_from_slice(&mut self, other: &[u8]) -> Result<(), Error> {
+        heapless::Vec::extend_from_slice(self, other).map_err(|_| Error)
+    }
+
+    fn truncate(&mut self, len: usize) {
+        heapless::Vec::truncate(self, len);
     }
 }
