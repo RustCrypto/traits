@@ -14,12 +14,49 @@
 
 #![no_std]
 
+#[cfg(feature = "alloc")]
 extern crate alloc;
 
 pub use generic_array;
 
+#[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+
+// Define the default implementation for both `Aead::encrypt()` and
+// `AeadMut::encrypt()`. Uses a macro to gloss over `&self` vs `&mut self`.
+#[cfg(feature = "alloc")]
+macro_rules! encrypt_to_postfix_tagged_vec {
+    ($aead:expr, $nonce:expr, $payload:expr) => {{
+        let payload = $payload.into();
+        let mut buffer = Vec::with_capacity(payload.msg.len() + Self::TagSize::to_usize());
+        buffer.extend_from_slice(payload.msg);
+
+        let tag = $aead.encrypt_in_place_detached($nonce, payload.aad, &mut buffer)?;
+        buffer.extend_from_slice(tag.as_slice());
+        Ok(buffer)
+    }};
+}
+
+// Define the default implementation for both `Aead::decrypt()` and
+// `AeadMut::decrypt()`. Uses a macro to gloss over `&self` vs `&mut self`.
+#[cfg(feature = "alloc")]
+macro_rules! decrypt_postfix_tagged_ciphertext_to_vec {
+    ($aead:expr, $nonce:expr, $payload:expr) => {{
+        let payload = $payload.into();
+
+        if payload.msg.len() < Self::TagSize::to_usize() {
+            return Err(Error);
+        }
+
+        let tag_start = payload.msg.len() - Self::TagSize::to_usize();
+        let mut buffer = Vec::from(&payload.msg[..tag_start]);
+        let tag = GenericArray::from_slice(&payload.msg[tag_start..]);
+        $aead.decrypt_in_place_detached($nonce, payload.aad, &mut buffer, tag)?;
+
+        Ok(buffer)
+    }};
+}
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Error;
@@ -36,7 +73,7 @@ pub trait NewAead {
 /// Authenticated Encryption with Associated Data (AEAD) algorithm.
 ///
 /// This trait is intended for use with stateless AEAD algorithms. The
-/// `AeadMut` trait provides a stateful interface.
+/// [`AeadMut`] trait provides a stateful interface.
 pub trait Aead {
     /// The length of a nonce.
     type NonceSize: ArrayLength<u8>;
@@ -64,11 +101,27 @@ pub trait Aead {
     /// let plaintext = b"Top secret message, handle with care";
     /// let ciphertext = cipher.encrypt(nonce, plaintext);
     /// ```
+    ///
+    /// The default implementation assumes a postfix tag (ala AES-GCM,
+    /// AES-GCM-SIV, ChaCha20Poly1305). [`Aead`] implementations which do not
+    /// use a postfix tag will need to override this to correctly assemble the
+    /// ciphertext message.
+    #[cfg(feature = "alloc")]
     fn encrypt<'msg, 'aad>(
         &self,
         nonce: &GenericArray<u8, Self::NonceSize>,
         plaintext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error>;
+    ) -> Result<Vec<u8>, Error> {
+        encrypt_to_postfix_tagged_vec!(self, nonce, plaintext)
+    }
+
+    /// Encrypt the data in-place, returning the authentication tag
+    fn encrypt_in_place_detached(
+        &self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+    ) -> Result<GenericArray<u8, Self::TagSize>, Error>;
 
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
     /// as a vector of bytes.
@@ -82,11 +135,30 @@ pub trait Aead {
     /// let ciphertext = b"...";
     /// let plaintext = cipher.decrypt(nonce, ciphertext)?;
     /// ```
+    ///
+    /// The default implementation assumes a postfix tag (ala AES-GCM,
+    /// AES-GCM-SIV, ChaCha20Poly1305). [`Aead`] implementations which do not
+    /// use a postfix tag will need to override this to correctly parse the
+    /// ciphertext message.
+    #[cfg(feature = "alloc")]
     fn decrypt<'msg, 'aad>(
         &self,
         nonce: &GenericArray<u8, Self::NonceSize>,
         ciphertext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error>;
+    ) -> Result<Vec<u8>, Error> {
+        decrypt_postfix_tagged_ciphertext_to_vec!(self, nonce, ciphertext)
+    }
+
+    /// Decrypt the data in-place, returning an error in the event the provided
+    /// authentication tag does not match the given ciphertext (i.e. ciphertext
+    /// is modified/unauthentic)
+    fn decrypt_in_place_detached(
+        &self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+        tag: &GenericArray<u8, Self::TagSize>,
+    ) -> Result<(), Error>;
 }
 
 /// Stateful Authenticated Encryption with Associated Data algorithm.
@@ -104,22 +176,47 @@ pub trait AeadMut {
     ///
     /// See notes on [`Aead::encrypt()`] about allowable message payloads and
     /// Associated Additional Data (AAD).
+    #[cfg(feature = "alloc")]
     fn encrypt<'msg, 'aad>(
         &mut self,
         nonce: &GenericArray<u8, Self::NonceSize>,
         plaintext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error>;
+    ) -> Result<Vec<u8>, Error> {
+        encrypt_to_postfix_tagged_vec!(self, nonce, plaintext)
+    }
+
+    /// Encrypt the data in-place, returning the authentication tag
+    fn encrypt_in_place_detached(
+        &mut self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+    ) -> Result<GenericArray<u8, Self::TagSize>, Error>;
 
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
     /// as a vector of bytes.
     ///
     /// See notes on [`Aead::encrypt()`] and [`Aead::decrypt()`] about allowable
     /// message payloads and Associated Additional Data (AAD).
+    #[cfg(feature = "alloc")]
     fn decrypt<'msg, 'aad>(
         &mut self,
         nonce: &GenericArray<u8, Self::NonceSize>,
         ciphertext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error>;
+    ) -> Result<Vec<u8>, Error> {
+        decrypt_postfix_tagged_ciphertext_to_vec!(self, nonce, ciphertext)
+    }
+
+    /// Decrypt the data in-place, returning an error in the event the provided
+    /// authentication tag does not match the given ciphertext (i.e. ciphertext
+    /// is modified/unauthentic)
+    fn decrypt_in_place_detached(
+        &mut self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+        tag: &GenericArray<u8, Self::TagSize>,
+    ) -> Result<(), Error>;
 }
 
 /// A blanket implementation of the Stateful AEAD interface for Stateless
@@ -131,6 +228,7 @@ impl<Algo: Aead> AeadMut for Algo {
 
     /// Encrypt the given plaintext slice, and return the resulting ciphertext
     /// as a vector of bytes.
+    #[cfg(feature = "alloc")]
     fn encrypt<'msg, 'aad>(
         &mut self,
         nonce: &GenericArray<u8, Self::NonceSize>,
@@ -139,14 +237,38 @@ impl<Algo: Aead> AeadMut for Algo {
         <Self as Aead>::encrypt(self, nonce, plaintext)
     }
 
+    /// Encrypt the data in-place, returning the authentication tag
+    fn encrypt_in_place_detached(
+        &mut self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+    ) -> Result<GenericArray<u8, Self::TagSize>, Error> {
+        <Self as Aead>::encrypt_in_place_detached(self, nonce, associated_data, buffer)
+    }
+
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
     /// as a vector of bytes.
+    #[cfg(feature = "alloc")]
     fn decrypt<'msg, 'aad>(
         &mut self,
         nonce: &GenericArray<u8, Self::NonceSize>,
         ciphertext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
         <Self as Aead>::decrypt(self, nonce, ciphertext)
+    }
+
+    /// Decrypt the data in-place, returning an error in the event the provided
+    /// authentication tag does not match the given ciphertext (i.e. ciphertext
+    /// is modified/unauthentic)
+    fn decrypt_in_place_detached(
+        &mut self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+        tag: &GenericArray<u8, Self::TagSize>,
+    ) -> Result<(), Error> {
+        <Self as Aead>::decrypt_in_place_detached(self, nonce, associated_data, buffer, tag)
     }
 }
 
