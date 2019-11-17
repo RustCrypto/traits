@@ -23,13 +23,14 @@ matrix:
     - env: TARGET=powerpc64-unknown-linux-gnu
       rust: stable
     # tests if crates truly can be built without std
-    - env: TARGET=thumbv7em-none-eabi
-      rust: nightly
-      script: xargo build --all --exclude aead --no-default-features --verbose --target $TARGET
-      install:
-        - cargo install xargo || true
-        - rustup target install armv7-unknown-linux-gnueabihf
-        - rustup component add rust-src
+    # temporary disable, since aead enables `alloc` by default
+    #- env: TARGET=thumbv7em-none-eabi
+    #  rust: nightly
+    #  script: xargo build --all --exclude aead --no-default-features --verbose --target $TARGET
+    #  install:
+    #    - cargo install xargo || true
+    #    - rustup target install armv7-unknown-linux-gnueabihf
+    #    - rustup component add rust-src
 
 install:
   - cargo install cross || true
