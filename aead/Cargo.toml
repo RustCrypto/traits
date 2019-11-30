@@ -17,6 +17,7 @@ heapless = { version = "0.5", optional = true }
 [features]
 default = ["alloc"]
 alloc = []
+std = ["alloc"]
 
 [package.metadata.docs.rs]
 all-features = true

@@ -17,16 +17,29 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
+#[cfg(feature = "std")]
+extern crate std;
+
 pub use generic_array;
 #[cfg(feature = "heapless")]
 pub use heapless;
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
+use core::fmt;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Error;
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("aead::Error")
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for Error {}
 
 /// Implement the `decrypt_in_place` method on `Aead` and `AeadMut`.
 /// Uses a macro to gloss over `&self` vs `&mut self`.
