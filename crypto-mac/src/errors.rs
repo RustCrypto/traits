@@ -23,15 +23,7 @@ impl fmt::Display for InvalidKeyLength {
 }
 
 #[cfg(feature = "std")]
-impl error::Error for MacError {
-    fn description(&self) -> &str {
-        "failed MAC verification"
-    }
-}
+impl error::Error for MacError {}
 
 #[cfg(feature = "std")]
-impl error::Error for InvalidKeyLength {
-    fn description(&self) -> &str {
-        "invalid key length"
-    }
-}
+impl error::Error for InvalidKeyLength {}
