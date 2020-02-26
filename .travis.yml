@@ -4,7 +4,7 @@ sudo: required
 
 matrix:
   include:
-    - rust: 1.21.0
+    - rust: 1.31.0
       script: cargo test --verbose --all --exclude aead --exclude universal-hash --release
     - rust: 1.36.0
       script: cargo test --verbose --package aead --package universal-hash --release
@@ -13,7 +13,7 @@ matrix:
     - rust: nightly
       script: cargo test --verbose --all --release
     # tests if crates can be built with std feature
-    - rust: 1.21.0
+    - rust: 1.31.0
       script: ./build_std.sh
 
     - env: TARGET=i686-unknown-linux-gnu
