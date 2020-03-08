@@ -1,29 +1,136 @@
+//! RustCrypto: `signature` crate.
+//!
 //! Traits which provide generic, object-safe APIs for generating and verifying
-//! digital signatures, which provide message authentication using public-key
-//! cryptography.
+//! digital signatures: message authentication using public-key cryptography.
 //!
 //! ## Minimum Supported Rust Version
 //!
-//! Rust **1.34** or higher.
+//! Rust **1.36** or higher.
 //!
-//! Minimum supported Rust version can be changed in the future, but it will be
-//! done with a minor version bump.
+//! Minimum supported Rust version may be changed in the future, but such
+//! changes will be accompanied with a minor version bump.
 //!
-//! ## SemVer Policy
+//! ## SemVer policy
 //!
 //! - All on-by-default features of this library are covered by SemVer
 //! - MSRV is considered exempt from SemVer as noted above
-//! - The off-by-default features `derive-preview` and `digest-preview` are
-//!   unstable "preview" features which are also considered exempt from SemVer.
-//!   Breaking changes to these features will, like MSRV, be done with a minor
-//!   version bump.
+//! - Off-by-default features ending in `*-preview` (e.g. `derive-preview`,
+//!   `digest-preview`) are unstable "preview" features which are also
+//!   considered exempt from SemVer (typically because they rely on pre-1.0
+//!   crates as dependencies). However, breaking changes to these features
+//!   will, like MSRV, also be accompanied by a minor version bump.
+//!
+//! # Design
+//!
+//! This crate provides a common set of traits for signing and verifying
+//! digital signatures intended to be implemented by libraries which produce
+//! or contain implementations of digital signature algorithms, and used by
+//! libraries which want to produce or verify digital signatures while
+//! generically supporting any compatible backend.
+//!
+//! ## Goals
+//!
+//! The traits provided by this crate were designed with the following goals
+//! in mind:
+//!
+//! - Provide an easy-to-use, misuse resistant API optimized for consumers
+//!   (as opposed to implementers) of its traits.
+//! - Support common type-safe wrappers around "bag-of-bytes" representations
+//!   which can be directly parsed from or written to the "wire".
+//! - Expose a trait/object-safe API where signers/verifiers spanning multiple
+//!   homogeneous provider implementations can be seamlessly leveraged together
+//!   in the same logical "keyring" so long as they operate on the same
+//!   underlying signature type.
+//! - Allow one provider type to potentially implement support (including
+//!   being generic over) several signature types.
+//! - Keep signature algorithm customizations / "knobs" out-of-band from the
+//!   signing/verification APIs, ideally pushing such concerns into the type
+//!   system so that algorithm mismatches are caught as type errors.
+//! - Opaque error type which minimizes information leaked from crxyptographic
+//!   failures, as "rich" error types in these scenarios are often a source
+//!   of sidechannel information for attackers (e.g. [BB'06])
+//!
+//! [BB'06]: https://en.wikipedia.org/wiki/Daniel_Bleichenbacher
+//!
+//! # Implementation
+//!
+//! To accomplish the above goals, the [`Signer`] and [`Verifier`] traits
+//! provided by this are generic over a [`Signature`] return value, and use
+//! generic parameters rather than associated types. Notably, they use such
+//! a parameter for the return value, allowing it to be inferred by the type
+//! checker based on the desired signature type.
+//!
+//! The [`Signature`] trait is bounded on `AsRef<[u8]>`, enforcing that
+//! signature types are thin wrappers around a "bag-of-bytes"
+//! serialization. Inspiration for this approach comes from the Ed25519
+//! signature system, which was based on the observation that past
+//! systems were not prescriptive about how signatures should be represented
+//! on-the-wire, and that lead to a proliferation of different wire formats
+//! and confusion about which ones should be used. This crate aims to provide
+//! similar simplicity by minimizing the number of steps involved to obtain
+//! a serializable signature.
+//!
+//! # Alternatives considered
+//!
+//! This crate is based on over two years of exploration of how to encapsulate
+//! digital signature systems in the most flexible, developer-friendly way.
+//! During that time many design alternatives were explored, tradeoffs
+//! compared, and ultimately the provided API was selected.
+//!
+//! The tradeoffs made in this API have all been to improve simplicity,
+//! ergonomics, type safety, and flexibility for *consumers* of the traits.
+//! At times, this has come at a cost to implementers. Below are some concerns
+//! we are cognizant of which were considered in the design of the API:
+//!
+//! - "Bag-of-bytes" serialization precludes signature providers from using
+//!   their own internal representation of a signature, which can be helpful
+//!   for many reasons (e.g. advanced signature system features like batch
+//!   verification). Alternatively each provider could define its own signature
+//!   type, using a marker trait to identify the particular signature algorithm,
+//!   have `From` impls for converting to/from `[u8; N]`, and a marker trait
+//!   for identifying a specific signature algorithm.
+//! - Associated types, rather than generic parameters of traits, could allow
+//!   more customization of the types used by a particular signature system,
+//!   e.g. using custom error types.
+//!
+//! It may still make sense to continue to explore the above tradeoffs, but
+//! with a *new* set of traits which are intended to be implementor-friendly,
+//! rather than consumer friendly. The existing [`Signer`] and [`Verifier`]
+//! traits could have blanket impls for the "provider-friendly" traits.
+//! However, as noted above this is a design space easily explored after
+//! stabilizing the consumer-oriented traits, and thus we consider these
+//! more important.
+//!
+//! That said, below are some caveats of trying to design such traits, and
+//! why we haven't actively pursued them:
+//!
+//! - Generics in the return position are already used to select which trait
+//!   impl to use, i.e. for a particular signature algorithm/system. Avoiding
+//!   a unified, concrete signature type adds another dimension to complexity
+//!   and compiler errors, and in our experience makes them unsuitable for this
+//!   sort of API. We believe such an API is the natural one for signature
+//!   systems, reflecting the natural way they are written absent a trait.
+//! - Associated types preclude multiple (or generic) implementations of the
+//!   same trait. These parameters are common in signature systems, notably
+//!   ones which support different digest algorithms.
+//! - Digital signatures are almost always larger than the present 32-entry
+//!   trait impl limitation on array types, which complicates trait signatures
+//!   for these types (particularly things like `From` or `Borrow` bounds).
+//!   This may be more interesting to explore after const generics.
+//!
+//!
 
 #![no_std]
-#![forbid(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms, unused_qualifications)]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png",
     html_root_url = "https://docs.rs/signature/1.0.0-pre.1"
+)]
+#![forbid(unsafe_code)]
+#![warn(
+    missing_docs,
+    rust_2018_idioms,
+    unused_qualifications,
+    intra_doc_link_resolution_failure
 )]
 
 #[cfg(feature = "std")]

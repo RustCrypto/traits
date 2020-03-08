@@ -4,7 +4,7 @@ Collection of traits which describe functionality of cryptographic primitives.
 ## Crates
 | Name    | Crates.io  | Documentation  |
 | ------- | :---------:| :-------------:|
-| [`aead`](hhttps://en.wikipedia.org/wiki/Authenticated_encryption)| [![crates.io](https://img.shields.io/crates/v/aead.svg)](https://crates.io/crates/aead) | [![Documentation](https://docs.rs/aead/badge.svg)](https://docs.rs/aead) |
+| [`aead`](https://en.wikipedia.org/wiki/Authenticated_encryption)| [![crates.io](https://img.shields.io/crates/v/aead.svg)](https://crates.io/crates/aead) | [![Documentation](https://docs.rs/aead/badge.svg)](https://docs.rs/aead) |
 | [`block-cipher-trait`](https://en.wikipedia.org/wiki/Block_cipher)| [![crates.io](https://img.shields.io/crates/v/block-cipher-trait.svg)](https://crates.io/crates/block-cipher-trait) | [![Documentation](https://docs.rs/block-cipher-trait/badge.svg)](https://docs.rs/block-cipher-trait) |
 | [`crypto-mac`](https://en.wikipedia.org/wiki/Message_authentication_code) | [![crates.io](https://img.shields.io/crates/v/crypto-mac.svg)](https://crates.io/crates/crypto-mac) | [![Documentation](https://docs.rs/crypto-mac/badge.svg)](https://docs.rs/crypto-mac) |
 | [`digest`](https://en.wikipedia.org/wiki/Cryptographic_hash_function) | [![crates.io](https://img.shields.io/crates/v/digest.svg)](https://crates.io/crates/digest) | [![Documentation](https://docs.rs/digest/badge.svg)](https://docs.rs/digest) |

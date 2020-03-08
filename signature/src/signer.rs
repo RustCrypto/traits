@@ -22,9 +22,25 @@ pub trait Signer<S: Signature> {
 
 /// Sign the given prehashed message `Digest` using `Self`.
 ///
-/// This trait is only available when the `digest-preview` cargo feature is
-/// enabled.
+/// ## Notes
+///
+/// This trait is primarily intended for signature algorithms based on the
+/// [Fiat-Shamir heuristic], a method for converting an interactive
+/// challenge/response-based proof-of-knowledge protocol into an offline
+/// digital signature through the use of a random oracle, i.e. a digest
+/// function.
+///
+/// The security of such protocols critically rests upon the inability of
+/// an attacker to solve for the output of the random oracle, as generally
+/// otherwise such signature algorithms are a system of linear equations and
+/// therefore doing so would allow the attacker to trivially forge signatures.
+///
+/// To prevent misuse which would potentially allow this to be possible, this
+/// API accepts a [`Digest`] instance, rather than a raw digest value.
+///
+/// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 #[cfg(feature = "digest-preview")]
+#[cfg_attr(docsrs, doc(cfg(feature = "digest-preview")))]
 pub trait DigestSigner<D, S>
 where
     D: Digest,
