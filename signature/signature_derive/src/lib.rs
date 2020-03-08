@@ -29,7 +29,24 @@ fn derive_signer(mut s: synstructure::Structure) -> TokenStream {
         }
     })
 }
-decl_derive!([Signer] => derive_signer);
+
+decl_derive! {
+    [Signer] =>
+    /// Derive the [`Signer`] trait for a type which impls [`DigestSigner`].
+    ///
+    /// When implementing the [`DigestSigner`] trait for a signature type which
+    /// itself impl's the [`DigestSignature`] trait (which marks signature
+    /// algorithms which are computed using a [`Digest`]), signature providers
+    /// can automatically derive the [`Signer`] trait when the digest algorithm
+    /// is [`DigestSignature::Digest`] (i.e. the "standard" digest algorithm
+    /// for a given signature type)
+    ///
+    /// This automates all of the digest computation otherwise needed for a
+    /// complete signature algorithm implementation.
+    ///
+    /// [`Digest`]: https://docs.rs/digest/latest/digest/trait.Digest.html
+    derive_signer
+}
 
 /// Derive the `Verifier` trait for `DigestVerifier` types
 fn derive_verifier(mut s: synstructure::Structure) -> TokenStream {
@@ -46,7 +63,24 @@ fn derive_verifier(mut s: synstructure::Structure) -> TokenStream {
         }
     })
 }
-decl_derive!([Verifier] => derive_verifier);
+
+decl_derive! {
+    [Verifier] =>
+    /// Derive the [`Verifier`] trait for a type which impls [`DigestVerifier`].
+    ///
+    /// When implementing the [`DigestVerifier`] trait for a signature type which
+    /// itself impl's the [`DigestSignature`] trait (which marks signature
+    /// algorithms which are computed using a [`Digest`]), signature providers
+    /// can automatically derive the [`Verifier`] trait when the digest algorithm
+    /// is [`DigestSignature::Digest`] (i.e. the "standard" digest algorithm
+    /// for a given signature type)
+    ///
+    /// This automates all of the digest computation otherwise needed for a
+    /// complete signature algorithm implementation.
+    ///
+    /// [`Digest`]: https://docs.rs/digest/latest/digest/trait.Digest.html
+    derive_verifier
+}
 
 #[cfg(test)]
 mod tests {
