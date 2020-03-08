@@ -5,12 +5,6 @@ use core::fmt::{self, Display};
 #[cfg(feature = "std")]
 use std::boxed::Box;
 
-/// Box containing a thread-safe + `'static` error suitable for use as a
-/// as a [`std::error::Error::source`]
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub type BoxError = Box<dyn std::error::Error + Send + Sync + 'static>;
-
 /// Signature errors.
 ///
 /// This type is deliberately opaque as to avoid sidechannel leakage which
@@ -26,7 +20,7 @@ pub type BoxError = Box<dyn std::error::Error + Send + Sync + 'static>;
 pub struct Error {
     /// Source of the error (if applicable).
     #[cfg(feature = "std")]
-    source: Option<BoxError>,
+    source: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
 }
 
 impl Error {
@@ -43,7 +37,9 @@ impl Error {
     /// communication/authentication errors with HSMs, KMS, etc.
     #[cfg(feature = "std")]
     #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-    pub fn from_source(source: impl Into<BoxError>) -> Self {
+    pub fn from_source(
+        source: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>>,
+    ) -> Self {
         Self {
             source: Some(source.into()),
         }
@@ -57,8 +53,8 @@ impl Display for Error {
 }
 
 #[cfg(feature = "std")]
-impl From<BoxError> for Error {
-    fn from(source: BoxError) -> Error {
+impl From<Box<dyn std::error::Error + Send + Sync + 'static>> for Error {
+    fn from(source: Box<dyn std::error::Error + Send + Sync + 'static>) -> Error {
         Self::from_source(source)
     }
 }
