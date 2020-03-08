@@ -149,6 +149,7 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png",
     html_root_url = "https://docs.rs/signature/1.0.0-pre.2"
 )]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
 #![warn(
     missing_docs,
@@ -166,6 +167,7 @@ extern crate std;
 extern crate signature_derive;
 
 #[cfg(feature = "derive-preview")]
+#[cfg_attr(docsrs, doc(cfg(feature = "derive-preview")))]
 pub use signature_derive::{Signer, Verifier};
 
 #[cfg(feature = "digest-preview")]
