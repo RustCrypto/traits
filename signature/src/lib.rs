@@ -147,7 +147,7 @@
 #![no_std]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png",
-    html_root_url = "https://docs.rs/signature/1.0.0-pre.2"
+    html_root_url = "https://docs.rs/signature/1.0.0-pre.3"
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
