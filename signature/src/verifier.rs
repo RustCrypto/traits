@@ -1,8 +1,9 @@
 //! Trait for verifying digital signatures
 
+use crate::{error::Error, Signature};
+
 #[cfg(feature = "digest-preview")]
 use crate::digest::Digest;
-use crate::{error::Error, Signature};
 
 /// Verify the provided message bytestring using `Self` (e.g. a public key)
 pub trait Verifier<S: Signature> {
