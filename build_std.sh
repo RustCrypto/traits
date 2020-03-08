@@ -7,7 +7,7 @@ TARGET="thumbv7em-none-eabi"
 cargo clean
 
 for DIR in $DIRS; do
-    if [ $DIR = "target/" -o $DIR = "aead/" -o $DIR = "universal-hash/" ]
+    if [ $DIR = "target/" -o $DIR = "aead/"  -o $DIR = "signature/" -o $DIR = "universal-hash/" ]
     then
         continue
     fi
