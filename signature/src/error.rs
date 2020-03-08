@@ -6,11 +6,22 @@ use core::fmt::{self, Display};
 use std::boxed::Box;
 
 /// Box containing a thread-safe + `'static` error suitable for use as a
-/// as an `std::error::Error::source`
+/// as a [`std::error::Error::source`]
 #[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub type BoxError = Box<dyn std::error::Error + Send + Sync + 'static>;
 
-/// Signature errors
+/// Signature errors.
+///
+/// This type is deliberately opaque as to avoid sidechannel leakage which
+/// could potentially be used recover signing private keys or forge signatures
+/// (e.g. [BB'06]).
+///
+/// When the `std` feature is enabled, it impls [`std::error::Error`] and
+/// supports an optional [`std::error::Error::source`], which can be used by
+/// things like remote signers (e.g. HSM, KMS) to report I/O or auth errors.
+///
+/// [BB'06]: https://en.wikipedia.org/wiki/Daniel_Bleichenbacher
 #[derive(Debug, Default)]
 pub struct Error {
     /// Source of the error (if applicable).
@@ -26,7 +37,7 @@ impl Error {
 
     /// Create a new error with an associated source.
     ///
-    /// **NOTE:** The "source" should NOT be used to propagate cryptographic
+    /// **NOTE:** The "source" should **NOT** be used to propagate cryptographic
     /// errors e.g. signature parsing or verification errors. The intended use
     /// cases are for propagating errors related to external signers, e.g.
     /// communication/authentication errors with HSMs, KMS, etc.
