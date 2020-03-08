@@ -9,8 +9,8 @@
 This crate contains traits which provide generic, object-safe APIs for
 generating and verifying [digital signatures][1].
 
-It's presently useful in conjunction with the [`ed25519`][2] crate.
-Support is also planned for the [`ecdsa`][3] and [`rsa`][4] crates.
+Used by the [`ecdsa`][2] and [`ed25519`][3] crates, with forthcoming support
+in the [`rsa`][4] crate.
 
 [Documentation][docs-link]
 
@@ -59,6 +59,6 @@ dual licensed as above, without any additional terms or conditions.
 [//]: # (general links)
 
 [1]: https://en.wikipedia.org/wiki/Digital_signature
-[2]: https://github.com/RustCrypto/signatures/tree/master/ed25519
-[3]: https://github.com/RustCrypto/signatures/tree/master/ecdsa
+[2]: https://github.com/RustCrypto/signatures/tree/master/ecdsa
+[3]: https://github.com/RustCrypto/signatures/tree/master/ed25519
 [4]: https://github.com/RustCrypto/RSA
