@@ -1,4 +1,4 @@
-# `signature` crate
+# RustCrypto: `signature` crate
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
