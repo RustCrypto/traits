@@ -131,7 +131,8 @@
 //!   a given [`Signature`] type. When the `derive-preview` feature is enabled
 //!   import the proc macros with `use signature::{Signer, Verifier}` and then
 //!   add a `derive(Signer)` or `derive(Verifier)` attribute to the given
-//!   digest signer/verifier type.
+//!   digest signer/verifier type. Enabling this feature also enables `digest`
+//!   support (see immediately below).
 //! - `digest-preview`: enables the [`DigestSigner`] and [`DigestVerifier`]
 //!   traits which are based on the `Digest` trait from the `digest` crate.
 //!   These traits are used for representing signature systems based on the
@@ -157,7 +158,6 @@
 )]
 
 #[cfg(feature = "std")]
-#[macro_use]
 extern crate std;
 
 #[cfg(feature = "derive-preview")]

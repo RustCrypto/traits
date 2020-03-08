@@ -41,16 +41,14 @@ impl Error {
 
 impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "signature error")?;
+        f.write_str("signature error")
+    }
+}
 
-        #[cfg(feature = "std")]
-        {
-            if let Some(ref source) = self.source {
-                write!(f, ": {}", source)?;
-            }
-        }
-
-        Ok(())
+#[cfg(feature = "std")]
+impl From<BoxError> for Error {
+    fn from(source: BoxError) -> Error {
+        Self::from_source(source)
     }
 }
 
