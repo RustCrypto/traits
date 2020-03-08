@@ -1,0 +1,21 @@
+[package]
+name          = "signature_derive"
+version       = "1.0.0-pre.0"
+authors       = ["RustCrypto Developers"]
+license       = "Apache-2.0 OR MIT"
+description   = "Custom derive support for the 'signature' crate"
+documentation = "https://docs.rs/signature"
+repository    = "https://github.com/RustCrypto/traits/tree/master/signature/signature_derive"
+readme        = "README.md"
+edition       = "2018"
+keywords      = ["crypto", "ecdsa", "ed25519", "signature", "signing"]
+categories    = ["cryptography", "no-std"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1"
+quote = "1"
+syn = "1"
+synstructure = "0.12"

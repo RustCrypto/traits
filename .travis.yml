@@ -5,9 +5,9 @@ sudo: required
 matrix:
   include:
     - rust: 1.31.0
-      script: cargo test --verbose --all --exclude aead --exclude universal-hash --release
+      script: cargo test --verbose --all --exclude aead --exclude signature --exclude universal-hash --release
     - rust: 1.36.0
-      script: cargo test --verbose --package aead --package universal-hash --release
+      script: cargo test --verbose --package aead --package signature --package universal-hash --release
     - rust: stable
       script: cargo test --verbose --all --release
     - rust: nightly
@@ -25,7 +25,7 @@ matrix:
     # tests if crates truly can be built without std
     - env: TARGET=thumbv7em-none-eabi
       rust: nightly
-      script: xargo build --all --exclude aead --verbose --target $TARGET
+      script: xargo build --all --exclude aead --exclude signature --verbose --target $TARGET
       install:
         - cargo install xargo || true
         - rustup target install armv7-unknown-linux-gnueabihf
@@ -35,6 +35,6 @@ install:
   - cargo install cross || true
 
 script:
-  - cross test --verbose --all --release --target $TARGET
+  - cross test --verbose --all --exclude signature_derive --release --target $TARGET
 
 cache: cargo
