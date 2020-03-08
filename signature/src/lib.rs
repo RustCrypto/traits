@@ -52,7 +52,7 @@
 //!
 //! [BB'06]: https://en.wikipedia.org/wiki/Daniel_Bleichenbacher
 //!
-//! # Implementation
+//! ## Implementation
 //!
 //! To accomplish the above goals, the [`Signer`] and [`Verifier`] traits
 //! provided by this are generic over a [`Signature`] return value, and use
@@ -70,7 +70,7 @@
 //! similar simplicity by minimizing the number of steps involved to obtain
 //! a serializable signature.
 //!
-//! # Alternatives considered
+//! ## Alternatives considered
 //!
 //! This crate is based on over two years of exploration of how to encapsulate
 //! digital signature systems in the most flexible, developer-friendly way.
@@ -118,7 +118,30 @@
 //!   for these types (particularly things like `From` or `Borrow` bounds).
 //!   This may be more interesting to explore after const generics.
 //!
+//! ## Unstable features
 //!
+//! Despite being post-1.0, this crate includes a number of off-by-default
+//! unstable features named `*-preview`, each of which depends on a pre-1.0
+//! crate. These features are as follows:
+//!
+//! - `derive-preview`: for implementers of signature systems using
+//!   [`DigestSigner`] and [`DigestVerifier`], the `derive-preview` feature
+//!   can be used to derive [`Signer`] and [`Verifier`] traits which prehash
+//!   the input message using the [`DigestSignature::Digest`] function for
+//!   a given [`Signature`] type. When the `derive-preview` feature is enabled
+//!   import the proc macros with `use signature::{Signer, Verifier}` and then
+//!   add a `derive(Signer)` or `derive(Verifier)` attribute to the given
+//!   digest signer/verifier type.
+//! - `digest-preview`: enables the [`DigestSigner`] and [`DigestVerifier`]
+//!   traits which are based on the `Digest` trait from the `digest` crate.
+//!   These traits are used for representing signature systems based on the
+//!   [Fiat-Shamir heuristic] which compute a random challenge value to sign
+//!   by computing a cryptographically secure digest of the input message.
+//! - `rand-preview`: enables the [`RandomizedSigner`] trait for signature
+//!   systems which rely on a cryptographically secure random number generator
+//!   for security.
+//!
+//! [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 
 #![no_std]
 #![doc(
@@ -143,11 +166,13 @@ extern crate std;
 extern crate signature_derive;
 
 #[cfg(feature = "derive-preview")]
-#[doc(hidden)]
 pub use signature_derive::{Signer, Verifier};
 
 #[cfg(feature = "digest-preview")]
 pub use digest;
+
+#[cfg(feature = "rand-preview")]
+pub use rand_core;
 
 mod error;
 mod signature;

@@ -1,8 +1,12 @@
 //! Traits for generating digital signatures
 
+use crate::{error::Error, Signature};
+
 #[cfg(feature = "digest-preview")]
 use crate::digest::Digest;
-use crate::{error::Error, Signature};
+
+#[cfg(feature = "rand-preview")]
+use crate::rand_core::{CryptoRng, RngCore};
 
 /// Sign the provided message bytestring using `Self` (e.g. a cryptographic key
 /// or connection to an HSM), returning a digital signature.
@@ -57,4 +61,26 @@ where
     /// Attempt to sign the given prehashed message `Digest`, returning a
     /// digital signature on success, or an error if something went wrong.
     fn try_sign_digest(&self, digest: D) -> Result<S, Error>;
+}
+
+/// Sign the given message using the provided external randomness source.
+#[cfg(feature = "rand-preview")]
+#[cfg_attr(docsrs, doc(cfg(feature = "rand-preview")))]
+pub trait RandomizedSigner<R, S>
+where
+    R: CryptoRng + RngCore,
+    S: Signature,
+{
+    /// Sign the given message and return a digital signature
+    fn sign_with_rng(&self, rng: &mut R, msg: &[u8]) -> S {
+        self.try_sign_with_rng(rng, msg)
+            .expect("signature operation failed")
+    }
+
+    /// Attempt to sign the given message, returning a digital signature on
+    /// success, or an error if something went wrong.
+    ///
+    /// The main intended use case for signing errors is when communicating
+    /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
+    fn try_sign_with_rng(&self, rng: &mut R, msg: &[u8]) -> Result<S, Error>;
 }
