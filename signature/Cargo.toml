@@ -32,10 +32,13 @@ sha2 = { version = "0.8", default-features = false }
 
 [features]
 default = ["std"]
+std = []
+
+# Preview features are unstable and exempt from semver.
+# See https://docs.rs/signature/latest/signature/#unstable-features for more information.
 derive-preview = ["digest-preview", "signature_derive"]
 digest-preview = ["digest"]
 rand-preview = ["rand_core"]
-std = []
 
 [package.metadata.docs.rs]
 all-features = true
