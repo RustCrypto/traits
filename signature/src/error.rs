@@ -18,6 +18,10 @@ use std::boxed::Box;
 /// [BB'06]: https://en.wikipedia.org/wiki/Daniel_Bleichenbacher
 #[derive(Debug, Default)]
 pub struct Error {
+    /// Prevent from being instantiated as `Error {}` when the `std` feature
+    /// is disabled
+    _private: (),
+
     /// Source of the error (if applicable).
     #[cfg(feature = "std")]
     source: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
@@ -41,6 +45,7 @@ impl Error {
         source: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>>,
     ) -> Self {
         Self {
+            _private: (),
             source: Some(source.into()),
         }
     }
