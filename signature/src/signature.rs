@@ -14,7 +14,7 @@ use crate::{
 /// Trait impl'd by concrete types that represent digital signatures
 pub trait Signature: AsRef<[u8]> + Debug + Sized {
     /// Parse a signature from its byte representation
-    fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self, Error>;
+    fn from_bytes(bytes: &[u8]) -> Result<Self, Error>;
 
     /// Borrow this signature as serialized bytes
     fn as_slice(&self) -> &[u8] {
