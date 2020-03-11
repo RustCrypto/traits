@@ -74,8 +74,6 @@ pub trait NewAead {
 /// This trait is intended for use with stateless AEAD algorithms. The
 /// [`AeadMut`] trait provides a stateful interface.
 pub trait Aead {
-    /// The length of a nonce.
-    type NonceSize: ArrayLength<u8>;
     /// The maximum length of the nonce.
     type TagSize: ArrayLength<u8>;
     /// The upper bound amount of additional space required to support a
@@ -108,7 +106,7 @@ pub trait Aead {
     #[cfg(feature = "alloc")]
     fn encrypt<'msg, 'aad>(
         &self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         plaintext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
         let payload = plaintext.into();
@@ -129,7 +127,7 @@ pub trait Aead {
     /// resulting ciphertext message.
     fn encrypt_in_place(
         &self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         associated_data: &[u8],
         buffer: &mut impl Buffer,
     ) -> Result<(), Error> {
@@ -141,7 +139,7 @@ pub trait Aead {
     /// Encrypt the data in-place, returning the authentication tag
     fn encrypt_in_place_detached(
         &self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         associated_data: &[u8],
         buffer: &mut [u8],
     ) -> Result<GenericArray<u8, Self::TagSize>, Error>;
@@ -166,7 +164,7 @@ pub trait Aead {
     #[cfg(feature = "alloc")]
     fn decrypt<'msg, 'aad>(
         &self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         ciphertext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
         let payload = ciphertext.into();
@@ -182,7 +180,7 @@ pub trait Aead {
     /// message upon success.
     fn decrypt_in_place(
         &self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         associated_data: &[u8],
         buffer: &mut impl Buffer,
     ) -> Result<(), Error> {
@@ -194,7 +192,7 @@ pub trait Aead {
     /// is modified/unauthentic)
     fn decrypt_in_place_detached(
         &self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         associated_data: &[u8],
         buffer: &mut [u8],
         tag: &GenericArray<u8, Self::TagSize>,
@@ -203,8 +201,6 @@ pub trait Aead {
 
 /// Stateful Authenticated Encryption with Associated Data algorithm.
 pub trait AeadMut {
-    /// The length of a nonce.
-    type NonceSize: ArrayLength<u8>;
     /// The maximum length of the nonce.
     type TagSize: ArrayLength<u8>;
     /// The upper bound amount of additional space required to support a
@@ -219,7 +215,7 @@ pub trait AeadMut {
     #[cfg(feature = "alloc")]
     fn encrypt<'msg, 'aad>(
         &mut self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         plaintext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
         let payload = plaintext.into();
@@ -240,7 +236,7 @@ pub trait AeadMut {
     /// resulting ciphertext message.
     fn encrypt_in_place(
         &mut self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         associated_data: &[u8],
         buffer: &mut impl Buffer,
     ) -> Result<(), Error> {
@@ -252,7 +248,7 @@ pub trait AeadMut {
     /// Encrypt the data in-place, returning the authentication tag
     fn encrypt_in_place_detached(
         &mut self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         associated_data: &[u8],
         buffer: &mut [u8],
     ) -> Result<GenericArray<u8, Self::TagSize>, Error>;
@@ -265,7 +261,7 @@ pub trait AeadMut {
     #[cfg(feature = "alloc")]
     fn decrypt<'msg, 'aad>(
         &mut self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         ciphertext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
         let payload = ciphertext.into();
@@ -281,7 +277,7 @@ pub trait AeadMut {
     /// message upon success.
     fn decrypt_in_place(
         &mut self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         associated_data: &[u8],
         buffer: &mut impl Buffer,
     ) -> Result<(), Error> {
@@ -293,7 +289,7 @@ pub trait AeadMut {
     /// is modified/unauthentic)
     fn decrypt_in_place_detached(
         &mut self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         associated_data: &[u8],
         buffer: &mut [u8],
         tag: &GenericArray<u8, Self::TagSize>,
@@ -303,7 +299,6 @@ pub trait AeadMut {
 /// A blanket implementation of the Stateful AEAD interface for Stateless
 /// AEAD implementations.
 impl<Algo: Aead> AeadMut for Algo {
-    type NonceSize = Algo::NonceSize;
     type TagSize = Algo::TagSize;
     type CiphertextOverhead = Algo::CiphertextOverhead;
 
@@ -312,7 +307,7 @@ impl<Algo: Aead> AeadMut for Algo {
     #[cfg(feature = "alloc")]
     fn encrypt<'msg, 'aad>(
         &mut self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         plaintext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
         <Self as Aead>::encrypt(self, nonce, plaintext)
@@ -321,7 +316,7 @@ impl<Algo: Aead> AeadMut for Algo {
     /// Encrypt the given buffer containing a plaintext message in-place.
     fn encrypt_in_place(
         &mut self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         associated_data: &[u8],
         buffer: &mut impl Buffer,
     ) -> Result<(), Error> {
@@ -331,7 +326,7 @@ impl<Algo: Aead> AeadMut for Algo {
     /// Encrypt the data in-place, returning the authentication tag
     fn encrypt_in_place_detached(
         &mut self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         associated_data: &[u8],
         buffer: &mut [u8],
     ) -> Result<GenericArray<u8, Self::TagSize>, Error> {
@@ -343,7 +338,7 @@ impl<Algo: Aead> AeadMut for Algo {
     #[cfg(feature = "alloc")]
     fn decrypt<'msg, 'aad>(
         &mut self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         ciphertext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>, Error> {
         <Self as Aead>::decrypt(self, nonce, ciphertext)
@@ -353,7 +348,7 @@ impl<Algo: Aead> AeadMut for Algo {
     /// provided authentication tag does not match the given ciphertext.
     fn decrypt_in_place(
         &mut self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         associated_data: &[u8],
         buffer: &mut impl Buffer,
     ) -> Result<(), Error> {
@@ -365,7 +360,7 @@ impl<Algo: Aead> AeadMut for Algo {
     /// is modified/unauthentic)
     fn decrypt_in_place_detached(
         &mut self,
-        nonce: &GenericArray<u8, Self::NonceSize>,
+        nonce: &[u8],
         associated_data: &[u8],
         buffer: &mut [u8],
         tag: &GenericArray<u8, Self::TagSize>,
