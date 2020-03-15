@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.0-pre.4 (2020-03-15)
+### Added
+- Mark preview features as unstable in `Cargo.toml` ([#82])
+
+### Changed
+- Have `Signature::from_bytes` take a byte slice ([#84])
+- Ensure `Error::new()` is mandatory ([#83])
+
+### Removed
+- `BoxError` type alias ([#81])
+
+[#84]: https://github.com/RustCrypto/traits/pull/84
+[#83]: https://github.com/RustCrypto/traits/pull/83
+[#82]: https://github.com/RustCrypto/traits/pull/82
+[#81]: https://github.com/RustCrypto/traits/pull/81
+
 ## 1.0.0-pre.3 (2020-03-08)
 ### Fixed
 - docs.rs rendering ([#76])
