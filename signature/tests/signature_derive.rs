@@ -20,7 +20,7 @@ mod tests {
     struct DummySignature(GenericArray<u8, <Sha256 as Digest>::OutputSize>);
 
     impl Signature for DummySignature {
-        fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self, Error> {
+        fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
             Ok(DummySignature(GenericArray::clone_from_slice(
                 bytes.as_ref(),
             )))
@@ -43,7 +43,7 @@ mod tests {
 
     impl DigestSigner<Sha256, DummySignature> for DummySigner {
         fn try_sign_digest(&self, digest: Sha256) -> Result<DummySignature, Error> {
-            DummySignature::from_bytes(digest.result())
+            DummySignature::from_bytes(&digest.result())
         }
     }
 

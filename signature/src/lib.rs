@@ -162,11 +162,6 @@
 extern crate std;
 
 #[cfg(feature = "derive-preview")]
-#[allow(unused_imports)]
-#[macro_use]
-extern crate signature_derive;
-
-#[cfg(feature = "derive-preview")]
 #[cfg_attr(docsrs, doc(cfg(feature = "derive-preview")))]
 pub use signature_derive::{Signer, Verifier};
 
