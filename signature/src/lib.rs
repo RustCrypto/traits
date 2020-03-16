@@ -122,7 +122,12 @@
 //!
 //! Despite being post-1.0, this crate includes a number of off-by-default
 //! unstable features named `*-preview`, each of which depends on a pre-1.0
-//! crate. These features are as follows:
+//! crate.
+//!
+//! These features are considered exempt from SemVer. See the
+//! [SemVer policy](#semver-policy) above for more information.
+//!
+//! The following unstable features are presently supported:
 //!
 //! - `derive-preview`: for implementers of signature systems using
 //!   [`DigestSigner`] and [`DigestVerifier`], the `derive-preview` feature
@@ -134,7 +139,7 @@
 //!   digest signer/verifier type. Enabling this feature also enables `digest`
 //!   support (see immediately below).
 //! - `digest-preview`: enables the [`DigestSigner`] and [`DigestVerifier`]
-//!   traits which are based on the `Digest` trait from the `digest` crate.
+//!   traits which are based on the [`Digest`] trait from the [`digest`] crate.
 //!   These traits are used for representing signature systems based on the
 //!   [Fiat-Shamir heuristic] which compute a random challenge value to sign
 //!   by computing a cryptographically secure digest of the input message.
@@ -142,14 +147,16 @@
 //!   systems which rely on a cryptographically secure random number generator
 //!   for security.
 //!
+//! [`Digest`]: https://docs.rs/digest/latest/digest/trait.Digest.html
+//! [`digest`]: https://docs.rs/digest/latest/digest/
 //! [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 
 #![no_std]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png",
-    html_root_url = "https://docs.rs/signature/1.0.0-pre.3"
+    html_root_url = "https://docs.rs/signature/1.0.0-pre.5"
 )]
-#![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
 #![warn(
     missing_docs,

@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.0-pre.5 (2020-03-16)
+### Changed
+- Improve `Debug` impl on `Error` ([#89])
+- Rename `Signature::as_slice` -> `as_bytes` ([#87])
+
+[#89]: https://github.com/RustCrypto/traits/pull/89
+[#87]: https://github.com/RustCrypto/traits/pull/87
+
 ## 1.0.0-pre.4 (2020-03-15)
 ### Added
 - Mark preview features as unstable in `Cargo.toml` ([#82])
