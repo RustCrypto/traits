@@ -1,6 +1,6 @@
 //! Signature error types
 
-use core::fmt::{self, Display};
+use core::fmt::{self, Debug, Display};
 
 #[cfg(feature = "std")]
 use std::boxed::Box;
@@ -16,7 +16,7 @@ use std::boxed::Box;
 /// things like remote signers (e.g. HSM, KMS) to report I/O or auth errors.
 ///
 /// [BB'06]: https://en.wikipedia.org/wiki/Daniel_Bleichenbacher
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct Error {
     /// Prevent from being instantiated as `Error {}` when the `std` feature
     /// is disabled
@@ -48,6 +48,26 @@ impl Error {
             _private: (),
             source: Some(source.into()),
         }
+    }
+}
+
+impl Debug for Error {
+    #[cfg(not(feature = "std"))]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("signature::Error {}")
+    }
+
+    #[cfg(feature = "std")]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("signature::Error { source: ")?;
+
+        if let Some(source) = &self.source {
+            write!(f, "Some({})", source)?;
+        } else {
+            f.write_str("None")?;
+        }
+
+        f.write_str(" }")
     }
 }
 
