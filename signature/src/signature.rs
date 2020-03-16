@@ -17,6 +17,17 @@ use crate::{
 /// wrapper around the "bag-of-bytes" serialized form of a signature which can
 /// be directly parsed from or written to the "wire".
 ///
+/// Inspiration for this approach comes from the Ed25519 signature system,
+/// which adopted it based on the observation that past signature systems
+/// were not prescriptive about how signatures should be represented
+/// on-the-wire, and that lead to a proliferation of different wire formats and
+/// confusion about which ones should be used.
+///
+/// The [`Signature`] trait aims to provide similar simplicity by minimizing
+/// the number of steps involved to obtain a serializable signature and
+/// ideally ensuring there is one signature type for any given signature system
+/// shared by all "provider" crates.
+///
 /// For signature systems which require a more advanced internal representation
 /// (e.g. involving decoded scalars or decompressed elliptic curve points) it's
 /// recommended that "provider" libraries maintain their own internal signature
