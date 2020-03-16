@@ -11,13 +11,22 @@ use crate::{
     verifier::{DigestVerifier, Verifier},
 };
 
-/// Trait impl'd by concrete types that represent digital signatures
+/// Trait impl'd by concrete types that represent digital signatures.
+///
+/// Signature types *must* (as mandated by the `AsRef<[u8]>` bound) be a thin
+/// wrapper around the "bag-of-bytes" serialized form of a signature which can
+/// be directly parsed from or written to the "wire".
+///
+/// For signature systems which require a more advanced internal representation
+/// (e.g. involving decoded scalars or decompressed elliptic curve points) it's
+/// recommended that "provider" libraries maintain their own internal signature
+/// type and use `From` bounds to provide automatic conversions.
 pub trait Signature: AsRef<[u8]> + Debug + Sized {
     /// Parse a signature from its byte representation
     fn from_bytes(bytes: &[u8]) -> Result<Self, Error>;
 
-    /// Borrow this signature as serialized bytes
-    fn as_slice(&self) -> &[u8] {
+    /// Borrow a byte slice representing the serialized form of this signature
+    fn as_bytes(&self) -> &[u8] {
         self.as_ref()
     }
 }
