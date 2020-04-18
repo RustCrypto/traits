@@ -46,7 +46,7 @@
 //! - Keep signature algorithm customizations / "knobs" out-of-band from the
 //!   signing/verification APIs, ideally pushing such concerns into the type
 //!   system so that algorithm mismatches are caught as type errors.
-//! - Opaque error type which minimizes information leaked from crxyptographic
+//! - Opaque error type which minimizes information leaked from cryptographic
 //!   failures, as "rich" error types in these scenarios are often a source
 //!   of sidechannel information for attackers (e.g. [BB'06])
 //!
@@ -132,7 +132,7 @@
 //! - `derive-preview`: for implementers of signature systems using
 //!   [`DigestSigner`] and [`DigestVerifier`], the `derive-preview` feature
 //!   can be used to derive [`Signer`] and [`Verifier`] traits which prehash
-//!   the input message using the [`DigestSignature::Digest`] function for
+//!   the input message using the [`PrehashSignature::Digest`] algorithm for
 //!   a given [`Signature`] type. When the `derive-preview` feature is enabled
 //!   import the proc macros with `use signature::{Signer, Verifier}` and then
 //!   add a `derive(Signer)` or `derive(Verifier)` attribute to the given
