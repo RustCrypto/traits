@@ -1,7 +1,7 @@
 //! RustCrypto: `signature` crate.
 //!
 //! Traits which provide generic, object-safe APIs for generating and verifying
-//! digital signatures: message authentication using public-key cryptography.
+//! digital signatures, i.e. message authentication using public-key cryptography.
 //!
 //! ## Minimum Supported Rust Version
 //!
@@ -12,8 +12,8 @@
 //!
 //! ## SemVer policy
 //!
-//! - All on-by-default features of this library are covered by SemVer
 //! - MSRV is considered exempt from SemVer as noted above
+//! - All on-by-default features of this library are covered by SemVer
 //! - Off-by-default features ending in `*-preview` (e.g. `derive-preview`,
 //!   `digest-preview`) are unstable "preview" features which are also
 //!   considered exempt from SemVer (typically because they rely on pre-1.0
@@ -154,8 +154,8 @@
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png",
-    html_root_url = "https://docs.rs/signature/1.0.0-pre.5"
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/ferris_signer.png",
+    html_root_url = "https://docs.rs/signature/1.0.0"
 )]
 #![forbid(unsafe_code)]
 #![warn(
