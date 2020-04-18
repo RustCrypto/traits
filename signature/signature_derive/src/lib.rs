@@ -20,7 +20,7 @@ fn derive_signer(mut s: synstructure::Structure) -> TokenStream {
     s.gen_impl(quote! {
         gen impl<S> signature::Signer<S> for @Self
         where
-            S: signature::DigestSignature,
+            S: signature::PrehashSignature,
             Self: signature::DigestSigner<S::Digest, S>
         {
             fn try_sign(&self, msg: &[u8]) -> Result<S, signature::Error> {
@@ -35,10 +35,10 @@ decl_derive! {
     /// Derive the [`Signer`] trait for a type which impls [`DigestSigner`].
     ///
     /// When implementing the [`DigestSigner`] trait for a signature type which
-    /// itself impl's the [`DigestSignature`] trait (which marks signature
+    /// itself impl's the [`PrehashSignature`] trait (which marks signature
     /// algorithms which are computed using a [`Digest`]), signature providers
     /// can automatically derive the [`Signer`] trait when the digest algorithm
-    /// is [`DigestSignature::Digest`] (i.e. the "standard" digest algorithm
+    /// is [`PrehashSignature::Digest`] (i.e. the "standard" digest algorithm
     /// for a given signature type)
     ///
     /// This automates all of the digest computation otherwise needed for a
@@ -54,7 +54,7 @@ fn derive_verifier(mut s: synstructure::Structure) -> TokenStream {
     s.gen_impl(quote! {
         gen impl<S> signature::Verifier<S> for @Self
         where
-            S: signature::DigestSignature,
+            S: signature::PrehashSignature,
             Self: signature::DigestVerifier<S::Digest, S>
         {
             fn verify(&self, msg: &[u8], signature: &S) -> Result<(), signature::Error> {
@@ -69,10 +69,10 @@ decl_derive! {
     /// Derive the [`Verifier`] trait for a type which impls [`DigestVerifier`].
     ///
     /// When implementing the [`DigestVerifier`] trait for a signature type which
-    /// itself impl's the [`DigestSignature`] trait (which marks signature
+    /// itself impl's the [`PrehashSignature`] trait (which marks signature
     /// algorithms which are computed using a [`Digest`]), signature providers
     /// can automatically derive the [`Verifier`] trait when the digest algorithm
-    /// is [`DigestSignature::Digest`] (i.e. the "standard" digest algorithm
+    /// is [`PrehashSignature::Digest`] (i.e. the "standard" digest algorithm
     /// for a given signature type)
     ///
     /// This automates all of the digest computation otherwise needed for a
@@ -100,7 +100,7 @@ mod tests {
                 const _DERIVE_signature_Signer_S_FOR_MySigner: () = {
                     impl<S, C: EllipticCurve> signature::Signer<S> for MySigner<C>
                     where
-                        S: signature::DigestSignature,
+                        S: signature::PrehashSignature,
                         Self: signature::DigestSigner<S::Digest, S>
                     {
                         fn try_sign(&self, msg: &[u8]) -> Result <S, signature::Error> {
@@ -126,7 +126,7 @@ mod tests {
                 const _DERIVE_signature_Verifier_S_FOR_MyVerifier: () = {
                     impl<S, C: EllipticCurve> signature::Verifier<S> for MyVerifier<C>
                     where
-                        S: signature::DigestSignature,
+                        S: signature::PrehashSignature,
                         Self: signature::DigestVerifier<S::Digest, S>
                     {
                         fn verify(&self, msg: &[u8], signature: &S) -> Result<(), signature::Error> {

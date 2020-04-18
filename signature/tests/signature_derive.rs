@@ -5,7 +5,7 @@ mod tests {
     use hex_literal::hex;
     use sha2::Sha256;
     use signature::{
-        DigestSignature, DigestSigner, DigestVerifier, Error, Signature, Signer, Verifier,
+        DigestSigner, DigestVerifier, Error, PrehashSignature, Signature, Signer, Verifier,
     };
 
     /// Test vector to compute SHA-256 digest of
@@ -33,7 +33,7 @@ mod tests {
         }
     }
 
-    impl DigestSignature for DummySignature {
+    impl PrehashSignature for DummySignature {
         type Digest = Sha256;
     }
 

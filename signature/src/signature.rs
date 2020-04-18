@@ -42,13 +42,15 @@ pub trait Signature: AsRef<[u8]> + Debug + Sized {
     }
 }
 
-/// Marker trait for `Signature` types computable as `S(H(m))`
+/// Marker trait for `Signature` types computable as `S(H(m))`, i.e. ones which
+/// prehash a message to be signed as `H(m)`:
 ///
 /// - `S`: signature algorithm
 /// - `H`: hash (a.k.a. digest) function
 /// - `m`: message
 ///
-/// i.e. a traditional application of the [Fiat-Shamir heuristic].
+/// This approach is relatively common in signature schemes based on the
+/// [Fiat-Shamir heuristic].
 ///
 /// For signature types that implement this trait, when the `derive-preview`
 /// Cargo feature is enabled a custom derive for [`Signer`] is available for any
@@ -58,7 +60,7 @@ pub trait Signature: AsRef<[u8]> + Debug + Sized {
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 #[cfg(feature = "digest-preview")]
 #[cfg_attr(docsrs, doc(cfg(feature = "digest-preview")))]
-pub trait DigestSignature: Signature {
+pub trait PrehashSignature: Signature {
     /// Preferred `Digest` algorithm to use when computing this signature type.
     type Digest: digest::Digest;
 }
