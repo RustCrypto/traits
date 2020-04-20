@@ -42,12 +42,14 @@ pub trait Signature: AsRef<[u8]> + Debug + Sized {
     }
 }
 
-/// Marker trait for `Signature` types computable as `S(H(m))`, i.e. ones which
-/// prehash a message to be signed as `H(m)`:
+/// Marker trait for `Signature` types computable as `𝐒(𝐇(𝒎))`
+/// i.e. ones which prehash a message to be signed as `𝐇(𝒎)`
 ///
-/// - `S`: signature algorithm
-/// - `H`: hash (a.k.a. digest) function
-/// - `m`: message
+/// Where:
+///
+/// - `𝐒`: signature algorithm
+/// - `𝐇`: hash (a.k.a. digest) function
+/// - `𝒎`: message
 ///
 /// This approach is relatively common in signature schemes based on the
 /// [Fiat-Shamir heuristic].

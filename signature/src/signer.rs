@@ -24,7 +24,7 @@ pub trait Signer<S: Signature> {
     fn try_sign(&self, msg: &[u8]) -> Result<S, Error>;
 }
 
-/// Sign the given prehashed message `Digest` using `Self`.
+/// Sign the given prehashed message [`Digest`] using `Self`.
 ///
 /// ## Notes
 ///
