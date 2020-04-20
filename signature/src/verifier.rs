@@ -14,7 +14,7 @@ pub trait Verifier<S: Signature> {
     fn verify(&self, msg: &[u8], signature: &S) -> Result<(), Error>;
 }
 
-/// Verify the provided signature for the given prehashed message `Digest`
+/// Verify the provided signature for the given prehashed message [`Digest`]
 /// is authentic.
 ///
 /// ## Notes
