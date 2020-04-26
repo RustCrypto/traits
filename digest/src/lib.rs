@@ -13,6 +13,7 @@
 //!
 //! The `Digest` trait is the most commonly used trait.
 #![no_std]
+#![forbid(unsafe_code)]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 pub extern crate generic_array;
 #[cfg(feature = "std")]

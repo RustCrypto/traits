@@ -14,6 +14,7 @@
 //! [Universal Hash Functions]: https://en.wikipedia.org/wiki/Universal_hashing
 
 #![no_std]
+#![forbid(unsafe_code)]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![warn(missing_docs, rust_2018_idioms)]
 

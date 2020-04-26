@@ -1,6 +1,7 @@
 //! This crate defines a set of simple traits used to define functionality of
 //! block ciphers.
 #![no_std]
+#![forbid(unsafe_code)]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #[cfg(feature = "dev")]
 pub extern crate blobby;
