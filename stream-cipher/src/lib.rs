@@ -4,6 +4,7 @@
 //! See [RustCrypto/stream-ciphers](https://github.com/RustCrypto/stream-ciphers)
 //! for ciphers implementation.
 #![no_std]
+#![forbid(unsafe_code)]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #[cfg(feature = "dev")]
 pub extern crate blobby;

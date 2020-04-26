@@ -1,5 +1,6 @@
 //! This crate provides trait for Message Authentication Code (MAC) algorithms.
 #![no_std]
+#![forbid(unsafe_code)]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 pub extern crate generic_array;
 extern crate subtle;
