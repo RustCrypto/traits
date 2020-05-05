@@ -11,7 +11,7 @@ categories = ["cryptography", "no-std"]
 edition = "2018"
 
 [dependencies]
-generic-array = "0.13"
+generic-array = "0.14"
 subtle = { version = "2", default-features = false }
 
 [features]

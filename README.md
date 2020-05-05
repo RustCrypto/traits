@@ -12,7 +12,7 @@ Collection of traits which describe functionality of cryptographic primitives.
 | [`stream-cipher`](https://en.wikipedia.org/wiki/Stream_cipher) | [![crates.io](https://img.shields.io/crates/v/stream-cipher.svg)](https://crates.io/crates/stream-cipher) | [![Documentation](https://docs.rs/stream-cipher/badge.svg)](https://docs.rs/stream-cipher) |
 
 ### Minimum Rust version
-All crates in this repository support Rust 1.31 or higher unless otherwise noted.
+All crates in this repository support Rust 1.41 or higher unless otherwise noted.
 
 In future minimally supported version of Rust can be changed, but it will be done
 with the minor version bump.
