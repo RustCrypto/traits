@@ -16,12 +16,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target:
-          - thumbv7em-none-eabi
-          - wasm32-unknown-unknown
         rust:
           - 1.41.0 # MSRV
           - stable
+        target:
+          - thumbv7em-none-eabi
+          - wasm32-unknown-unknown
     steps:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
@@ -32,7 +32,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           target: ${{ matrix.target }}
-          toolchain: ${{ matrix.toolchain }}
+          toolchain: ${{ matrix.rust }}
           override: true
       - working-directory: crypto-mac
         run: cargo build --no-default-features --release --target ${{ matrix.target }}
