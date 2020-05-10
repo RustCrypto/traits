@@ -13,6 +13,7 @@ Collection of traits which describe functionality of cryptographic primitives.
 | [`universal-hash`](https://en.wikipedia.org/wiki/Universal_hashing) | [![crates.io](https://img.shields.io/crates/v/universal-hash.svg)](https://crates.io/crates/universal-hash) | [![Documentation](https://docs.rs/universal-hash/badge.svg)](https://docs.rs/universal-hash) |
 
 ### Minimum Rust version
+
 All crates in this repository support Rust 1.41 or higher unless otherwise noted.
 
 In future minimally supported version of Rust can be changed, but it will be done

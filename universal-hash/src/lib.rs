@@ -156,17 +156,11 @@ impl<N: ArrayLength<u8>> Eq for Output<N> {}
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Error;
 
-#[cfg(feature = "std")]
-impl std::error::Error for Error {
-    fn description(&self) -> &'static str {
-        "UHF output mismatch"
+impl core::fmt::Display for Error {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str("UHF output mismatch")
     }
 }
 
 #[cfg(feature = "std")]
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        use std::error::Error;
-        self.description().fmt(f)
-    }
-}
+impl std::error::Error for Error {}

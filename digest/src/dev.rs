@@ -57,7 +57,7 @@ mod foo {
         while left > 0 {
             let take = (left + 1) / 2;
             hasher.input(&input[len - left..take + len - left]);
-            left = left - take;
+            left -= take;
         }
         if hasher.result().as_slice() != output {
             return Some("message in pieces");
@@ -129,7 +129,7 @@ where
     while left > 0 {
         let take = (left + 1) / 2;
         hasher.input(&input[len - left..take + len - left]);
-        left = left - take;
+        left -= take;
     }
 
     {
@@ -186,7 +186,7 @@ where
     while left > 0 {
         let take = (left + 1) / 2;
         hasher.input(&input[len - left..take + len - left]);
-        left = left - take;
+        left -= take;
     }
     hasher.variable_result(|res| buf.copy_from_slice(res));
     if buf != output {

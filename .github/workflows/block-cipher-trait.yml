@@ -1,0 +1,33 @@
+name: block-cipher-trait
+
+on:
+  pull_request:
+    paths:
+      - "block-cipher-trait/**"
+      - "Cargo.*"
+  push:
+    branches: master
+    paths:
+    - "block-cipher-trait/**"
+    - "Cargo.*"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - 1.41.0 # MSRV
+          - stable
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: ${{ matrix.rust }}
+    - run: |
+        cargo check --all-features
+        cargo test --features dev
+        cargo test --features std
+        cargo test --all-features
+      working-directory: block-cipher-trait
