@@ -10,6 +10,7 @@ Collection of traits which describe functionality of cryptographic primitives.
 | [`digest`](https://en.wikipedia.org/wiki/Cryptographic_hash_function) | [![crates.io](https://img.shields.io/crates/v/digest.svg)](https://crates.io/crates/digest) | [![Documentation](https://docs.rs/digest/badge.svg)](https://docs.rs/digest) |
 | [`signature`](https://en.wikipedia.org/wiki/Digital_signature) | [![crates.io](https://img.shields.io/crates/v/signature.svg)](https://crates.io/crates/signature) | [![Documentation](https://docs.rs/signature/badge.svg)](https://docs.rs/signature) |
 | [`stream-cipher`](https://en.wikipedia.org/wiki/Stream_cipher) | [![crates.io](https://img.shields.io/crates/v/stream-cipher.svg)](https://crates.io/crates/stream-cipher) | [![Documentation](https://docs.rs/stream-cipher/badge.svg)](https://docs.rs/stream-cipher) |
+| [`universal-hash`](https://en.wikipedia.org/wiki/Universal_hashing) | [![crates.io](https://img.shields.io/crates/v/universal-hash.svg)](https://crates.io/crates/universal-hash) | [![Documentation](https://docs.rs/universal-hash/badge.svg)](https://docs.rs/universal-hash) |
 
 ### Minimum Rust version
 All crates in this repository support Rust 1.41 or higher unless otherwise noted.
