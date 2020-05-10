@@ -1,8 +1,16 @@
 name: block-cipher-trait
+
 on:
-  push:
+  pull_request:
     paths:
-    - 'block-cipher-trait/**'
+      - "block-cipher-trait/**"
+      - "Cargo.*"
+  push:
+    branches: master
+    paths:
+    - "block-cipher-trait/**"
+    - "Cargo.*"
+
 jobs:
   test:
     runs-on: ubuntu-latest

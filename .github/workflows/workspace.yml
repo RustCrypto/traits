@@ -1,7 +1,14 @@
-name: workspace
+name: Workspace
+
 on:
-- push
-- pull_request
+  pull_request:
+    paths-ignore:
+      - README.md
+  push:
+    branches: master
+    paths-ignore:
+      - README.md
+
 jobs:
   test:
     runs-on: ubuntu-latest

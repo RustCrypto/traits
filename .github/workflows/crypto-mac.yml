@@ -1,8 +1,16 @@
 name: crypto-mac
+
 on:
-  push:
+  pull_request:
     paths:
-    - 'crypto-mac/**'
+      - "crypto-mac/**"
+      - "Cargo.*"
+  push:
+    branches: master
+    paths:
+    - "crypto-mac/**"
+    - "Cargo.*"
+
 jobs:
   test:
     runs-on: ubuntu-latest

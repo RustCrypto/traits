@@ -1,8 +1,16 @@
 name: digest
+
 on:
+  pull_request:
+      paths:
+        - "digest/**"
+        - "Cargo.*"
   push:
+    branches: master
     paths:
-    - 'digest/**'
+    - "digest/**"
+    - "Cargo.*"
+
 jobs:
   test:
     runs-on: ubuntu-latest

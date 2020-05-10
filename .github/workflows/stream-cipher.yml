@@ -1,8 +1,16 @@
 name: stream-cipher
+
 on:
-  push:
+  pull_request:
     paths:
-    - 'stream-cipher/**'
+      - "stream-cipher/**"
+      - "Cargo.*"
+  push:
+    branches: master
+    paths:
+      - "stream-cipher/**"
+      - "Cargo.*"
+
 jobs:
   test:
     runs-on: ubuntu-latest
