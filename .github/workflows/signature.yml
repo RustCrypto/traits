@@ -27,7 +27,6 @@ jobs:
         toolchain: ${{ matrix.rust }}
     - run: |
         cargo check --all-features
-        cargo test --features dev
-        cargo test --features std
-        cargo test --all-features
+        cargo test --no-default-features
+        cargo test
       working-directory: signature
