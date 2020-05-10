@@ -1,3 +1,5 @@
+//! Development-related functionality
+
 /// Test core functionality of synchronous stream cipher
 #[macro_export]
 macro_rules! new_sync_test {

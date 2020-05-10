@@ -7,7 +7,7 @@ use std::error;
 pub struct LoopError;
 
 impl fmt::Display for LoopError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         f.write_str("Loop Error")
     }
 }
@@ -25,7 +25,7 @@ impl error::Error for LoopError {
 pub struct InvalidKeyNonceLength;
 
 impl fmt::Display for InvalidKeyNonceLength {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         f.write_str("Loop Error")
     }
 }
