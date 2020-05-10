@@ -9,10 +9,8 @@ jobs:
     strategy:
       matrix:
         rust:
+          - 1.41.0 # MSRV
           - stable
-          - beta
-          - nightly
-          - 1.21.0 # MSRV
     steps:
     - uses: actions/checkout@v1
     - uses: actions-rs/toolchain@v1
