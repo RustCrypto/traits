@@ -1,9 +1,10 @@
 [package]
 name = "crypto-mac"
+description = "Trait for Message Authentication Code (MAC) algorithms"
 version = "0.8.0"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
-description = "Trait for Message Authentication Code (MAC) algorithms"
+edition = "2018"
 documentation = "https://docs.rs/crypto-mac"
 repository = "https://github.com/RustCrypto/traits"
 keywords = ["crypto", "mac"]

@@ -11,13 +11,13 @@ pub struct MacError;
 pub struct InvalidKeyLength;
 
 impl fmt::Display for MacError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("failed MAC verification")
     }
 }
 
 impl fmt::Display for InvalidKeyLength {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("invalid key length")
     }
 }

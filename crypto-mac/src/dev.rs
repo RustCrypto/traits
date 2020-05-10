@@ -1,3 +1,6 @@
+//! Development-related functionality
+
+/// Define test
 #[macro_export]
 macro_rules! new_test {
     ($name:ident, $test_name:expr, $mac:ty) => {
@@ -51,6 +54,7 @@ macro_rules! new_test {
     };
 }
 
+/// Define benchmark
 #[macro_export]
 macro_rules! bench {
     ($name:ident, $engine:path, $bs:expr) => {
