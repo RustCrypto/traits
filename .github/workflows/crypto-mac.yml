@@ -12,6 +12,30 @@ on:
     - "Cargo.*"
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - thumbv7em-none-eabi
+          - wasm32-unknown-unknown
+        rust:
+          - 1.41.0 # MSRV
+          - stable
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          target: ${{ matrix.target }}
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+      - working-directory: crypto-mac
+        run: cargo build --no-default-features --release --target ${{ matrix.target }}
   test:
     runs-on: ubuntu-latest
     strategy:
