@@ -28,11 +28,7 @@ jobs:
         with:
           profile: minimal
           toolchain: ${{ matrix.rust }}
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
           target: ${{ matrix.target }}
-          toolchain: ${{ matrix.rust }}
           override: true
       - working-directory: signature
         run: cargo build --no-default-features --release --target ${{ matrix.target }}
