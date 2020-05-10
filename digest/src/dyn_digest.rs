@@ -25,7 +25,7 @@ pub trait DynDigest {
     fn output_size(&self) -> usize;
 
     /// Clone hasher state into a boxed trait object
-    fn box_clone(&self) -> Box<DynDigest>;
+    fn box_clone(&self) -> Box<dyn DynDigest>;
 }
 
 impl<D: Input + FixedOutput + Reset + Clone + 'static> DynDigest for D {
@@ -51,12 +51,12 @@ impl<D: Input + FixedOutput + Reset + Clone + 'static> DynDigest for D {
         <Self as FixedOutput>::OutputSize::to_usize()
     }
 
-    fn box_clone(&self) -> Box<DynDigest> {
+    fn box_clone(&self) -> Box<dyn DynDigest> {
         Box::new(self.clone())
     }
 }
 
-impl Clone for Box<DynDigest> {
+impl Clone for Box<dyn DynDigest> {
     fn clone(&self) -> Self {
         self.box_clone()
     }
