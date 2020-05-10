@@ -38,13 +38,3 @@ jobs:
         toolchain: stable
         components: clippy
     - run: cargo clippy --all-features -- -D warnings
-  no_std:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-    - uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        target: thumbv7em-none-eabi
-    - run: cargo build --target thumbv7em-none-eabi
