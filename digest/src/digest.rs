@@ -7,7 +7,9 @@ use generic_array::{ArrayLength, GenericArray};
 /// It's a convenience wrapper around `Input`, `FixedOutput`, `Reset`, `Clone`,
 /// and `Default` traits. It also provides additional convenience methods.
 pub trait Digest {
+    /// Output size for `Digest`
     type OutputSize: ArrayLength<u8>;
+
     /// Create new hasher instance
     fn new() -> Self;
 

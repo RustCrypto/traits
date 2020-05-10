@@ -1,6 +1,9 @@
+//! Development-related functionality
+
 use super::{ExtendableOutput, Input, Reset, VariableOutput, XofReader};
 use core::fmt::Debug;
 
+/// Define test
 #[macro_export]
 macro_rules! new_test {
     ($name:ident, $test_name:expr, $hasher:ty, $test_func:ident) => {
@@ -26,11 +29,12 @@ macro_rules! new_test {
     };
 }
 
-// module to separate Digest from other traits
+/// Module to separate Digest from other traits
 mod foo {
     use super::super::Digest;
     use core::fmt::Debug;
 
+    /// Digest test
     pub fn digest_test<D>(input: &[u8], output: &[u8]) -> Option<&'static str>
     where
         D: Digest + Debug + Clone,
@@ -74,6 +78,7 @@ mod foo {
         None
     }
 
+    /// Compute digest of one million `a` bytes
     pub fn one_million_a<D>(expected: &[u8])
     where
         D: Digest + Debug + Clone,
@@ -90,6 +95,7 @@ mod foo {
 
 pub use self::foo::{digest_test, one_million_a};
 
+/// XOF test
 pub fn xof_test<D>(input: &[u8], output: &[u8]) -> Option<&'static str>
 where
     D: Input + ExtendableOutput + Default + Debug + Reset + Clone,
@@ -156,6 +162,7 @@ where
     None
 }
 
+/// Variable-output digest test
 pub fn variable_test<D>(input: &[u8], output: &[u8]) -> Option<&'static str>
 where
     D: Input + VariableOutput + Reset + Debug + Clone,
@@ -205,6 +212,7 @@ where
     None
 }
 
+/// Define benchmark
 #[macro_export]
 macro_rules! bench {
     ($name:ident, $engine:path, $bs:expr) => {

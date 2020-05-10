@@ -1,9 +1,10 @@
 [package]
 name = "digest"
+description = "Traits for cryptographic hash functions"
 version = "0.8.1"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
-description = "Traits for cryptographic hash functions"
+edition = "2018"
 documentation = "https://docs.rs/digest"
 repository = "https://github.com/RustCrypto/traits"
 keywords = ["digest", "crypto", "hash"]
