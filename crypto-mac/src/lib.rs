@@ -1,28 +1,31 @@
 //! This crate provides trait for Message Authentication Code (MAC) algorithms.
-#![no_std]
-#![forbid(unsafe_code)]
-#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-pub extern crate generic_array;
-extern crate subtle;
 
-#[cfg(feature = "dev")]
-pub extern crate blobby;
+#![no_std]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
+#![forbid(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
+
 #[cfg(feature = "std")]
 extern crate std;
+
+#[cfg(feature = "dev")]
+pub mod dev;
+
+mod errors;
+
+pub use crate::errors::{InvalidKeyLength, MacError};
+pub use generic_array;
 
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
 use subtle::{Choice, ConstantTimeEq};
 
-#[cfg(feature = "dev")]
-pub mod dev;
-mod errors;
-
-pub use errors::{InvalidKeyLength, MacError};
-
 /// The `Mac` trait defines methods for a Message Authentication algorithm.
 pub trait Mac: Clone {
+    /// Output size of the [`Mac`]
     type OutputSize: ArrayLength<u8>;
+
+    /// Keys size of the [`Mac`]
     type KeySize: ArrayLength<u8>;
 
     /// Create new MAC instance from key with fixed size.
