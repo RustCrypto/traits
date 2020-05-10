@@ -1,9 +1,10 @@
 [package]
 name = "stream-cipher"
+description = "Stream cipher traits"
 version = "0.3.2"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
-description = "Stream cipher traits"
+edition = "2018"
 documentation = "https://docs.rs/stream-cipher"
 repository = "https://github.com/RustCrypto/traits"
 keywords = ["crypto", "stream-cipher", "trait"]

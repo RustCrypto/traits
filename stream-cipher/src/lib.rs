@@ -3,23 +3,25 @@
 //!
 //! See [RustCrypto/stream-ciphers](https://github.com/RustCrypto/stream-ciphers)
 //! for ciphers implementation.
+
 #![no_std]
-#![forbid(unsafe_code)]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-#[cfg(feature = "dev")]
-pub extern crate blobby;
-pub extern crate generic_array;
+#![forbid(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
+
 #[cfg(feature = "std")]
 extern crate std;
 
-use generic_array::typenum::Unsigned;
-use generic_array::{ArrayLength, GenericArray};
-
 #[cfg(feature = "dev")]
 pub mod dev;
+
 mod errors;
 
-pub use errors::{InvalidKeyNonceLength, LoopError};
+pub use crate::errors::{InvalidKeyNonceLength, LoopError};
+pub use generic_array;
+
+use generic_array::typenum::Unsigned;
+use generic_array::{ArrayLength, GenericArray};
 
 /// Stream cipher creation trait.
 ///
