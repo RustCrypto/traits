@@ -12,29 +12,34 @@
 //! `Write`. (the latter depends on enabled-by-default `std` crate feature)
 //!
 //! The `Digest` trait is the most commonly used trait.
+
 #![no_std]
 #![forbid(unsafe_code)]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-pub extern crate generic_array;
+#![warn(missing_docs, rust_2018_idioms)]
+
 #[cfg(feature = "std")]
 #[macro_use]
 extern crate std;
-#[cfg(feature = "dev")]
-pub extern crate blobby;
-use generic_array::{ArrayLength, GenericArray};
-#[cfg(feature = "std")]
-use std::vec::Vec;
 
 #[cfg(feature = "dev")]
 pub mod dev;
+
 mod digest;
 mod dyn_digest;
 mod errors;
 
-pub use digest::Digest;
+pub use crate::digest::Digest;
+pub use crate::errors::InvalidOutputSize;
+pub use generic_array;
+
 #[cfg(feature = "std")]
 pub use dyn_digest::DynDigest;
-pub use errors::InvalidOutputSize;
+
+use generic_array::{ArrayLength, GenericArray};
+
+#[cfg(feature = "std")]
+use std::vec::Vec;
 
 /// Trait for processing input data
 pub trait Input {
@@ -59,11 +64,13 @@ pub trait Input {
 ///
 /// The main usage of this trait is for implementing HMAC generically.
 pub trait BlockInput {
+    /// Block size
     type BlockSize: ArrayLength<u8>;
 }
 
 /// Trait for returning digest result with the fixed size
 pub trait FixedOutput {
+    /// Output size for fixed output digest
     type OutputSize: ArrayLength<u8>;
 
     /// Retrieve result and consume hasher instance.
@@ -106,6 +113,7 @@ pub trait XofReader {
 
 /// Trait which describes extendable-output functions (XOF).
 pub trait ExtendableOutput: core::marker::Sized {
+    /// Reader
     type Reader: XofReader;
 
     /// Retrieve XOF reader and consume hasher instance.
