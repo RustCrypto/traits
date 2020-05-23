@@ -1,4 +1,4 @@
-# RustCrypto: Authenticated Encryption with Additional Data
+# RustCrypto: Authenticated Encryption with Additional Data Traits
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -27,14 +27,10 @@ done with a minor version bump.
 
 - All on-by-default features of this library are covered by SemVer
 - MSRV is considered exempt from SemVer as noted above
-- The off-by-default features `derive-preview` and `digest-preview` are
-  unstable "preview" features which are also considered exempt from SemVer.
-  Breaking changes to these features will, like MSRV, be done with a minor
-  version bump.
 
 ## License
 
-All crates licensed under either of
+Licensed under either of:
 
  * [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
  * [MIT license](http://opensource.org/licenses/MIT)

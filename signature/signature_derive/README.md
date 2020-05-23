@@ -1,7 +1,5 @@
 # `signature` crate custom derive support
 
-[![Build Status](https://travis-ci.org/RustCrypto/traits.svg?branch=master)](https://travis-ci.org/RustCrypto/traits)
-
 This crate provides proc macros used by the `signature` crate.
 
 Not intended to be used directly. See the `signature` crate's documentation

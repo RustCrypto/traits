@@ -8,6 +8,7 @@ documentation = "https://docs.rs/universal-hash"
 repository = "https://github.com/RustCrypto/traits"
 keywords = ["crypto", "mac"]
 categories = ["cryptography", "no-std"]
+readme = "README.md"
 edition = "2018"
 
 [dependencies]
@@ -16,9 +17,6 @@ subtle = { version = "2", default-features = false }
 
 [features]
 std = []
-
-[badges]
-travis-ci = { repository = "RustCrypto/traits" }
 
 [package.metadata.docs.rs]
 all-features = true
