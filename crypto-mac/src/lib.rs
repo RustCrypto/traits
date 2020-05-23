@@ -28,10 +28,10 @@ pub trait Mac: Clone {
     /// Keys size of the [`Mac`]
     type KeySize: ArrayLength<u8>;
 
-    /// Create new MAC instance from key with fixed size.
+    /// Initialize new MAC instance from key with fixed size.
     fn new(key: &GenericArray<u8, Self::KeySize>) -> Self;
 
-    /// Create new MAC instance from key with variable size.
+    /// Initialize new MAC instance from key with variable size.
     ///
     /// Default implementation will accept only keys with length equal to
     /// `KeySize`, but some MACs can accept range of key lengths.
@@ -43,8 +43,8 @@ pub trait Mac: Clone {
         }
     }
 
-    /// Process input data.
-    fn input(&mut self, data: &[u8]);
+    /// Update MAC state with the given data.
+    fn update(&mut self, data: &[u8]);
 
     /// Reset `Mac` instance.
     fn reset(&mut self);

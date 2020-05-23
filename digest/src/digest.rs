@@ -1,4 +1,4 @@
-use super::{FixedOutput, Input, Reset};
+use super::{FixedOutput, Reset, Update};
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
 
@@ -13,10 +13,10 @@ pub trait Digest {
     /// Create new hasher instance
     fn new() -> Self;
 
-    /// Digest input data.
+    /// Digest data, updating the internal state.
     ///
     /// This method can be called repeatedly for use with streaming messages.
-    fn input<B: AsRef<[u8]>>(&mut self, data: B);
+    fn update<B: AsRef<[u8]>>(&mut self, data: B);
 
     /// Digest input data in a chained manner.
     fn chain<B: AsRef<[u8]>>(self, data: B) -> Self
@@ -49,22 +49,22 @@ pub trait Digest {
     fn digest(data: &[u8]) -> GenericArray<u8, Self::OutputSize>;
 }
 
-impl<D: Input + FixedOutput + Reset + Clone + Default> Digest for D {
+impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
     type OutputSize = <Self as FixedOutput>::OutputSize;
 
     fn new() -> Self {
         Self::default()
     }
 
-    fn input<B: AsRef<[u8]>>(&mut self, data: B) {
-        Input::input(self, data);
+    fn update<B: AsRef<[u8]>>(&mut self, data: B) {
+        Update::update(self, data);
     }
 
     fn chain<B: AsRef<[u8]>>(self, data: B) -> Self
     where
         Self: Sized,
     {
-        Input::chain(self, data)
+        Update::chain(self, data)
     }
 
     fn result(self) -> GenericArray<u8, Self::OutputSize> {
@@ -87,7 +87,7 @@ impl<D: Input + FixedOutput + Reset + Clone + Default> Digest for D {
 
     fn digest(data: &[u8]) -> GenericArray<u8, Self::OutputSize> {
         let mut hasher = Self::default();
-        Input::input(&mut hasher, data);
+        Update::update(&mut hasher, data);
         hasher.fixed_result()
     }
 }

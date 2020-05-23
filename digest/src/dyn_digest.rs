@@ -1,7 +1,7 @@
 #![cfg(feature = "std")]
 use std::boxed::Box;
 
-use super::{FixedOutput, Input, Reset};
+use super::{FixedOutput, Reset, Update};
 use generic_array::typenum::Unsigned;
 
 /// The `DynDigest` trait is a modification of `Digest` trait suitable
@@ -10,7 +10,7 @@ pub trait DynDigest {
     /// Digest input data.
     ///
     /// This method can be called repeatedly for use with streaming messages.
-    fn input(&mut self, data: &[u8]);
+    fn update(&mut self, data: &[u8]);
 
     /// Retrieve result and reset hasher instance
     fn result_reset(&mut self) -> Box<[u8]>;
@@ -28,9 +28,9 @@ pub trait DynDigest {
     fn box_clone(&self) -> Box<dyn DynDigest>;
 }
 
-impl<D: Input + FixedOutput + Reset + Clone + 'static> DynDigest for D {
-    fn input(&mut self, data: &[u8]) {
-        Input::input(self, data);
+impl<D: Update + FixedOutput + Reset + Clone + 'static> DynDigest for D {
+    fn update(&mut self, data: &[u8]) {
+        Update::update(self, data);
     }
 
     fn result_reset(&mut self) -> Box<[u8]> {

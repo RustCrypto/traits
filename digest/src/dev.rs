@@ -1,6 +1,6 @@
 //! Development-related functionality
 
-use super::{ExtendableOutput, Input, Reset, VariableOutput, XofReader};
+use super::{ExtendableOutput, Reset, Update, VariableOutput, XofReader};
 use core::fmt::Debug;
 
 /// Define test
@@ -41,7 +41,7 @@ mod foo {
     {
         let mut hasher = D::new();
         // Test that it works when accepting the message all at once
-        hasher.input(input);
+        hasher.update(input);
         let mut hasher2 = hasher.clone();
         if hasher.result().as_slice() != output {
             return Some("whole message");
@@ -49,7 +49,7 @@ mod foo {
 
         // Test if reset works correctly
         hasher2.reset();
-        hasher2.input(input);
+        hasher2.update(input);
         if hasher2.result().as_slice() != output {
             return Some("whole message after reset");
         }
@@ -60,7 +60,7 @@ mod foo {
         let mut left = len;
         while left > 0 {
             let take = (left + 1) / 2;
-            hasher.input(&input[len - left..take + len - left]);
+            hasher.update(&input[len - left..take + len - left]);
             left -= take;
         }
         if hasher.result().as_slice() != output {
@@ -70,7 +70,7 @@ mod foo {
         // Test processing byte-by-byte
         let mut hasher = D::new();
         for chunk in input.chunks(1) {
-            hasher.input(chunk)
+            hasher.update(chunk)
         }
         if hasher.result().as_slice() != output {
             return Some("message byte-by-byte");
@@ -85,9 +85,9 @@ mod foo {
     {
         let mut sh = D::new();
         for _ in 0..50_000 {
-            sh.input(&[b'a'; 10]);
+            sh.update(&[b'a'; 10]);
         }
-        sh.input(&[b'a'; 500_000][..]);
+        sh.update(&[b'a'; 500_000][..]);
         let out = sh.result();
         assert_eq!(out[..], expected[..]);
     }
@@ -98,12 +98,12 @@ pub use self::foo::{digest_test, one_million_a};
 /// XOF test
 pub fn xof_test<D>(input: &[u8], output: &[u8]) -> Option<&'static str>
 where
-    D: Input + ExtendableOutput + Default + Debug + Reset + Clone,
+    D: Update + ExtendableOutput + Default + Debug + Reset + Clone,
 {
     let mut hasher = D::default();
     let mut buf = [0u8; 1024];
     // Test that it works when accepting the message all at once
-    hasher.input(input);
+    hasher.update(input);
 
     let mut hasher2 = hasher.clone();
     {
@@ -117,7 +117,7 @@ where
 
     // Test if hasher resets correctly
     hasher2.reset();
-    hasher2.input(input);
+    hasher2.update(input);
 
     {
         let out = &mut buf[..output.len()];
@@ -134,7 +134,7 @@ where
     let mut left = len;
     while left > 0 {
         let take = (left + 1) / 2;
-        hasher.input(&input[len - left..take + len - left]);
+        hasher.update(&input[len - left..take + len - left]);
         left -= take;
     }
 
@@ -148,7 +148,7 @@ where
 
     // Test reading from reader byte by byte
     let mut hasher = D::default();
-    hasher.input(input);
+    hasher.update(input);
 
     let mut reader = hasher.xof_result();
     let out = &mut buf[..output.len()];
@@ -165,13 +165,13 @@ where
 /// Variable-output digest test
 pub fn variable_test<D>(input: &[u8], output: &[u8]) -> Option<&'static str>
 where
-    D: Input + VariableOutput + Reset + Debug + Clone,
+    D: Update + VariableOutput + Reset + Debug + Clone,
 {
     let mut hasher = D::new(output.len()).unwrap();
     let mut buf = [0u8; 128];
     let buf = &mut buf[..output.len()];
     // Test that it works when accepting the message all at once
-    hasher.input(input);
+    hasher.update(input);
     let mut hasher2 = hasher.clone();
     hasher.variable_result(|res| buf.copy_from_slice(res));
     if buf != output {
@@ -180,7 +180,7 @@ where
 
     // Test if reset works correctly
     hasher2.reset();
-    hasher2.input(input);
+    hasher2.update(input);
     hasher2.variable_result(|res| buf.copy_from_slice(res));
     if buf != output {
         return Some("whole message after reset");
@@ -192,7 +192,7 @@ where
     let mut left = len;
     while left > 0 {
         let take = (left + 1) / 2;
-        hasher.input(&input[len - left..take + len - left]);
+        hasher.update(&input[len - left..take + len - left]);
         left -= take;
     }
     hasher.variable_result(|res| buf.copy_from_slice(res));
@@ -203,7 +203,7 @@ where
     // Test processing byte-by-byte
     let mut hasher = D::new(output.len()).unwrap();
     for chunk in input.chunks(1) {
-        hasher.input(chunk)
+        hasher.update(chunk)
     }
     hasher.variable_result(|res| buf.copy_from_slice(res));
     if buf != output {

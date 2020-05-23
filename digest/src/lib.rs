@@ -41,20 +41,20 @@ use generic_array::{ArrayLength, GenericArray};
 #[cfg(feature = "std")]
 use std::vec::Vec;
 
-/// Trait for processing input data
-pub trait Input {
+/// Trait for updating digest state with input data.
+pub trait Update {
     /// Digest input data.
     ///
     /// This method can be called repeatedly, e.g. for processing streaming
     /// messages.
-    fn input<B: AsRef<[u8]>>(&mut self, data: B);
+    fn update<B: AsRef<[u8]>>(&mut self, data: B);
 
     /// Digest input data in a chained manner.
     fn chain<B: AsRef<[u8]>>(mut self, data: B) -> Self
     where
         Self: Sized,
     {
-        self.input(data);
+        self.update(data);
         self
     }
 }
