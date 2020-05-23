@@ -54,8 +54,7 @@ dual licensed as above, without any additional terms or conditions.
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
 [build-image]: https://github.com/RustCrypto/traits/workflows/signature/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/Atraits/actions
-
+[build-link]: https://github.com/RustCrypto/traits/actions?query=workflow%3Asignature
 
 [//]: # (general links)
 
