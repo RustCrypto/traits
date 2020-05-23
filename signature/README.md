@@ -16,7 +16,7 @@ in the [`rsa`][4] crate.
 
 ## Minimum Supported Rust Version
 
-All crates in this repository support Rust **1.36** or higher.
+Rust **1.41** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
@@ -52,7 +52,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/signature/badge.svg
 [docs-link]: https://docs.rs/signature/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.36+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
 [build-image]: https://travis-ci.org/RustCrypto/traits.svg?branch=master
 [build-link]: https://travis-ci.org/RustCrypto/traits
 
