@@ -16,10 +16,10 @@ pub trait Digest {
     /// Digest data, updating the internal state.
     ///
     /// This method can be called repeatedly for use with streaming messages.
-    fn update<B: AsRef<[u8]>>(&mut self, data: B);
+    fn update(&mut self, data: impl AsRef<[u8]>);
 
     /// Digest input data in a chained manner.
-    fn chain<B: AsRef<[u8]>>(self, data: B) -> Self
+    fn chain(self, data: impl AsRef<[u8]>) -> Self
     where
         Self: Sized;
 
@@ -56,11 +56,11 @@ impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
         Self::default()
     }
 
-    fn update<B: AsRef<[u8]>>(&mut self, data: B) {
+    fn update(&mut self, data: impl AsRef<[u8]>) {
         Update::update(self, data);
     }
 
-    fn chain<B: AsRef<[u8]>>(self, data: B) -> Self
+    fn chain(self, data: impl AsRef<[u8]>) -> Self
     where
         Self: Sized,
     {
