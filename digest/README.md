@@ -6,8 +6,10 @@
 ![Rust Version][rustc-image]
 [![Build Status][build-image]][build-link]
 
-Traits which describe functionality of cryptographic hash functions, a.k.a.
+Traits which describe functionality of [cryptographic hash functions], a.k.a.
 digest algorithms.
+
+See [RustCrypto/hashes] for implementations which use this trait.
 
 [Documentation][docs-link]
 
@@ -48,3 +50,8 @@ dual licensed as above, without any additional terms or conditions.
 [rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
 [build-image]: https://github.com/RustCrypto/traits/workflows/digest/badge.svg?branch=master&event=push
 [build-link]: https://github.com/RustCrypto/traits/actions?query=workflow%3Adigest
+
+[//]: # (general links)
+
+[cryptographic hash functions]: https://en.wikipedia.org/wiki/Cryptographic_hash_function
+[RustCrypto/hashes]: https://github.com/RustCrypto/hashes
