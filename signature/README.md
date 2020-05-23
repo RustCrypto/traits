@@ -1,4 +1,4 @@
-# RustCrypto: `signature` crate
+# RustCrypto: Digital Signature Algorithms
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -32,7 +32,7 @@ done with a minor version bump.
 
 ## License
 
-All crates licensed under either of
+Licensed under either of
 
  * [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
  * [MIT license](http://opensource.org/licenses/MIT)

@@ -4,6 +4,7 @@ description = "Stream cipher traits"
 version = "0.3.2"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
+readme = "README.md"
 edition = "2018"
 documentation = "https://docs.rs/stream-cipher"
 repository = "https://github.com/RustCrypto/traits"
@@ -17,9 +18,6 @@ blobby = { version = "0.1", optional = true }
 [features]
 std = []
 dev = ["blobby"]
-
-[badges]
-travis-ci = { repository = "RustCrypto/traits" }
 
 [package.metadata.docs.rs]
 features = [ "std" ]
