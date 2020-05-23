@@ -33,7 +33,7 @@ mod errors;
 
 pub use crate::digest::{Digest, Output};
 pub use crate::errors::InvalidOutputSize;
-pub use generic_array;
+pub use generic_array::{self, typenum::consts};
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
