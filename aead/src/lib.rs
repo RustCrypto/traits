@@ -74,7 +74,7 @@ pub trait NewAead {
     type KeySize: ArrayLength<u8>;
 
     /// Construct a new stateful instance for the given key.
-    fn new(key: GenericArray<u8, Self::KeySize>) -> Self;
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self;
 }
 
 /// Authenticated Encryption with Associated Data (AEAD) algorithm.
