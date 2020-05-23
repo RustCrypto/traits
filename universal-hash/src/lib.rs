@@ -48,7 +48,7 @@ pub trait UniversalHash: Clone {
     fn new(key: &Key<Self>) -> Self;
 
     /// Input a block into the universal hash function
-    fn update_block(&mut self, block: &Block<Self>);
+    fn update(&mut self, block: &Block<Self>);
 
     /// Input data into the universal hash function. If the length of the
     /// data is not a multiple of the block size, the remaining data is
@@ -60,7 +60,7 @@ pub trait UniversalHash: Clone {
         let mut chunks = data.chunks_exact(Self::BlockSize::to_usize());
 
         for chunk in &mut chunks {
-            self.update_block(GenericArray::from_slice(chunk));
+            self.update(GenericArray::from_slice(chunk));
         }
 
         let rem = chunks.remainder();
@@ -68,7 +68,7 @@ pub trait UniversalHash: Clone {
         if !rem.is_empty() {
             let mut padded_block = GenericArray::default();
             padded_block[..rem.len()].copy_from_slice(rem);
-            self.update_block(&padded_block);
+            self.update(&padded_block);
         }
     }
 
