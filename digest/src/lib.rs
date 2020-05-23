@@ -2,16 +2,16 @@
 //! functions.
 //!
 //! Traits in this repository can be separated into two levels:
-//! - Low level traits: `Input`, `BlockInput`, `Reset`, `FixedOutput`,
-//! `VariableOutput`, `ExtendableOutput`. These traits atomically describe
+//! - Low level traits: [`Update`], [`BlockInput`], [`Reset`], [`FixedOutput`],
+//! [`VariableOutput`], [`ExtendableOutput`]. These traits atomically describe
 //! available functionality of hash function implementations.
-//! - Convenience trait: `Digest`, `DynDigest`. They are wrappers around
+//! - Convenience trait: [`Digest`], [`DynDigest`]. They are wrappers around
 //! low level traits for most common hash-function use-cases.
 //!
 //! Additionally hash functions implement traits from `std`: `Default`, `Clone`,
 //! `Write`. (the latter depends on enabled-by-default `std` crate feature)
 //!
-//! The `Digest` trait is the most commonly used trait.
+//! The [`Digest`] trait is the most commonly used trait.
 
 #![no_std]
 #![forbid(unsafe_code)]
@@ -29,7 +29,7 @@ mod digest;
 mod dyn_digest;
 mod errors;
 
-pub use crate::digest::Digest;
+pub use crate::digest::{Digest, Output};
 pub use crate::errors::InvalidOutputSize;
 pub use generic_array;
 
