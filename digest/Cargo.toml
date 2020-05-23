@@ -22,4 +22,5 @@ dev = ["blobby"]
 travis-ci = { repository = "RustCrypto/traits" }
 
 [package.metadata.docs.rs]
-features = ["std"]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

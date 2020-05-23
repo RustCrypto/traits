@@ -5,6 +5,7 @@ use core::fmt::Debug;
 
 /// Define test
 #[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! new_test {
     ($name:ident, $test_name:expr, $hasher:ty, $test_func:ident) => {
         #[test]
@@ -214,6 +215,7 @@ where
 
 /// Define benchmark
 #[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! bench {
     ($name:ident, $engine:path, $bs:expr) => {
         #[bench]
