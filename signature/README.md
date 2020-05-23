@@ -53,8 +53,9 @@ dual licensed as above, without any additional terms or conditions.
 [docs-link]: https://docs.rs/signature/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
-[build-image]: https://travis-ci.org/RustCrypto/traits.svg?branch=master
-[build-link]: https://travis-ci.org/RustCrypto/traits
+[build-image]: https://github.com/RustCrypto/traits/workflows/signature/badge.svg?branch=master&event=push
+[build-link]: https://github.com/RustCrypto/Atraits/actions
+
 
 [//]: # (general links)
 
