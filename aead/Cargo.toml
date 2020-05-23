@@ -4,6 +4,7 @@ version = "0.2.0"
 authors = ["RustCrypto Developers"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
+readme = "README.md"
 description = "Traits for Authenticated Encryption with Associated Data (AEAD) algorithms"
 documentation = "https://docs.rs/aead"
 repository = "https://github.com/RustCrypto/traits"
