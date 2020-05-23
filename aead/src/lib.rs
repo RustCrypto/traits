@@ -1,4 +1,4 @@
-//! Authenticated Encryption with Associated Data (AEAD) traits
+//! [Authenticated Encryption with Associated Data] (AEAD) traits
 //!
 //! This crate provides an abstract interface for AEAD ciphers, which guarantee
 //! both confidentiality and integrity, even from a powerful attacker who is
@@ -8,12 +8,16 @@
 //!
 //! See [RustCrypto/AEADs] for cipher implementations which use this trait.
 //!
+//! [Authenticated Encryption with Associated Data]: https://en.wikipedia.org/wiki/Authenticated_encryption
 //! [chosen-ciphertext attacks]: https://en.wikipedia.org/wiki/Chosen-ciphertext_attack
 //! [ciphertext indistinguishability]: https://en.wikipedia.org/wiki/Ciphertext_indistinguishability
 //! [RustCrypto/AEADs]: https://github.com/RustCrypto/AEADs
 
 #![no_std]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
+#![warn(missing_docs, rust_2018_idioms)]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -30,11 +34,12 @@ use alloc::vec::Vec;
 use core::fmt;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
+/// Error type
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Error;
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("aead::Error")
     }
 }
@@ -107,6 +112,7 @@ pub trait Aead {
     /// use a postfix tag will need to override this to correctly assemble the
     /// ciphertext message.
     #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn encrypt<'msg, 'aad>(
         &self,
         nonce: &GenericArray<u8, Self::NonceSize>,
@@ -165,6 +171,7 @@ pub trait Aead {
     /// use a postfix tag will need to override this to correctly parse the
     /// ciphertext message.
     #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn decrypt<'msg, 'aad>(
         &self,
         nonce: &GenericArray<u8, Self::NonceSize>,
@@ -218,6 +225,7 @@ pub trait AeadMut {
     /// See notes on [`Aead::encrypt()`] about allowable message payloads and
     /// Associated Additional Data (AAD).
     #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn encrypt<'msg, 'aad>(
         &mut self,
         nonce: &GenericArray<u8, Self::NonceSize>,
@@ -264,6 +272,7 @@ pub trait AeadMut {
     /// See notes on [`Aead::encrypt()`] and [`Aead::decrypt()`] about allowable
     /// message payloads and Associated Additional Data (AAD).
     #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn decrypt<'msg, 'aad>(
         &mut self,
         nonce: &GenericArray<u8, Self::NonceSize>,
