@@ -14,6 +14,7 @@
 //! The [`Digest`] trait is the most commonly used trait.
 
 #![no_std]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![warn(missing_docs, rust_2018_idioms)]
@@ -23,6 +24,7 @@
 extern crate std;
 
 #[cfg(feature = "dev")]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
 mod digest;
@@ -34,6 +36,7 @@ pub use crate::errors::InvalidOutputSize;
 pub use generic_array;
 
 #[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use dyn_digest::DynDigest;
 
 use generic_array::{ArrayLength, GenericArray};
@@ -97,6 +100,7 @@ pub trait VariableOutput: core::marker::Sized {
 
     /// Retrieve result into vector and consume hasher.
     #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     fn vec_result(self) -> Vec<u8> {
         let mut buf = Vec::with_capacity(self.output_size());
         self.variable_result(|res| buf.extend_from_slice(res));
@@ -121,6 +125,7 @@ pub trait ExtendableOutput: core::marker::Sized {
 
     /// Retrieve result into vector of specified length.
     #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     fn vec_result(self, n: usize) -> Vec<u8> {
         let mut buf = vec![0u8; n];
         self.xof_result().read(&mut buf);
@@ -134,18 +139,20 @@ pub trait Reset {
     fn reset(&mut self);
 }
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 #[macro_export]
-/// Implements `std::io::Write` trait for implementer of `Input`
+/// Implements `std::io::Write` trait for implementer of [`Update`]
 macro_rules! impl_write {
     ($hasher:ident) => {
         #[cfg(feature = "std")]
-        impl ::std::io::Write for $hasher {
-            fn write(&mut self, buf: &[u8]) -> ::std::io::Result<usize> {
-                Input::input(self, buf);
+        impl std::io::Write for $hasher {
+            fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+                Update::update(self, buf);
                 Ok(buf.len())
             }
 
-            fn flush(&mut self) -> ::std::io::Result<()> {
+            fn flush(&mut self) -> std::io::Result<()> {
                 Ok(())
             }
         }
