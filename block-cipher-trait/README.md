@@ -6,7 +6,9 @@
 ![Rust Version][rustc-image]
 [![Build Status][build-image]][build-link]
 
-Traits which define functionality of block ciphers.
+Traits which define functionality of [block ciphers].
+
+See [RustCrypto/block-ciphers] for implementations which use this trait.
 
 [Documentation][docs-link]
 
@@ -47,3 +49,8 @@ dual licensed as above, without any additional terms or conditions.
 [rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
 [build-image]: https://github.com/RustCrypto/traits/workflows/block-cipher-trait/badge.svg?branch=master&event=push
 [build-link]: https://github.com/RustCrypto/traits/actions?query=workflow%3Ablock-cipher-trait
+
+[//]: # (general links)
+
+[block ciphers]: https://en.wikipedia.org/wiki/Block_cipher
+[RustCrypto/block-ciphers]: https://github.com/RustCrypto/block-ciphers

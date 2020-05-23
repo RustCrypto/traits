@@ -12,6 +12,10 @@ generating and verifying [digital signatures][1].
 Used by the [`ecdsa`][2] and [`ed25519`][3] crates, with forthcoming support
 in the [`rsa`][4] crate.
 
+See also the [Signatory][5] project for trait wrappers for using these traits
+with many popular Rust cryptography crates, including `ed25519-dalek`, *ring*,
+`secp256k1-rs`, and `sodiumoxide`.
+
 [Documentation][docs-link]
 
 ## Minimum Supported Rust Version
@@ -62,3 +66,4 @@ dual licensed as above, without any additional terms or conditions.
 [2]: https://github.com/RustCrypto/signatures/tree/master/ecdsa
 [3]: https://github.com/RustCrypto/signatures/tree/master/ed25519
 [4]: https://github.com/RustCrypto/RSA
+[5]: https://docs.rs/signatory

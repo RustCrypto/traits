@@ -6,7 +6,9 @@
 ![Rust Version][rustc-image]
 [![Build Status][build-image]][build-link]
 
-Traits for Message Authentication Code (MAC) algorithms.
+Traits for [Message Authentication Code] (MAC) algorithms.
+
+See [RustCrypto/MACs] for implementations which use this trait.
 
 [Documentation][docs-link]
 
@@ -47,3 +49,8 @@ dual licensed as above, without any additional terms or conditions.
 [rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
 [build-image]: https://github.com/RustCrypto/traits/workflows/crypto-mac/badge.svg?branch=master&event=push
 [build-link]: https://github.com/RustCrypto/traits/actions?query=workflow%3Acrypto-mac
+
+[//]: # (general links)
+
+[Message Authentication Code]: https://en.wikipedia.org/wiki/Message_authentication_code
+[RustCrypto/MACs]: https://github.com/RustCrypto/MACs

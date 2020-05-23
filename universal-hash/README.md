@@ -6,7 +6,9 @@
 ![Rust Version][rustc-image]
 [![Build Status][build-image]][build-link]
 
-Traits which define functionality of universal hash functions.
+Traits which define functionality of [universal hash functions].
+
+See [RustCrypto/universal-hashes] for implementations which use this trait.
 
 [Documentation][docs-link]
 
@@ -47,3 +49,8 @@ dual licensed as above, without any additional terms or conditions.
 [rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
 [build-image]: https://github.com/RustCrypto/traits/workflows/universal-hash/badge.svg?branch=master&event=push
 [build-link]: https://github.com/RustCrypto/traits/actions?query=workflow%3Auniversal-hash
+
+[//]: # (general links)
+
+[universal hash functions]: https://en.wikipedia.org/wiki/Universal_hashing
+[RustCrypto/universal-hashes]: https://github.com/RustCrypto/universal-hashes
