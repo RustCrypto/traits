@@ -1,6 +1,4 @@
 use core::fmt;
-#[cfg(feature = "std")]
-use std::error;
 
 /// Error which notifies that stream cipher has reached the end of a keystream.
 #[derive(Copy, Clone, Debug)]
@@ -13,11 +11,7 @@ impl fmt::Display for LoopError {
 }
 
 #[cfg(feature = "std")]
-impl error::Error for LoopError {
-    fn description(&self) -> &str {
-        "stream cipher loop detected"
-    }
-}
+impl std::error::Error for LoopError {}
 
 /// Error which notifies that key or/and nonce used in stream cipher
 /// initialization had an invalid length.
@@ -31,8 +25,4 @@ impl fmt::Display for InvalidKeyNonceLength {
 }
 
 #[cfg(feature = "std")]
-impl error::Error for InvalidKeyNonceLength {
-    fn description(&self) -> &str {
-        "stream cipher loop detected"
-    }
-}
+impl std::error::Error for InvalidKeyNonceLength {}
