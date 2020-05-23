@@ -21,7 +21,7 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-pub use generic_array;
+pub use generic_array::{self, typenum::consts};
 
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
@@ -32,6 +32,7 @@ use subtle::{Choice, ConstantTimeEq};
 pub trait UniversalHash: Clone {
     /// Size of the key for the universal hash function
     type KeySize: ArrayLength<u8>;
+
     /// Size of the inputs to and outputs from the universal hash function
     type BlockSize: ArrayLength<u8>;
 

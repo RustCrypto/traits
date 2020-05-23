@@ -25,14 +25,16 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-pub use generic_array;
+pub use generic_array::{self, typenum::consts};
+
 #[cfg(feature = "heapless")]
 pub use heapless;
 
-#[cfg(feature = "alloc")]
-use alloc::vec::Vec;
 use core::fmt;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
 
 /// Error type
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]

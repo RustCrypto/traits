@@ -15,7 +15,7 @@ pub mod dev;
 mod errors;
 
 pub use crate::errors::InvalidKeyLength;
-pub use generic_array;
+pub use generic_array::{self, typenum::consts};
 
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
