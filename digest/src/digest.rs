@@ -24,13 +24,13 @@ pub trait Digest {
         Self: Sized;
 
     /// Retrieve result and consume hasher instance.
-    fn result(self) -> GenericArray<u8, Self::OutputSize>;
+    fn result(self) -> Output<Self>;
 
     /// Retrieve result and reset hasher instance.
     ///
     /// This method sometimes can be more efficient compared to hasher
     /// re-creation.
-    fn result_reset(&mut self) -> GenericArray<u8, Self::OutputSize>;
+    fn result_reset(&mut self) -> Output<Self>;
 
     /// Reset hasher instance to its initial state.
     fn reset(&mut self);
@@ -46,7 +46,7 @@ pub trait Digest {
     /// ```rust,ignore
     /// println!("{:x}", sha2::Sha256::digest(b"Hello world"));
     /// ```
-    fn digest(data: &[u8]) -> GenericArray<u8, Self::OutputSize>;
+    fn digest(data: &[u8]) -> Output<Self>;
 }
 
 impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
@@ -67,11 +67,11 @@ impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
         Update::chain(self, data)
     }
 
-    fn result(self) -> GenericArray<u8, Self::OutputSize> {
+    fn result(self) -> Output<Self> {
         self.fixed_result()
     }
 
-    fn result_reset(&mut self) -> GenericArray<u8, Self::OutputSize> {
+    fn result_reset(&mut self) -> Output<Self> {
         let res = self.clone().fixed_result();
         self.reset();
         res
@@ -85,9 +85,12 @@ impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
         Self::OutputSize::to_usize()
     }
 
-    fn digest(data: &[u8]) -> GenericArray<u8, Self::OutputSize> {
+    fn digest(data: &[u8]) -> Output<Self> {
         let mut hasher = Self::default();
         Update::update(&mut hasher, data);
         hasher.fixed_result()
     }
 }
+
+/// Output of a [`Digest`] function
+pub type Output<D> = GenericArray<u8, <D as Digest>::OutputSize>;
