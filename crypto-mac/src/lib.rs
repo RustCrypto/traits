@@ -20,16 +20,16 @@ use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
 use subtle::{Choice, ConstantTimeEq};
 
-/// The [`Mac`] trait defines methods for a Message Authentication algorithm.
-pub trait Mac: Clone {
-    /// Output size of the [[`Mac`]]
-    type OutputSize: ArrayLength<u8>;
+/// Key for an algorithm that implements [`NewMac`].
+pub type Key<M> = GenericArray<u8, <M as NewMac>::KeySize>;
 
-    /// Keys size of the [[`Mac`]]
+/// Instantiate a [`Mac`] algorithm.
+pub trait NewMac: Sized {
+    /// Key size in bytes with which cipher guaranteed to be initialized.
     type KeySize: ArrayLength<u8>;
 
     /// Initialize new MAC instance from key with fixed size.
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self;
+    fn new(key: &Key<Self>) -> Self;
 
     /// Initialize new MAC instance from key with variable size.
     ///
@@ -42,6 +42,12 @@ pub trait Mac: Clone {
             Ok(Self::new(GenericArray::from_slice(key)))
         }
     }
+}
+
+/// The [`Mac`] trait defines methods for a Message Authentication algorithm.
+pub trait Mac: Clone {
+    /// Output size of the [[`Mac`]]
+    type OutputSize: ArrayLength<u8>;
 
     /// Update MAC state with the given data.
     fn update(&mut self, data: &[u8]);
@@ -51,11 +57,11 @@ pub trait Mac: Clone {
 
     /// Obtain the result of a [`Mac`] computation as a [`Output`] and consume
     /// [`Mac`] instance.
-    fn result(self) -> Output<Self::OutputSize>;
+    fn result(self) -> Output<Self>;
 
     /// Obtain the result of a [`Mac`] computation as a [`Output`] and reset
     /// [`Mac`] instance.
-    fn result_reset(&mut self) -> Output<Self::OutputSize> {
+    fn result_reset(&mut self) -> Output<Self> {
         let res = self.clone().result();
         self.reset();
         res
@@ -75,16 +81,13 @@ pub trait Mac: Clone {
 /// [`Output`] is a thin wrapper around bytes array which provides a safe `Eq`
 /// implementation that runs in a fixed time.
 #[derive(Clone)]
-pub struct Output<N: ArrayLength<u8>> {
-    code: GenericArray<u8, N>,
+pub struct Output<M: Mac> {
+    code: GenericArray<u8, M::OutputSize>,
 }
 
-impl<N> Output<N>
-where
-    N: ArrayLength<u8>,
-{
+impl<M: Mac> Output<M> {
     /// Create a new MAC [`Output`].
-    pub fn new(code: GenericArray<u8, N>) -> Output<N> {
+    pub fn new(code: GenericArray<u8, M::OutputSize>) -> Output<M> {
         Output { code }
     }
 
@@ -93,27 +96,21 @@ where
     /// Be very careful using this method, since incorrect use of the code value
     /// may permit timing attacks which defeat the security provided by the
     /// [`Mac`] trait.
-    pub fn into_bytes(self) -> GenericArray<u8, N> {
+    pub fn into_bytes(self) -> GenericArray<u8, M::OutputSize> {
         self.code
     }
 }
 
-impl<N> ConstantTimeEq for Output<N>
-where
-    N: ArrayLength<u8>,
-{
+impl<M: Mac> ConstantTimeEq for Output<M> {
     fn ct_eq(&self, other: &Self) -> Choice {
         self.code.ct_eq(&other.code)
     }
 }
 
-impl<N> PartialEq for Output<N>
-where
-    N: ArrayLength<u8>,
-{
-    fn eq(&self, x: &Output<N>) -> bool {
+impl<M: Mac> PartialEq for Output<M> {
+    fn eq(&self, x: &Output<M>) -> bool {
         self.ct_eq(x).unwrap_u8() == 1
     }
 }
 
-impl<N> Eq for Output<N> where N: ArrayLength<u8> {}
+impl<M: Mac> Eq for Output<M> {}

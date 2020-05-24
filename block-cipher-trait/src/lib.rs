@@ -29,7 +29,7 @@ pub type Block<B> = GenericArray<u8, <B as BlockCipher>::BlockSize>;
 /// Blocks being acted over in parallel.
 pub type ParBlocks<B> = GenericArray<Block<B>, <B as BlockCipher>::ParBlocks>;
 
-/// Instantiate a `BlockCipher` algorithm.
+/// Instantiate a [`BlockCipher`] algorithm.
 pub trait NewBlockCipher: Sized {
     /// Key size in bytes with which cipher guaranteed to be initialized.
     type KeySize: ArrayLength<u8>;
