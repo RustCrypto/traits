@@ -20,21 +20,22 @@ pub use generic_array::{self, typenum::consts};
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
 
-type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
+/// Key for an algorithm that implements [`NewBlockCipher`].
+pub type Key<B> = GenericArray<u8, <B as NewBlockCipher>::KeySize>;
 
-/// The trait which defines in-place encryption and decryption
-/// over single block or several blocks in parallel.
-pub trait BlockCipher: core::marker::Sized {
-    /// Key size in bytes with which cipher guaranteed to be initialized
+/// Block on which a [`BlockCipher`] operates.
+pub type Block<B> = GenericArray<u8, <B as BlockCipher>::BlockSize>;
+
+/// Blocks being acted over in parallel.
+pub type ParBlocks<B> = GenericArray<Block<B>, <B as BlockCipher>::ParBlocks>;
+
+/// Instantiate a `BlockCipher` algorithm.
+pub trait NewBlockCipher: Sized {
+    /// Key size in bytes with which cipher guaranteed to be initialized.
     type KeySize: ArrayLength<u8>;
-    /// Size of the block in bytes
-    type BlockSize: ArrayLength<u8>;
-    /// Number of blocks which can be processed in parallel by
-    /// cipher implementation
-    type ParBlocks: ArrayLength<GenericArray<u8, Self::BlockSize>>;
 
     /// Create new block cipher instance from key with fixed size.
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self;
+    fn new(key: &Key<Self>) -> Self;
 
     /// Create new block cipher instance from key with variable size.
     ///
@@ -47,19 +48,30 @@ pub trait BlockCipher: core::marker::Sized {
             Ok(Self::new(GenericArray::from_slice(key)))
         }
     }
+}
+
+/// The trait which defines in-place encryption and decryption
+/// over single block or several blocks in parallel.
+pub trait BlockCipher {
+    /// Size of the block in bytes
+    type BlockSize: ArrayLength<u8>;
+
+    /// Number of blocks which can be processed in parallel by
+    /// cipher implementation
+    type ParBlocks: ArrayLength<Block<Self>>;
 
     /// Encrypt block in-place
-    fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>);
+    fn encrypt_block(&self, block: &mut Block<Self>);
 
     /// Decrypt block in-place
-    fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>);
+    fn decrypt_block(&self, block: &mut Block<Self>);
 
     /// Encrypt several blocks in parallel using instruction level parallelism
     /// if possible.
     ///
     /// If `ParBlocks` equals to 1 it's equivalent to `encrypt_block`.
     #[inline]
-    fn encrypt_blocks(&self, blocks: &mut ParBlocks<Self::BlockSize, Self::ParBlocks>) {
+    fn encrypt_blocks(&self, blocks: &mut ParBlocks<Self>) {
         for block in blocks.iter_mut() {
             self.encrypt_block(block);
         }
@@ -70,7 +82,7 @@ pub trait BlockCipher: core::marker::Sized {
     ///
     /// If `ParBlocks` equals to 1 it's equivalent to `decrypt_block`.
     #[inline]
-    fn decrypt_blocks(&self, blocks: &mut ParBlocks<Self::BlockSize, Self::ParBlocks>) {
+    fn decrypt_blocks(&self, blocks: &mut ParBlocks<Self>) {
         for block in blocks.iter_mut() {
             self.decrypt_block(block);
         }
