@@ -139,8 +139,6 @@ pub trait Reset {
     fn reset(&mut self);
 }
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 #[macro_export]
 /// Implements `std::io::Write` trait for implementer of [`Update`]
 macro_rules! impl_write {
