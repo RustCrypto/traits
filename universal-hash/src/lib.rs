@@ -30,22 +30,25 @@ use generic_array::{ArrayLength, GenericArray};
 use subtle::{Choice, ConstantTimeEq};
 
 /// Keys to a [`UniversalHash`].
-pub type Key<U> = GenericArray<u8, <U as UniversalHash>::KeySize>;
+pub type Key<U> = GenericArray<u8, <U as NewUniversalHash>::KeySize>;
 
 /// Blocks are inputs to a [`UniversalHash`].
 pub type Block<U> = GenericArray<u8, <U as UniversalHash>::BlockSize>;
 
-/// The `UniversalHash` trait defines a generic interface for universal hash
-/// functions.
-pub trait UniversalHash: Clone {
-    /// Size of the key for the universal hash function
+/// Instantiate a [`UniversalHash`] algorithm.
+pub trait NewUniversalHash: Sized {
+    /// Size of the key for the universal hash function.
     type KeySize: ArrayLength<u8>;
 
+    /// Instantiate a universal hash function with the given key.
+    fn new(key: &Key<Self>) -> Self;
+}
+
+/// The [`UniversalHash`] trait defines a generic interface for universal hash
+/// functions.
+pub trait UniversalHash: Clone {
     /// Size of the inputs to and outputs from the universal hash function
     type BlockSize: ArrayLength<u8>;
-
-    /// Instantiate a universal hash function with the given key
-    fn new(key: &Key<Self>) -> Self;
 
     /// Input a block into the universal hash function
     fn update(&mut self, block: &Block<Self>);
