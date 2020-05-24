@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 [[package]]
 name = "aead"
-version = "0.2.0"
+version = "0.3.0-pre"
 dependencies = [
  "generic-array 0.14.1",
  "heapless",
@@ -42,7 +42,7 @@ dependencies = [
 
 [[package]]
 name = "block-cipher-trait"
-version = "0.6.2"
+version = "0.7.0-pre"
 dependencies = [
  "blobby",
  "generic-array 0.14.1",
@@ -71,7 +71,7 @@ checksum = "08c48aae112d48ed9f069b33538ea9e3e90aa263cfa3d1c24309612b1f7472de"
 
 [[package]]
 name = "crypto-mac"
-version = "0.8.0"
+version = "0.9.0-pre"
 dependencies = [
  "blobby",
  "generic-array 0.13.2",
@@ -81,18 +81,18 @@ dependencies = [
 [[package]]
 name = "digest"
 version = "0.8.1"
-dependencies = [
- "blobby",
- "generic-array 0.14.1",
-]
-
-[[package]]
-name = "digest"
-version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3d0c8c8752312f9713efd397ff63acb9f85585afbf179282e720e7704954dd5"
 dependencies = [
  "generic-array 0.12.3",
+]
+
+[[package]]
+name = "digest"
+version = "0.9.0-pre"
+dependencies = [
+ "blobby",
+ "generic-array 0.14.1",
 ]
 
 [[package]]
@@ -211,16 +211,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "27044adfd2e1f077f649f59deb9490d3941d674002f7d062870a60ebe9bd47a0"
 dependencies = [
  "block-buffer",
- "digest 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.8.1",
  "fake-simd",
  "opaque-debug",
 ]
 
 [[package]]
 name = "signature"
-version = "1.0.1"
+version = "1.1.0-pre"
 dependencies = [
- "digest 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.9.0-pre",
  "hex-literal",
  "rand_core",
  "sha2",
@@ -245,7 +245,7 @@ checksum = "dba1a27d3efae4351c8051072d619e3ade2820635c3958d826bfea39d59b54c8"
 
 [[package]]
 name = "stream-cipher"
-version = "0.3.2"
+version = "0.4.0-pre"
 dependencies = [
  "blobby",
  "generic-array 0.14.1",
@@ -294,7 +294,7 @@ checksum = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"
 
 [[package]]
 name = "universal-hash"
-version = "0.3.0"
+version = "0.4.0-pre"
 dependencies = [
  "generic-array 0.14.1",
  "subtle",
