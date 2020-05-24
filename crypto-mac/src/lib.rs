@@ -114,3 +114,21 @@ impl<M: Mac> PartialEq for Output<M> {
 }
 
 impl<M: Mac> Eq for Output<M> {}
+
+#[macro_export]
+/// Implements `std::io::Write` trait for implementer of [`Mac`]
+macro_rules! impl_write {
+    ($mac:ident) => {
+        #[cfg(feature = "std")]
+        impl std::io::Write for $mac {
+            fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+                Mac::update(self, buf);
+                Ok(buf.len())
+            }
+
+            fn flush(&mut self) -> std::io::Result<()> {
+                Ok(())
+            }
+        }
+    };
+}
