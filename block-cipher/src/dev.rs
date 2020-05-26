@@ -9,10 +9,10 @@ macro_rules! new_test {
             use block_cipher::blobby::Blob3Iterator;
             use block_cipher::generic_array::typenum::Unsigned;
             use block_cipher::generic_array::GenericArray;
-            use block_cipher::BlockCipher;
+            use block_cipher::{BlockCipher, NewBlockCipher};
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
-                let state = <$cipher as BlockCipher>::new_varkey(key).unwrap();
+                let state = <$cipher as NewBlockCipher>::new_varkey(key).unwrap();
 
                 let mut block = GenericArray::clone_from_slice(pt);
                 state.encrypt_block(&mut block);
@@ -34,7 +34,7 @@ macro_rules! new_test {
                 type Block = GenericArray<u8, BlockSize>;
                 type ParBlock = GenericArray<Block, ParBlocks>;
 
-                let state = <$cipher as BlockCipher>::new_varkey(key).unwrap();
+                let state = <$cipher as NewBlockCipher>::new_varkey(key).unwrap();
 
                 let block = Block::clone_from_slice(pt);
                 let mut blocks1 = ParBlock::default();
@@ -100,7 +100,7 @@ macro_rules! new_test {
             }
             // test if cipher can be cloned
             let key = Default::default();
-            let _ = <$cipher as BlockCipher>::new(&key).clone();
+            let _ = <$cipher as NewBlockCipher>::new(&key).clone();
         }
     };
 }
@@ -111,7 +111,7 @@ macro_rules! bench {
     ($cipher:path, $key_len:expr) => {
         extern crate test;
 
-        use block_cipher::BlockCipher;
+        use block_cipher::{BlockCipher, NewBlockCipher};
         use test::Bencher;
 
         #[bench]
