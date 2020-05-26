@@ -30,11 +30,10 @@ pub use generic_array::{self, typenum::consts};
 #[cfg(feature = "heapless")]
 pub use heapless;
 
-use core::fmt;
-use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
-
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
+use core::{fmt, ops::{Add, Sub}};
+use generic_array::{sequence::{Split, Concat}, typenum::{Sum, Diff, Unsigned}, ArrayLength, GenericArray};
 
 /// Error type.
 ///
@@ -231,6 +230,25 @@ pub trait AeadInPlace {
         Ok(())
     }
 
+    /// Encrypt the given buffer containing a plaintext message of fixed length.
+    /// The result will include the encrypted buffer, followed by the tag, and
+    /// also be fixed length.
+    /// This can be used without relying on alloc or heapless
+    fn encrypt_fixed_length<L>(
+        &self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &GenericArray<u8, L>,
+    ) -> Result<GenericArray<u8, Sum<L, Self::TagSize>>, Error>
+    where
+        L: ArrayLength<u8> + Add<Self::TagSize>,
+        Sum<L, Self::TagSize>: ArrayLength<u8>,
+    {
+        let mut buffer = buffer.clone();
+        let tag = self.encrypt_in_place_detached(nonce, associated_data, buffer.as_mut_slice())?;
+        Ok(buffer.concat(tag))
+    }
+
     /// Encrypt the data in-place, returning the authentication tag
     fn encrypt_in_place_detached(
         &self,
@@ -251,6 +269,27 @@ pub trait AeadInPlace {
         buffer: &mut dyn Buffer,
     ) -> Result<(), Error> {
         impl_decrypt_in_place!(self, nonce, associated_data, buffer)
+    }
+
+    /// Decrypt the given buffer containing a ciphertext of fixed length, with
+    /// a postfix tag.
+    /// This can be used without relying on alloc or heapless
+    fn decrypt_fixed_length<L>(
+        &self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &GenericArray<u8, L>,
+    ) -> Result<GenericArray<u8, Diff<L, Self::TagSize>>, Error>
+    where
+        L: ArrayLength<u8>
+            + Sub<Self::TagSize>
+            + Sub<Diff<L, Self::TagSize>, Output = Self::TagSize>,
+        Diff<L, Self::TagSize>: ArrayLength<u8>,
+    {
+        let (ciphertext, tag) = Split::<u8, Diff<L, Self::TagSize>>::split(buffer);
+        let mut result = ciphertext.clone();
+        self.decrypt_in_place_detached(nonce, associated_data, result.as_mut_slice(), tag)?;
+        Ok(result)
     }
 
     /// Decrypt the message in-place, returning an error in the event the provided
@@ -299,6 +338,25 @@ pub trait AeadMutInPlace {
         Ok(())
     }
 
+    /// Encrypt the given buffer containing a plaintext message of fixed length.
+    /// The result will include the encrypted buffer, followed by the tag, and
+    /// also be fixed length.
+    /// This can be used without relying on alloc or heapless
+    fn encrypt_fixed_length<L>(
+        &mut self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &GenericArray<u8, L>,
+    ) -> Result<GenericArray<u8, Sum<L, Self::TagSize>>, Error>
+    where
+        L: ArrayLength<u8> + Add<Self::TagSize>,
+        Sum<L, Self::TagSize>: ArrayLength<u8>,
+    {
+        let mut buffer = buffer.clone();
+        let tag = self.encrypt_in_place_detached(nonce, associated_data, buffer.as_mut_slice())?;
+        Ok(buffer.concat(tag))
+    }
+
     /// Encrypt the data in-place, returning the authentication tag
     fn encrypt_in_place_detached(
         &mut self,
@@ -319,6 +377,27 @@ pub trait AeadMutInPlace {
         buffer: &mut impl Buffer,
     ) -> Result<(), Error> {
         impl_decrypt_in_place!(self, nonce, associated_data, buffer)
+    }
+
+    /// Decrypt the given buffer containing a ciphertext of fixed length, with
+    /// a postfix tag.
+    /// This can be used without relying on alloc or heapless
+    fn decrypt_fixed_length<L>(
+        &self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &GenericArray<u8, L>,
+    ) -> Result<GenericArray<u8, Diff<L, Self::TagSize>>, Error>
+    where
+        L: ArrayLength<u8>
+            + Sub<Self::TagSize>
+            + Sub<Diff<L, Self::TagSize>, Output = Self::TagSize>,
+        Diff<L, Self::TagSize>: ArrayLength<u8>,
+    {
+        let (ciphertext, tag) = Split::<u8, Diff<L, Self::TagSize>>::split(buffer);
+        let mut result = ciphertext.clone();
+        self.decrypt_in_place_detached(nonce, associated_data, result.as_mut_slice(), tag)?;
+        Ok(result)
     }
 
     /// Decrypt the data in-place, returning an error in the event the provided
@@ -407,6 +486,26 @@ impl<Alg: AeadInPlace> AeadMutInPlace for Alg {
         <Self as AeadInPlace>::encrypt_in_place(self, nonce, associated_data, buffer)
     }
 
+    /// Encrypt the given buffer containing a plaintext message of fixed length.
+    /// The result will include the encrypted buffer, followed by the tag, and
+    /// also be fixed length.
+    /// This can be used without relying on alloc or heapless
+    fn encrypt_fixed_length<L>(
+        &mut self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &GenericArray<u8, L>,
+    ) -> Result<GenericArray<u8, Sum<L, Self::TagSize>>, Error>
+    where
+        L: ArrayLength<u8> + Add<Self::TagSize>,
+        Sum<L, Self::TagSize>: ArrayLength<u8>,
+    {
+        let mut buffer = buffer.clone();
+        let tag = self.encrypt_in_place_detached(nonce, associated_data, buffer.as_mut_slice())?;
+        Ok(buffer.concat(tag))
+    }
+
+    /// Encrypt the data in-place, returning the authentication tag
     fn encrypt_in_place_detached(
         &mut self,
         nonce: &Nonce<Self::NonceSize>,
@@ -425,6 +524,30 @@ impl<Alg: AeadInPlace> AeadMutInPlace for Alg {
         <Self as AeadInPlace>::decrypt_in_place(self, nonce, associated_data, buffer)
     }
 
+    /// Decrypt the given buffer containing a ciphertext of fixed length, with
+    /// a postfix tag.
+    /// This can be used without relying on alloc or heapless
+    fn decrypt_fixed_length<L>(
+        &mut self,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+        associated_data: &[u8],
+        buffer: &GenericArray<u8, L>,
+    ) -> Result<GenericArray<u8, Diff<L, Self::TagSize>>, Error>
+    where
+        L: ArrayLength<u8>
+            + Sub<Self::TagSize>
+            + Sub<Diff<L, Self::TagSize>, Output = Self::TagSize>,
+        Diff<L, Self::TagSize>: ArrayLength<u8>,
+    {
+        let (ciphertext, tag) = Split::<u8, Diff<L, Self::TagSize>>::split(buffer);
+        let mut result = ciphertext.clone();
+        self.decrypt_in_place_detached(nonce, associated_data, result.as_mut_slice(), tag)?;
+        Ok(result)
+    }
+
+    /// Decrypt the data in-place, returning an error in the event the provided
+    /// authentication tag does not match the given ciphertext (i.e. ciphertext
+    /// is modified/unauthentic)
     fn decrypt_in_place_detached(
         &mut self,
         nonce: &Nonce<Self::NonceSize>,
