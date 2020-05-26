@@ -1,12 +1,14 @@
 //! Development-related functionality
 
+pub use blobby;
+
 /// Define test
 #[macro_export]
 macro_rules! new_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
         #[test]
         fn $name() {
-            use block_cipher::blobby::Blob3Iterator;
+            use block_cipher::dev::blobby::Blob3Iterator;
             use block_cipher::generic_array::typenum::Unsigned;
             use block_cipher::generic_array::GenericArray;
             use block_cipher::{BlockCipher, NewBlockCipher};

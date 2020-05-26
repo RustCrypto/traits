@@ -12,9 +12,6 @@ extern crate std;
 #[cfg(feature = "dev")]
 pub mod dev;
 
-#[cfg(feature = "dev")]
-pub use blobby;
-
 mod errors;
 
 pub use crate::errors::InvalidKeyLength;
