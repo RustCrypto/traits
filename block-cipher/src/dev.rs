@@ -6,10 +6,10 @@ macro_rules! new_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
         #[test]
         fn $name() {
-            use block_cipher_trait::blobby::Blob3Iterator;
-            use block_cipher_trait::generic_array::typenum::Unsigned;
-            use block_cipher_trait::generic_array::GenericArray;
-            use block_cipher_trait::BlockCipher;
+            use block_cipher::blobby::Blob3Iterator;
+            use block_cipher::generic_array::typenum::Unsigned;
+            use block_cipher::generic_array::GenericArray;
+            use block_cipher::BlockCipher;
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
                 let state = <$cipher as BlockCipher>::new_varkey(key).unwrap();
@@ -111,7 +111,7 @@ macro_rules! bench {
     ($cipher:path, $key_len:expr) => {
         extern crate test;
 
-        use block_cipher_trait::BlockCipher;
+        use block_cipher::BlockCipher;
         use test::Bencher;
 
         #[bench]
