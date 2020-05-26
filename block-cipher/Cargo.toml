@@ -1,12 +1,12 @@
 [package]
-name = "block-cipher-trait"
+name = "block-cipher"
 description = "Traits for description of block ciphers"
 version = "0.7.0-pre"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 edition = "2018"
-documentation = "https://docs.rs/block-cipher-trait"
+documentation = "https://docs.rs/block-cipher"
 repository = "https://github.com/RustCrypto/traits"
 keywords = ["crypto", "block-cipher", "trait"]
 categories = ["cryptography", "no-std"]

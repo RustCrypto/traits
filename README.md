@@ -7,7 +7,7 @@ Collection of traits which describe functionality of cryptographic primitives.
 | Name               | Algorithm                     | Crates.io | Documentation  | Build |
 |--------------------|-------------------------------|-----------|----------------|-------|
 | [`aead`]           | [Authenticated encryption]    | [![crates.io](https://img.shields.io/crates/v/aead.svg)](https://crates.io/crates/aead) | [![Documentation](https://docs.rs/aead/badge.svg)](https://docs.rs/aead) | ![build](https://github.com/RustCrypto/traits/workflows/aead/badge.svg?branch=master&event=push) |
-| [`block-cipher-trait`] | [Block cipher]            | [![crates.io](https://img.shields.io/crates/v/block-cipher-trait.svg)](https://crates.io/crates/block-cipher-trait) | [![Documentation](https://docs.rs/block-cipher-trait/badge.svg)](https://docs.rs/block-cipher-trait) | ![build](https://github.com/RustCrypto/traits/workflows/block-cipher-trait/badge.svg?branch=master&event=push) |
+| [`block-cipher`] | [Block cipher]            | [![crates.io](https://img.shields.io/crates/v/block-cipher.svg)](https://crates.io/crates/block-cipher) | [![Documentation](https://docs.rs/block-cipher/badge.svg)](https://docs.rs/block-cipher) | ![build](https://github.com/RustCrypto/traits/workflows/block-cipher/badge.svg?branch=master&event=push) |
 | [`crypto-mac`]     | [Message authentication code] | [![crates.io](https://img.shields.io/crates/v/crypto-mac.svg)](https://crates.io/crates/crypto-mac) | [![Documentation](https://docs.rs/crypto-mac/badge.svg)](https://docs.rs/crypto-mac) | ![build](https://github.com/RustCrypto/traits/workflows/crypto-mac/badge.svg?branch=master&event=push) |
 | [`digest`]         | [Cryptographic hash function] | [![crates.io](https://img.shields.io/crates/v/digest.svg)](https://crates.io/crates/digest) | [![Documentation](https://docs.rs/digest/badge.svg)](https://docs.rs/digest) | ![build](https://github.com/RustCrypto/traits/workflows/digest/badge.svg?branch=master&event=push) |
 | [`signature`]      | [Digital signature]           | [![crates.io](https://img.shields.io/crates/v/signature.svg)](https://crates.io/crates/signature) | [![Documentation](https://docs.rs/signature/badge.svg)](https://docs.rs/signature) | ![build](https://github.com/RustCrypto/traits/workflows/signature/badge.svg?branch=master&event=push) |
@@ -43,7 +43,7 @@ dual licensed as above, without any additional terms or conditions.
 [//]: # (crates)
 
 [`aead`]: https://github.com/RustCrypto/traits/tree/master/aead
-[`block-cipher-trait`]: https://github.com/RustCrypto/traits/tree/master/block-cipher-trait
+[`block-cipher`]: https://github.com/RustCrypto/traits/tree/master/block-cipher
 [`crypto-mac`]: https://github.com/RustCrypto/traits/tree/master/crypto-mac
 [`digest`]: https://github.com/RustCrypto/traits/tree/master/digest
 [`signature`]: https://github.com/RustCrypto/traits/tree/master/signature
