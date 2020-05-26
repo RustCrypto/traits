@@ -41,14 +41,14 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/block-cipher-trait.svg
-[crate-link]: https://crates.io/crates/block-cipher-trait
-[docs-image]: https://docs.rs/block-cipher-trait/badge.svg
-[docs-link]: https://docs.rs/block-cipher-trait/
+[crate-image]: https://img.shields.io/crates/v/block-cipher.svg
+[crate-link]: https://crates.io/crates/block-cipher
+[docs-image]: https://docs.rs/block-cipher/badge.svg
+[docs-link]: https://docs.rs/block-cipher/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
-[build-image]: https://github.com/RustCrypto/traits/workflows/block-cipher-trait/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/traits/actions?query=workflow%3Ablock-cipher-trait
+[build-image]: https://github.com/RustCrypto/traits/workflows/block-cipher/badge.svg?branch=master&event=push
+[build-link]: https://github.com/RustCrypto/traits/actions?query=workflow%3Ablock-cipher
 
 [//]: # (general links)
 
