@@ -1,12 +1,14 @@
 //! Development-related functionality
 
+pub use blobby;
+
 /// Define test
 #[macro_export]
 macro_rules! new_test {
     ($name:ident, $test_name:expr, $mac:ty) => {
         #[test]
         fn $name() {
-            use crypto_mac::blobby::Blob3Iterator;
+            use crypto_mac::dev::blobby::Blob3Iterator;
             use crypto_mac::Mac;
 
             fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> Option<&'static str> {
