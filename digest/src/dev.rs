@@ -226,7 +226,7 @@ macro_rules! bench {
             let data = [0; $bs];
 
             b.iter(|| {
-                d.input(&data[..]);
+                d.update(&data[..]);
             });
 
             b.bytes = $bs;
