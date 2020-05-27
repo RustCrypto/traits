@@ -71,7 +71,7 @@ checksum = "08c48aae112d48ed9f069b33538ea9e3e90aa263cfa3d1c24309612b1f7472de"
 
 [[package]]
 name = "crypto-mac"
-version = "0.9.0-pre"
+version = "0.8.0-pre"
 dependencies = [
  "blobby",
  "generic-array 0.13.2",
