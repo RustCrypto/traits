@@ -74,7 +74,7 @@ name = "crypto-mac"
 version = "0.8.0-pre"
 dependencies = [
  "blobby",
- "generic-array 0.13.2",
+ "generic-array 0.14.1",
  "subtle",
 ]
 
