@@ -13,13 +13,13 @@ macro_rules! new_test {
 
             fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> Option<&'static str> {
                 let mut mac = <$mac as NewMac>::new_varkey(key).unwrap();
-                mac.input(input);
+                mac.update(input);
                 let result = mac.result_reset();
-                if &result.code()[..] != tag {
+                if &result.into_bytes()[..] != tag {
                     return Some("whole message");
                 }
                 // test if reset worked correctly
-                mac.input(input);
+                mac.update(input);
                 if mac.verify(&tag).is_err() {
                     return Some("after reset");
                 }
@@ -27,7 +27,7 @@ macro_rules! new_test {
                 let mut mac = <$mac as NewMac>::new_varkey(key).unwrap();
                 // test reading byte by byte
                 for i in 0..input.len() {
-                    mac.input(&input[i..i + 1]);
+                    mac.update(&input[i..i + 1]);
                 }
                 if let Err(_) = mac.verify(tag) {
                     return Some("message byte-by-byte");
@@ -63,11 +63,11 @@ macro_rules! bench {
         #[bench]
         fn $name(b: &mut Bencher) {
             let key = Default::default();
-            let mut m = <$engine>::new(&key);
+            let mut mac = <$engine>::new(&key);
             let data = [0; $bs];
 
             b.iter(|| {
-                m.input(&data);
+                mac.update(&data);
             });
 
             b.bytes = $bs;
