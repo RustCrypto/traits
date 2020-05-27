@@ -1,5 +1,7 @@
 //! Development-related functionality
 
+pub use blobby;
+
 use super::{ExtendableOutput, Reset, Update, VariableOutput, XofReader};
 use core::fmt::Debug;
 
@@ -10,7 +12,7 @@ macro_rules! new_test {
     ($name:ident, $test_name:expr, $hasher:ty, $test_func:ident) => {
         #[test]
         fn $name() {
-            use digest::blobby::Blob2Iterator;
+            use digest::dev::blobby::Blob2Iterator;
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
 
             for (i, row) in Blob2Iterator::new(data).unwrap().enumerate() {
