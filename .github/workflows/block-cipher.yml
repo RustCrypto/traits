@@ -45,9 +45,28 @@ jobs:
       with:
         profile: minimal
         toolchain: ${{ matrix.rust }}
-    - run: |
-        cargo check --all-features
-        cargo test --features dev
-        cargo test --features std
-        cargo test --all-features
+    - run: cargo check --all-features
+      env:
+        CARGO_INCREMENTAL: 0
+        RUSTFLAGS: "-Dwarnings"
+      working-directory: block-cipher
+    - run: cargo test --release
+      env:
+        CARGO_INCREMENTAL: 0
+        RUSTFLAGS: "-Dwarnings"
+      working-directory: block-cipher
+    - run: cargo test --features dev --release
+      env:
+        CARGO_INCREMENTAL: 0
+        RUSTFLAGS: "-Dwarnings"
+      working-directory: block-cipher
+    - run: cargo test --features std --release
+      env:
+        CARGO_INCREMENTAL: 0
+        RUSTFLAGS: "-Dwarnings"
+      working-directory: block-cipher
+    - run: cargo test --all-features --release
+      env:
+        CARGO_INCREMENTAL: 0
+        RUSTFLAGS: "-Dwarnings"
       working-directory: block-cipher
