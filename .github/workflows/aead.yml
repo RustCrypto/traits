@@ -7,9 +7,10 @@ on:
       - "Cargo.*"
   push:
     branches: master
-    paths:
-      - "aead/**"
-      - "Cargo.*"
+
+defaults:
+  run:
+    working-directory: aead
 
 env:
   CARGO_INCREMENTAL: 0
@@ -34,8 +35,7 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
-      - working-directory: aead
-        run: cargo build --no-default-features --release --target ${{ matrix.target }}
+      - run: cargo build --no-default-features --release --target ${{ matrix.target }}
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -50,10 +50,6 @@ jobs:
         profile: minimal
         toolchain: ${{ matrix.rust }}
     - run: cargo check --all-features
-      working-directory: aead
     - run: cargo test --no-default-features --release
-      working-directory: aead
     - run: cargo test --release
-      working-directory: aead
     - run: cargo test --all-features --release
-      working-directory: aead
