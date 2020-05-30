@@ -11,6 +11,10 @@ on:
       - "stream-cipher/**"
       - "Cargo.*"
 
+env:
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: "-Dwarnings"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -46,27 +50,12 @@ jobs:
         profile: minimal
         toolchain: ${{ matrix.rust }}
     - run: cargo check --all-features
-      env:
-        CARGO_INCREMENTAL: 0
-        RUSTFLAGS: "-Dwarnings"
       working-directory: stream-cipher
     - run: cargo test --release
-      env:
-        CARGO_INCREMENTAL: 0
-        RUSTFLAGS: "-Dwarnings"
       working-directory: stream-cipher
     - run: cargo test --features dev --release
-      env:
-        CARGO_INCREMENTAL: 0
-        RUSTFLAGS: "-Dwarnings"
       working-directory: stream-cipher
     - run: cargo test --features std --release
-      env:
-        CARGO_INCREMENTAL: 0
-        RUSTFLAGS: "-Dwarnings"
       working-directory: stream-cipher
     - run: cargo test --all-features --release
-      env:
-        CARGO_INCREMENTAL: 0
-        RUSTFLAGS: "-Dwarnings"
       working-directory: stream-cipher
