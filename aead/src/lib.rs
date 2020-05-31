@@ -237,7 +237,7 @@ pub trait AeadInPlace {
         nonce: &Nonce<Self::NonceSize>,
         associated_data: &[u8],
         buffer: &mut [u8],
-    ) -> Result<Tag<Self::NonceSize>, Error>;
+    ) -> Result<Tag<Self::TagSize>, Error>;
 
     /// Decrypt the message in-place, returning an error in the event the
     /// provided authentication tag does not match the given ciphertext.
@@ -305,7 +305,7 @@ pub trait AeadMutInPlace {
         nonce: &Nonce<Self::NonceSize>,
         associated_data: &[u8],
         buffer: &mut [u8],
-    ) -> Result<Tag<Self::NonceSize>, Error>;
+    ) -> Result<Tag<Self::TagSize>, Error>;
 
     /// Decrypt the message in-place, returning an error in the event the
     /// provided authentication tag does not match the given ciphertext.
@@ -412,7 +412,7 @@ impl<Alg: AeadInPlace> AeadMutInPlace for Alg {
         nonce: &Nonce<Self::NonceSize>,
         associated_data: &[u8],
         buffer: &mut [u8],
-    ) -> Result<Tag<Self::NonceSize>, Error> {
+    ) -> Result<Tag<Self::TagSize>, Error> {
         <Self as AeadInPlace>::encrypt_in_place_detached(self, nonce, associated_data, buffer)
     }
 
