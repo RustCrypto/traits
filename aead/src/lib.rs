@@ -261,7 +261,7 @@ pub trait AeadInPlace {
         nonce: &Nonce<Self::NonceSize>,
         associated_data: &[u8],
         buffer: &mut [u8],
-        tag: &Tag<Self::NonceSize>,
+        tag: &Tag<Self::TagSize>,
     ) -> Result<(), Error>;
 }
 
@@ -329,7 +329,7 @@ pub trait AeadMutInPlace {
         nonce: &Nonce<Self::NonceSize>,
         associated_data: &[u8],
         buffer: &mut [u8],
-        tag: &Tag<Self::NonceSize>,
+        tag: &Tag<Self::TagSize>,
     ) -> Result<(), Error>;
 }
 
@@ -430,7 +430,7 @@ impl<Alg: AeadInPlace> AeadMutInPlace for Alg {
         nonce: &Nonce<Self::NonceSize>,
         associated_data: &[u8],
         buffer: &mut [u8],
-        tag: &Tag<Self::NonceSize>,
+        tag: &Tag<Self::TagSize>,
     ) -> Result<(), Error> {
         <Self as AeadInPlace>::decrypt_in_place_detached(self, nonce, associated_data, buffer, tag)
     }
