@@ -80,9 +80,9 @@ macro_rules! bench {
         use crypto_mac::{Mac, NewMac};
         use test::Bencher;
 
-        bench!(bench1_10, $engine, 10);
-        bench!(bench2_100, $engine, 100);
-        bench!(bench3_1000, $engine, 1000);
-        bench!(bench3_10000, $engine, 10000);
+        $crate::bench!(bench1_10, $engine, 10);
+        $crate::bench!(bench2_100, $engine, 100);
+        $crate::bench!(bench3_1000, $engine, 1000);
+        $crate::bench!(bench3_10000, $engine, 10000);
     };
 }
