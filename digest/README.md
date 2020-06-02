@@ -50,8 +50,8 @@ let data = b"Hello world!";
 hasher.input(data);
 // `input` can be called repeatedly and is generic over `AsRef<[u8]>`
 hasher.input("String data");
-// Note that calling `result()` consumes hasher
-let hash = hasher.result();
+// Note that calling `finalize()` consumes hasher
+let hash = hasher.finalize();
 println!("Result: {:x}", hash);
 ```
 
@@ -65,7 +65,7 @@ example:
 let hash = Blake2b::new()
     .chain(b"Hello world!")
     .chain("String data")
-    .result();
+    .finalize();
 
 println!("Result: {:x}", hash);
 ```
@@ -89,7 +89,7 @@ use std::{fs, io};
 let mut file = fs::File::open(&path)?;
 let mut hasher = Blake2b::new();
 let n = io::copy(&mut file, &mut hasher)?;
-let hash = hasher.result();
+let hash = hasher.finalize();
 
 println!("Path: {}", path);
 println!("Bytes processed: {}", n);
@@ -111,7 +111,7 @@ fn hash_password<D: Digest>(password: &str, salt: &str, output: &mut [u8]) {
     hasher.input(password.as_bytes());
     hasher.input(b"$");
     hasher.input(salt.as_bytes());
-    output.copy_from_slice(hasher.result().as_slice())
+    output.copy_from_slice(hasher.finalize().as_slice())
 }
 
 use blake2::Blake2b;

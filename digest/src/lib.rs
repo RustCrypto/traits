@@ -77,7 +77,7 @@ pub trait FixedOutput {
     type OutputSize: ArrayLength<u8>;
 
     /// Retrieve result and consume hasher instance.
-    fn fixed_result(self) -> GenericArray<u8, Self::OutputSize>;
+    fn finalize_fixed(self) -> GenericArray<u8, Self::OutputSize>;
 }
 
 /// Trait for returning digest result with the variable size
@@ -96,14 +96,14 @@ pub trait VariableOutput: core::marker::Sized {
     ///
     /// Closure is guaranteed to be called, length of the buffer passed to it
     /// will be equal to `output_size`.
-    fn variable_result<F: FnOnce(&[u8])>(self, f: F);
+    fn finalize_variable<F: FnOnce(&[u8])>(self, f: F);
 
     /// Retrieve result into vector and consume hasher.
     #[cfg(feature = "std")]
     #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-    fn vec_result(self) -> Vec<u8> {
+    fn finalize_vec(self) -> Vec<u8> {
         let mut buf = Vec::with_capacity(self.output_size());
-        self.variable_result(|res| buf.extend_from_slice(res));
+        self.finalize_variable(|res| buf.extend_from_slice(res));
         buf
     }
 }
@@ -121,14 +121,14 @@ pub trait ExtendableOutput: core::marker::Sized {
     type Reader: XofReader;
 
     /// Retrieve XOF reader and consume hasher instance.
-    fn xof_result(self) -> Self::Reader;
+    fn finalize_xof(self) -> Self::Reader;
 
     /// Retrieve result into vector of specified length.
     #[cfg(feature = "std")]
     #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-    fn vec_result(self, n: usize) -> Vec<u8> {
+    fn finalize_vec(self, n: usize) -> Vec<u8> {
         let mut buf = vec![0u8; n];
-        self.xof_result().read(&mut buf);
+        self.finalize_xof().read(&mut buf);
         buf
     }
 }

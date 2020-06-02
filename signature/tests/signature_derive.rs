@@ -43,7 +43,7 @@ mod tests {
 
     impl DigestSigner<Sha256, DummySignature> for DummySigner {
         fn try_sign_digest(&self, digest: Sha256) -> Result<DummySignature, Error> {
-            DummySignature::from_bytes(&digest.result())
+            DummySignature::from_bytes(&digest.finalize())
         }
     }
 
@@ -56,7 +56,7 @@ mod tests {
 
     impl DigestVerifier<Sha256, DummySignature> for DummyVerifier {
         fn verify_digest(&self, digest: Sha256, signature: &DummySignature) -> Result<(), Error> {
-            let actual_digest = digest.result();
+            let actual_digest = digest.finalize();
             assert_eq!(signature.as_ref(), actual_digest.as_ref());
             Ok(())
         }

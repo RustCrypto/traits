@@ -46,14 +46,14 @@ mod foo {
         // Test that it works when accepting the message all at once
         hasher.update(input);
         let mut hasher2 = hasher.clone();
-        if hasher.result().as_slice() != output {
+        if hasher.finalize().as_slice() != output {
             return Some("whole message");
         }
 
         // Test if reset works correctly
         hasher2.reset();
         hasher2.update(input);
-        if hasher2.result().as_slice() != output {
+        if hasher2.finalize().as_slice() != output {
             return Some("whole message after reset");
         }
 
@@ -66,7 +66,7 @@ mod foo {
             hasher.update(&input[len - left..take + len - left]);
             left -= take;
         }
-        if hasher.result().as_slice() != output {
+        if hasher.finalize().as_slice() != output {
             return Some("message in pieces");
         }
 
@@ -75,7 +75,7 @@ mod foo {
         for chunk in input.chunks(1) {
             hasher.update(chunk)
         }
-        if hasher.result().as_slice() != output {
+        if hasher.finalize().as_slice() != output {
             return Some("message byte-by-byte");
         }
         None
@@ -91,7 +91,7 @@ mod foo {
             sh.update(&[b'a'; 10]);
         }
         sh.update(&[b'a'; 500_000][..]);
-        let out = sh.result();
+        let out = sh.finalize();
         assert_eq!(out[..], expected[..]);
     }
 }
@@ -111,7 +111,7 @@ where
     let mut hasher2 = hasher.clone();
     {
         let out = &mut buf[..output.len()];
-        hasher.xof_result().read(out);
+        hasher.finalize_xof().read(out);
 
         if out != output {
             return Some("whole message");
@@ -124,7 +124,7 @@ where
 
     {
         let out = &mut buf[..output.len()];
-        hasher2.xof_result().read(out);
+        hasher2.finalize_xof().read(out);
 
         if out != output {
             return Some("whole message after reset");
@@ -143,7 +143,7 @@ where
 
     {
         let out = &mut buf[..output.len()];
-        hasher.xof_result().read(out);
+        hasher.finalize_xof().read(out);
         if out != output {
             return Some("message in pieces");
         }
@@ -153,7 +153,7 @@ where
     let mut hasher = D::default();
     hasher.update(input);
 
-    let mut reader = hasher.xof_result();
+    let mut reader = hasher.finalize_xof();
     let out = &mut buf[..output.len()];
     for chunk in out.chunks_mut(1) {
         reader.read(chunk);
@@ -176,7 +176,7 @@ where
     // Test that it works when accepting the message all at once
     hasher.update(input);
     let mut hasher2 = hasher.clone();
-    hasher.variable_result(|res| buf.copy_from_slice(res));
+    hasher.finalize_variable(|res| buf.copy_from_slice(res));
     if buf != output {
         return Some("whole message");
     }
@@ -184,7 +184,7 @@ where
     // Test if reset works correctly
     hasher2.reset();
     hasher2.update(input);
-    hasher2.variable_result(|res| buf.copy_from_slice(res));
+    hasher2.finalize_variable(|res| buf.copy_from_slice(res));
     if buf != output {
         return Some("whole message after reset");
     }
@@ -198,7 +198,7 @@ where
         hasher.update(&input[len - left..take + len - left]);
         left -= take;
     }
-    hasher.variable_result(|res| buf.copy_from_slice(res));
+    hasher.finalize_variable(|res| buf.copy_from_slice(res));
     if buf != output {
         return Some("message in pieces");
     }
@@ -208,7 +208,7 @@ where
     for chunk in input.chunks(1) {
         hasher.update(chunk)
     }
-    hasher.variable_result(|res| buf.copy_from_slice(res));
+    hasher.finalize_variable(|res| buf.copy_from_slice(res));
     if buf != output {
         return Some("message byte-by-byte");
     }

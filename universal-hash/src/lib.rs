@@ -79,12 +79,12 @@ pub trait UniversalHash: Clone {
     fn reset(&mut self);
 
     /// Obtain the [`Output`] of a [`UniversalHash`] function and consume it.
-    fn result(self) -> Output<Self>;
+    fn finalize(self) -> Output<Self>;
 
     /// Obtain the [`Output`] of a [`UniversalHash`] computation and reset it back
     /// to its initial state.
-    fn result_reset(&mut self) -> Output<Self> {
-        let res = self.clone().result();
+    fn finalize_reset(&mut self) -> Output<Self> {
+        let res = self.clone().finalize();
         self.reset();
         res
     }
@@ -93,7 +93,7 @@ pub trait UniversalHash: Clone {
     /// This is useful when constructing Message Authentication Codes (MACs)
     /// from universal hash functions.
     fn verify(self, other: &Block<Self>) -> Result<(), Error> {
-        if self.result() == other.into() {
+        if self.finalize() == other.into() {
             Ok(())
         } else {
             Err(Error)
