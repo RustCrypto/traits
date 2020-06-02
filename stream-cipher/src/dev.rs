@@ -177,11 +177,11 @@ macro_rules! bench_sync {
             vec![77; n]
         }
 
-        bench_sync!(bench1_10, $cipher, 10);
-        bench_sync!(bench2_100, $cipher, 100);
-        bench_sync!(bench3_1000, $cipher, 1000);
-        bench_sync!(bench4_10000, $cipher, 10000);
-        bench_sync!(bench5_100000, $cipher, 100000);
+        $crate::bench_sync!(bench1_10, $cipher, 10);
+        $crate::bench_sync!(bench2_100, $cipher, 100);
+        $crate::bench_sync!(bench3_1000, $cipher, 1000);
+        $crate::bench_sync!(bench4_10000, $cipher, 10000);
+        $crate::bench_sync!(bench5_100000, $cipher, 100000);
     };
 }
 
@@ -229,10 +229,10 @@ macro_rules! bench_async {
             vec![77; n]
         }
 
-        bench_async!(encrypt_10, decrypt_10, $cipher, 10);
-        bench_async!(encrypt_100, decrypt_100, $cipher, 100);
-        bench_async!(encrypt_1000, decrypt_1000, $cipher, 1000);
-        bench_async!(encrypt_10000, decrypt_10000, $cipher, 10000);
-        bench_async!(encrypt_100000, decrypt_100000, $cipher, 100000);
+        $crate::bench_async!(encrypt_10, decrypt_10, $cipher, 10);
+        $crate::bench_async!(encrypt_100, decrypt_100, $cipher, 100);
+        $crate::bench_async!(encrypt_1000, decrypt_1000, $cipher, 1000);
+        $crate::bench_async!(encrypt_10000, decrypt_10000, $cipher, 10000);
+        $crate::bench_async!(encrypt_100000, decrypt_100000, $cipher, 100000);
     };
 }
