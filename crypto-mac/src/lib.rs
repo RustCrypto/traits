@@ -57,19 +57,20 @@ pub trait Mac: Clone {
 
     /// Obtain the result of a [`Mac`] computation as a [`Output`] and consume
     /// [`Mac`] instance.
-    fn result(self) -> Output<Self>;
+    fn finalize(self) -> Output<Self>;
 
     /// Obtain the result of a [`Mac`] computation as a [`Output`] and reset
     /// [`Mac`] instance.
-    fn result_reset(&mut self) -> Output<Self> {
-        let res = self.clone().result();
+    fn finalize_reset(&mut self) -> Output<Self> {
+        let res = self.clone().finalize();
         self.reset();
         res
     }
 
-    /// Check if code is correct for the processed input.
-    fn verify(self, code: &[u8]) -> Result<(), MacError> {
-        let choice = self.result().code.ct_eq(code);
+    /// Check if tag/code value is correct for the processed input.
+    fn verify(self, tag: &[u8]) -> Result<(), MacError> {
+        let choice = self.finalize().bytes.ct_eq(tag);
+
         if choice.unwrap_u8() == 1 {
             Ok(())
         } else {
@@ -82,28 +83,28 @@ pub trait Mac: Clone {
 /// implementation that runs in a fixed time.
 #[derive(Clone)]
 pub struct Output<M: Mac> {
-    code: GenericArray<u8, M::OutputSize>,
+    bytes: GenericArray<u8, M::OutputSize>,
 }
 
 impl<M: Mac> Output<M> {
     /// Create a new MAC [`Output`].
-    pub fn new(code: GenericArray<u8, M::OutputSize>) -> Output<M> {
-        Output { code }
+    pub fn new(bytes: GenericArray<u8, M::OutputSize>) -> Output<M> {
+        Output { bytes }
     }
 
-    /// Get the MAC code/tag value as a byte array.
+    /// Get the MAC tag/code value as a byte array.
     ///
-    /// Be very careful using this method, since incorrect use of the code value
+    /// Be very careful using this method, since incorrect use of the tag value
     /// may permit timing attacks which defeat the security provided by the
     /// [`Mac`] trait.
     pub fn into_bytes(self) -> GenericArray<u8, M::OutputSize> {
-        self.code
+        self.bytes
     }
 }
 
 impl<M: Mac> ConstantTimeEq for Output<M> {
     fn ct_eq(&self, other: &Self) -> Choice {
-        self.code.ct_eq(&other.code)
+        self.bytes.ct_eq(&other.bytes)
     }
 }
 

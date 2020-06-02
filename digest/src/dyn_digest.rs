@@ -13,10 +13,10 @@ pub trait DynDigest {
     fn update(&mut self, data: &[u8]);
 
     /// Retrieve result and reset hasher instance
-    fn result_reset(&mut self) -> Box<[u8]>;
+    fn finalize_reset(&mut self) -> Box<[u8]>;
 
     /// Retrieve result and consume boxed hasher instance
-    fn result(self: Box<Self>) -> Box<[u8]>;
+    fn finalize(self: Box<Self>) -> Box<[u8]>;
 
     /// Reset hasher instance to its initial state.
     fn reset(&mut self);
@@ -33,14 +33,14 @@ impl<D: Update + FixedOutput + Reset + Clone + 'static> DynDigest for D {
         Update::update(self, data);
     }
 
-    fn result_reset(&mut self) -> Box<[u8]> {
-        let res = self.clone().fixed_result().to_vec().into_boxed_slice();
+    fn finalize_reset(&mut self) -> Box<[u8]> {
+        let res = self.clone().finalize_fixed().to_vec().into_boxed_slice();
         Reset::reset(self);
         res
     }
 
-    fn result(self: Box<Self>) -> Box<[u8]> {
-        self.fixed_result().to_vec().into_boxed_slice()
+    fn finalize(self: Box<Self>) -> Box<[u8]> {
+        self.finalize_fixed().to_vec().into_boxed_slice()
     }
 
     fn reset(&mut self) {

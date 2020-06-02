@@ -14,7 +14,7 @@ macro_rules! new_test {
             fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> Option<&'static str> {
                 let mut mac = <$mac as NewMac>::new_varkey(key).unwrap();
                 mac.update(input);
-                let result = mac.result_reset();
+                let result = mac.finalize_reset();
                 if &result.into_bytes()[..] != tag {
                     return Some("whole message");
                 }

@@ -24,13 +24,13 @@ pub trait Digest {
         Self: Sized;
 
     /// Retrieve result and consume hasher instance.
-    fn result(self) -> Output<Self>;
+    fn finalize(self) -> Output<Self>;
 
     /// Retrieve result and reset hasher instance.
     ///
     /// This method sometimes can be more efficient compared to hasher
     /// re-creation.
-    fn result_reset(&mut self) -> Output<Self>;
+    fn finalize_reset(&mut self) -> Output<Self>;
 
     /// Reset hasher instance to its initial state.
     fn reset(&mut self);
@@ -67,12 +67,12 @@ impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
         Update::chain(self, data)
     }
 
-    fn result(self) -> Output<Self> {
-        self.fixed_result()
+    fn finalize(self) -> Output<Self> {
+        self.finalize_fixed()
     }
 
-    fn result_reset(&mut self) -> Output<Self> {
-        let res = self.clone().fixed_result();
+    fn finalize_reset(&mut self) -> Output<Self> {
+        let res = self.clone().finalize_fixed();
         self.reset();
         res
     }
@@ -88,7 +88,7 @@ impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
     fn digest(data: &[u8]) -> Output<Self> {
         let mut hasher = Self::default();
         Update::update(&mut hasher, data);
-        hasher.fixed_result()
+        hasher.finalize_fixed()
     }
 }
 
