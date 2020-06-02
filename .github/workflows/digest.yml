@@ -52,5 +52,6 @@ jobs:
     - run: cargo check --all-features
     - run: cargo test --release
     - run: cargo test --features dev --release
+    - run: cargo test --features alloc --release
     - run: cargo test --features std --release
     - run: cargo test --all-features --release
