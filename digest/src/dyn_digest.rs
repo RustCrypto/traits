@@ -1,5 +1,5 @@
-#![cfg(feature = "std")]
-use std::boxed::Box;
+#![cfg(feature = "alloc")]
+use alloc::boxed::Box;
 
 use super::{FixedOutput, Reset, Update};
 use generic_array::typenum::Unsigned;

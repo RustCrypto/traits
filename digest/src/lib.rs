@@ -19,8 +19,11 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![warn(missing_docs, rust_2018_idioms)]
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 #[macro_use]
+extern crate alloc;
+
+#[cfg(feature = "std")]
 extern crate std;
 
 #[cfg(feature = "dev")]
@@ -35,14 +38,14 @@ pub use crate::digest::{Digest, Output};
 pub use crate::errors::InvalidOutputSize;
 pub use generic_array::{self, typenum::consts};
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub use dyn_digest::DynDigest;
 
 use generic_array::{ArrayLength, GenericArray};
 
-#[cfg(feature = "std")]
-use std::vec::Vec;
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
 
 /// Trait for updating digest state with input data.
 pub trait Update {
@@ -99,8 +102,8 @@ pub trait VariableOutput: core::marker::Sized {
     fn finalize_variable<F: FnOnce(&[u8])>(self, f: F);
 
     /// Retrieve result into vector and consume hasher.
-    #[cfg(feature = "std")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_vec(self) -> Vec<u8> {
         let mut buf = Vec::with_capacity(self.output_size());
         self.finalize_variable(|res| buf.extend_from_slice(res));
@@ -124,8 +127,8 @@ pub trait ExtendableOutput: core::marker::Sized {
     fn finalize_xof(self) -> Self::Reader;
 
     /// Retrieve result into vector of specified length.
-    #[cfg(feature = "std")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_vec(self, n: usize) -> Vec<u8> {
         let mut buf = vec![0u8; n];
         self.finalize_xof().read(&mut buf);
