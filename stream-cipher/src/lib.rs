@@ -22,6 +22,9 @@ mod errors;
 pub use crate::errors::{InvalidKeyNonceLength, LoopError};
 pub use generic_array::{self, typenum::consts};
 
+#[cfg(feature = "block-cipher")]
+pub use block_cipher;
+
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
 
