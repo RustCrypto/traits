@@ -1,6 +1,7 @@
 //! This crate provides trait for Message Authentication Code (MAC) algorithms.
 
 #![no_std]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
@@ -9,6 +10,7 @@
 extern crate std;
 
 #[cfg(feature = "dev")]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
 mod errors;
