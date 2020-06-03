@@ -4,6 +4,7 @@ pub use blobby;
 
 /// Test core functionality of synchronous stream cipher
 #[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! new_sync_test {
     ($name:ident, $cipher:ty, $test_name:expr) => {
         #[test]
@@ -43,6 +44,7 @@ macro_rules! new_sync_test {
 
 /// Test stream synchronous stream cipher seeking capabilities
 #[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! new_seek_test {
     ($name:ident, $cipher:ty, $test_name:expr) => {
         #[test]
@@ -85,6 +87,7 @@ macro_rules! new_seek_test {
 
 /// Test core functionality of asynchronous stream cipher
 #[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! new_async_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
         #[test]
@@ -149,6 +152,7 @@ macro_rules! new_async_test {
 
 /// Create synchronous stream cipher benchmarks
 #[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! bench_sync {
     ($name:ident, $cipher:path, $data_len:expr) => {
         #[bench]
@@ -187,6 +191,7 @@ macro_rules! bench_sync {
 
 /// Create synchronous stream cipher benchmarks
 #[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! bench_async {
     ($enc_name:ident, $dec_name:ident, $cipher:path, $data_len:expr) => {
         #[bench]

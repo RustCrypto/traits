@@ -5,6 +5,7 @@
 //! for ciphers implementation.
 
 #![no_std]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
@@ -13,6 +14,7 @@
 extern crate std;
 
 #[cfg(feature = "dev")]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
 mod errors;
@@ -22,6 +24,9 @@ pub use generic_array::{self, typenum::consts};
 
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
+
+#[cfg(feature = "block-cipher")]
+use block_cipher::{BlockCipher, NewBlockCipher};
 
 /// Stream cipher creation trait.
 ///
@@ -110,5 +115,36 @@ impl<C: SyncStreamCipher> StreamCipher for C {
     #[inline(always)]
     fn decrypt(&mut self, data: &mut [u8]) {
         SyncStreamCipher::apply_keystream(self, data);
+    }
+}
+
+/// Trait for initializing a stream cipher from a block cipher
+#[cfg(feature = "block-cipher")]
+#[cfg_attr(docsrs, doc(cfg(feature = "block-cipher")))]
+pub trait FromBlockCipher {
+    /// Block cipher
+    type BlockCipher: BlockCipher + NewBlockCipher;
+
+    /// Instantiate a stream cipher from a block cipher
+    // TODO(tarcieri): add associated type for NonceSize?
+    fn from_block_cipher(
+        cipher: Self::BlockCipher,
+        nonce: &block_cipher::Block<Self::BlockCipher>,
+    ) -> Self;
+}
+
+#[cfg(feature = "block-cipher")]
+impl<C> NewStreamCipher for C
+where
+    C: FromBlockCipher,
+{
+    type KeySize = <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::KeySize;
+    type NonceSize = <<Self as FromBlockCipher>::BlockCipher as BlockCipher>::BlockSize;
+
+    fn new(key: &GenericArray<u8, Self::KeySize>, nonce: &GenericArray<u8, Self::NonceSize>) -> C {
+        C::from_block_cipher(
+            <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::new(key),
+            nonce,
+        )
     }
 }
