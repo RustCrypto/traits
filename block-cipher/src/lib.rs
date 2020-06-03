@@ -1,7 +1,17 @@
 //! This crate defines a set of simple traits used to define functionality of
-//! block ciphers.
+//! [block ciphers][1].
+//!
+//! # About block ciphers
+//!
+//! Block ciphers are keyed, deterministic permutations of a fixed-sized input
+//! "block" providing a reversible transformation to/from an encrypted output.
+//! They are one of the fundamental structural components of [symmetric cryptography][2].
+//!
+//! [1]: https://en.wikipedia.org/wiki/Block_cipher
+//! [2]: https://en.wikipedia.org/wiki/Symmetric-key_algorithm
 
 #![no_std]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
@@ -10,6 +20,7 @@
 extern crate std;
 
 #[cfg(feature = "dev")]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
 mod errors;

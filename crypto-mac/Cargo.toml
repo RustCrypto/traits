@@ -21,4 +21,5 @@ dev = ["blobby"]
 std = []
 
 [package.metadata.docs.rs]
-features = [ "std" ]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

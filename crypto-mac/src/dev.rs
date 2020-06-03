@@ -4,6 +4,7 @@ pub use blobby;
 
 /// Define test
 #[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! new_test {
     ($name:ident, $test_name:expr, $mac:ty) => {
         #[test]
@@ -58,6 +59,7 @@ macro_rules! new_test {
 
 /// Define benchmark
 #[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! bench {
     ($name:ident, $engine:path, $bs:expr) => {
         #[bench]

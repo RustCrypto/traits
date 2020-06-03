@@ -4,6 +4,7 @@ pub use blobby;
 
 /// Define test
 #[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! new_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
         #[test]
@@ -109,6 +110,7 @@ macro_rules! new_test {
 
 /// Define benchmark
 #[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! bench {
     ($cipher:path, $key_len:expr) => {
         extern crate test;
