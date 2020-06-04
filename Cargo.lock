@@ -295,7 +295,7 @@ checksum = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"
 
 [[package]]
 name = "universal-hash"
-version = "0.4.0-pre"
+version = "0.4.0"
 dependencies = [
  "generic-array 0.14.1",
  "subtle",
