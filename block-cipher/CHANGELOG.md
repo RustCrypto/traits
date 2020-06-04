@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.7.0 (2020-06-04)
+### Changed
+- Crate renamed from `block-cipher-trait` to `block-cipher` ([#139])
+- Split `BlockCipher` initialization into  `NewBlockCipher` trait ([#132])
+- Update to Rust 2018 edition ([#107])
+- Bump `generic-array` dependency to v0.14 ([#95])
+
+[#139]: https://github.com/RustCrypto/traits/issues/139
+[#132]: https://github.com/RustCrypto/traits/issues/132
+[#107]: https://github.com/RustCrypto/traits/issues/107
+[#95]: https://github.com/RustCrypto/traits/pull/95
+
 ## 0.6.2 (2018-11-14)
 
 ## 0.6.1 (2018-10-04)
