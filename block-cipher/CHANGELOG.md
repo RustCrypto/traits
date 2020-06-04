@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.7.0 (2020-06-04)
 ### Changed
 - Crate renamed from `block-cipher-trait` to `block-cipher` ([#139])
-- Split `BlockCipher` initialization into  `NewBlockCipher` trait ([#132])
+- Split `BlockCipher` initialization into `NewBlockCipher` trait ([#132])
 - Update to Rust 2018 edition ([#107])
 - Bump `generic-array` dependency to v0.14 ([#95])
 
