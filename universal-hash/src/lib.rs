@@ -1,5 +1,7 @@
 //! Traits for [Universal Hash Functions].
 //!
+//! # About universal hashes
+//!
 //! Universal hash functions provide a "universal family" of possible
 //! hash functions where a given member of a family is selected by a key.
 //!
