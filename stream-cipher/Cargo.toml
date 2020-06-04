@@ -16,7 +16,7 @@ generic-array = "0.14"
 blobby = { version = "0.1", optional = true }
 
 [dependencies.block-cipher]
-version = "= 0.7.0-pre"
+version = "0.7"
 optional = true
 path = "../block-cipher"
 
