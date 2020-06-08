@@ -114,8 +114,19 @@ pub trait VariableOutput: core::marker::Sized {
 /// Trait for describing readers which are used to extract extendable output
 /// from XOF (extendable-output function) result.
 pub trait XofReader {
-    /// Read output into the `buffer`. Can be called unlimited number of times.
+    /// Read output into the `buffer`. Can be called an unlimited number of times.
     fn read(&mut self, buffer: &mut [u8]);
+
+    /// Read output into a vector of the specified size.
+    ///
+    /// Can be called an unlimited number of times in combination with `read`.
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    fn read_vec(&mut self, n: usize) -> Vec<u8> {
+        let mut buf = vec![0u8; n];
+        self.read(&mut buf);
+        buf
+    }
 }
 
 /// Trait which describes extendable-output functions (XOF).
