@@ -1,15 +1,24 @@
 //! This crate provides traits which describe functionality of cryptographic hash
 //! functions.
 //!
-//! Traits in this repository can be separated into two levels:
-//! - Low level traits: [`Update`], [`BlockInput`], [`Reset`], [`FixedOutput`],
-//! [`VariableOutput`], [`ExtendableOutput`]. These traits atomically describe
-//! available functionality of hash function implementations.
-//! - Convenience trait: [`Digest`], [`DynDigest`]. They are wrappers around
-//! low level traits for most common hash-function use-cases.
+//! Traits in this repository are organized into high-level convenience traits,
+//! mid-level traits which expose more fine-grained functionality, and
+//! low-level traits intended to only be used by algorithm implementations:
 //!
-//! Additionally hash functions implement traits from `std`: `Default`, `Clone`,
-//! `Write`. (the latter depends on enabled-by-default `std` crate feature)
+//! - **High-level convenience traits**: [`Digest`], [`DynDigest`]. They are wrappers
+//!   around lower-level traits for most common hash-function use-cases.
+//! - **Mid-level traits**: [`Update`], [`BlockInput`], [`Reset`], [`FixedOutput`],
+//!   [`VariableOutput`], [`ExtendableOutput`]. These traits atomically describe
+//!   available functionality of hash function implementations.
+//! - **Low-level traits**: [`FixedOutputDirty`], [`VariableOutputDirty`],
+//!   [`ExtendableOutputDirty`]. These traits are intended to be implemented by
+//!   low-level algorithm providers only and simplify the amount of work
+//!   implementers need to do and therefore shouldn't be used in
+//!   application-level code.
+//!
+//! Additionally hash functions implement traits from the standard library:
+//! `Default`, `Clone`, `Write`. The latter is feature-gated behind `std` feature,
+//! which is usually enabled by default by hash implementation crates.
 //!
 //! The [`Digest`] trait is the most commonly used trait.
 
