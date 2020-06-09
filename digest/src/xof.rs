@@ -77,9 +77,11 @@ pub trait ExtendableOutputDirty: Sized {
     /// Reader
     type Reader: XofReader;
 
-    /// Retrieve XOF reader and consume hasher instance.
+    /// Retrieve XOF reader.
     ///
-    /// Implementations should panic if this is called twice without resetting.
+    /// This method is expected to only be called once unless
+    /// [`Reset::reset`] is called, after which point it can be
+    /// called again and reset again (and so on).
     fn finalize_xof_dirty(&mut self) -> Self::Reader;
 }
 

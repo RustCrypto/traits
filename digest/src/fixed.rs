@@ -49,7 +49,9 @@ pub trait FixedOutputDirty {
 
     /// Retrieve result into provided buffer and leave hasher in a dirty state.
     ///
-    /// Implementations should panic if this is called twice without resetting.
+    /// This method is expected to only be called once unless
+    /// [`Reset::reset`] is called, after which point it can be
+    /// called again and reset again (and so on).
     fn finalize_into_dirty(&mut self, out: &mut GenericArray<u8, Self::OutputSize>);
 }
 
