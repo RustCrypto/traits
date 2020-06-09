@@ -16,8 +16,9 @@
 //!   implementers need to do and therefore shouldn't be used in
 //!   application-level code.
 //!
-//! Additionally hash functions implement traits from `std`: `Default`, `Clone`,
-//! `Write`. (the latter depends on the downstream crate having a `std` feature)
+//! Additionally hash functions implement traits from the standard library:
+//! `Default`, `Clone`, `Write`. The latter is feature-gated behind `std` feature,
+//! which is usually enabled by default by hash implementation crates.
 //!
 //! The [`Digest`] trait is the most commonly used trait.
 
