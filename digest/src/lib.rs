@@ -158,6 +158,9 @@ pub trait VariableOutput: core::marker::Sized {
     fn finalize_variable<F: FnOnce(&[u8])>(self, f: F);
 
     /// Retrieve result into a boxed slice and consume hasher.
+    ///
+    /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
+    /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_box(self) -> Box<[u8]> {
@@ -177,6 +180,9 @@ pub trait XofReader {
     /// Read output into a boxed slice of the specified size.
     ///
     /// Can be called an unlimited number of times in combination with `read`.
+    ///
+    /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
+    /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn read_box(&mut self, n: usize) -> Box<[u8]> {
@@ -195,6 +201,9 @@ pub trait ExtendableOutput: core::marker::Sized {
     fn finalize_xof(self) -> Self::Reader;
 
     /// Retrieve result into a boxed slice of the specified size.
+    ///
+    /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
+    /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_box(self, n: usize) -> Box<[u8]> {
