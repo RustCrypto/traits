@@ -99,3 +99,32 @@ pub trait BlockCipher {
         }
     }
 }
+
+/// Stateful block cipher which permits `&mut self` access.
+///
+/// The main use case for this trait is hardware encryption engines which
+/// require `&mut self` access to an underlying hardware peripheral.
+pub trait BlockCipherMut {
+    /// Size of the block in bytes
+    type BlockSize: ArrayLength<u8>;
+
+    /// Encrypt block in-place
+    fn encrypt_block(&mut self, block: &mut GenericArray<u8, Self::BlockSize>);
+
+    /// Decrypt block in-place
+    fn decrypt_block(&mut self, block: &mut GenericArray<u8, Self::BlockSize>);
+}
+
+impl<Alg: BlockCipher> BlockCipherMut for Alg {
+    type BlockSize = Alg::BlockSize;
+
+    /// Encrypt block in-place
+    fn encrypt_block(&mut self, block: &mut GenericArray<u8, Self::BlockSize>) {
+        <Self as BlockCipher>::encrypt_block(self, block);
+    }
+
+    /// Decrypt block in-place
+    fn decrypt_block(&mut self, block: &mut GenericArray<u8, Self::BlockSize>) {
+        <Self as BlockCipher>::decrypt_block(self, block);
+    }
+}
