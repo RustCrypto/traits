@@ -6,6 +6,7 @@ use generic_array::typenum::Unsigned;
 
 /// The `DynDigest` trait is a modification of `Digest` trait suitable
 /// for trait objects.
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub trait DynDigest {
     /// Digest input data.
     ///
