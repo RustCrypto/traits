@@ -140,7 +140,7 @@ impl<D: FixedOutputDirty + Reset> FixedOutput for D {
 }
 
 /// Trait for returning digest result with the variable size
-pub trait VariableOutput: core::marker::Sized {
+pub trait VariableOutput: Sized {
     /// Create new hasher instance with the given output size.
     ///
     /// It will return `Err(InvalidOutputSize)` in case if hasher can not return
@@ -155,7 +155,13 @@ pub trait VariableOutput: core::marker::Sized {
     ///
     /// Closure is guaranteed to be called, length of the buffer passed to it
     /// will be equal to `output_size`.
-    fn finalize_variable<F: FnOnce(&[u8])>(self, f: F);
+    fn finalize_variable(self, f: impl FnOnce(&[u8]));
+
+    /// Retrieve result via closure and reset the hasher state.
+    ///
+    /// Closure is guaranteed to be called, length of the buffer passed to it
+    /// will be equal to `output_size`.
+    fn finalize_variable_reset(&mut self, f: impl FnOnce(&[u8]));
 
     /// Retrieve result into a boxed slice and consume hasher.
     ///
@@ -168,6 +174,66 @@ pub trait VariableOutput: core::marker::Sized {
         let mut buf = vec![0u8; n].into_boxed_slice();
         self.finalize_variable(|res| buf.copy_from_slice(res));
         buf
+    }
+
+    /// Retrieve result into a boxed slice and reset hasher state.
+    ///
+    /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
+    /// they have size of 2 and 3 words respectively.
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    fn finalize_boxed_reset(&mut self) -> Box<[u8]> {
+        let n = self.output_size();
+        let mut buf = vec![0u8; n].into_boxed_slice();
+        self.finalize_variable_reset(|res| buf.copy_from_slice(res));
+        buf
+    }
+}
+
+/// Trait for variable-sized output digest implementations to use to retrieve
+/// the hash output.
+///
+/// Usage of this trait in user code is discouraged. Instead use the
+/// [`VariableOutput::finalize_variable`] or
+/// [`VariableOutput::finalize_variable_reset`] methods.
+///
+/// Types which impl this trait along with [`Reset`] will receive a blanket
+/// impl of [`VariableOutput`].
+pub trait VariableOutputDirty: Sized {
+    /// Create new hasher instance with the given output size.
+    ///
+    /// It will return `Err(InvalidOutputSize)` in case if hasher can not return
+    /// specified output size. It will always return an error if output size
+    /// equals to zero.
+    fn new(output_size: usize) -> Result<Self, InvalidOutputSize>;
+
+    /// Get output size of the hasher instance provided to the `new` method
+    fn output_size(&self) -> usize;
+
+    /// Retrieve result into provided buffer and leave hasher in a dirty state.
+    ///
+    /// Implementations should panic if this is called twice without resetting.
+    fn finalize_variable_dirty(&mut self, f: impl FnOnce(&[u8]));
+}
+
+impl<D: VariableOutputDirty + Reset> VariableOutput for D {
+    fn new(output_size: usize) -> Result<Self, InvalidOutputSize> {
+        <Self as VariableOutputDirty>::new(output_size)
+    }
+
+    fn output_size(&self) -> usize {
+        <Self as VariableOutputDirty>::output_size(self)
+    }
+
+    #[inline]
+    fn finalize_variable(mut self, f: impl FnOnce(&[u8])) {
+        self.finalize_variable_dirty(f);
+    }
+
+    #[inline]
+    fn finalize_variable_reset(&mut self, f: impl FnOnce(&[u8])) {
+        self.finalize_variable_dirty(f);
+        self.reset();
     }
 }
 
@@ -193,14 +259,18 @@ pub trait XofReader {
 }
 
 /// Trait which describes extendable-output functions (XOF).
-pub trait ExtendableOutput: core::marker::Sized {
+pub trait ExtendableOutput: Sized {
     /// Reader
     type Reader: XofReader;
 
     /// Retrieve XOF reader and consume hasher instance.
     fn finalize_xof(self) -> Self::Reader;
 
-    /// Retrieve result into a boxed slice of the specified size.
+    /// Retrieve XOF reader and reset hasher instance state.
+    fn finalize_xof_reset(&mut self) -> Self::Reader;
+
+    /// Retrieve result into a boxed slice of the specified size and consume
+    /// the hasher.
     ///
     /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
     /// they have size of 2 and 3 words respectively.
@@ -210,6 +280,54 @@ pub trait ExtendableOutput: core::marker::Sized {
         let mut buf = vec![0u8; n].into_boxed_slice();
         self.finalize_xof().read(&mut buf);
         buf
+    }
+
+    /// Retrieve result into a boxed slice of the specified size and reset
+    /// the hasher's state.
+    ///
+    /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
+    /// they have size of 2 and 3 words respectively.
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    fn finalize_boxed_reset(&mut self, n: usize) -> Box<[u8]> {
+        let mut buf = vec![0u8; n].into_boxed_slice();
+        self.finalize_xof_reset().read(&mut buf);
+        buf
+    }
+}
+
+/// Trait for extendable-output function (XOF) implementations to use to
+/// retrieve the hash output.
+///
+/// Usage of this trait in user code is discouraged. Instead use the
+/// [`VariableOutput::finalize_variable`] or
+/// [`VariableOutput::finalize_variable_reset`] methods.
+///
+/// Types which impl this trait along with [`Reset`] will receive a blanket
+/// impl of [`VariableOutput`].
+pub trait ExtendableOutputDirty: Sized {
+    /// Reader
+    type Reader: XofReader;
+
+    /// Retrieve XOF reader and consume hasher instance.
+    ///
+    /// Implementations should panic if this is called twice without resetting.
+    fn finalize_xof_dirty(&mut self) -> Self::Reader;
+}
+
+impl<X: ExtendableOutputDirty + Reset> ExtendableOutput for X {
+    type Reader = X::Reader;
+
+    #[inline]
+    fn finalize_xof(mut self) -> Self::Reader {
+        self.finalize_xof_dirty()
+    }
+
+    #[inline]
+    fn finalize_xof_reset(&mut self) -> Self::Reader {
+        let reader = self.finalize_xof_dirty();
+        self.reset();
+        reader
     }
 }
 
