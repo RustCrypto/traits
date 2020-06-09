@@ -163,7 +163,7 @@ pub trait VariableOutput: core::marker::Sized {
     /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    fn finalize_box(self) -> Box<[u8]> {
+    fn finalize_boxed(self) -> Box<[u8]> {
         let n = self.output_size();
         let mut buf = vec![0u8; n].into_boxed_slice();
         self.finalize_variable(|res| buf.copy_from_slice(res));
@@ -185,7 +185,7 @@ pub trait XofReader {
     /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    fn read_box(&mut self, n: usize) -> Box<[u8]> {
+    fn read_boxed(&mut self, n: usize) -> Box<[u8]> {
         let mut buf = vec![0u8; n].into_boxed_slice();
         self.read(&mut buf);
         buf
@@ -206,7 +206,7 @@ pub trait ExtendableOutput: core::marker::Sized {
     /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    fn finalize_box(self, n: usize) -> Box<[u8]> {
+    fn finalize_boxed(self, n: usize) -> Box<[u8]> {
         let mut buf = vec![0u8; n].into_boxed_slice();
         self.finalize_xof().read(&mut buf);
         buf
