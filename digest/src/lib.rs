@@ -45,7 +45,7 @@ pub use dyn_digest::DynDigest;
 use generic_array::{ArrayLength, GenericArray};
 
 #[cfg(feature = "alloc")]
-use alloc::vec::Vec;
+use alloc::boxed::Box;
 
 /// Trait for updating digest state with input data.
 pub trait Update {
@@ -157,12 +157,13 @@ pub trait VariableOutput: core::marker::Sized {
     /// will be equal to `output_size`.
     fn finalize_variable<F: FnOnce(&[u8])>(self, f: F);
 
-    /// Retrieve result into vector and consume hasher.
+    /// Retrieve result into a boxed slice and consume hasher.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    fn finalize_vec(self) -> Vec<u8> {
-        let mut buf = Vec::with_capacity(self.output_size());
-        self.finalize_variable(|res| buf.extend_from_slice(res));
+    fn finalize_box(self) -> Box<[u8]> {
+        let n = self.output_size();
+        let mut buf = vec![0u8; n].into_boxed_slice();
+        self.finalize_variable(|res| buf.copy_from_slice(res));
         buf
     }
 }
@@ -173,13 +174,13 @@ pub trait XofReader {
     /// Read output into the `buffer`. Can be called an unlimited number of times.
     fn read(&mut self, buffer: &mut [u8]);
 
-    /// Read output into a vector of the specified size.
+    /// Read output into a boxed slice of the specified size.
     ///
     /// Can be called an unlimited number of times in combination with `read`.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    fn read_vec(&mut self, n: usize) -> Vec<u8> {
-        let mut buf = vec![0u8; n];
+    fn read_box(&mut self, n: usize) -> Box<[u8]> {
+        let mut buf = vec![0u8; n].into_boxed_slice();
         self.read(&mut buf);
         buf
     }
@@ -193,11 +194,11 @@ pub trait ExtendableOutput: core::marker::Sized {
     /// Retrieve XOF reader and consume hasher instance.
     fn finalize_xof(self) -> Self::Reader;
 
-    /// Retrieve result into vector of specified length.
+    /// Retrieve result into a boxed slice of the specified size.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    fn finalize_vec(self, n: usize) -> Vec<u8> {
-        let mut buf = vec![0u8; n];
+    fn finalize_box(self, n: usize) -> Box<[u8]> {
+        let mut buf = vec![0u8; n].into_boxed_slice();
         self.finalize_xof().read(&mut buf);
         buf
     }
