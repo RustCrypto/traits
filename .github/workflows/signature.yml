@@ -52,5 +52,4 @@ jobs:
     - run: cargo check --all-features
     - run: cargo test --no-default-features --release
     - run: cargo test --release
-# TODO: fix support for the `digest-preview` feature
-#    - run: cargo test --all-features --release
+    - run: cargo test --all-features --release

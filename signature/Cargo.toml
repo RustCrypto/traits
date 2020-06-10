@@ -1,7 +1,7 @@
 [package]
 name          = "signature"
 description   = "Traits for cryptographic signature algorithms (e.g. ECDSA, Ed25519)"
-version       = "1.1.0-pre" # Also update html_root_url in lib.rs when bumping this
+version       = "1.1.0" # Also update html_root_url in lib.rs when bumping this
 authors       = ["RustCrypto Developers"]
 license       = "Apache-2.0 OR MIT"
 documentation = "https://docs.rs/signature"
@@ -15,7 +15,6 @@ categories    = ["cryptography", "no-std"]
 version = "0.9"
 optional = true
 default-features = false
-path = "../digest"
 
 [dependencies.rand_core]
 version = "0.5"
@@ -29,7 +28,7 @@ path = "derive"
 
 [dev-dependencies]
 hex-literal = "0.2"
-sha2 = { version = "0.8", default-features = false }
+sha2 = { version = "0.9", default-features = false }
 
 [features]
 default = ["std"]
