@@ -1,7 +1,7 @@
 [package]
 name = "digest"
 description = "Traits for cryptographic hash functions"
-version = "0.9.0-pre"
+version = "0.9.0"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
