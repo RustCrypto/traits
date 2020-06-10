@@ -31,20 +31,24 @@ use generic_array::{ArrayLength, GenericArray};
 #[cfg(feature = "block-cipher")]
 use block_cipher::{BlockCipher, NewBlockCipher};
 
+/// Key for an algorithm that implements [`NewStreamCipher`].
+pub type Key<C> = GenericArray<u8, <C as NewStreamCipher>::KeySize>;
+
+/// Nonce for an algorithm that implements [`NewStreamCipher`].
+pub type Nonce<C> = GenericArray<u8, <C as NewStreamCipher>::NonceSize>;
+
 /// Stream cipher creation trait.
 ///
 /// It can be used for creation of synchronous and asynchronous ciphers.
 pub trait NewStreamCipher: Sized {
     /// Key size in bytes
     type KeySize: ArrayLength<u8>;
+
     /// Nonce size in bytes
     type NonceSize: ArrayLength<u8>;
 
     /// Create new stream cipher instance from variable length key and nonce.
-    fn new(
-        key: &GenericArray<u8, Self::KeySize>,
-        nonce: &GenericArray<u8, Self::NonceSize>,
-    ) -> Self;
+    fn new(key: &Key<Self>, nonce: &Nonce<Self>) -> Self;
 
     /// Create new stream cipher instance from variable length key and nonce.
     #[inline]
@@ -144,7 +148,7 @@ where
     type KeySize = <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::KeySize;
     type NonceSize = <<Self as FromBlockCipher>::BlockCipher as BlockCipher>::BlockSize;
 
-    fn new(key: &GenericArray<u8, Self::KeySize>, nonce: &GenericArray<u8, Self::NonceSize>) -> C {
+    fn new(key: &Key<Self>, nonce: &Nonce<Self>) -> C {
         C::from_block_cipher(
             <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::new(key),
             nonce,
