@@ -42,7 +42,7 @@ dependencies = [
 
 [[package]]
 name = "block-cipher"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "blobby",
  "generic-array 0.14.1",
