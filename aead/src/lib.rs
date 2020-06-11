@@ -67,8 +67,22 @@ pub trait NewAead {
     /// The size of the key array required by this algorithm.
     type KeySize: ArrayLength<u8>;
 
-    /// Construct a new stateful instance for the given key.
+    /// Create a new AEAD instance with the given key.
     fn new(key: &Key<Self>) -> Self;
+
+    /// Create new AEAD instance from key with variable size.
+    ///
+    /// Default implementation will accept only keys with length equal to `KeySize`.
+    fn new_varkey(key: &[u8]) -> Result<Self, Error>
+    where
+        Self: Sized,
+    {
+        if key.len() != Self::KeySize::to_usize() {
+            Err(Error)
+        } else {
+            Ok(Self::new(GenericArray::from_slice(key)))
+        }
+    }
 }
 
 /// Authenticated Encryption with Associated Data (AEAD) algorithm.
