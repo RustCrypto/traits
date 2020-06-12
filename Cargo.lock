@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 [[package]]
 name = "aead"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "generic-array 0.14.2",
  "heapless",
