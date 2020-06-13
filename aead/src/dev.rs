@@ -14,18 +14,24 @@ macro_rules! new_test {
             use aead::{generic_array::GenericArray, Aead, NewAead, Payload};
 
             fn run_test(
-                key: &[u8], nonce: &[u8], aad: &[u8], pt: &[u8], ct: &[u8],
+                key: &[u8],
+                nonce: &[u8],
+                aad: &[u8],
+                pt: &[u8],
+                ct: &[u8],
             ) -> Result<(), &'static str> {
                 let key = key.try_into().map_err(|| "wrong key size")?;
                 let cipher = $cipher::new(key);
                 let nonce = nonce.try_into().map_err(|| "wrong nonce size")?;
 
-                let res = c.encrypt(nonce, Payload { aad: aad, msg: pt })
+                let res = c
+                    .encrypt(nonce, Payload { aad: aad, msg: pt })
                     .map_err(|_| "encryption failure")?;
                 if res != pt {
                     return Err("encrypted data is different from target ciphertext");
                 }
-                let res = c.decrypt(nonce, Payload { aad: aad, msg: ct })
+                let res = c
+                    .decrypt(nonce, Payload { aad: aad, msg: ct })
                     .map_err(|_| "decryption failure");
                 if res != pt {
                     return Err("decrypted data is different from target plaintext");
