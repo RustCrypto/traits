@@ -4,7 +4,7 @@
 name = "aead"
 version = "0.3.1"
 dependencies = [
- "blobby",
+ "blobby 0.2.0",
  "generic-array 0.14.2",
  "heapless",
 ]
@@ -30,6 +30,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "blobby"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "517e75eae2ab6547f6a32ca5eefce861ecb5ec4c57a4c015e82503f71a7c63a9"
+
+[[package]]
 name = "block-buffer"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -45,7 +51,7 @@ dependencies = [
 name = "block-cipher"
 version = "0.7.1"
 dependencies = [
- "blobby",
+ "blobby 0.1.2",
  "generic-array 0.14.2",
 ]
 
@@ -74,7 +80,7 @@ checksum = "08c48aae112d48ed9f069b33538ea9e3e90aa263cfa3d1c24309612b1f7472de"
 name = "crypto-mac"
 version = "0.8.0"
 dependencies = [
- "blobby",
+ "blobby 0.1.2",
  "generic-array 0.14.2",
  "subtle",
 ]
@@ -83,7 +89,7 @@ dependencies = [
 name = "digest"
 version = "0.9.0"
 dependencies = [
- "blobby",
+ "blobby 0.1.2",
  "generic-array 0.14.2",
 ]
 
@@ -249,7 +255,7 @@ checksum = "dba1a27d3efae4351c8051072d619e3ade2820635c3958d826bfea39d59b54c8"
 name = "stream-cipher"
 version = "0.4.1"
 dependencies = [
- "blobby",
+ "blobby 0.1.2",
  "block-cipher",
  "generic-array 0.14.2",
 ]
