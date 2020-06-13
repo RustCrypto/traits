@@ -24,13 +24,13 @@ macro_rules! new_test {
                 let cipher = $cipher::new(key);
                 let nonce = nonce.try_into().map_err(|| "wrong nonce size")?;
 
-                let res = c
+                let res = cipher
                     .encrypt(nonce, Payload { aad: aad, msg: pt })
                     .map_err(|_| "encryption failure")?;
                 if res != pt {
                     return Err("encrypted data is different from target ciphertext");
                 }
-                let res = c
+                let res = cipher
                     .decrypt(nonce, Payload { aad: aad, msg: ct })
                     .map_err(|_| "decryption failure");
                 if res != pt {
