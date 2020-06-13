@@ -4,6 +4,7 @@
 name = "aead"
 version = "0.3.1"
 dependencies = [
+ "blobby",
  "generic-array 0.14.2",
  "heapless",
 ]

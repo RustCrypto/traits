@@ -25,6 +25,10 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
+#[cfg(feature = "dev")]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
+pub mod dev;
+
 pub use generic_array::{self, typenum::consts};
 
 #[cfg(feature = "heapless")]
