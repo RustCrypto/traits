@@ -14,9 +14,9 @@ Collection of traits which describe functionality of cryptographic primitives.
 | [`stream‑cipher`]  | [Stream cipher]               | [![crates.io](https://img.shields.io/crates/v/stream-cipher.svg)](https://crates.io/crates/stream-cipher) | [![Documentation](https://docs.rs/stream-cipher/badge.svg)](https://docs.rs/stream-cipher) | ![build](https://github.com/RustCrypto/traits/workflows/stream-cipher/badge.svg?branch=master&event=push) |
 | [`universal‑hash`] | [Universal hash function]     | [![crates.io](https://img.shields.io/crates/v/universal-hash.svg)](https://crates.io/crates/universal-hash) | [![Documentation](https://docs.rs/universal-hash/badge.svg)](https://docs.rs/universal-hash) | ![build](https://github.com/RustCrypto/traits/workflows/universal-hash/badge.svg?branch=master&event=push) |
 
-### Minimum Rust version
+### Minimum Supported Rust Version
 
-All crates in this repository support Rust 1.41 or higher unless otherwise noted.
+All crates in this repository support **Rust 1.41** or higher unless otherwise noted.
 
 In future minimally supported version of Rust can be changed, but it will be done
 with the minor version bump.
