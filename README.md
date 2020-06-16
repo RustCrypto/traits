@@ -1,4 +1,4 @@
-# RustCrypto: Traits ![Rust Version][rustc-image]
+# <img src="https://git.io/Jf57y" width="28px"> RustCrypto: Traits ![Rust Version][rustc-image]
 
 Collection of traits which describe functionality of cryptographic primitives.
 
