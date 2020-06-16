@@ -21,12 +21,9 @@ dependencies = [
 
 [[package]]
 name = "blobby"
-version = "0.1.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fe5f8c2940b65859ece4b3b2ba02d2b12c87cab455fd42dee2556a187bb2cf6"
-dependencies = [
- "byteorder",
-]
+checksum = "517e75eae2ab6547f6a32ca5eefce861ecb5ec4c57a4c015e82503f71a7c63a9"
 
 [[package]]
 name = "block-buffer"
