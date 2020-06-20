@@ -3,6 +3,7 @@ members = [
     "aead",
     "block-cipher",
     "crypto-mac",
+    "cryptography",
     "digest",
     "signature",
     "stream-cipher",

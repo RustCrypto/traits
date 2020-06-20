@@ -76,6 +76,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "cryptography"
+version = "0.1.0"
+dependencies = [
+ "aead",
+ "block-cipher",
+ "crypto-mac",
+ "digest 0.9.0",
+ "signature",
+ "stream-cipher",
+ "universal-hash",
+]
+
+[[package]]
 name = "digest"
 version = "0.9.0"
 dependencies = [
