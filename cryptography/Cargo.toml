@@ -19,3 +19,6 @@ mac = { version = "0.8", package = "crypto-mac", optional = true, path = "../cry
 signature = { version = "1.1.0", optional = true, default-features = false, path = "../signature" }
 stream-cipher = { version = "0.4", optional = true, path = "../stream-cipher" }
 universal-hash = { version = "0.4", optional = true, path = "../universal-hash" }
+
+[package.metadata.docs.rs]
+all-features = true

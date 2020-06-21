@@ -15,21 +15,21 @@
 //! with each one gated under a cargo feature, providing a single place to both
 //! import and upgrade these crates while ensuring they remain compatible.
 //!
-//! # Trait re-exports
+//! # Traits
 //!
-//! Below are the re-exports of the various RustCrypto crates available through
+//! The following traits are available as re-exports of RustCrypto crates through
 //! this crate's facade. To access a particular re-export you (or a crate you
 //! depend on) must enable the associated Cargo feature named below.
 //!
-//! | Module name | Cargo feature | Description |
-//! |-------------|---------------|-------------|
+//! | Re-export | Cargo feature | Description |
+//! |-----------|---------------|-------------|
 //! | [`aead`](https://docs.rs/aead) | `aead` | Authenticated Encryption with Associated Data (i.e. high-level symmetric encryption) |
-//! | [`block_cipher`](https://docs.rs/block-cipher) | `block-cipher` | Block-based cryptographic permutations (i.e. low-level symmetric encryption) |
+//! | [`block_cipher`](https://docs.rs/block-cipher) | `block‑cipher` | Block-based cryptographic permutations (i.e. low-level symmetric encryption) |
 //! | [`digest`](https://docs.rs/digest) | `digest` | Cryptographic hash functions |
 //! | [`mac`](https://docs.rs/crypto-mac) | `mac` | Message Authentication Codes (i.e. symmetric message authentication) |
 //! | [`signature`](https://docs.rs/signature) | `signature` | Digital signatures (i.e. public key-based message authentication) |
-//! | [`stream_cipher`](https://docs.rs/stream-cipher) | `stream-cipher` | Ciphers based on randomly generated keystreams (i.e. low-level symmetric encryption) |
-//! | [`universal_hash`](https://docs.rs/universal-hash) | `universal-hash` | Universal Hash Functions (used to build MACs) |
+//! | [`stream_cipher`](https://docs.rs/stream-cipher) | `stream‑cipher` | Ciphers based on randomly generated keystreams (i.e. low-level symmetric encryption) |
+//! | [`universal_hash`](https://docs.rs/universal-hash) | `universal‑hash` | Universal Hash Functions (used to build MACs) |
 //!
 //! [1]: https://github.com/RustCrypto/traits
 //! [2]: https://github.com/RustCrypto
