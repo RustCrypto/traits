@@ -15,22 +15,21 @@
 //! with each one gated under a cargo feature, providing a single place to both
 //! import and upgrade these crates while ensuring they remain compatible.
 //!
-//! # Traits
+//! # Trait re-exports
 //!
-//! - [`aead`](https://docs.rs/aead) -
-//!   Authenticated Encryption with Associated Data (i.e. high-level symmetric encryption)
-//! - [`block_cipher`](https://docs.rs/block-cipher) -
-//!   block-based cryptographic permutations (i.e. low-level symmetric encryption)
-//! - [`mac`](https://docs.rs/crypto-mac) -
-//!   message authentication codes (i.e. symmetric message authentication)
-//! - [`digest`](https://docs.rs/digest) -
-//!   cryptographic hash functions
-//! - [`signature`](https://docs.rs/signature) -
-//!   digital signatures (i.e. public key-based message authentication)
-//! - [`stream_cipher`](https://docs.rs/stream-cipher) -
-//!   ciphers based on randomly generated keystreams (i.e. low-level symmetric encryption)
-//! - [`universal_hash`](https://docs.rs/universal-hash) -
-//!   universal hash functions (used to build MACs)
+//! Below are the re-exports of the various RustCrypto crates available through
+//! this crate's facade. To access a particular re-export you (or a crate you
+//! depend on) must enable the associated Cargo feature named below.
+//!
+//! | Module name | Cargo feature | Description |
+//! |-------------|---------------|-------------|
+//! | [`aead`](https://docs.rs/aead) | `aead` | Authenticated Encryption with Associated Data (i.e. high-level symmetric encryption) |
+//! | [`block_cipher`](https://docs.rs/block-cipher) | `block-cipher` | Block-based cryptographic permutations (i.e. low-level symmetric encryption) |
+//! | [`digest`](https://docs.rs/digest) | `digest` | Cryptographic hash functions |
+//! | [`mac`](https://docs.rs/crypto-mac) | `mac` | Message Authentication Codes (i.e. symmetric message authentication) |
+//! | [`signature`](https://docs.rs/signature) | `signature` | Digital signatures (i.e. public key-based message authentication) |
+//! | [`stream_cipher`](https://docs.rs/stream-cipher) | `stream-cipher` | Ciphers based on randomly generated keystreams (i.e. low-level symmetric encryption) |
+//! | [`universal_hash`](https://docs.rs/universal-hash) | `universal-hash` | Universal Hash Functions (used to build MACs) |
 //!
 //! [1]: https://github.com/RustCrypto/traits
 //! [2]: https://github.com/RustCrypto
@@ -46,11 +45,11 @@ pub use aead;
 #[cfg(feature = "block-cipher")]
 pub use block_cipher;
 
-#[cfg(feature = "crypto-mac")]
-pub use crypto_mac as mac;
-
 #[cfg(feature = "digest")]
 pub use digest;
+
+#[cfg(feature = "mac")]
+pub use mac;
 
 #[cfg(feature = "signature")]
 pub use signature;
