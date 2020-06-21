@@ -1,6 +1,6 @@
 [package]
 name = "cryptography"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["The RustCrypto Project Developers"]
 license = "Apache-2.0 OR MIT"
 description = "Facade crate for the RustCrypto project's traits"
