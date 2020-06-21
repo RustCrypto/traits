@@ -17,29 +17,23 @@
 //!
 //! # Traits
 //!
-//! - [`aead`] - Authenticated Encryption with Associated Data
-//!   (i.e. high-level symmetric encryption)
-//! - [`block_cipher`] - block-based cryptographic permutations
-//!   (i.e. low-level symmetric encryption)
-//! - [`mac`] - message authentication codes (i.e. symmetric message
-//!   authentication)
-//! - [`digest`] - cryptographic hash functions
-//! - [`signature`] - digital signatures (i.e. public key-based message
-//!   authentication)
-//! - [`stream_cipher`] - ciphers based on randomly generated keystreams
-//!   (i.e. low-level symmetric encryption)
-//! - [`universal_hash`] - universal hash functions (used to build MACs)
+//! - [`aead`](https://docs.rs/aead) -
+//!   Authenticated Encryption with Associated Data (i.e. high-level symmetric encryption)
+//! - [`block_cipher`](https://docs.rs/block-cipher) -
+//!   block-based cryptographic permutations (i.e. low-level symmetric encryption)
+//! - [`mac`](https://docs.rs/crypto-mac) -
+//!   message authentication codes (i.e. symmetric message authentication)
+//! - [`digest`](https://docs.rs/digest) -
+//!   cryptographic hash functions
+//! - [`signature`](https://docs.rs/signature) -
+//!   digital signatures (i.e. public key-based message authentication)
+//! - [`stream_cipher`](https://docs.rs/stream-cipher) -
+//!   ciphers based on randomly generated keystreams (i.e. low-level symmetric encryption)
+//! - [`universal_hash`](https://docs.rs/universal-hash) -
+//!   universal hash functions (used to build MACs)
 //!
 //! [1]: https://github.com/RustCrypto/traits
 //! [2]: https://github.com/RustCrypto
-//!
-//! [`aead`]: https://docs.rs/aead
-//! [`block_cipher`]: https://docs.rs/block-cipher
-//! [`mac`]: https://docs.rs/crypto-mac
-//! [`digest`]: https://docs.rs/digest
-//! [`signature`]: https://docs.rs/signature
-//! [`stream_cipher`]: https://docs.rs/stream-cipher
-//! [`universal_hash`]: https://docs.rs/universal-hash
 
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
