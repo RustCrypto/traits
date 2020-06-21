@@ -32,6 +32,14 @@
 //!
 //! [1]: https://github.com/RustCrypto/traits
 //! [2]: https://github.com/RustCrypto
+//!
+//! [`aead`]: https://docs.rs/aead
+//! [`block_cipher`]: https://docs.rs/block-cipher
+//! [`mac`]: https://docs.rs/crypto-mac
+//! [`digest`]: https://docs.rs/digest
+//! [`signature`]: https://docs.rs/signature
+//! [`stream_cipher`]: https://docs.rs/stream-cipher
+//! [`universal_hash`]: https://docs.rs/universal-hash
 
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
