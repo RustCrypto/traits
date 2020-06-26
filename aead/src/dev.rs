@@ -5,7 +5,7 @@ pub use blobby;
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! new_test {
-    ($name:ident, $test_name:expr, $cipher:ty, $(,)?) => {
+    ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
             use aead::dev::blobby::Blob6Iterator;
