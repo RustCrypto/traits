@@ -2,7 +2,6 @@
 pub use blobby;
 
 /// Define AEAD test
-#[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! new_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
