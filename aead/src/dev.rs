@@ -19,15 +19,22 @@ macro_rules! new_test {
                 aad: &[u8],
                 pt: &[u8],
                 ct: &[u8],
+                pass: bool,
             ) -> Result<(), &'static str> {
                 let key = key.try_into().map_err(|_| "wrong key size")?;
                 let cipher = <$cipher>::new(key);
                 let nonce = nonce.try_into().map_err(|_| "wrong nonce size")?;
 
+                if !pass {
+                    let res = cipher.decrypt(nonce, Payload { aad: aad, msg: ct });
+                    if res.is_ok() {
+                        return Err("decryption must return error");
+                    }
+                }
+
                 let res = cipher
                     .encrypt(nonce, Payload { aad: aad, msg: pt })
                     .map_err(|_| "encryption failure")?;
-                println!("{} {} {:?}", res.len(), ct.len(), res);
                 if res != ct {
                     return Err("encrypted data is different from target ciphertext");
                 }
@@ -43,7 +50,8 @@ macro_rules! new_test {
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob6Iterator::new(data).enumerate() {
                 let [key, nonce, aad, pt, ct, status] = row;
-                if let Err(reason) = run_test(key, nonce, aad, pt, ct) {
+                let pass = status[0] != 0;
+                if let Err(reason) = run_test(key, nonce, aad, pt, ct, pass) {
                     panic!(
                         "\n\
                             Failed test №{}\n\
@@ -53,8 +61,9 @@ macro_rules! new_test {
                             aad:\t{:?}\n\
                             plaintext:\t{:?}\n\
                             ciphertext:\t{:?}\n\
+                            pass:\t{}\n\
                         ",
-                        i, reason, key, nonce, aad, pt, ct,
+                        i, reason, key, nonce, aad, pt, ct, pass,
                     );
                 }
             }
