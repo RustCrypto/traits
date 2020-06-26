@@ -40,8 +40,8 @@ macro_rules! new_test {
             }
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
-            for (i, row) in Blob5Iterator::new(data).unwrap().enumerate() {
-                let [key, nonce, aad, pt, ct] = row[0];
+            for (i, row) in Blob6Iterator::new(data).unwrap().enumerate() {
+                let [key, nonce, aad, pt, ct, status] = row[0];
                 if let Err(reason) = run_test(key, nonce, aad, pt, ct) {
                     panic!(
                         "\n\
