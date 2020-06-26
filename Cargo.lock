@@ -4,7 +4,7 @@
 name = "aead"
 version = "0.3.1"
 dependencies = [
- "blobby 0.2.0",
+ "blobby 0.3.0",
  "generic-array 0.14.2",
  "heapless",
 ]
@@ -31,9 +31,8 @@ dependencies = [
 
 [[package]]
 name = "blobby"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "517e75eae2ab6547f6a32ca5eefce861ecb5ec4c57a4c015e82503f71a7c63a9"
+version = "0.3.0"
+source = "git+https://github.com/RustCrypto/utils?branch=blobby4#f6021de9cd7072a1018c27182bb7fcf6caadd13c"
 
 [[package]]
 name = "block-buffer"
