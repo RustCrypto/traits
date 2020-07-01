@@ -30,7 +30,7 @@ macro_rules! new_test {
                     if res.is_ok() {
                         return Err("decryption must return error");
                     }
-                    return Ok(())
+                    return Ok(());
                 }
 
                 let res = cipher
