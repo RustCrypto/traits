@@ -2,8 +2,9 @@
 # It is not intended for manual editing.
 [[package]]
 name = "aead"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
+ "blobby 0.3.0",
  "generic-array 0.14.2",
  "heapless",
 ]
@@ -26,6 +27,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "517e75eae2ab6547f6a32ca5eefce861ecb5ec4c57a4c015e82503f71a7c63a9"
 
 [[package]]
+name = "blobby"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc52553543ecb104069b0ff9e0fcc5c739ad16202935528a112d974e8f1a4ee8"
+
+[[package]]
 name = "block-buffer"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -38,7 +45,7 @@ dependencies = [
 name = "block-cipher"
 version = "0.7.1"
 dependencies = [
- "blobby",
+ "blobby 0.1.2",
  "generic-array 0.14.2",
 ]
 
@@ -64,7 +71,7 @@ checksum = "6d375c433320f6c5057ae04a04376eef4d04ce2801448cf8863a78da99107be4"
 name = "crypto-mac"
 version = "0.8.0"
 dependencies = [
- "blobby",
+ "blobby 0.1.2",
  "generic-array 0.14.2",
  "subtle",
 ]
@@ -86,7 +93,7 @@ dependencies = [
 name = "digest"
 version = "0.9.0"
 dependencies = [
- "blobby",
+ "blobby 0.1.2",
  "generic-array 0.14.2",
 ]
 
@@ -247,7 +254,7 @@ checksum = "dba1a27d3efae4351c8051072d619e3ade2820635c3958d826bfea39d59b54c8"
 name = "stream-cipher"
 version = "0.4.1"
 dependencies = [
- "blobby",
+ "blobby 0.1.2",
  "block-cipher",
  "generic-array 0.14.2",
 ]
