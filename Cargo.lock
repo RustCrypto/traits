@@ -45,7 +45,7 @@ dependencies = [
 name = "block-cipher"
 version = "0.7.1"
 dependencies = [
- "blobby 0.1.2",
+ "blobby 0.2.0",
  "generic-array 0.14.2",
 ]
 
@@ -71,14 +71,14 @@ checksum = "6d375c433320f6c5057ae04a04376eef4d04ce2801448cf8863a78da99107be4"
 name = "crypto-mac"
 version = "0.8.0"
 dependencies = [
- "blobby 0.1.2",
+ "blobby 0.2.0",
  "generic-array 0.14.2",
  "subtle",
 ]
 
 [[package]]
 name = "cryptography"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "aead",
  "block-cipher",
@@ -93,7 +93,7 @@ dependencies = [
 name = "digest"
 version = "0.9.0"
 dependencies = [
- "blobby 0.1.2",
+ "blobby 0.2.0",
  "generic-array 0.14.2",
 ]
 
@@ -252,9 +252,9 @@ checksum = "dba1a27d3efae4351c8051072d619e3ade2820635c3958d826bfea39d59b54c8"
 
 [[package]]
 name = "stream-cipher"
-version = "0.4.1"
+version = "0.5.0"
 dependencies = [
- "blobby 0.1.2",
+ "blobby 0.2.0",
  "block-cipher",
  "generic-array 0.14.2",
 ]
