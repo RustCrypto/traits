@@ -131,12 +131,14 @@ impl<C: SyncStreamCipher> StreamCipher for C {
 pub trait FromBlockCipher {
     /// Block cipher
     type BlockCipher: BlockCipher + NewBlockCipher;
+    /// Nonce size in bytes
+    type NonceSize: ArrayLength<u8>;
 
     /// Instantiate a stream cipher from a block cipher
     // TODO(tarcieri): add associated type for NonceSize?
     fn from_block_cipher(
         cipher: Self::BlockCipher,
-        nonce: &block_cipher::Block<Self::BlockCipher>,
+        nonce: &GenericArray<u8, Self::NonceSize>,
     ) -> Self;
 }
 
@@ -146,12 +148,25 @@ where
     C: FromBlockCipher,
 {
     type KeySize = <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::KeySize;
-    type NonceSize = <<Self as FromBlockCipher>::BlockCipher as BlockCipher>::BlockSize;
+    type NonceSize = <Self as FromBlockCipher>::NonceSize;
 
     fn new(key: &Key<Self>, nonce: &Nonce<Self>) -> C {
         C::from_block_cipher(
             <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::new(key),
             nonce,
         )
+    }
+
+    fn new_var(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidKeyNonceLength> {
+        if nonce.len() != Self::NonceSize::USIZE {
+            Err(InvalidKeyNonceLength)
+        } else {
+            C::BlockCipher::new_varkey(key)
+                .map_err(|_| InvalidKeyNonceLength)
+                .map(|cipher| {
+                    let nonce = GenericArray::from_slice(nonce);
+                    Self::from_block_cipher(cipher, nonce)
+                })
+        }
     }
 }
