@@ -54,7 +54,7 @@ macro_rules! new_seek_test {
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
-                let [key, iv ,pt, ct] = row.unwrap();
+                let [key, iv, pt, ct] = row.unwrap();
 
                 let mut mode = <$cipher>::new_var(key, iv).unwrap();
                 let pl = pt.len();
