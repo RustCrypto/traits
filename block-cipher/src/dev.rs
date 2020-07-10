@@ -73,30 +73,28 @@ macro_rules! new_test {
             let pb = <$cipher as BlockCipher>::ParBlocks::to_usize();
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob3Iterator::new(data).unwrap().enumerate() {
-                let key = row[0];
-                let plaintext = row[1];
-                let ciphertext = row[2];
-                if !run_test(key, plaintext, ciphertext) {
+                let [key, pt, ct] = row.unwrap();
+                if !run_test(key, pt, ct) {
                     panic!(
                         "\n\
                          Failed test №{}\n\
                          key:\t{:?}\n\
                          plaintext:\t{:?}\n\
                          ciphertext:\t{:?}\n",
-                        i, key, plaintext, ciphertext,
+                        i, key, pt, ct,
                     );
                 }
 
                 // test parallel blocks encryption/decryption
                 if pb != 1 {
-                    if !run_par_test(key, plaintext) {
+                    if !run_par_test(key, pt) {
                         panic!(
                             "\n\
                              Failed parallel test №{}\n\
                              key:\t{:?}\n\
                              plaintext:\t{:?}\n\
                              ciphertext:\t{:?}\n",
-                            i, key, plaintext, ciphertext,
+                            i, key, pt, ct,
                         );
                     }
                 }

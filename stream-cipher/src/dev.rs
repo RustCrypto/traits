@@ -15,25 +15,22 @@ macro_rules! new_sync_test {
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
-                let key = row[0];
-                let iv = row[1];
-                let plaintext = row[2];
-                let ciphertext = row[3];
+                let [key, iv, pt, ct] = row.unwrap();
 
                 for chunk_n in 1..256 {
                     let mut mode = <$cipher>::new_var(key, iv).unwrap();
-                    let mut pt = plaintext.to_vec();
+                    let mut pt = pt.to_vec();
                     for chunk in pt.chunks_mut(chunk_n) {
                         mode.apply_keystream(chunk);
                     }
-                    if pt != &ciphertext[..] {
+                    if pt != &ct[..] {
                         panic!(
                             "Failed main test №{}, chunk size: {}\n\
-                             key:\t{:?}\n\
-                             iv:\t{:?}\n\
-                             plaintext:\t{:?}\n\
-                             ciphertext:\t{:?}\n",
-                            i, chunk_n, key, iv, plaintext, ciphertext,
+                            key:\t{:?}\n\
+                            iv:\t{:?}\n\
+                            plaintext:\t{:?}\n\
+                            ciphertext:\t{:?}\n",
+                            i, chunk_n, key, iv, pt, ct,
                         );
                     }
                 }
@@ -57,26 +54,23 @@ macro_rules! new_seek_test {
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
-                let key = row[0];
-                let iv = row[1];
-                let plaintext = row[2];
-                let ciphertext = row[3];
+                let [key, iv ,pt, ct] = row.unwrap();
 
                 let mut mode = <$cipher>::new_var(key, iv).unwrap();
-                let pl = plaintext.len();
+                let pl = pt.len();
                 let n = if pl > MAX_SEEK { MAX_SEEK } else { pl };
                 for seek_n in 0..n {
-                    let mut pt = plaintext[seek_n..].to_vec();
+                    let mut pt = pt[seek_n..].to_vec();
                     mode.seek(seek_n as u64);
                     mode.apply_keystream(&mut pt);
-                    if pt != &ciphertext[seek_n..] {
+                    if pt != &ct[seek_n..] {
                         panic!(
                             "Failed seek test №{}, seek pos: {}\n\
                              key:\t{:?}\n\
                              iv:\t{:?}\n\
                              plaintext:\t{:?}\n\
                              ciphertext:\t{:?}\n",
-                            i, seek_n, key, iv, plaintext, ciphertext,
+                            i, seek_n, key, iv, pt, ct,
                         );
                     }
                 }
@@ -130,11 +124,8 @@ macro_rules! new_async_test {
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
 
             for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
-                let key = row[0];
-                let iv = row[1];
-                let plaintext = row[2];
-                let ciphertext = row[3];
-                if let Some(desc) = run_test(key, iv, plaintext, ciphertext) {
+                let [key, iv, pt, ct] = row.unwrap();
+                if let Some(desc) = run_test(key, iv, pt, ct) {
                     panic!(
                         "\n\
                          Failed test №{}: {}\n\
@@ -142,7 +133,7 @@ macro_rules! new_async_test {
                          iv:\t{:?}\n\
                          plaintext:\t{:?}\n\
                          ciphertext:\t{:?}\n",
-                        i, desc, key, iv, plaintext, ciphertext,
+                        i, desc, key, iv, pt, ct,
                     );
                 }
             }
