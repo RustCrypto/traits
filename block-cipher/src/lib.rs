@@ -118,13 +118,38 @@ pub trait BlockCipherMut {
 impl<Alg: BlockCipher> BlockCipherMut for Alg {
     type BlockSize = Alg::BlockSize;
 
-    /// Encrypt block in-place
+    #[inline]
     fn encrypt_block(&mut self, block: &mut GenericArray<u8, Self::BlockSize>) {
         <Self as BlockCipher>::encrypt_block(self, block);
     }
 
-    /// Decrypt block in-place
+    #[inline]
     fn decrypt_block(&mut self, block: &mut GenericArray<u8, Self::BlockSize>) {
         <Self as BlockCipher>::decrypt_block(self, block);
+    }
+}
+
+impl<Alg: BlockCipher> BlockCipher for &Alg {
+    type BlockSize = Alg::BlockSize;
+    type ParBlocks = Alg::ParBlocks;
+
+    #[inline]
+    fn encrypt_block(&self, block: &mut Block<Self>) {
+        Alg::encrypt_block(self, block);
+    }
+
+    #[inline]
+    fn decrypt_block(&self, block: &mut Block<Self>) {
+        Alg::decrypt_block(self, block);
+    }
+
+    #[inline]
+    fn encrypt_blocks(&self, blocks: &mut ParBlocks<Self>) {
+        Alg::encrypt_blocks(self, blocks);
+    }
+
+    #[inline]
+    fn decrypt_blocks(&self, blocks: &mut ParBlocks<Self>) {
+        Alg::decrypt_blocks(self, blocks);
     }
 }

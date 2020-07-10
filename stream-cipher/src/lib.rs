@@ -125,6 +125,18 @@ impl<C: SyncStreamCipher> StreamCipher for C {
     }
 }
 
+impl<C: SyncStreamCipher> SyncStreamCipher for &mut C {
+    #[inline]
+    fn apply_keystream(&mut self, data: &mut [u8]) {
+        C::apply_keystream(self, data);
+    }
+
+    #[inline]
+    fn try_apply_keystream(&mut self, data: &mut [u8]) -> Result<(), LoopError> {
+        C::try_apply_keystream(self, data)
+    }
+}
+
 /// Trait for initializing a stream cipher from a block cipher
 #[cfg(feature = "block-cipher")]
 #[cfg_attr(docsrs, doc(cfg(feature = "block-cipher")))]
