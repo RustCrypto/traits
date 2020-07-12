@@ -5,6 +5,7 @@ members = [
     "crypto-mac",
     "cryptography",
     "digest",
+    "elliptic-curve",
     "signature",
     "stream-cipher",
     "universal-hash",
