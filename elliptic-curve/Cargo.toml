@@ -33,9 +33,6 @@ version = "1"
 optional = true
 default-features = false
 
-[dev-dependencies]
-hex = "0.4"
-
 [features]
 default = []
 weierstrass = []
