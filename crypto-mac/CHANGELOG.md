@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.9.0 (2020-07-15)
 ### Added
-- Blanket `NewMac` implementation for types constructible from
-block ciphers ([#217])
+- `FromBlockCipher` trait and blanket implementation of the `NewMac` trait
+for it ([#217])
 
 ### Changed
 - Updated test vectors storage to `blobby v0.3` ([#217])
