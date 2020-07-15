@@ -135,9 +135,9 @@ pub trait FromBlockCipher {
 #[cfg(feature = "block-cipher")]
 #[cfg_attr(docsrs, doc(cfg(feature = "block-cipher")))]
 impl<T> NewMac for T
-    where
-        T: FromBlockCipher,
-        T::Cipher: NewBlockCipher
+where
+    T: FromBlockCipher,
+    T::Cipher: NewBlockCipher,
 {
     type KeySize = <<Self as FromBlockCipher>::Cipher as NewBlockCipher>::KeySize;
 
