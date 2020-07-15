@@ -50,6 +50,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "block-cipher"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f337a3e6da609650eb74e02bc9fac7b735049f7623ab12f2e4c719316fcc7e80"
+dependencies = [
+ "generic-array 0.14.3",
+]
+
+[[package]]
 name = "byteorder"
 version = "1.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -69,9 +78,10 @@ checksum = "6d375c433320f6c5057ae04a04376eef4d04ce2801448cf8863a78da99107be4"
 
 [[package]]
 name = "crypto-mac"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
- "blobby 0.2.0",
+ "blobby 0.3.0",
+ "block-cipher 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "generic-array 0.14.3",
  "subtle",
 ]
@@ -81,7 +91,7 @@ name = "cryptography"
 version = "0.2.0"
 dependencies = [
  "aead",
- "block-cipher",
+ "block-cipher 0.8.0",
  "crypto-mac",
  "digest 0.9.0",
  "elliptic-curve",
@@ -266,7 +276,7 @@ name = "stream-cipher"
 version = "0.6.0"
 dependencies = [
  "blobby 0.3.0",
- "block-cipher",
+ "block-cipher 0.8.0",
  "generic-array 0.14.3",
 ]
 

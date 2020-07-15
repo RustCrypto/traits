@@ -9,6 +9,9 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+#[cfg(feature = "block-cipher")]
+use block_cipher::{BlockCipher, NewBlockCipher};
+
 #[cfg(feature = "dev")]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
@@ -118,20 +121,34 @@ impl<M: Mac> PartialEq for Output<M> {
 
 impl<M: Mac> Eq for Output<M> {}
 
-#[macro_export]
-/// Implements `std::io::Write` trait for implementer of [`Mac`]
-macro_rules! impl_write {
-    ($mac:ident) => {
-        #[cfg(feature = "std")]
-        impl std::io::Write for $mac {
-            fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-                Mac::update(self, buf);
-                Ok(buf.len())
-            }
+#[cfg(feature = "block-cipher")]
+#[cfg_attr(docsrs, doc(cfg(feature = "block-cipher")))]
+/// Trait for MAC functions which can be created from block cipher.
+pub trait FromBlockCipher {
+    /// Block cipher type
+    type Cipher: BlockCipher;
 
-            fn flush(&mut self) -> std::io::Result<()> {
-                Ok(())
-            }
-        }
-    };
+    /// Create new MAC isntance from provided block cipher.
+    fn from_cipher(cipher: Self::Cipher) -> Self;
+}
+
+#[cfg(feature = "block-cipher")]
+#[cfg_attr(docsrs, doc(cfg(feature = "block-cipher")))]
+impl<T> NewMac for T
+    where
+        T: FromBlockCipher,
+        T::Cipher: NewBlockCipher
+{
+    type KeySize = <<Self as FromBlockCipher>::Cipher as NewBlockCipher>::KeySize;
+
+    fn new(key: &Key<Self>) -> Self {
+        let cipher = <Self as FromBlockCipher>::Cipher::new(key);
+        Self::from_cipher(cipher)
+    }
+
+    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+        <Self as FromBlockCipher>::Cipher::new_varkey(key)
+            .map_err(|_| InvalidKeyLength)
+            .map(Self::from_cipher)
+    }
 }
