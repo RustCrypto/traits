@@ -21,14 +21,8 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-#[cfg(feature = "rand_core")]
-pub use rand_core;
-
 pub mod error;
 pub mod secret_key;
-
-pub use generic_array::{self, typenum::consts};
-pub use subtle;
 
 // TODO(tarcieri): other curve forms
 #[cfg(feature = "weierstrass")]
@@ -36,6 +30,21 @@ pub use subtle;
 pub mod weierstrass;
 
 pub use self::{error::Error, secret_key::SecretKey};
+pub use generic_array::{self, typenum::consts};
+pub use subtle;
+
+#[cfg(feature = "rand_core")]
+pub use rand_core;
+
+#[cfg(feature = "rand_core")]
+use rand_core::{CryptoRng, RngCore};
 
 /// Byte array containing a serialized scalar value (i.e. an integer)
 pub type ScalarBytes<Size> = generic_array::GenericArray<u8, Size>;
+
+/// Trait for randomly generating a value
+#[cfg(feature = "rand_core")]
+pub trait Generate {
+    /// Generate a random element of this type using the provided [`CryptoRng`]
+    fn generate(rng: impl CryptoRng + RngCore) -> Self;
+}
