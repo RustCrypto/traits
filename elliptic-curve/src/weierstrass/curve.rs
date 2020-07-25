@@ -16,5 +16,14 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
     type ScalarSize: ArrayLength<u8> + Add + Add<U1> + Eq + Ord + Unsigned;
 }
 
+/// Curve arithmetic support
+pub trait Arithmetic: Curve {
+    /// Scalar type for a given curve
+    type Scalar;
+
+    /// Affine point type for a given curve
+    type AffinePoint;
+}
+
 /// Alias for [`SecretKey`] type for a given Weierstrass curve
 pub type SecretKey<C> = crate::secret_key::SecretKey<<C as Curve>::ScalarSize>;
