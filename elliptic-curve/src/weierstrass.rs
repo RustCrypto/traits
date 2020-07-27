@@ -13,12 +13,6 @@ use core::ops::Add;
 use generic_array::ArrayLength;
 use subtle::{ConditionallySelectable, CtOption};
 
-#[cfg(feature = "rand_core")]
-use crate::secret_key::SecretKey;
-
-#[cfg(feature = "rand_core")]
-use rand_core::{CryptoRng, RngCore};
-
 /// Marker trait for elliptic curves in short Weierstrass form
 pub trait Curve: super::Curve {}
 
