@@ -14,16 +14,16 @@ use generic_array::{
 };
 
 /// Size of an untagged point for given elliptic curve.
-// TODO(tarcieri): const generics
-pub type UntaggedPointSize<ScalarSize> = <ScalarSize as Add>::Output;
+pub type UntaggedPointSize<C> = <<C as crate::Curve>::ElementSize as Add>::Output;
 
 /// Public keys for Weierstrass curves
 #[derive(Clone, Eq, PartialEq, PartialOrd, Ord)]
 pub enum PublicKey<C: Curve>
 where
-    <C::ScalarSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
-    UncompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
+    C::ElementSize: Add<U1>,
+    <C::ElementSize as Add>::Output: Add<U1>,
+    CompressedPointSize<C>: ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
 {
     /// Compressed Weierstrass elliptic curve point
     Compressed(CompressedPoint<C>),
@@ -34,9 +34,10 @@ where
 
 impl<C: Curve> PublicKey<C>
 where
-    <C::ScalarSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
-    UncompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
+    C::ElementSize: Add<U1>,
+    <C::ElementSize as Add>::Output: Add<U1>,
+    CompressedPointSize<C>: ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
 {
     /// Decode public key from an elliptic curve point
     /// (compressed or uncompressed) encoded using the
@@ -49,11 +50,11 @@ where
         let slice = bytes.as_ref();
         let length = slice.len();
 
-        if length == <CompressedPointSize<C::ScalarSize>>::to_usize() {
+        if length == <CompressedPointSize<C>>::to_usize() {
             let array = GenericArray::clone_from_slice(slice);
             let point = CompressedPoint::from_bytes(array)?;
             Some(PublicKey::Compressed(point))
-        } else if length == <UncompressedPointSize<C::ScalarSize>>::to_usize() {
+        } else if length == <UncompressedPointSize<C>>::to_usize() {
             let array = GenericArray::clone_from_slice(slice);
             let point = UncompressedPoint::from_bytes(array)?;
             Some(PublicKey::Uncompressed(point))
@@ -70,7 +71,7 @@ where
     /// <http://www.secg.org/sec1-v2.pdf>
     pub fn from_compressed_point<B>(into_bytes: B) -> Option<Self>
     where
-        B: Into<GenericArray<u8, CompressedPointSize<C::ScalarSize>>>,
+        B: Into<GenericArray<u8, CompressedPointSize<C>>>,
     {
         CompressedPoint::from_bytes(into_bytes).map(PublicKey::Compressed)
     }
@@ -81,9 +82,9 @@ where
     /// This will be twice the modulus size, or 1-byte smaller than the
     /// `Elliptic-Curve-Point-to-Octet-String` encoding i.e
     /// with the leading `0x04` byte in that encoding removed.
-    pub fn from_untagged_point(bytes: &GenericArray<u8, UntaggedPointSize<C::ScalarSize>>) -> Self
+    pub fn from_untagged_point(bytes: &GenericArray<u8, UntaggedPointSize<C>>) -> Self
     where
-        <C::ScalarSize as Add>::Output: ArrayLength<u8>,
+        <C::ElementSize as Add>::Output: ArrayLength<u8>,
     {
         let mut tagged_bytes = GenericArray::default();
         tagged_bytes.as_mut_slice()[0] = 0x04;
@@ -105,16 +106,17 @@ where
 impl<C: Curve> PublicKey<C>
 where
     C: FixedBaseScalarMul,
-    <C::ScalarSize as Add>::Output: Add<U1>,
-    CompressedPoint<C>: From<C::Point>,
-    UncompressedPoint<C>: From<C::Point>,
-    CompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
-    UncompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
+    C::ElementSize: Add<U1>,
+    <C::ElementSize as Add>::Output: Add<U1>,
+    CompressedPoint<C>: From<C::AffinePoint>,
+    UncompressedPoint<C>: From<C::AffinePoint>,
+    CompressedPointSize<C>: ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
 {
     /// Compute the [`PublicKey`] for the provided [`SecretKey`].
     ///
     /// The `compress` flag requests point compression.
-    pub fn from_secret_key(secret_key: &SecretKey<C::ScalarSize>, compress: bool) -> Option<Self> {
+    pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Option<Self> {
         let ct_option = C::mul_base(secret_key.secret_scalar());
 
         if ct_option.is_some().into() {
@@ -133,9 +135,10 @@ where
 
 impl<C: Curve> AsRef<[u8]> for PublicKey<C>
 where
-    <C::ScalarSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
-    UncompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
+    C::ElementSize: Add<U1>,
+    <C::ElementSize as Add>::Output: Add<U1>,
+    CompressedPointSize<C>: ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
 {
     #[inline]
     fn as_ref(&self) -> &[u8] {
@@ -145,19 +148,21 @@ where
 
 impl<C: Curve> Copy for PublicKey<C>
 where
-    <C::ScalarSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
-    UncompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
-    <CompressedPointSize<C::ScalarSize> as ArrayLength<u8>>::ArrayType: Copy,
-    <UncompressedPointSize<C::ScalarSize> as ArrayLength<u8>>::ArrayType: Copy,
+    C::ElementSize: Add<U1>,
+    <C::ElementSize as Add>::Output: Add<U1>,
+    CompressedPointSize<C>: ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+    <CompressedPointSize<C> as ArrayLength<u8>>::ArrayType: Copy,
+    <UncompressedPointSize<C> as ArrayLength<u8>>::ArrayType: Copy,
 {
 }
 
 impl<C: Curve> Debug for PublicKey<C>
 where
-    <C::ScalarSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
-    UncompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
+    C::ElementSize: Add<U1>,
+    <C::ElementSize as Add>::Output: Add<U1>,
+    CompressedPointSize<C>: ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "PublicKey<{:?}>({:?})", C::default(), self.as_ref())
@@ -166,9 +171,10 @@ where
 
 impl<C: Curve> From<CompressedPoint<C>> for PublicKey<C>
 where
-    <C::ScalarSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
-    UncompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
+    C::ElementSize: Add<U1>,
+    <C::ElementSize as Add>::Output: Add<U1>,
+    CompressedPointSize<C>: ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn from(point: CompressedPoint<C>) -> Self {
         PublicKey::Compressed(point)
@@ -177,9 +183,10 @@ where
 
 impl<C: Curve> From<UncompressedPoint<C>> for PublicKey<C>
 where
-    <C::ScalarSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
-    UncompressedPointSize<C::ScalarSize>: ArrayLength<u8>,
+    C::ElementSize: Add<U1>,
+    <C::ElementSize as Add>::Output: Add<U1>,
+    CompressedPointSize<C>: ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn from(point: UncompressedPoint<C>) -> Self {
         PublicKey::Uncompressed(point)

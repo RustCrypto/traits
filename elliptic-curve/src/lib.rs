@@ -36,16 +36,46 @@ pub use subtle;
 #[cfg(feature = "rand_core")]
 pub use rand_core;
 
+use core::{fmt::Debug, ops::Add};
+use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, RngCore};
 
-/// Byte array containing a serialized scalar value (i.e. an integer)
-pub type ScalarBytes<Size> = generic_array::GenericArray<u8, Size>;
+/// Elliptic curve.
+///
+/// This trait is intended to be impl'd by a ZST which represents a concrete
+/// elliptic curve.
+///
+/// Other traits in this crate which are bounded by [`Curve`] are intended to
+/// be impl'd by these ZSTs, facilitating types which are generic over elliptic
+/// curves (e.g. [`SecretKey`]).
+pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
+    /// Number of bytes required to serialize elements of field elements
+    /// associated with this curve, e.g. elements of the base/scalar fields.
+    ///
+    /// This is used for computing the sizes for types related to this curve.
+    type ElementSize: ArrayLength<u8> + Add + Eq + Ord + Unsigned;
+}
 
-/// Trait for randomly generating a value
+/// Elliptic curve with curve arithmetic support
+pub trait Arithmetic: Curve {
+    /// Scalar type for a given curve
+    type Scalar;
+
+    /// Affine point type for a given curve
+    type AffinePoint;
+}
+
+/// Trait for randomly generating a value.
+///
+/// Primarily intended for use with scalar types for a particular curve.
 #[cfg(feature = "rand_core")]
 #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
 pub trait Generate {
     /// Generate a random element of this type using the provided [`CryptoRng`]
     fn generate(rng: impl CryptoRng + RngCore) -> Self;
 }
+
+/// Byte array containing a serialized scalar value (i.e. an integer)
+pub type ScalarBytes<C> = GenericArray<u8, <C as Curve>::ElementSize>;

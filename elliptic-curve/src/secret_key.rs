@@ -7,35 +7,26 @@
 //! When the `zeroize` feature of this crate is enabled, it also handles
 //! zeroing it out of memory securely on drop.
 
-use crate::{error::Error, ScalarBytes};
+use crate::{error::Error, Curve, ScalarBytes};
 use core::{
     convert::{TryFrom, TryInto},
-    fmt,
+    fmt::{self, Debug},
 };
-use generic_array::ArrayLength;
+use generic_array::{typenum::Unsigned, GenericArray};
 
-/// Secret keys.
+/// Elliptic curve secret keys.
 ///
-/// In elliptic curve cryptography, secret keys are concretely privately known
-/// scalar values.
-///
-/// This type wraps a (serialized) scalar value, helping to prevent accidental
+/// This type wraps a serialized scalar value, helping to prevent accidental
 /// exposure and securely erasing the value from memory when dropped
 /// (when the `zeroize` feature of this crate is enabled).
-pub struct SecretKey<ScalarSize>
-where
-    ScalarSize: ArrayLength<u8>,
-{
+pub struct SecretKey<C: Curve> {
     /// Private scalar value
-    scalar: ScalarBytes<ScalarSize>,
+    scalar: ScalarBytes<C>,
 }
 
-impl<ScalarSize> SecretKey<ScalarSize>
-where
-    ScalarSize: ArrayLength<u8>,
-{
+impl<C: Curve> SecretKey<C> {
     /// Create a new secret key from a serialized scalar value
-    pub fn new(bytes: ScalarBytes<ScalarSize>) -> Self {
+    pub fn new(bytes: ScalarBytes<C>) -> Self {
         Self { scalar: bytes }
     }
 
@@ -45,21 +36,18 @@ where
     }
 
     /// Expose the secret [`ScalarBytes`] value this [`SecretKey`] wraps
-    pub fn secret_scalar(&self) -> &ScalarBytes<ScalarSize> {
+    pub fn secret_scalar(&self) -> &ScalarBytes<C> {
         &self.scalar
     }
 }
 
-impl<ScalarSize> TryFrom<&[u8]> for SecretKey<ScalarSize>
-where
-    ScalarSize: ArrayLength<u8>,
-{
+impl<C: Curve> TryFrom<&[u8]> for SecretKey<C> {
     type Error = Error;
 
     fn try_from(slice: &[u8]) -> Result<Self, Error> {
-        if slice.len() == ScalarSize::to_usize() {
+        if slice.len() == C::ElementSize::to_usize() {
             Ok(SecretKey {
-                scalar: ScalarBytes::clone_from_slice(slice),
+                scalar: GenericArray::clone_from_slice(slice),
             })
         } else {
             Err(Error)
@@ -67,20 +55,14 @@ where
     }
 }
 
-impl<ScalarSize> fmt::Debug for SecretKey<ScalarSize>
-where
-    ScalarSize: ArrayLength<u8>,
-{
+impl<C: Curve> Debug for SecretKey<C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "SecretKey<U{}>{{ ... }}", ScalarSize::to_usize())
+        write!(f, "SecretKey<{:?}>{{ ... }}", C::default())
     }
 }
 
 #[cfg(feature = "zeroize")]
-impl<ScalarSize> Drop for SecretKey<ScalarSize>
-where
-    ScalarSize: ArrayLength<u8>,
-{
+impl<C: Curve> Drop for SecretKey<C> {
     fn drop(&mut self) {
         use zeroize::Zeroize;
         self.scalar.zeroize();
