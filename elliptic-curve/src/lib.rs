@@ -44,6 +44,7 @@ pub type ScalarBytes<Size> = generic_array::GenericArray<u8, Size>;
 
 /// Trait for randomly generating a value
 #[cfg(feature = "rand_core")]
+#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
 pub trait Generate {
     /// Generate a random element of this type using the provided [`CryptoRng`]
     fn generate(rng: impl CryptoRng + RngCore) -> Self;
