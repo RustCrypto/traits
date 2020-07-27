@@ -39,12 +39,3 @@ where
     /// curve.
     fn mul_base(scalar: &ScalarBytes<Self>) -> CtOption<Self::AffinePoint>;
 }
-
-/// Generate a secret key for this elliptic curve
-#[cfg(feature = "rand_core")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-pub trait GenerateSecretKey: Curve {
-    /// Generate a random [`SecretKey`] for this elliptic curve using the
-    /// provided [`CryptoRng`]
-    fn generate_secret_key(rng: impl CryptoRng + RngCore) -> SecretKey<Self>;
-}
