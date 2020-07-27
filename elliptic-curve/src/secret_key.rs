@@ -14,6 +14,12 @@ use core::{
 };
 use generic_array::{typenum::Unsigned, GenericArray};
 
+#[cfg(feature = "rand_core")]
+use {
+    crate::{Arithmetic, Generate},
+    rand_core::{CryptoRng, RngCore},
+};
+
 /// Elliptic curve secret keys.
 ///
 /// This type wraps a serialized scalar value, helping to prevent accidental
@@ -58,6 +64,21 @@ impl<C: Curve> TryFrom<&[u8]> for SecretKey<C> {
 impl<C: Curve> Debug for SecretKey<C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "SecretKey<{:?}>{{ ... }}", C::default())
+    }
+}
+
+#[cfg(feature = "rand_core")]
+#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+impl<C> SecretKey<C>
+where
+    C: Curve + Arithmetic,
+    C::Scalar: Generate + Into<ScalarBytes<C>>,
+{
+    /// Generate a new [`SecretKey`]
+    pub fn generate(rng: impl CryptoRng + RngCore) -> Self {
+        Self {
+            scalar: C::Scalar::generate(rng).into(),
+        }
     }
 }
 
