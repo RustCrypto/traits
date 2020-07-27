@@ -42,5 +42,5 @@ where
 pub trait GenerateSecretKey: Curve {
     /// Generate a random [`SecretKey`] for this elliptic curve using the
     /// provided [`CryptoRng`]
-    fn generate_secret_key(rng: &mut (impl CryptoRng + RngCore)) -> SecretKey<Self::ScalarSize>;
+    fn generate_secret_key(rng: impl CryptoRng + RngCore) -> SecretKey<Self::ScalarSize>;
 }
