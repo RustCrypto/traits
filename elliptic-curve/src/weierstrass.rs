@@ -8,28 +8,16 @@ pub use self::{
     public_key::PublicKey,
 };
 
-use crate::{consts::U1, ScalarBytes};
-use core::ops::Add;
-use generic_array::ArrayLength;
-use subtle::{ConditionallySelectable, CtOption};
+use crate::{Arithmetic, ScalarBytes};
+use subtle::CtOption;
 
 /// Marker trait for elliptic curves in short Weierstrass form
 pub trait Curve: super::Curve {}
 
 /// Fixed-base scalar multiplication
-pub trait FixedBaseScalarMul: Curve
-where
-    Self::ElementSize: Add<U1>,
-    <Self::ElementSize as Add>::Output: Add<U1>,
-    CompressedPoint<Self>: From<Self::AffinePoint>,
-    UncompressedPoint<Self>: From<Self::AffinePoint>,
-    CompressedPointSize<Self>: ArrayLength<u8>,
-    UncompressedPointSize<Self>: ArrayLength<u8>,
-{
-    /// Affine point type for this elliptic curve
-    type AffinePoint: ConditionallySelectable;
-
+pub trait FixedBaseScalarMul: Curve + Arithmetic {
     /// Multiply the given scalar by the generator point for this elliptic
     /// curve.
+    // TODO(tarcieri): use `Self::Scalar` for the `scalar` param
     fn mul_base(scalar: &ScalarBytes<Self>) -> CtOption<Self::AffinePoint>;
 }

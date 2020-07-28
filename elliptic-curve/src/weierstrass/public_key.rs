@@ -5,7 +5,7 @@ use super::{
     point::{CompressedPoint, CompressedPointSize, UncompressedPoint, UncompressedPointSize},
     Curve, FixedBaseScalarMul,
 };
-use crate::SecretKey;
+use crate::{Error, SecretKey};
 use core::fmt::{self, Debug};
 use core::ops::Add;
 use generic_array::{
@@ -116,19 +116,19 @@ where
     /// Compute the [`PublicKey`] for the provided [`SecretKey`].
     ///
     /// The `compress` flag requests point compression.
-    pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Option<Self> {
+    pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Result<Self, Error> {
         let ct_option = C::mul_base(secret_key.secret_scalar());
 
         if ct_option.is_some().into() {
             let affine_point = ct_option.unwrap();
 
             if compress {
-                Some(PublicKey::Compressed(affine_point.into()))
+                Ok(PublicKey::Compressed(affine_point.into()))
             } else {
-                Some(PublicKey::Uncompressed(affine_point.into()))
+                Ok(PublicKey::Uncompressed(affine_point.into()))
             }
         } else {
-            None
+            Err(Error)
         }
     }
 }
