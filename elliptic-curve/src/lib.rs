@@ -22,6 +22,7 @@
 extern crate std;
 
 pub mod error;
+pub mod ops;
 pub mod secret_key;
 
 // TODO(tarcieri): other curve forms
