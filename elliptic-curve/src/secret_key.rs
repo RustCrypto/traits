@@ -69,13 +69,13 @@ impl<C: Curve> Debug for SecretKey<C> {
 
 #[cfg(feature = "rand_core")]
 #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-impl<C> SecretKey<C>
+impl<C> Generate for SecretKey<C>
 where
     C: Curve + Arithmetic,
     C::Scalar: Generate + Into<ScalarBytes<C>>,
 {
     /// Generate a new [`SecretKey`]
-    pub fn generate(rng: impl CryptoRng + RngCore) -> Self {
+    fn generate(rng: impl CryptoRng + RngCore) -> Self {
         Self {
             scalar: C::Scalar::generate(rng).into(),
         }
