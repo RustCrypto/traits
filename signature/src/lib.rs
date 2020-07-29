@@ -155,7 +155,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/ferris_signer.png",
-    html_root_url = "https://docs.rs/signature/1.2.0"
+    html_root_url = "https://docs.rs/signature/1.2.1"
 )]
 #![forbid(unsafe_code)]
 #![warn(
