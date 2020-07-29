@@ -80,3 +80,30 @@ pub trait RandomizedSigner<S: Signature> {
     /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
     fn try_sign_with_rng(&self, rng: impl CryptoRng + RngCore, msg: &[u8]) -> Result<S, Error>;
 }
+
+/// Combination of [`DigestSigner`] and [`RandomizedSigner`] with support for
+/// computing a signature over a digest which requires entropy from an RNG.
+#[cfg(all(feature = "digest-preview", feature = "rand-preview"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "digest-preview")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "rand-preview")))]
+pub trait RandomizedDigestSigner<D, S>
+where
+    D: Digest,
+    S: Signature,
+{
+    /// Sign the given prehashed message `Digest`, returning a signature.
+    ///
+    /// Panics in the event of a signing error.
+    fn sign_digest_with_rng(&self, rng: impl CryptoRng + RngCore, digest: D) -> S {
+        self.try_sign_digest_with_rng(rng, digest)
+            .expect("signature operation failed")
+    }
+
+    /// Attempt to sign the given prehashed message `Digest`, returning a
+    /// digital signature on success, or an error if something went wrong.
+    fn try_sign_digest_with_rng(
+        &self,
+        rng: impl CryptoRng + RngCore,
+        digest: D,
+    ) -> Result<S, Error>;
+}
