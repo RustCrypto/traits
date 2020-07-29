@@ -30,10 +30,7 @@ pub mod secret_key;
 #[cfg_attr(docsrs, doc(cfg(feature = "weierstrass")))]
 pub mod weierstrass;
 
-pub use self::{
-    error::Error,
-    secret_key::{FromSecretKey, SecretKey},
-};
+pub use self::{error::Error, secret_key::SecretKey};
 pub use generic_array::{self, typenum::consts};
 pub use subtle;
 
@@ -42,6 +39,7 @@ pub use rand_core;
 
 use core::{fmt::Debug, ops::Add};
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+use subtle::ConditionallySelectable;
 
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, RngCore};
@@ -65,10 +63,13 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
 /// Elliptic curve with curve arithmetic support
 pub trait Arithmetic: Curve {
     /// Scalar type for a given curve
-    type Scalar: FromSecretKey<Self>;
+    type Scalar: ConditionallySelectable
+        + Default
+        + secret_key::FromSecretKey<Self>
+        + ops::MulBase<Output = Self::AffinePoint>;
 
     /// Affine point type for a given curve
-    type AffinePoint;
+    type AffinePoint: ConditionallySelectable;
 }
 
 /// Randomly generate a value.
