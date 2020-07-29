@@ -37,6 +37,9 @@ pub use subtle;
 #[cfg(feature = "rand_core")]
 pub use rand_core;
 
+#[cfg(feature = "zeroize")]
+pub use zeroize;
+
 use core::{fmt::Debug, ops::Add};
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 use subtle::ConditionallySelectable;
