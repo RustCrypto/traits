@@ -66,13 +66,9 @@ where
 /// Sign the given message using the provided external randomness source.
 #[cfg(feature = "rand-preview")]
 #[cfg_attr(docsrs, doc(cfg(feature = "rand-preview")))]
-pub trait RandomizedSigner<R, S>
-where
-    R: CryptoRng + RngCore,
-    S: Signature,
-{
+pub trait RandomizedSigner<S: Signature> {
     /// Sign the given message and return a digital signature
-    fn sign_with_rng(&self, rng: &mut R, msg: &[u8]) -> S {
+    fn sign_with_rng(&self, rng: impl CryptoRng + RngCore, msg: &[u8]) -> S {
         self.try_sign_with_rng(rng, msg)
             .expect("signature operation failed")
     }
@@ -82,5 +78,5 @@ where
     ///
     /// The main intended use case for signing errors is when communicating
     /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
-    fn try_sign_with_rng(&self, rng: &mut R, msg: &[u8]) -> Result<S, Error>;
+    fn try_sign_with_rng(&self, rng: impl CryptoRng + RngCore, msg: &[u8]) -> Result<S, Error>;
 }
