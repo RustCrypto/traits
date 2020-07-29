@@ -30,7 +30,10 @@ pub mod secret_key;
 #[cfg_attr(docsrs, doc(cfg(feature = "weierstrass")))]
 pub mod weierstrass;
 
-pub use self::{error::Error, secret_key::SecretKey};
+pub use self::{
+    error::Error,
+    secret_key::{FromSecretKey, SecretKey},
+};
 pub use generic_array::{self, typenum::consts};
 pub use subtle;
 
@@ -62,13 +65,13 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
 /// Elliptic curve with curve arithmetic support
 pub trait Arithmetic: Curve {
     /// Scalar type for a given curve
-    type Scalar;
+    type Scalar: FromSecretKey<Self>;
 
     /// Affine point type for a given curve
     type AffinePoint;
 }
 
-/// Trait for randomly generating a value.
+/// Randomly generate a value.
 ///
 /// Primarily intended for use with scalar types for a particular curve.
 #[cfg(feature = "rand_core")]

@@ -13,6 +13,7 @@ use core::{
     fmt::{self, Debug},
 };
 use generic_array::{typenum::Unsigned, GenericArray};
+use subtle::CtOption;
 
 #[cfg(feature = "rand_core")]
 use {
@@ -88,4 +89,12 @@ impl<C: Curve> Drop for SecretKey<C> {
         use zeroize::Zeroize;
         self.scalar.zeroize();
     }
+}
+
+/// Trait for deserializing a value from a secret key.
+///
+/// This is intended for use with the `Scalar` type for a given elliptic curve.
+pub trait FromSecretKey<C: Curve>: Sized {
+    /// Deserialize this value from a [`SecretKey`]
+    fn from_secret_key(secret_key: &SecretKey<C>) -> CtOption<Self>;
 }
