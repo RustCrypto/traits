@@ -5,7 +5,7 @@ pub mod public_key;
 
 pub use self::{
     point::{CompressedPoint, CompressedPointSize, UncompressedPoint, UncompressedPointSize},
-    public_key::PublicKey,
+    public_key::{FromPublicKey, PublicKey},
 };
 
 use crate::{Arithmetic, ScalarBytes};
