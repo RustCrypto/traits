@@ -5,9 +5,14 @@ use super::{
     point::{CompressedPoint, CompressedPointSize, UncompressedPoint, UncompressedPointSize},
     Curve,
 };
-use crate::{ops::MulBase, secret_key::FromSecretKey, Arithmetic, Error, SecretKey};
-use core::fmt::{self, Debug};
-use core::ops::Add;
+use crate::{
+    point::Generator, scalar::NonZeroScalar, secret_key::FromSecretKey, Arithmetic, Error,
+    SecretKey,
+};
+use core::{
+    fmt::{self, Debug},
+    ops::{Add, Mul},
+};
 use generic_array::{
     typenum::{Unsigned, U1},
     ArrayLength, GenericArray,
@@ -107,6 +112,7 @@ where
 impl<C> PublicKey<C>
 where
     C: Curve + Arithmetic,
+    C::AffinePoint: Mul<NonZeroScalar<C>, Output = C::AffinePoint>,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     CompressedPoint<C>: From<C::AffinePoint>,
@@ -118,14 +124,13 @@ where
     ///
     /// The `compress` flag requests point compression.
     pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Result<Self, Error> {
-        let ct_option =
-            C::Scalar::from_secret_key(&secret_key).and_then(|s| C::AffinePoint::mul_base(&s));
+        let ct_option = C::Scalar::from_secret_key(&secret_key).and_then(NonZeroScalar::new);
 
         if ct_option.is_none().into() {
             return Err(Error);
         }
 
-        let affine_point = ct_option.unwrap();
+        let affine_point = C::AffinePoint::generator() * ct_option.unwrap();
 
         if compress {
             Ok(PublicKey::Compressed(affine_point.into()))
