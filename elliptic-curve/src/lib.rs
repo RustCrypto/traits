@@ -22,6 +22,7 @@
 extern crate std;
 
 pub mod error;
+pub mod oid;
 pub mod ops;
 pub mod secret_key;
 
@@ -30,7 +31,7 @@ pub mod secret_key;
 #[cfg_attr(docsrs, doc(cfg(feature = "weierstrass")))]
 pub mod weierstrass;
 
-pub use self::{error::Error, secret_key::SecretKey};
+pub use self::{error::Error, oid::ObjectIdentifier, secret_key::SecretKey};
 pub use generic_array::{self, typenum::consts};
 pub use subtle;
 
@@ -70,6 +71,12 @@ pub trait Arithmetic: Curve {
 
     /// Affine point type for a given curve
     type AffinePoint: ConditionallySelectable + ops::MulBase<Scalar = Self::Scalar>;
+}
+
+/// Associate an object identifier (OID) with a curve
+pub trait Identifier: Curve {
+    /// Object Identifier (OID) for this curve
+    const OID: ObjectIdentifier;
 }
 
 /// Randomly generate a value.
