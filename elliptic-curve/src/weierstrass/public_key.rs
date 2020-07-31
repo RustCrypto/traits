@@ -118,7 +118,8 @@ where
     ///
     /// The `compress` flag requests point compression.
     pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Result<Self, Error> {
-        let ct_option = C::Scalar::from_secret_key(&secret_key).and_then(|s| s.mul_base());
+        let ct_option =
+            C::Scalar::from_secret_key(&secret_key).and_then(|s| C::AffinePoint::mul_base(&s));
 
         if ct_option.is_none().into() {
             return Err(Error);
