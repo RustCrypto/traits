@@ -66,13 +66,10 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
 /// Elliptic curve with curve arithmetic support
 pub trait Arithmetic: Curve {
     /// Scalar type for a given curve
-    type Scalar: ConditionallySelectable
-        + Default
-        + secret_key::FromSecretKey<Self>
-        + ops::MulBase<Output = Self::AffinePoint>;
+    type Scalar: ConditionallySelectable + Default + secret_key::FromSecretKey<Self>;
 
     /// Affine point type for a given curve
-    type AffinePoint: ConditionallySelectable;
+    type AffinePoint: ConditionallySelectable + ops::MulBase<Scalar = Self::Scalar>;
 }
 
 /// Randomly generate a value.
