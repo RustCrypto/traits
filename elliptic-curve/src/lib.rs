@@ -24,6 +24,8 @@ extern crate std;
 pub mod error;
 pub mod oid;
 pub mod ops;
+pub mod point;
+pub mod scalar;
 pub mod secret_key;
 
 // TODO(tarcieri): other curve forms
@@ -41,9 +43,12 @@ pub use rand_core;
 #[cfg(feature = "zeroize")]
 pub use zeroize;
 
-use core::{fmt::Debug, ops::Add};
+use core::{
+    fmt::Debug,
+    ops::{Add, Mul},
+};
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
-use subtle::ConditionallySelectable;
+use subtle::{ConditionallySelectable, ConstantTimeEq};
 
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, RngCore};
@@ -67,10 +72,13 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
 /// Elliptic curve with curve arithmetic support
 pub trait Arithmetic: Curve {
     /// Scalar type for a given curve
-    type Scalar: ConditionallySelectable + Default + secret_key::FromSecretKey<Self>;
+    type Scalar: ConditionallySelectable
+        + ConstantTimeEq
+        + Default
+        + secret_key::FromSecretKey<Self>;
 
     /// Affine point type for a given curve
-    type AffinePoint: ConditionallySelectable + ops::MulBase<Scalar = Self::Scalar>;
+    type AffinePoint: ConditionallySelectable + Mul<scalar::NonZeroScalar<Self>> + point::Generator;
 }
 
 /// Associate an object identifier (OID) with a curve

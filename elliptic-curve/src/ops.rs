@@ -10,14 +10,3 @@ pub trait Invert {
     /// Invert a field element.
     fn invert(&self) -> CtOption<Self::Output>;
 }
-
-/// Fixed-base scalar multiplication.
-///
-/// This trait is intended to be implemented on a point type.
-pub trait MulBase: Sized {
-    /// Scalar type
-    type Scalar;
-
-    /// Multiply scalar by the generator point for the elliptic curve
-    fn mul_base(scalar: &Self::Scalar) -> CtOption<Self>;
-}
