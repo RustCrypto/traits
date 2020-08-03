@@ -99,6 +99,15 @@ where
         PublicKey::Uncompressed(UncompressedPoint::from_bytes(tagged_bytes).unwrap())
     }
 
+    /// Compress this [`PublicKey`].
+    ///
+    /// If the key is already compressed, this is a no-op.
+    pub fn compress(&mut self) {
+        if let PublicKey::Uncompressed(point) = self {
+            *self = CompressedPoint::from_affine_coords(point.x(), point.y()).into();
+        }
+    }
+
     /// Obtain public key as a byte array reference
     #[inline]
     pub fn as_bytes(&self) -> &[u8] {
