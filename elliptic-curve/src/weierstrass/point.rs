@@ -171,6 +171,16 @@ where
     pub fn into_bytes(self) -> GenericArray<u8, UncompressedPointSize<C>> {
         self.bytes
     }
+
+    /// Get the x-coordinate of this curve point
+    pub(crate) fn x(&self) -> &ScalarBytes<C> {
+        GenericArray::from_slice(&self.bytes[1..(C::ElementSize::to_usize() + 1)])
+    }
+
+    /// Get the y-coordinate of this curve point
+    pub(crate) fn y(&self) -> &ScalarBytes<C> {
+        GenericArray::from_slice(&self.bytes[(C::ElementSize::to_usize() + 1)..])
+    }
 }
 
 impl<C: Curve> AsRef<[u8]> for UncompressedPoint<C>
