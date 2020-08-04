@@ -21,7 +21,6 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-pub mod encoding;
 pub mod error;
 pub mod ops;
 pub mod point;
@@ -51,10 +50,13 @@ use core::{
     ops::{Add, Mul},
 };
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
-use subtle::{ConditionallySelectable, ConstantTimeEq};
+use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, RngCore};
+
+/// Byte array containing a serialized scalar value (i.e. an integer)
+pub type ElementBytes<C> = GenericArray<u8, <C as Curve>::ElementSize>;
 
 /// Elliptic curve.
 ///
@@ -78,18 +80,19 @@ pub trait Arithmetic: Curve {
     type Scalar: ConditionallySelectable
         + ConstantTimeEq
         + Default
-        + encoding::FromBytes<Size = Self::ElementSize>;
+        + FromBytes<Size = Self::ElementSize>;
 
     /// Affine point type for a given curve
     type AffinePoint: ConditionallySelectable + Mul<scalar::NonZeroScalar<Self>> + point::Generator;
 }
 
-/// Associate an object identifier (OID) with a curve
-#[cfg(feature = "oid")]
-#[cfg_attr(docsrs, doc(cfg(feature = "oid")))]
-pub trait Identifier: Curve {
-    /// Object Identifier (OID) for this curve
-    const OID: oid::ObjectIdentifier;
+/// Try to decode the given bytes into a curve element
+pub trait FromBytes: ConditionallySelectable + Sized {
+    /// Size of the serialized byte array
+    type Size: ArrayLength<u8>;
+
+    /// Try to decode this object from bytes
+    fn from_bytes(bytes: &GenericArray<u8, Self::Size>) -> CtOption<Self>;
 }
 
 /// Randomly generate a value.
@@ -102,5 +105,10 @@ pub trait Generate {
     fn generate(rng: impl CryptoRng + RngCore) -> Self;
 }
 
-/// Byte array containing a serialized scalar value (i.e. an integer)
-pub type ElementBytes<C> = GenericArray<u8, <C as Curve>::ElementSize>;
+/// Associate an object identifier (OID) with a curve
+#[cfg(feature = "oid")]
+#[cfg_attr(docsrs, doc(cfg(feature = "oid")))]
+pub trait Identifier: Curve {
+    /// Object Identifier (OID) for this curve
+    const OID: oid::ObjectIdentifier;
+}
