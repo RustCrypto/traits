@@ -5,9 +5,7 @@ use super::{
     point::{CompressedPoint, CompressedPointSize, UncompressedPoint, UncompressedPointSize},
     Curve,
 };
-use crate::{
-    encoding::FromBytes, point::Generator, scalar::NonZeroScalar, Arithmetic, Error, SecretKey,
-};
+use crate::{point::Generator, scalar::NonZeroScalar, Arithmetic, Error, FromBytes, SecretKey};
 use core::{
     fmt::{self, Debug},
     ops::{Add, Mul},
