@@ -6,8 +6,7 @@ use super::{
     Curve,
 };
 use crate::{
-    point::Generator, scalar::NonZeroScalar, secret_key::FromSecretKey, Arithmetic, Error,
-    SecretKey,
+    encoding::FromBytes, point::Generator, scalar::NonZeroScalar, Arithmetic, Error, SecretKey,
 };
 use core::{
     fmt::{self, Debug},
@@ -17,7 +16,6 @@ use generic_array::{
     typenum::{Unsigned, U1},
     ArrayLength, GenericArray,
 };
-use subtle::CtOption;
 
 /// Size of an untagged point for given elliptic curve.
 pub type UntaggedPointSize<C> = <<C as crate::Curve>::ElementSize as Add>::Output;
@@ -133,7 +131,7 @@ where
     ///
     /// The `compress` flag requests point compression.
     pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Result<Self, Error> {
-        let ct_option = C::Scalar::from_secret_key(&secret_key).and_then(NonZeroScalar::new);
+        let ct_option = C::Scalar::from_bytes(secret_key.as_bytes()).and_then(NonZeroScalar::new);
 
         if ct_option.is_none().into() {
             return Err(Error);
@@ -207,22 +205,4 @@ where
     fn from(point: UncompressedPoint<C>) -> Self {
         PublicKey::Uncompressed(point)
     }
-}
-
-/// Trait for deserializing a value from a public key.
-///
-/// This is intended for use with the `AffinePoint` type for a given elliptic curve.
-pub trait FromPublicKey<C: Curve>: Sized
-where
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    /// Deserialize this value from a [`PublicKey`]
-    ///
-    /// # Returns
-    ///
-    /// `None` if the public key is not on the curve.
-    fn from_public_key(public_key: &PublicKey<C>) -> CtOption<Self>;
 }

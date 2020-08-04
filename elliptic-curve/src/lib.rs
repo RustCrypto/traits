@@ -21,6 +21,7 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+pub mod encoding;
 pub mod error;
 pub mod ops;
 pub mod point;
@@ -77,7 +78,7 @@ pub trait Arithmetic: Curve {
     type Scalar: ConditionallySelectable
         + ConstantTimeEq
         + Default
-        + secret_key::FromSecretKey<Self>;
+        + encoding::FromBytes<Size = Self::ElementSize>;
 
     /// Affine point type for a given curve
     type AffinePoint: ConditionallySelectable + Mul<scalar::NonZeroScalar<Self>> + point::Generator;
