@@ -22,7 +22,6 @@
 extern crate std;
 
 pub mod error;
-pub mod oid;
 pub mod ops;
 pub mod point;
 pub mod scalar;
@@ -33,9 +32,12 @@ pub mod secret_key;
 #[cfg_attr(docsrs, doc(cfg(feature = "weierstrass")))]
 pub mod weierstrass;
 
-pub use self::{error::Error, oid::ObjectIdentifier, secret_key::SecretKey};
+pub use self::{error::Error, secret_key::SecretKey};
 pub use generic_array::{self, typenum::consts};
 pub use subtle;
+
+#[cfg(feature = "oid")]
+pub use oid;
 
 #[cfg(feature = "rand_core")]
 pub use rand_core;
@@ -82,9 +84,11 @@ pub trait Arithmetic: Curve {
 }
 
 /// Associate an object identifier (OID) with a curve
+#[cfg(feature = "oid")]
+#[cfg_attr(docsrs, doc(cfg(feature = "oid")))]
 pub trait Identifier: Curve {
     /// Object Identifier (OID) for this curve
-    const OID: ObjectIdentifier;
+    const OID: oid::ObjectIdentifier;
 }
 
 /// Randomly generate a value.
