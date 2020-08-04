@@ -26,6 +26,7 @@ use {
 /// This type wraps a serialized scalar value, helping to prevent accidental
 /// exposure and securely erasing the value from memory when dropped
 /// (when the `zeroize` feature of this crate is enabled).
+#[derive(Clone)]
 pub struct SecretKey<C: Curve> {
     /// Private scalar value
     scalar: ScalarBytes<C>,
