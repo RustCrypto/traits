@@ -7,7 +7,7 @@
 //! <https://www.secg.org/sec1-v2.pdf>
 
 use super::Curve;
-use crate::ScalarBytes;
+use crate::ElementBytes;
 use core::ops::Add;
 use generic_array::{
     typenum::{Unsigned, U1},
@@ -47,7 +47,7 @@ where
     CompressedPointSize<C>: ArrayLength<u8>,
 {
     /// Compress and serialize an elliptic curve point from its affine coordinates
-    pub fn from_affine_coords(x: &ScalarBytes<C>, y: &ScalarBytes<C>) -> Self {
+    pub fn from_affine_coords(x: &ElementBytes<C>, y: &ElementBytes<C>) -> Self {
         // Is the y-coordinate odd in the SEC-1 sense: `self mod 2 == 1`?
         let is_y_odd = y.as_ref().last().expect("last byte") & 1 == 1;
         let mut bytes = GenericArray::default();
@@ -137,7 +137,7 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     /// Serialize an elliptic curve point from its affine coordinates
-    pub fn from_affine_coords(x: &ScalarBytes<C>, y: &ScalarBytes<C>) -> Self {
+    pub fn from_affine_coords(x: &ElementBytes<C>, y: &ElementBytes<C>) -> Self {
         let scalar_size = C::ElementSize::to_usize();
         let mut bytes = GenericArray::default();
         bytes[0] = 0x04;
@@ -173,12 +173,12 @@ where
     }
 
     /// Get the x-coordinate of this curve point
-    pub(crate) fn x(&self) -> &ScalarBytes<C> {
+    pub(crate) fn x(&self) -> &ElementBytes<C> {
         GenericArray::from_slice(&self.bytes[1..(C::ElementSize::to_usize() + 1)])
     }
 
     /// Get the y-coordinate of this curve point
-    pub(crate) fn y(&self) -> &ScalarBytes<C> {
+    pub(crate) fn y(&self) -> &ElementBytes<C> {
         GenericArray::from_slice(&self.bytes[(C::ElementSize::to_usize() + 1)..])
     }
 }

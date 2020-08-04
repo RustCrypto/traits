@@ -1,13 +1,13 @@
 //! Secret keys for elliptic curves (i.e. private scalars)
 //!
-//! The [`SecretKey`] type wraps the [`ScalarBytes`] byte array type with
-//! a wrapper designed to prevent unintentional exposure of the scalar
-//! value (e.g. via `Debug` or other logging).
+//! The [`SecretKey`] type is a wrapper around a secret scalar value which is
+//! designed to prevent unintentional exposure (e.g. via `Debug` or other
+//! logging).
 //!
 //! When the `zeroize` feature of this crate is enabled, it also handles
 //! zeroing it out of memory securely on drop.
 
-use crate::{error::Error, Curve, ScalarBytes};
+use crate::{error::Error, Curve, ElementBytes};
 use core::{
     convert::{TryFrom, TryInto},
     fmt::{self, Debug},
@@ -29,12 +29,12 @@ use {
 #[derive(Clone)]
 pub struct SecretKey<C: Curve> {
     /// Private scalar value
-    scalar: ScalarBytes<C>,
+    scalar: ElementBytes<C>,
 }
 
 impl<C: Curve> SecretKey<C> {
     /// Create a new secret key from a serialized scalar value
-    pub fn new(bytes: ScalarBytes<C>) -> Self {
+    pub fn new(bytes: ElementBytes<C>) -> Self {
         Self { scalar: bytes }
     }
 
@@ -43,8 +43,8 @@ impl<C: Curve> SecretKey<C> {
         bytes.as_ref().try_into()
     }
 
-    /// Expose the secret [`ScalarBytes`] value this [`SecretKey`] wraps
-    pub fn secret_scalar(&self) -> &ScalarBytes<C> {
+    /// Expose the byte serialization of the value this [`SecretKey`] wraps
+    pub fn as_bytes(&self) -> &ElementBytes<C> {
         &self.scalar
     }
 }
@@ -74,7 +74,7 @@ impl<C: Curve> Debug for SecretKey<C> {
 impl<C> Generate for SecretKey<C>
 where
     C: Curve + Arithmetic,
-    C::Scalar: Generate + Into<ScalarBytes<C>>,
+    C::Scalar: Generate + Into<ElementBytes<C>>,
 {
     /// Generate a new [`SecretKey`]
     fn generate(rng: impl CryptoRng + RngCore) -> Self {

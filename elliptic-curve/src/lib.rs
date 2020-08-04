@@ -102,4 +102,4 @@ pub trait Generate {
 }
 
 /// Byte array containing a serialized scalar value (i.e. an integer)
-pub type ScalarBytes<C> = GenericArray<u8, <C as Curve>::ElementSize>;
+pub type ElementBytes<C> = GenericArray<u8, <C as Curve>::ElementSize>;
