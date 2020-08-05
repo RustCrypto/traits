@@ -80,7 +80,8 @@ pub trait Arithmetic: Curve {
     type Scalar: ConditionallySelectable
         + ConstantTimeEq
         + Default
-        + FromBytes<Size = Self::ElementSize>;
+        + FromBytes<Size = Self::ElementSize>
+        + Into<ElementBytes<Self>>;
 
     /// Affine point type for a given curve
     type AffinePoint: ConditionallySelectable + Mul<scalar::NonZeroScalar<Self>> + point::Generator;
