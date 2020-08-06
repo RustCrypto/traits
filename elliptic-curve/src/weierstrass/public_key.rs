@@ -7,6 +7,7 @@ use super::{
 };
 use crate::{point::Generator, scalar::NonZeroScalar, Arithmetic, Error, FromBytes, SecretKey};
 use core::{
+    convert::TryFrom,
     fmt::{self, Debug},
     ops::{Add, Mul},
 };
@@ -21,8 +22,9 @@ pub type UntaggedPointSize<C> = <<C as crate::Curve>::ElementSize as Add>::Outpu
 
 /// Public keys for Weierstrass curves
 #[derive(Clone, Eq, PartialEq, PartialOrd, Ord)]
-pub enum PublicKey<C: Curve>
+pub enum PublicKey<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     CompressedPointSize<C>: ArrayLength<u8>,
@@ -35,8 +37,9 @@ where
     Uncompressed(UncompressedPoint<C>),
 }
 
-impl<C: Curve> PublicKey<C>
+impl<C> PublicKey<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     CompressedPointSize<C>: ArrayLength<u8>,
@@ -49,7 +52,7 @@ where
     /// 2.3.3 (page 10).
     ///
     /// <http://www.secg.org/sec1-v2.pdf>
-    pub fn from_bytes<B: AsRef<[u8]>>(bytes: B) -> Option<Self> {
+    pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Option<Self> {
         let slice = bytes.as_ref();
         let length = slice.len();
 
@@ -64,19 +67,6 @@ where
         } else {
             None
         }
-    }
-
-    /// Decode public key from an compressed elliptic curve point
-    /// encoded using the `Elliptic-Curve-Point-to-Octet-String` algorithm
-    /// described in SEC 1: Elliptic Curve Cryptography (Version 2.0) section
-    /// 2.3.3 (page 10).
-    ///
-    /// <http://www.secg.org/sec1-v2.pdf>
-    pub fn from_compressed_point<B>(into_bytes: B) -> Option<Self>
-    where
-        B: Into<GenericArray<u8, CompressedPointSize<C>>>,
-    {
-        CompressedPoint::from_bytes(into_bytes).map(PublicKey::Compressed)
     }
 
     /// Decode public key from a raw uncompressed point serialized
@@ -146,8 +136,9 @@ where
     }
 }
 
-impl<C: Curve> AsRef<[u8]> for PublicKey<C>
+impl<C> AsRef<[u8]> for PublicKey<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     CompressedPointSize<C>: ArrayLength<u8>,
@@ -159,8 +150,9 @@ where
     }
 }
 
-impl<C: Curve> Copy for PublicKey<C>
+impl<C> Copy for PublicKey<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     CompressedPointSize<C>: ArrayLength<u8>,
@@ -170,8 +162,9 @@ where
 {
 }
 
-impl<C: Curve> Debug for PublicKey<C>
+impl<C> Debug for PublicKey<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     CompressedPointSize<C>: ArrayLength<u8>,
@@ -182,8 +175,27 @@ where
     }
 }
 
-impl<C: Curve> From<CompressedPoint<C>> for PublicKey<C>
+impl<C> TryFrom<&SecretKey<C>> for PublicKey<C>
 where
+    C: Curve + Arithmetic,
+    C::AffinePoint: Mul<NonZeroScalar<C>, Output = C::AffinePoint>,
+    C::ElementSize: Add<U1>,
+    <C::ElementSize as Add>::Output: Add<U1>,
+    CompressedPoint<C>: From<C::AffinePoint>,
+    UncompressedPoint<C>: From<C::AffinePoint>,
+    CompressedPointSize<C>: ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+    type Error = Error;
+
+    fn try_from(secret_key: &SecretKey<C>) -> Result<Self, Error> {
+        Self::from_secret_key(secret_key, C::COMPRESS_POINTS)
+    }
+}
+
+impl<C> From<CompressedPoint<C>> for PublicKey<C>
+where
+    C: Curve,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     CompressedPointSize<C>: ArrayLength<u8>,
@@ -194,8 +206,9 @@ where
     }
 }
 
-impl<C: Curve> From<UncompressedPoint<C>> for PublicKey<C>
+impl<C> From<UncompressedPoint<C>> for PublicKey<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     CompressedPointSize<C>: ArrayLength<u8>,
@@ -209,8 +222,9 @@ where
 /// Trait for deserializing a value from a public key.
 ///
 /// This is intended for use with the `AffinePoint` type for a given elliptic curve.
-pub trait FromPublicKey<C: Curve>: Sized
+pub trait FromPublicKey<C>: Sized
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     CompressedPointSize<C>: ArrayLength<u8>,

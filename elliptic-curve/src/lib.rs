@@ -27,6 +27,10 @@ pub mod point;
 pub mod scalar;
 pub mod secret_key;
 
+#[cfg(feature = "ecdh")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ecdh")))]
+pub mod ecdh;
+
 // TODO(tarcieri): other curve forms
 #[cfg(feature = "weierstrass")]
 #[cfg_attr(docsrs, doc(cfg(feature = "weierstrass")))]
@@ -39,7 +43,7 @@ pub use subtle;
 #[cfg(feature = "oid")]
 pub use oid;
 
-#[cfg(feature = "rand_core")]
+#[cfg(feature = "rand")]
 pub use rand_core;
 
 #[cfg(feature = "zeroize")]
@@ -52,7 +56,7 @@ use core::{
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
 
-#[cfg(feature = "rand_core")]
+#[cfg(feature = "rand")]
 use rand_core::{CryptoRng, RngCore};
 
 /// Byte array containing a serialized scalar value (i.e. an integer)
@@ -99,8 +103,8 @@ pub trait FromBytes: ConditionallySelectable + Sized {
 /// Randomly generate a value.
 ///
 /// Primarily intended for use with scalar types for a particular curve.
-#[cfg(feature = "rand_core")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+#[cfg(feature = "rand")]
+#[cfg_attr(docsrs, doc(cfg(feature = "rand")))]
 pub trait Generate {
     /// Generate a random element of this type using the provided [`CryptoRng`]
     fn generate(rng: impl CryptoRng + RngCore) -> Self;

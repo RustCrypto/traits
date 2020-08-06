@@ -1,7 +1,13 @@
 //! Scalar types
 
-use crate::{Arithmetic, Curve};
+use crate::{Arithmetic, Curve, FromBytes};
 use subtle::{ConstantTimeEq, CtOption};
+
+#[cfg(feature = "rand")]
+use crate::{
+    rand_core::{CryptoRng, RngCore},
+    Generate,
+};
 
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
@@ -14,6 +20,7 @@ use zeroize::Zeroize;
 ///
 /// In the context of ECC, it's useful for ensuring that scalar multiplication
 /// cannot result in the point at infinity.
+#[derive(Clone)]
 pub struct NonZeroScalar<C: Curve + Arithmetic> {
     scalar: C::Scalar,
 }
@@ -25,7 +32,8 @@ where
     /// Create a [`NonZeroScalar`] from a scalar, performing a constant-time
     /// check that it's non-zero.
     pub fn new(scalar: C::Scalar) -> CtOption<Self> {
-        let is_zero = scalar.ct_eq(&C::Scalar::default());
+        let zero = C::Scalar::from_bytes(&Default::default()).unwrap();
+        let is_zero = scalar.ct_eq(&zero);
         CtOption::new(Self { scalar }, !is_zero)
     }
 }
@@ -36,6 +44,24 @@ where
 {
     fn as_ref(&self) -> &C::Scalar {
         &self.scalar
+    }
+}
+
+#[cfg(feature = "rand")]
+impl<C> Generate for NonZeroScalar<C>
+where
+    C: Curve + Arithmetic,
+    C::Scalar: Generate,
+{
+    fn generate(mut rng: impl CryptoRng + RngCore) -> Self {
+        // Use rejection sampling to eliminate zeroes
+        loop {
+            let result = Self::new(C::Scalar::generate(&mut rng));
+
+            if result.is_some().into() {
+                break result.unwrap();
+            }
+        }
     }
 }
 

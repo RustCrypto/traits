@@ -14,7 +14,7 @@ use core::{
 };
 use generic_array::{typenum::Unsigned, GenericArray};
 
-#[cfg(feature = "rand_core")]
+#[cfg(feature = "rand")]
 use {
     crate::{Arithmetic, Generate},
     rand_core::{CryptoRng, RngCore},
@@ -68,8 +68,8 @@ impl<C: Curve> Debug for SecretKey<C> {
     }
 }
 
-#[cfg(feature = "rand_core")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+#[cfg(feature = "rand")]
+#[cfg_attr(docsrs, doc(cfg(feature = "rand")))]
 impl<C> Generate for SecretKey<C>
 where
     C: Curve + Arithmetic,
