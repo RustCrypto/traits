@@ -14,6 +14,9 @@ use generic_array::{
     ArrayLength, GenericArray,
 };
 
+#[cfg(feature = "zeroize")]
+use zeroize::Zeroize;
+
 /// Size of a compressed elliptic curve point for the given curve when
 /// serialized using `Elliptic-Curve-Point-to-Octet-String` encoding
 /// (including leading `0x02` or `0x03` tag byte).
@@ -32,8 +35,9 @@ pub type UncompressedPointSize<C> =
 ///
 /// <https://www.secg.org/sec1-v2.pdf>
 #[derive(Eq, Hash, PartialEq, PartialOrd, Ord)]
-pub struct CompressedPoint<C: Curve>
+pub struct CompressedPoint<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     CompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -41,8 +45,9 @@ where
     bytes: GenericArray<u8, CompressedPointSize<C>>,
 }
 
-impl<C: Curve> CompressedPoint<C>
+impl<C> CompressedPoint<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     CompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -62,12 +67,10 @@ where
         B: Into<GenericArray<u8, CompressedPointSize<C>>>,
     {
         let bytes = into_bytes.into();
-        let tag_byte = bytes.as_ref()[0];
 
-        if tag_byte == 0x02 || tag_byte == 0x03 {
-            Some(Self { bytes })
-        } else {
-            None
+        match bytes[0] {
+            0x02 | 0x03 => Some(Self { bytes }),
+            _ => None,
         }
     }
 
@@ -84,8 +87,9 @@ where
     }
 }
 
-impl<C: Curve> AsRef<[u8]> for CompressedPoint<C>
+impl<C> AsRef<[u8]> for CompressedPoint<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     CompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -103,13 +107,28 @@ where
 {
 }
 
-impl<C: Curve> Clone for CompressedPoint<C>
+impl<C> Clone for CompressedPoint<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     CompressedPointSize<C>: ArrayLength<u8>,
 {
     fn clone(&self) -> Self {
-        Self::from_bytes(self.bytes.clone()).unwrap()
+        Self {
+            bytes: self.bytes.clone(),
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl<C> Zeroize for CompressedPoint<C>
+where
+    C: Curve,
+    C::ElementSize: Add<U1>,
+    CompressedPointSize<C>: ArrayLength<u8>,
+{
+    fn zeroize(&mut self) {
+        self.bytes.zeroize()
     }
 }
 
@@ -130,8 +149,9 @@ where
     bytes: GenericArray<u8, UncompressedPointSize<C>>,
 }
 
-impl<C: Curve> UncompressedPoint<C>
+impl<C> UncompressedPoint<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -183,8 +203,9 @@ where
     }
 }
 
-impl<C: Curve> AsRef<[u8]> for UncompressedPoint<C>
+impl<C> AsRef<[u8]> for UncompressedPoint<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -195,8 +216,9 @@ where
     }
 }
 
-impl<C: Curve> Copy for UncompressedPoint<C>
+impl<C> Copy for UncompressedPoint<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -204,13 +226,29 @@ where
 {
 }
 
-impl<C: Curve> Clone for UncompressedPoint<C>
+impl<C> Clone for UncompressedPoint<C>
 where
+    C: Curve,
     C::ElementSize: Add<U1>,
     <C::ElementSize as Add>::Output: Add<U1>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn clone(&self) -> Self {
-        Self::from_bytes(self.bytes.clone()).unwrap()
+        Self {
+            bytes: self.bytes.clone(),
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl<C> Zeroize for UncompressedPoint<C>
+where
+    C: Curve,
+    C::ElementSize: Add<U1>,
+    <C::ElementSize as Add>::Output: Add<U1>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+    fn zeroize(&mut self) {
+        self.bytes.zeroize()
     }
 }
