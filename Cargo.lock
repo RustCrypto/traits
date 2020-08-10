@@ -5,7 +5,7 @@ name = "aead"
 version = "0.3.2"
 dependencies = [
  "blobby 0.3.0",
- "generic-array 0.14.3",
+ "generic-array 0.14.4",
  "heapless",
 ]
 
@@ -38,7 +38,7 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4152116fd6e9dadb291ae18fc1ec3575ed6d84c29642d97890f4b4a3417297e4"
 dependencies = [
- "generic-array 0.14.3",
+ "generic-array 0.14.4",
 ]
 
 [[package]]
@@ -46,7 +46,7 @@ name = "block-cipher"
 version = "0.8.0"
 dependencies = [
  "blobby 0.3.0",
- "generic-array 0.14.3",
+ "generic-array 0.14.4",
 ]
 
 [[package]]
@@ -71,6 +71,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 
 [[package]]
+name = "const-oid"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2d9162b7289a46e86208d6af2c686ca5bfde445878c41a458a9fac706252d0b"
+
+[[package]]
 name = "cpuid-bool"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -82,7 +88,7 @@ version = "0.9.0"
 dependencies = [
  "blobby 0.3.0",
  "block-cipher 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "generic-array 0.14.3",
+ "generic-array 0.14.4",
  "subtle",
 ]
 
@@ -105,7 +111,7 @@ name = "digest"
 version = "0.9.0"
 dependencies = [
  "blobby 0.2.0",
- "generic-array 0.14.3",
+ "generic-array 0.14.4",
 ]
 
 [[package]]
@@ -114,14 +120,15 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3dd60d1080a57a05ab032377049e0591415d2b31afd7028356dbf3cc6dcb066"
 dependencies = [
- "generic-array 0.14.3",
+ "generic-array 0.14.4",
 ]
 
 [[package]]
 name = "elliptic-curve"
 version = "0.5.0-pre"
 dependencies = [
- "generic-array 0.14.3",
+ "const-oid",
+ "generic-array 0.14.4",
  "rand_core",
  "subtle",
  "zeroize",
@@ -147,9 +154,9 @@ dependencies = [
 
 [[package]]
 name = "generic-array"
-version = "0.14.3"
+version = "0.14.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60fb4bb6bba52f78a471264d9a3b7d026cc0af47b22cd2cffbc0b787ca003e63"
+checksum = "501466ecc8a30d1d3b7fc9229b122b2ce8ed6e9d9223f1138d4babb253e51817"
 dependencies = [
  "typenum",
  "version_check",
@@ -246,7 +253,7 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "1.1.0"
+version = "1.2.2"
 dependencies = [
  "digest 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex-literal",
@@ -276,8 +283,8 @@ name = "stream-cipher"
 version = "0.6.0"
 dependencies = [
  "blobby 0.3.0",
- "block-cipher 0.8.0",
- "generic-array 0.14.3",
+ "block-cipher",
+ "generic-array 0.14.4",release date
 ]
 
 [[package]]
@@ -325,7 +332,7 @@ checksum = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"
 name = "universal-hash"
 version = "0.4.0"
 dependencies = [
- "generic-array 0.14.3",
+ "generic-array 0.14.4",
  "subtle",
 ]
 

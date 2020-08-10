@@ -21,14 +21,15 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-#[cfg(feature = "rand_core")]
-pub use rand_core;
-
 pub mod error;
+pub mod ops;
+pub mod point;
+pub mod scalar;
 pub mod secret_key;
 
-pub use generic_array::{self, typenum::consts};
-pub use subtle;
+#[cfg(feature = "ecdh")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ecdh")))]
+pub mod ecdh;
 
 // TODO(tarcieri): other curve forms
 #[cfg(feature = "weierstrass")]
@@ -36,6 +37,83 @@ pub use subtle;
 pub mod weierstrass;
 
 pub use self::{error::Error, secret_key::SecretKey};
+pub use generic_array::{self, typenum::consts};
+pub use subtle;
+
+#[cfg(feature = "oid")]
+pub use oid;
+
+#[cfg(feature = "rand")]
+pub use rand_core;
+
+#[cfg(feature = "zeroize")]
+pub use zeroize;
+
+use core::{
+    fmt::Debug,
+    ops::{Add, Mul},
+};
+use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
+
+#[cfg(feature = "rand")]
+use rand_core::{CryptoRng, RngCore};
 
 /// Byte array containing a serialized scalar value (i.e. an integer)
-pub type ScalarBytes<Size> = generic_array::GenericArray<u8, Size>;
+pub type ElementBytes<C> = GenericArray<u8, <C as Curve>::ElementSize>;
+
+/// Elliptic curve.
+///
+/// This trait is intended to be impl'd by a ZST which represents a concrete
+/// elliptic curve.
+///
+/// Other traits in this crate which are bounded by [`Curve`] are intended to
+/// be impl'd by these ZSTs, facilitating types which are generic over elliptic
+/// curves (e.g. [`SecretKey`]).
+pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
+    /// Number of bytes required to serialize elements of field elements
+    /// associated with this curve, e.g. elements of the base/scalar fields.
+    ///
+    /// This is used for computing the sizes for types related to this curve.
+    type ElementSize: ArrayLength<u8> + Add + Eq + Ord + Unsigned;
+}
+
+/// Elliptic curve with curve arithmetic support
+pub trait Arithmetic: Curve {
+    /// Scalar type for a given curve
+    type Scalar: ConditionallySelectable
+        + ConstantTimeEq
+        + Default
+        + FromBytes<Size = Self::ElementSize>
+        + Into<ElementBytes<Self>>;
+
+    /// Affine point type for a given curve
+    type AffinePoint: ConditionallySelectable + Mul<scalar::NonZeroScalar<Self>> + point::Generator;
+}
+
+/// Try to decode the given bytes into a curve element
+pub trait FromBytes: ConditionallySelectable + Sized {
+    /// Size of the serialized byte array
+    type Size: ArrayLength<u8>;
+
+    /// Try to decode this object from bytes
+    fn from_bytes(bytes: &GenericArray<u8, Self::Size>) -> CtOption<Self>;
+}
+
+/// Randomly generate a value.
+///
+/// Primarily intended for use with scalar types for a particular curve.
+#[cfg(feature = "rand")]
+#[cfg_attr(docsrs, doc(cfg(feature = "rand")))]
+pub trait Generate {
+    /// Generate a random element of this type using the provided [`CryptoRng`]
+    fn generate(rng: impl CryptoRng + RngCore) -> Self;
+}
+
+/// Associate an object identifier (OID) with a curve
+#[cfg(feature = "oid")]
+#[cfg_attr(docsrs, doc(cfg(feature = "oid")))]
+pub trait Identifier: Curve {
+    /// Object Identifier (OID) for this curve
+    const OID: oid::ObjectIdentifier;
+}

@@ -5,7 +5,7 @@
 //!
 //! ## Minimum Supported Rust Version
 //!
-//! Rust **1.36** or higher.
+//! Rust **1.41** or higher.
 //!
 //! Minimum supported Rust version may be changed in the future, but such
 //! changes will be accompanied with a minor version bump.
@@ -155,7 +155,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/ferris_signer.png",
-    html_root_url = "https://docs.rs/signature/1.1.0"
+    html_root_url = "https://docs.rs/signature/1.2.2"
 )]
 #![forbid(unsafe_code)]
 #![warn(
