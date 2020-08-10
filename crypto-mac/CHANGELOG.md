@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.9.0 (2020-08-10)
+### Added
+- `FromBlockCipher` trait and blanket implementation of the `NewMac` trait
+for it ([#217])
+
+### Changed
+- Updated test vectors storage to `blobby v0.3` ([#217])
+
+### Removed
+- `impl_write!` macro ([#217])
+
+[#217]: https://github.com/RustCrypto/traits/pull/217
+
 ## 0.8.0 (2020-06-04)
 ### Added
 - `impl_write!` macro ([#134])

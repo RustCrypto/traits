@@ -39,9 +39,7 @@ macro_rules! new_test {
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
 
             for (i, row) in Blob3Iterator::new(data).unwrap().enumerate() {
-                let key = row[0];
-                let input = row[1];
-                let tag = row[2];
+                let [key, input, tag] = row.unwrap();
                 if let Some(desc) = run_test(key, input, tag) {
                     panic!(
                         "\n\
