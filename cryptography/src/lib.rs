@@ -26,7 +26,7 @@
 //! | [`aead`](https://docs.rs/aead) | `aead` | Authenticated Encryption with Associated Data (i.e. high-level symmetric encryption) |
 //! | [`block_cipher`](https://docs.rs/block-cipher) | `block‑cipher` | Block-based cryptographic permutations (i.e. low-level symmetric encryption) |
 //! | [`digest`](https://docs.rs/digest) | `digest` | Cryptographic hash functions |
-//! | [`elliptic-curve`](https://docs.rs/elliptic-curve) | `elliptic-curve` | Elliptic curve cryptography |
+//! | [`elliptic_curve`](https://docs.rs/elliptic-curve) | `elliptic-curve` | Elliptic curve cryptography |
 //! | [`mac`](https://docs.rs/crypto-mac) | `mac` | Message Authentication Codes (i.e. symmetric message authentication) |
 //! | [`signature`](https://docs.rs/signature) | `signature` | Digital signatures (i.e. public key-based message authentication) |
 //! | [`stream_cipher`](https://docs.rs/stream-cipher) | `stream‑cipher` | Ciphers based on randomly generated keystreams (i.e. low-level symmetric encryption) |
