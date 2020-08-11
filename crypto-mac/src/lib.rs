@@ -13,6 +13,8 @@
 extern crate std;
 
 #[cfg(feature = "block-cipher")]
+pub use block_cipher;
+#[cfg(feature = "block-cipher")]
 use block_cipher::{BlockCipher, NewBlockCipher};
 
 #[cfg(feature = "dev")]
