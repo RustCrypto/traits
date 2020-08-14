@@ -97,10 +97,21 @@ pub trait SyncStreamCipher {
 /// Synchronous stream cipher seeking trait.
 pub trait SyncStreamCipherSeek {
     /// Return current position of a keystream in bytes from the beginning.
-    fn current_pos(&self) -> u64;
+    fn get_current_pos(&self) -> u64;
 
     /// Seek keystream to the given `pos` in bytes.
-    fn seek(&mut self, pos: u64);
+    ///
+    /// # Panics
+    /// If provided position is outside of the cipher keystream.
+    fn seek(&mut self, pos: u64) {
+        self.try_seek(pos).unwrap()
+    }
+
+    /// Try to seek keystream to the given `pos` in bytes.
+    ///
+    /// It will return `Err(LoopError)` if provided position is outside of
+    /// the cipher keystream.
+    fn try_seek(&mut self, pos: u64) -> Result<(), LoopError>;
 }
 
 /// Stream cipher core trait which covers both synchronous and asynchronous
