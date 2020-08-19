@@ -32,7 +32,10 @@ pub mod secret_key;
 #[cfg_attr(docsrs, doc(cfg(feature = "ecdh")))]
 pub mod ecdh;
 
-// TODO(tarcieri): other curve forms
+#[cfg(feature = "weierstrass")]
+#[cfg_attr(docsrs, doc(cfg(feature = "weierstrass")))]
+pub mod sec1;
+
 #[cfg(feature = "weierstrass")]
 #[cfg_attr(docsrs, doc(cfg(feature = "weierstrass")))]
 pub mod weierstrass;
