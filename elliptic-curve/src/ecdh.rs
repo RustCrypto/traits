@@ -22,17 +22,14 @@
 
 use crate::{
     consts::U1,
+    generic_array::ArrayLength,
     point::Generator,
     scalar::NonZeroScalar,
-    sec1::{
-        self, CompressedPoint, CompressedPointSize, FromEncodedPoint, UncompressedPoint,
-        UncompressedPointSize,
-    },
+    sec1::{self, FromEncodedPoint, UncompressedPointSize, UntaggedPointSize},
     weierstrass::Curve,
     Arithmetic, ElementBytes, Error, Generate,
 };
 use core::ops::{Add, Mul};
-use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 use rand_core::{CryptoRng, RngCore};
 use zeroize::Zeroize;
 
@@ -58,11 +55,8 @@ where
     C: Curve + Arithmetic,
     C::Scalar: Clone + Generate + Zeroize,
     C::AffinePoint: FromEncodedPoint<C> + Mul<NonZeroScalar<C>, Output = C::AffinePoint> + Zeroize,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPoint<C>: From<C::AffinePoint>,
-    UncompressedPoint<C>: From<C::AffinePoint>,
-    CompressedPointSize<C>: ArrayLength<u8>,
+    PublicKey<C>: From<C::AffinePoint>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     /// Generate a new [`EphemeralSecret`].
@@ -75,14 +69,8 @@ where
     /// Get the public key associated with this ephemeral secret.
     ///
     /// The `compress` flag enables point compression.
-    pub fn public_key(&self, compress: bool) -> PublicKey<C> {
-        let affine_point = C::AffinePoint::generator() * self.scalar.clone();
-
-        if compress {
-            PublicKey::Compressed(affine_point.into())
-        } else {
-            PublicKey::Uncompressed(affine_point.into())
-        }
+    pub fn public_key(&self) -> PublicKey<C> {
+        PublicKey::from(C::AffinePoint::generator() * self.scalar.clone())
     }
 
     /// Compute a Diffie-Hellman shared secret from an ephemeral secret and the
@@ -104,15 +92,12 @@ where
     C: Curve + Arithmetic,
     C::Scalar: Clone + Generate + Zeroize,
     C::AffinePoint: FromEncodedPoint<C> + Mul<NonZeroScalar<C>, Output = C::AffinePoint> + Zeroize,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPoint<C>: From<C::AffinePoint>,
-    UncompressedPoint<C>: From<C::AffinePoint>,
-    CompressedPointSize<C>: ArrayLength<u8>,
+    PublicKey<C>: From<C::AffinePoint>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn from(ephemeral_secret: &EphemeralSecret<C>) -> Self {
-        ephemeral_secret.public_key(C::COMPRESS_POINTS)
+        ephemeral_secret.public_key()
     }
 }
 
@@ -158,17 +143,13 @@ impl<C> SharedSecret<C>
 where
     C: Curve + Arithmetic,
     C::AffinePoint: Zeroize,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     /// Create a new shared secret from the given uncompressed curve point
-    fn new(mut serialized_point: UncompressedPoint<C>) -> Self {
-        let secret_bytes = GenericArray::clone_from_slice(
-            &serialized_point.as_ref()[1..(1 + C::ElementSize::to_usize())],
-        );
-
-        serialized_point.zeroize();
+    fn new(mut encoded_point: sec1::EncodedPoint<C>) -> Self {
+        let secret_bytes = encoded_point.x().clone();
+        encoded_point.zeroize();
         Self { secret_bytes }
     }
 

@@ -1,20 +1,15 @@
 //! SEC1 encoding support.
 //!
-//! Support for the `Elliptic-Curve-Point-to-Octet-String` encoding format as
-//! described in SEC1: Elliptic Curve Cryptography (Version 2.0) section 2.3.3
-//! (see page 10):
+//! Support for the `Elliptic-Curve-Point-to-Octet-String` encoding described
+//! in SEC1: Elliptic Curve Cryptography (Version 2.0) section 2.3.3 (p.10):
 //!
 //! <https://www.secg.org/sec1-v2.pdf>
 
 use crate::ElementBytes;
-use crate::{
-    point::Generator, scalar::NonZeroScalar, weierstrass::Curve, Arithmetic, Error, FromBytes,
-    SecretKey,
-};
+use crate::{weierstrass::Curve, Error};
 use core::{
-    convert::TryFrom,
     fmt::{self, Debug},
-    ops::{Add, Mul},
+    ops::Add,
 };
 use generic_array::{
     typenum::{Unsigned, U1},
@@ -25,6 +20,16 @@ use subtle::CtOption;
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
 
+/// Size of a compressed elliptic curve point for the given curve when
+/// serialized using `Elliptic-Curve-Point-to-Octet-String` encoding
+/// (including leading `0x02` or `0x03` tag byte).
+pub type CompressedPointSize<C> = <<C as crate::Curve>::ElementSize as Add<U1>>::Output;
+
+/// Size of an uncompressed elliptic curve point for the given curve when
+/// serialized using the `Elliptic-Curve-Point-to-Octet-String` encoding
+/// (including leading `0x04` tag byte).
+pub type UncompressedPointSize<C> = <UntaggedPointSize<C> as Add<U1>>::Output;
+
 /// Size of an untagged point for given elliptic curve.
 pub type UntaggedPointSize<C> = <<C as crate::Curve>::ElementSize as Add>::Output;
 
@@ -34,27 +39,20 @@ pub type UntaggedPointSize<C> = <<C as crate::Curve>::ElementSize as Add>::Outpu
 /// useful for cases where either encoding can be supported, or conversions
 /// between the two forms.
 #[derive(Clone, Eq, PartialEq, PartialOrd, Ord)]
-pub enum EncodedPoint<C>
+pub struct EncodedPoint<C>
 where
     C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
-    /// Compressed Weierstrass elliptic curve point
-    Compressed(CompressedPoint<C>),
-
-    /// Uncompressed Weierstrass elliptic curve point
-    Uncompressed(UncompressedPoint<C>),
+    bytes: GenericArray<u8, UncompressedPointSize<C>>,
 }
 
+#[allow(clippy::len_without_is_empty)]
 impl<C> EncodedPoint<C>
 where
     C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     /// Decode elliptic curve point (compressed or uncompressed) from the
@@ -63,66 +61,86 @@ where
     /// 2.3.3 (page 10).
     ///
     /// <http://www.secg.org/sec1-v2.pdf>
-    pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Option<Self> {
-        let slice = bytes.as_ref();
-        let length = slice.len();
+    pub fn from_bytes(input: impl AsRef<[u8]>) -> Result<Self, Error> {
+        let input = input.as_ref();
 
-        if length == <CompressedPointSize<C>>::to_usize() {
-            let array = GenericArray::clone_from_slice(slice);
-            let point = CompressedPoint::from_bytes(array)?;
-            Some(EncodedPoint::Compressed(point))
-        } else if length == <UncompressedPointSize<C>>::to_usize() {
-            let array = GenericArray::clone_from_slice(slice);
-            let point = UncompressedPoint::from_bytes(array)?;
-            Some(EncodedPoint::Uncompressed(point))
+        // Validate tag
+        let tag = input.first().cloned().ok_or(Error).and_then(Tag::from_u8)?;
+
+        // Validate length
+        let expected_len = if tag.is_compressed() {
+            C::ElementSize::to_usize() + 1
         } else {
-            None
+            UncompressedPointSize::<C>::to_usize()
+        };
+
+        if input.len() == expected_len {
+            let mut bytes = GenericArray::default();
+            bytes[..expected_len].copy_from_slice(input);
+            Ok(Self { bytes })
+        } else {
+            Err(Error)
         }
     }
 
-    /// Decode elliptic curve from a raw uncompressed point.
-    ///
-    /// This will be twice the modulus size, or 1-byte smaller than the
-    /// `Elliptic-Curve-Point-to-Octet-String` encoding
-    /// (i.e with the leading `0x04` byte in that encoding removed).
-    pub fn from_untagged_point(bytes: &GenericArray<u8, UntaggedPointSize<C>>) -> Self
-    where
-        <C::ElementSize as Add>::Output: ArrayLength<u8>,
-    {
-        let mut tagged_bytes = GenericArray::default();
-        tagged_bytes.as_mut_slice()[0] = 0x04;
-        tagged_bytes.as_mut_slice()[1..].copy_from_slice(bytes.as_ref());
+    /// Compress and serialize an elliptic curve point from its affine coordinates
+    pub fn from_affine_coords(x: &ElementBytes<C>, y: &ElementBytes<C>, compress: bool) -> Self {
+        let tag = if compress {
+            Tag::compress_y(y.as_slice())
+        } else {
+            Tag::Uncompressed
+        };
 
-        EncodedPoint::Uncompressed(UncompressedPoint::from_bytes(tagged_bytes).unwrap())
+        let mut bytes = GenericArray::default();
+        bytes[0] = tag.into();
+
+        let element_size = C::ElementSize::to_usize();
+        bytes[1..(element_size + 1)].copy_from_slice(x);
+
+        if !compress {
+            bytes[(element_size + 1)..].copy_from_slice(y);
+        }
+
+        Self { bytes }
     }
 
-    /// Compress this [`EncodedPoint`].
-    ///
-    /// If the key is already compressed, this is a no-op.
-    pub fn compress(&mut self) {
-        if let EncodedPoint::Uncompressed(point) = self {
-            *self = CompressedPoint::from_affine_coords(point.x(), point.y()).into();
+    /// Decode elliptic curve from a raw uncompressed point, i.e. one encoded
+    /// as `x || y` with no leading `Elliptic-Curve-Point-to-Octet-String` tag
+    /// byte (which would otherwise be `0x04` for an uncompressed point).
+    pub fn from_untagged_point(bytes: &GenericArray<u8, UntaggedPointSize<C>>) -> Self {
+        let (x, y) = bytes.split_at(C::ElementSize::to_usize());
+        Self::from_affine_coords(x.into(), y.into(), false)
+    }
+
+    /// Is this [`EncodedPoint`] compressed?
+    pub fn is_compressed(&self) -> bool {
+        self.tag().is_compressed()
+    }
+
+    /// Get the length of the encoded point in bytes
+    pub fn len(&self) -> usize {
+        if self.is_compressed() {
+            C::ElementSize::to_usize() + 1
+        } else {
+            UncompressedPointSize::<C>::to_usize()
         }
     }
 
     /// Get byte slice of the [`EncodedPoint`].
     #[inline]
     pub fn as_bytes(&self) -> &[u8] {
-        match self {
-            EncodedPoint::Compressed(point) => point.as_bytes(),
-            EncodedPoint::Uncompressed(point) => point.as_bytes(),
+        &self.bytes[..self.len()]
+    }
+
+    /// Compress this [`EncodedPoint`], returning a new [`EncodedPoint`].
+    pub fn compress(&self) -> Self {
+        if self.tag().is_compressed() {
+            self.clone()
+        } else {
+            Self::from_affine_coords(self.x(), self.y().unwrap(), true)
         }
     }
-}
 
-impl<C> EncodedPoint<C>
-where
-    C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
     /// Decode this [`EncodedPoint`] into the desired type
     pub fn decode<T>(&self) -> CtOption<T>
     where
@@ -130,46 +148,43 @@ where
     {
         T::from_encoded_point(self)
     }
-}
 
-impl<C> EncodedPoint<C>
-where
-    C: Curve + Arithmetic,
-    C::AffinePoint: Mul<NonZeroScalar<C>, Output = C::AffinePoint>,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPoint<C>: From<C::AffinePoint>,
-    UncompressedPoint<C>: From<C::AffinePoint>,
-    CompressedPointSize<C>: ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    /// Compute the [`EncodedPoint`] representing the public key for the
-    /// provided [`SecretKey`].
+    /// Get the x-coordinate for this [`EncodedPoint`]
+    #[cfg(feature = "ecdh")]
+    pub(crate) fn x(&self) -> &ElementBytes<C> {
+        self.coordinates().0
+    }
+
+    /// Get the y-coordinate for this [`EncodedPoint`].
     ///
-    /// The `compress` flag requests point compression.
-    pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Result<Self, Error> {
-        let ct_option = C::Scalar::from_bytes(secret_key.as_bytes()).and_then(NonZeroScalar::new);
+    /// Returns `None` if this point is compressed.
+    fn y(&self) -> Option<&ElementBytes<C>> {
+        self.coordinates().1
+    }
 
-        if ct_option.is_none().into() {
-            return Err(Error);
-        }
+    /// Get the coordinates for this [`EncodedPoint`] as a pair
+    #[inline]
+    fn coordinates(&self) -> (&ElementBytes<C>, Option<&ElementBytes<C>>) {
+        let (x, y) = self.bytes[1..].split_at(C::ElementSize::to_usize());
 
-        let affine_point = C::AffinePoint::generator() * ct_option.unwrap();
-
-        if compress {
-            Ok(EncodedPoint::Compressed(affine_point.into()))
+        if self.is_compressed() {
+            (x.into(), None)
         } else {
-            Ok(EncodedPoint::Uncompressed(affine_point.into()))
+            (x.into(), Some(y.into()))
         }
+    }
+
+    /// Get the SEC1 tag for this [`EncodedPoint`]
+    fn tag(&self) -> Tag {
+        // Tag is ensured valid by the constructor
+        Tag::from_u8(self.bytes[0]).expect("invalid tag")
     }
 }
 
 impl<C> AsRef<[u8]> for EncodedPoint<C>
 where
     C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     #[inline]
@@ -181,11 +196,8 @@ where
 impl<C> Copy for EncodedPoint<C>
 where
     C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
-    <CompressedPointSize<C> as ArrayLength<u8>>::ArrayType: Copy,
     <UncompressedPointSize<C> as ArrayLength<u8>>::ArrayType: Copy,
 {
 }
@@ -193,64 +205,23 @@ where
 impl<C> Debug for EncodedPoint<C>
 where
     C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "EncodedPoint<{:?}>(", C::default())?;
-
-        match self {
-            EncodedPoint::Compressed(point) => write!(f, "{:?}", point)?,
-            EncodedPoint::Uncompressed(point) => write!(f, "{:?}", point)?,
-        }
-
-        write!(f, ")")
+        write!(f, "EncodedPoint<{:?}>({:?})", C::default(), &self.bytes)
     }
 }
 
-impl<C> TryFrom<&SecretKey<C>> for EncodedPoint<C>
-where
-    C: Curve + Arithmetic,
-    C::AffinePoint: Mul<NonZeroScalar<C>, Output = C::AffinePoint>,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPoint<C>: From<C::AffinePoint>,
-    UncompressedPoint<C>: From<C::AffinePoint>,
-    CompressedPointSize<C>: ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    type Error = Error;
-
-    fn try_from(secret_key: &SecretKey<C>) -> Result<Self, Error> {
-        Self::from_secret_key(secret_key, C::COMPRESS_POINTS)
-    }
-}
-
-impl<C> From<CompressedPoint<C>> for EncodedPoint<C>
+#[cfg(feature = "zeroize")]
+impl<C> Zeroize for EncodedPoint<C>
 where
     C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
-    fn from(point: CompressedPoint<C>) -> Self {
-        EncodedPoint::Compressed(point)
-    }
-}
-
-impl<C> From<UncompressedPoint<C>> for EncodedPoint<C>
-where
-    C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    fn from(point: UncompressedPoint<C>) -> Self {
-        EncodedPoint::Uncompressed(point)
+    fn zeroize(&mut self) {
+        self.bytes.zeroize()
     }
 }
 
@@ -260,9 +231,7 @@ where
 pub trait FromEncodedPoint<C>: Sized
 where
     C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     /// Deserialize the type this trait is impl'd on from an [`EncodedPoint`].
@@ -273,238 +242,54 @@ where
     fn from_encoded_point(public_key: &EncodedPoint<C>) -> CtOption<Self>;
 }
 
-/// Size of a compressed elliptic curve point for the given curve when
-/// serialized using `Elliptic-Curve-Point-to-Octet-String` encoding
-/// (including leading `0x02` or `0x03` tag byte).
-pub type CompressedPointSize<C> = <<C as crate::Curve>::ElementSize as Add<U1>>::Output;
+/// Tag byte used by the `Elliptic-Curve-Point-to-Octet-String` encoding.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[repr(u8)]
+enum Tag {
+    /// Compressed point with even y-coordinate
+    CompressedEvenY = 2,
 
-/// Size of an uncompressed elliptic curve point for the given curve when
-/// serialized using the `Elliptic-Curve-Point-to-Octet-String` encoding
-/// (including leading `0x04` tag byte).
-pub type UncompressedPointSize<C> =
-    <<<C as crate::Curve>::ElementSize as Add>::Output as Add<U1>>::Output;
+    /// Compressed point with odd y-coordinate
+    CompressedOddY = 3,
 
-/// Compressed elliptic curve points serialized according to the
-/// `Elliptic-Curve-Point-to-Octet-String` algorithm.
-///
-/// See section 2.3.3 of SEC 1: Elliptic Curve Cryptography (Version 2.0):
-///
-/// <https://www.secg.org/sec1-v2.pdf>
-#[derive(Debug, Eq, Hash, PartialEq, PartialOrd, Ord)]
-pub struct CompressedPoint<C>
-where
-    C: Curve,
-    C::ElementSize: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
-{
-    /// Raw serialized bytes of the compressed point
-    bytes: GenericArray<u8, CompressedPointSize<C>>,
+    /// Uncompressed point
+    Uncompressed = 4,
 }
 
-impl<C> CompressedPoint<C>
-where
-    C: Curve,
-    C::ElementSize: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
-{
-    /// Compress and serialize an elliptic curve point from its affine coordinates
-    pub fn from_affine_coords(x: &ElementBytes<C>, y: &ElementBytes<C>) -> Self {
+impl Tag {
+    /// Parse a tag value from a byte
+    pub fn from_u8(byte: u8) -> Result<Self, Error> {
+        match byte {
+            2 => Ok(Tag::CompressedEvenY),
+            3 => Ok(Tag::CompressedOddY),
+            4 => Ok(Tag::Uncompressed),
+            _ => Err(Error),
+        }
+    }
+
+    /// Compress the given y-coordinate, returning a `Tag::Compressed*` value
+    pub fn compress_y(y: &[u8]) -> Self {
+        debug_assert!(!y.is_empty());
+
         // Is the y-coordinate odd in the SEC1 sense: `self mod 2 == 1`?
-        let is_y_odd = y.as_ref().last().expect("empty field element") & 1 == 1;
-        let mut bytes = GenericArray::default();
-        bytes[0] = if is_y_odd { 0x03 } else { 0x02 };
-        bytes[1..].copy_from_slice(x);
-        Self { bytes }
-    }
-
-    /// Create a new compressed elliptic curve point
-    pub fn from_bytes<B>(into_bytes: B) -> Option<Self>
-    where
-        B: Into<GenericArray<u8, CompressedPointSize<C>>>,
-    {
-        let bytes = into_bytes.into();
-
-        match bytes[0] {
-            0x02 | 0x03 => Some(Self { bytes }),
-            _ => None,
-        }
-    }
-
-    /// Borrow byte slice containing compressed curve point
-    #[inline]
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.bytes
-    }
-
-    /// Obtain owned array containing compressed curve point
-    #[inline]
-    pub fn into_bytes(self) -> GenericArray<u8, CompressedPointSize<C>> {
-        self.bytes
-    }
-}
-
-impl<C> AsRef<[u8]> for CompressedPoint<C>
-where
-    C: Curve,
-    C::ElementSize: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
-{
-    #[inline]
-    fn as_ref(&self) -> &[u8] {
-        self.bytes.as_ref()
-    }
-}
-
-impl<C: Curve> Copy for CompressedPoint<C>
-where
-    C::ElementSize: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
-    <CompressedPointSize<C> as ArrayLength<u8>>::ArrayType: Copy,
-{
-}
-
-impl<C> Clone for CompressedPoint<C>
-where
-    C: Curve,
-    C::ElementSize: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
-{
-    fn clone(&self) -> Self {
-        Self {
-            bytes: self.bytes.clone(),
-        }
-    }
-}
-
-#[cfg(feature = "zeroize")]
-impl<C> Zeroize for CompressedPoint<C>
-where
-    C: Curve,
-    C::ElementSize: Add<U1>,
-    CompressedPointSize<C>: ArrayLength<u8>,
-{
-    fn zeroize(&mut self) {
-        self.bytes.zeroize()
-    }
-}
-
-/// Uncompressed elliptic curve points serialized according to the
-/// `Elliptic-Curve-Point-to-Octet-String` algorithm.
-///
-/// See section 2.3.3 of SEC 1: Elliptic Curve Cryptography (Version 2.0):
-///
-/// <https://www.secg.org/sec1-v2.pdf>
-#[derive(Debug, Eq, Hash, PartialEq, PartialOrd, Ord)]
-pub struct UncompressedPoint<C: Curve>
-where
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    /// Raw serialized bytes of the uncompressed point
-    bytes: GenericArray<u8, UncompressedPointSize<C>>,
-}
-
-impl<C> UncompressedPoint<C>
-where
-    C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    /// Serialize an elliptic curve point from its affine coordinates
-    pub fn from_affine_coords(x: &ElementBytes<C>, y: &ElementBytes<C>) -> Self {
-        let scalar_size = C::ElementSize::to_usize();
-        let mut bytes = GenericArray::default();
-        bytes[0] = 0x04;
-        bytes[1..(scalar_size + 1)].copy_from_slice(x);
-        bytes[(scalar_size + 1)..].copy_from_slice(y);
-        Self { bytes }
-    }
-
-    /// Create a new uncompressed elliptic curve point
-    pub fn from_bytes<B>(into_bytes: B) -> Option<Self>
-    where
-        B: Into<GenericArray<u8, UncompressedPointSize<C>>>,
-    {
-        let bytes = into_bytes.into();
-
-        if bytes.get(0) == Some(&0x04) {
-            Some(Self { bytes })
+        if y.as_ref().last().unwrap() & 1 == 1 {
+            Tag::CompressedOddY
         } else {
-            None
+            Tag::CompressedEvenY
         }
     }
 
-    /// Borrow byte slice containing uncompressed curve point
-    #[inline]
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.bytes
-    }
-
-    /// Convert [`UncompressedPoint`] into owned byte array
-    #[inline]
-    pub fn into_bytes(self) -> GenericArray<u8, UncompressedPointSize<C>> {
-        self.bytes
-    }
-
-    /// Get the x-coordinate of this curve point
-    pub(crate) fn x(&self) -> &ElementBytes<C> {
-        GenericArray::from_slice(&self.bytes[1..(C::ElementSize::to_usize() + 1)])
-    }
-
-    /// Get the y-coordinate of this curve point
-    pub(crate) fn y(&self) -> &ElementBytes<C> {
-        GenericArray::from_slice(&self.bytes[(C::ElementSize::to_usize() + 1)..])
-    }
-}
-
-impl<C> AsRef<[u8]> for UncompressedPoint<C>
-where
-    C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    #[inline]
-    fn as_ref(&self) -> &[u8] {
-        self.bytes.as_ref()
-    }
-}
-
-impl<C> Copy for UncompressedPoint<C>
-where
-    C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-    <UncompressedPointSize<C> as ArrayLength<u8>>::ArrayType: Copy,
-{
-}
-
-impl<C> Clone for UncompressedPoint<C>
-where
-    C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    fn clone(&self) -> Self {
-        Self {
-            bytes: self.bytes.clone(),
+    /// Is this point compressed?
+    pub fn is_compressed(self) -> bool {
+        match self {
+            Tag::CompressedEvenY | Tag::CompressedOddY => true,
+            Tag::Uncompressed => false,
         }
     }
 }
 
-#[cfg(feature = "zeroize")]
-impl<C> Zeroize for UncompressedPoint<C>
-where
-    C: Curve,
-    C::ElementSize: Add<U1>,
-    <C::ElementSize as Add>::Output: Add<U1>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    fn zeroize(&mut self) {
-        self.bytes.zeroize()
+impl From<Tag> for u8 {
+    fn from(tag: Tag) -> u8 {
+        tag as u8
     }
 }
