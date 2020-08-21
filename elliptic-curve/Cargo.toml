@@ -26,10 +26,11 @@ hex-literal = "0.2"
 
 [features]
 default = ["rand"]
+alloc = []
 ecdh = ["rand", "weierstrass", "zeroize"]
 rand = ["rand_core"]
 weierstrass = []
-std = []
+std = ["alloc"]
 
 [package.metadata.docs.rs]
 all-features = true
