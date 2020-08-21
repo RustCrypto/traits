@@ -7,8 +7,8 @@
 //! # Usage
 //!
 //! Have each participant generate an [`EphemeralSecret`] value, compute the
-//! [`EncodedPoint`] for that value, exchange public keys, then each participant
-//! uses their [`EphemeralSecret`] and the other participant's [`EncodedPoint`]
+//! [`PublicKey'] for that value, exchange public keys, then each participant
+//! uses their [`EphemeralSecret`] and the other participant's [`PublicKey`]
 //! to compute a [`SharedSecret`] value.
 //!
 //! # ⚠️ SECURITY WARNING ⚠️

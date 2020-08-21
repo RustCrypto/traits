@@ -19,6 +19,9 @@
     html_root_url = "https://docs.rs/elliptic-curve/0.5.0"
 )]
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 #[cfg(feature = "std")]
 extern crate std;
 

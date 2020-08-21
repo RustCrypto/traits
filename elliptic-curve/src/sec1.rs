@@ -17,6 +17,9 @@ use generic_array::{
 };
 use subtle::CtOption;
 
+#[cfg(feature = "alloc")]
+use alloc::boxed::Box;
+
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
 
@@ -120,9 +123,15 @@ where
     }
 
     /// Get byte slice containing the serialized [`EncodedPoint`].
-    #[inline]
     pub fn as_bytes(&self) -> &[u8] {
         &self.bytes[..self.len()]
+    }
+
+    /// Get boxed byte slice containing the serialized [`EncodedPoint`]
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    pub fn to_bytes(&self) -> Box<[u8]> {
+        self.as_bytes().to_vec().into_boxed_slice()
     }
 
     /// Compress this [`EncodedPoint`], returning a new [`EncodedPoint`].
@@ -447,5 +456,12 @@ mod tests {
         let uncompressed_point = EncodedPoint::from_bytes(&UNCOMPRESSED_BYTES[..]).unwrap();
         let compressed_point = uncompressed_point.compress();
         assert_eq!(compressed_point.as_bytes(), &COMPRESSED_BYTES[..]);
+    }
+
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn to_bytes() {
+        let uncompressed_point = EncodedPoint::from_bytes(&UNCOMPRESSED_BYTES[..]).unwrap();
+        assert_eq!(&*uncompressed_point.to_bytes(), &UNCOMPRESSED_BYTES[..]);
     }
 }
