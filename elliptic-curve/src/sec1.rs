@@ -395,16 +395,31 @@ mod tests {
 
     #[test]
     fn decode_invalid_tag() {
-        let invalid_bytes =
-            hex!("010100000000000000000000000000000000000000000000000000000000000000");
-        let invalid_decode_result = EncodedPoint::from_bytes(&invalid_bytes[..]);
-        assert!(invalid_decode_result.is_err());
+        let mut compressed_bytes = COMPRESSED_BYTES.clone();
+        let mut uncompressed_bytes = UNCOMPRESSED_BYTES.clone();
+
+        for bytes in &mut [&mut compressed_bytes[..], &mut uncompressed_bytes[..]] {
+            for tag in 0..=0xFF {
+                // valid tags
+                if tag == 2 || tag == 3 || tag == 4 {
+                    continue;
+                }
+
+                (*bytes)[0] = tag;
+                let decode_result = EncodedPoint::from_bytes(&*bytes);
+                assert!(decode_result.is_err());
+            }
+        }
     }
 
     #[test]
-    fn decode_empty() {
-        let invalid_decode_result = EncodedPoint::from_bytes("");
-        assert!(invalid_decode_result.is_err());
+    fn decode_truncated_point() {
+        for bytes in &[&COMPRESSED_BYTES[..], &UNCOMPRESSED_BYTES[..]] {
+            for len in 0..bytes.len() {
+                let decode_result = EncodedPoint::from_bytes(&bytes[..len]);
+                assert!(decode_result.is_err());
+            }
+        }
     }
 
     #[test]
