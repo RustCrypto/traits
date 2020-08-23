@@ -152,7 +152,6 @@ where
     }
 
     /// Get the x-coordinate for this [`EncodedPoint`]
-    #[cfg(feature = "ecdh")]
     pub(crate) fn x(&self) -> &ElementBytes<C> {
         self.coordinates().0
     }
