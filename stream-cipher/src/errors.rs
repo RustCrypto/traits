@@ -32,8 +32,14 @@ impl std::error::Error for InvalidKeyNonceLength {}
 #[derive(Copy, Clone, Debug)]
 pub struct OverflowError;
 
+impl fmt::Display for OverflowError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("Overflow Error")
+    }
+}
+
 impl From<OverflowError> for LoopError {
-    fn from(_v: OverflowError) -> LoopError {
+    fn from(_: OverflowError) -> LoopError {
         LoopError
     }
 }
