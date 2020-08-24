@@ -98,25 +98,25 @@ pub trait SyncStreamCipher {
 /// Trait for seekable stream ciphers.
 ///
 /// Methods of this trait are generic over the [`NumSeek`] trait, which is
-/// implemented for the following numeric types: `u8`, `u16`, `u32`, `u64`,
-/// and `u128`. By default methods will use `u64`.
-pub trait SyncStreamCipherSeek<T: SeekNum = u64> {
+/// implemented for the following numeric types: `u8`, `u16`, `u32`, `i32`,
+/// `u64`, and `u128`.
+pub trait SyncStreamCipherSeek {
     /// Try to get current keystream position
     ///
     /// Returns [`LoopError`] if position can not be represented by type `T`
-    fn try_get_pos(&self) -> Result<T, OverflowError>;
+    fn try_get_pos<T: SeekNum>(&self) -> Result<T, OverflowError>;
 
     /// Try to seek to the given position
     ///
     /// Returns [`LoopError`] if provided position value is bigger than
     /// keystream leangth
-    fn try_seek(&mut self, pos: T) -> Result<(), LoopError>;
+    fn try_seek<T: SeekNum>(&mut self, pos: T) -> Result<(), LoopError>;
 
     /// Get current keystream position
     ///
     /// # Panics
     /// If position can not be represented by type `T`
-    fn get_pos(&self) -> T {
+    fn get_pos<T: SeekNum>(&self) -> T {
         self.try_get_pos().unwrap()
     }
 
@@ -124,7 +124,7 @@ pub trait SyncStreamCipherSeek<T: SeekNum = u64> {
     ///
     /// # Panics
     /// If provided position value is bigger than keystream leangth
-    fn seek(&mut self, pos: T) {
+    fn seek<T: SeekNum>(&mut self, pos: T) {
         self.try_seek(pos).unwrap()
     }
 }
@@ -215,8 +215,8 @@ where
 /// [`SyncStreamCipherSeek`] trait.
 ///
 /// This trait is implemented for the following primitive numeric types:
-/// `u8`, `u16`, `u32`, `u64`, and `u128`. It is not intended to be implemented
-/// in third-party crates.
+/// `u8`, `u16`, `u32`, `i32`, `u64`, and `u128`. It is not intended to
+/// be implemented in third-party crates.
 pub trait SeekNum:
     Sized
     + TryInto<u8>
@@ -225,6 +225,8 @@ pub trait SeekNum:
     + TryFrom<u16>
     + TryInto<u32>
     + TryFrom<u32>
+    + TryInto<i32>
+    + TryFrom<i32>
     + TryInto<u64>
     + TryFrom<u64>
     + TryInto<u128>
@@ -259,4 +261,6 @@ macro_rules! impl_seek_num {
     };
 }
 
-impl_seek_num! { u8 u16 u32 u64 u128 }
+// note: the trait is implemented for i32 to allow expressions
+// like `cipher.seek(10)`
+impl_seek_num! { i32 u8 u16 u32 u64 u128 }
