@@ -1,6 +1,6 @@
 use core::fmt;
 
-/// Error which notifies that stream cipher has reached the end of a keystream.
+/// The error type returned when stream cipher has reached the end of a keystream.
 #[derive(Copy, Clone, Debug)]
 pub struct LoopError;
 
@@ -13,7 +13,7 @@ impl fmt::Display for LoopError {
 #[cfg(feature = "std")]
 impl std::error::Error for LoopError {}
 
-/// Error which notifies that key or/and nonce used in stream cipher
+/// The error type returned when key and/or nonce used in stream cipher
 /// initialization had an invalid length.
 #[derive(Copy, Clone, Debug)]
 pub struct InvalidKeyNonceLength;
@@ -26,3 +26,17 @@ impl fmt::Display for InvalidKeyNonceLength {
 
 #[cfg(feature = "std")]
 impl std::error::Error for InvalidKeyNonceLength {}
+
+/// The error type returned when a cipher position can not be represented
+/// by the requested type.
+#[derive(Copy, Clone, Debug)]
+pub struct OverflowError;
+
+impl From<OverflowError> for LoopError {
+    fn from(_v: OverflowError) -> LoopError {
+        LoopError
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for OverflowError {}
