@@ -104,7 +104,7 @@ pub trait SyncStreamCipherSeek {
     /// Try to get current keystream position
     ///
     /// Returns [`LoopError`] if position can not be represented by type `T`
-    fn try_get_pos<T: SeekNum>(&self) -> Result<T, OverflowError>;
+    fn try_current_pos<T: SeekNum>(&self) -> Result<T, OverflowError>;
 
     /// Try to seek to the given position
     ///
@@ -117,7 +117,7 @@ pub trait SyncStreamCipherSeek {
     /// # Panics
     /// If position can not be represented by type `T`
     fn get_pos<T: SeekNum>(&self) -> T {
-        self.try_get_pos().unwrap()
+        self.try_current_pos().unwrap()
     }
 
     /// Seek to the given position
