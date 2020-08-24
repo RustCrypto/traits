@@ -95,11 +95,11 @@ pub trait SyncStreamCipher {
     fn try_apply_keystream(&mut self, data: &mut [u8]) -> Result<(), LoopError>;
 }
 
-/// Trait for additionall functionality available for seekable stream ciphers.
+/// Trait for seekable stream ciphers.
 ///
-/// Methods of this trait are generic over the following numeric types: `u8`,
-/// `u16`, `u32`, `u64`, and `u128`. This is done via a "sealed" `SeekNum`
-/// trait. By default methods
+/// Methods of this trait are generic over the [`NumSeek`] trait, which is
+/// implemented for the following numeric types: `u8`, `u16`, `u32`, `u64`,
+/// and `u128`. By default methods will use `u64`.
 pub trait SyncStreamCipherSeek<T: SeekNum = u64> {
     /// Try to get current keystream position
     ///
