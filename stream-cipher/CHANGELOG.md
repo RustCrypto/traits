@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Rework of the `SyncStreamCipherSeek` trait, make methods generic over
 numeric types, add fallable `try_seek` and `try_current_pos` methods ([#260])
+- Rework macro for generating seek tests, re-export `blobby` at top-level,
+remove the `dev` module from public API ([#260])
 
 [#260]: https://github.com/RustCrypto/traits/pull/260
 
