@@ -77,6 +77,19 @@ macro_rules! new_seek_test {
                     }
                 }
             }
+
+            const MAX_CHUNK: usize = 128;
+
+            let mut buf = [0u8; MAX_CHUNK];
+            let mut mode = <$cipher>::new(&Default::default(), &Default::default());
+            for n in 0..MAX_CHUNK {
+                assert_eq!(mode.current_pos::<usize>(), 0);
+                for m in 1..=MAX_CHUNK {
+                    mode.apply_keystream(&mut buf[..n]);
+                    assert_eq!(mode.current_pos::<usize>(), n*m);
+                }
+                mode.seek(0);
+            }
         }
     };
 }
