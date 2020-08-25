@@ -17,17 +17,20 @@
 extern crate std;
 
 #[cfg(feature = "dev")]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-pub mod dev;
+mod dev;
 
 mod errors;
 
-pub use crate::errors::{InvalidKeyNonceLength, LoopError};
+pub use errors::{InvalidKeyNonceLength, LoopError, OverflowError};
 pub use generic_array::{self, typenum::consts};
 
 #[cfg(feature = "block-cipher")]
 pub use block_cipher;
 
+#[cfg(feature = "dev")]
+pub use blobby;
+
+use core::convert::{TryFrom, TryInto};
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
 
@@ -94,13 +97,38 @@ pub trait SyncStreamCipher {
     fn try_apply_keystream(&mut self, data: &mut [u8]) -> Result<(), LoopError>;
 }
 
-/// Synchronous stream cipher seeking trait.
+/// Trait for seekable stream ciphers.
+///
+/// Methods of this trait are generic over the [`SeekNum`] trait, which is
+/// implemented for primitive numeric types, i.e.: `i/u8`, `i/u16`, `i/u32`,
+/// `i/u64`, `i/u128`, and `i/usize`.
 pub trait SyncStreamCipherSeek {
-    /// Return current position of a keystream in bytes from the beginning.
-    fn current_pos(&self) -> u64;
+    /// Try to get current keystream position
+    ///
+    /// Returns [`LoopError`] if position can not be represented by type `T`
+    fn try_current_pos<T: SeekNum>(&self) -> Result<T, OverflowError>;
 
-    /// Seek keystream to the given `pos` in bytes.
-    fn seek(&mut self, pos: u64);
+    /// Try to seek to the given position
+    ///
+    /// Returns [`LoopError`] if provided position value is bigger than
+    /// keystream leangth
+    fn try_seek<T: SeekNum>(&mut self, pos: T) -> Result<(), LoopError>;
+
+    /// Get current keystream position
+    ///
+    /// # Panics
+    /// If position can not be represented by type `T`
+    fn current_pos<T: SeekNum>(&self) -> T {
+        self.try_current_pos().unwrap()
+    }
+
+    /// Seek to the given position
+    ///
+    /// # Panics
+    /// If provided position value is bigger than keystream leangth
+    fn seek<T: SeekNum>(&mut self, pos: T) {
+        self.try_seek(pos).unwrap()
+    }
 }
 
 /// Stream cipher core trait which covers both synchronous and asynchronous
@@ -150,7 +178,6 @@ pub trait FromBlockCipher {
     type NonceSize: ArrayLength<u8>;
 
     /// Instantiate a stream cipher from a block cipher
-    // TODO(tarcieri): add associated type for NonceSize?
     fn from_block_cipher(
         cipher: Self::BlockCipher,
         nonce: &GenericArray<u8, Self::NonceSize>,
@@ -185,3 +212,50 @@ where
         }
     }
 }
+
+/// Trait implemented for numeric types which can be used with the
+/// [`SyncStreamCipherSeek`] trait.
+///
+/// This trait is implemented for primitive numeric types, i.e. `i/u8`,
+/// `i/u16`, `i/u32`, `i/u64`, `i/u128`, and `i/usize`. It is not intended
+/// to be implemented in third-party crates.
+#[rustfmt::skip]
+pub trait SeekNum:
+    Sized
+    + TryInto<u8> + TryFrom<u8> + TryInto<i8> + TryFrom<i8>
+    + TryInto<u16> + TryFrom<u16> + TryInto<i16> + TryFrom<i16>
+    + TryInto<u32> + TryFrom<u32> + TryInto<i32> + TryFrom<i32>
+    + TryInto<u64> + TryFrom<u64> + TryInto<i64> + TryFrom<i64>
+    + TryInto<u128> + TryFrom<u128> + TryInto<i128> + TryFrom<i128>
+    + TryInto<usize> + TryFrom<usize> + TryInto<isize> + TryFrom<isize>
+{
+    /// Try to get position for block number `block`, byte position inside
+    /// block `byte`, and block size `bs`.
+    fn from_block_byte<T: SeekNum>(block: T, byte: u8, bs: u8) -> Result<Self, OverflowError>;
+
+    /// Try to get block number and bytes position for given block size `bs`.
+    fn to_block_byte<T: SeekNum>(self, bs: u8) -> Result<(T, u8), OverflowError>;
+}
+
+macro_rules! impl_seek_num {
+    {$($t:ty )*} => {
+        $(
+            impl SeekNum for $t {
+                fn from_block_byte<T: TryInto<Self>>(block: T, byte: u8, bs: u8) -> Result<Self, OverflowError> {
+                    debug_assert!(byte < bs);
+                    let block = block.try_into().map_err(|_| OverflowError)?;
+                    let pos = block.checked_mul(bs as Self).ok_or(OverflowError)? + (byte as Self);
+                    Ok(pos)
+                }
+
+                fn to_block_byte<T: TryFrom<Self>>(self, bs: u8) -> Result<(T, u8), OverflowError> {
+                    let byte = (self as u8) % bs;
+                    let block = T::try_from(self/(bs as Self)).map_err(|_| OverflowError)?;
+                    Ok((block, byte))
+                }
+            }
+        )*
+    };
+}
+
+impl_seek_num! { u8 i8 u16 i16 u32 i32 u64 i64 u128 i128 isize usize }

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.7.0 (2020-08-25)
+### Changed
+- Rework of the `SyncStreamCipherSeek` trait, make methods generic over
+numeric types, add fallable `try_seek` and `try_current_pos` methods ([#260])
+- Rework macro for generating seek tests, re-export `blobby` at top-level,
+remove the `dev` module from public API ([#260])
+
+[#260]: https://github.com/RustCrypto/traits/pull/260
+
 ## 0.6.0 (2020-07-10)
 ### Changed
 - Add blanket implementation for `&mut SyncCtreamCipher` ([#210])
