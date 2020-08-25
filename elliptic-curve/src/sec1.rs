@@ -5,11 +5,13 @@
 //!
 //! <https://www.secg.org/sec1-v2.pdf>
 
-use crate::ElementBytes;
-use crate::{weierstrass::Curve, Error};
+use crate::{
+    point::Generator, scalar::NonZeroScalar, weierstrass::Curve, Arithmetic, ElementBytes, Error,
+    FromBytes, SecretKey,
+};
 use core::{
     fmt::{self, Debug},
-    ops::Add,
+    ops::{Add, Mul},
 };
 use generic_array::{
     typenum::{Unsigned, U1},
@@ -110,6 +112,33 @@ where
         }
 
         Self { bytes }
+    }
+
+    /// Compute [`EncodedPoint`] representing the public key for the provided
+    /// [`SecretKey`].
+    ///
+    /// The `compress` flag requests point compression.
+    pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Result<Self, Error>
+    where
+        C: Arithmetic,
+        C::AffinePoint: Mul<NonZeroScalar<C>, Output = C::AffinePoint> + ToEncodedPoint<C>,
+    {
+        let ct_option = C::Scalar::from_bytes(secret_key.as_bytes()).and_then(NonZeroScalar::new);
+
+        if ct_option.is_none().into() {
+            return Err(Error);
+        }
+
+        let affine_point = C::AffinePoint::generator() * ct_option.unwrap();
+        Ok(Self::encode(affine_point, compress))
+    }
+
+    /// Encode an [`EncodedPoint`] from the desired type
+    pub fn encode<T>(encodable: T, compress: bool) -> Self
+    where
+        T: ToEncodedPoint<C>,
+    {
+        encodable.to_encoded_point(compress)
     }
 
     /// Is this [`EncodedPoint`] compressed?
