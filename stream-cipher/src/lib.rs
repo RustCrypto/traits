@@ -99,7 +99,7 @@ pub trait SyncStreamCipher {
 ///
 /// Methods of this trait are generic over the [`NumSeek`] trait, which is
 /// implemented for primitive numeric types, i.e.: `i/u8`, `i/u16`, `i/u32`,
-/// `i/u64`, and `i/u128`.
+/// `i/u64`, `i/u128`, and `i/usize`.
 pub trait SyncStreamCipherSeek {
     /// Try to get current keystream position
     ///
@@ -215,8 +215,8 @@ where
 /// [`SyncStreamCipherSeek`] trait.
 ///
 /// This trait is implemented for primitive numeric types, i.e. `i/u8`,
-/// `i/u16`, `i/u32`, `i/u64`, and `i/u128`. It is not intended to be
-/// implemented in third-party crates.
+/// `i/u16`, `i/u32`, `i/u64`, `i/u128`, and `i/usize`. It is not intended
+/// to be implemented in third-party crates.
 #[rustfmt::skip]
 pub trait SeekNum:
     Sized
@@ -225,6 +225,7 @@ pub trait SeekNum:
     + TryInto<u32> + TryFrom<u32> + TryInto<i32> + TryFrom<i32>
     + TryInto<u64> + TryFrom<u64> + TryInto<i64> + TryFrom<i64>
     + TryInto<u128> + TryFrom<u128> + TryInto<i128> + TryFrom<i128>
+    + TryInto<usize> + TryFrom<usize> + TryInto<isize> + TryFrom<isize>
 {
     /// Try to get position for block number `block`, byte position inside
     /// block `byte`, and block size `bs`.
