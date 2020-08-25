@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.7.1 (2020-08-25)
 ### Fixed
-- Computation of `SeekNum::to_block_byte` for numbers which are not a power of 2 ([#261])
+- Computation of `SeekNum::to_block_byte` for numbers which are not a power of 2 ([#268])
 
-[#261]: https://github.com/RustCrypto/traits/pull/261
+[#268]: https://github.com/RustCrypto/traits/pull/268
 
 ## 0.7.0 (2020-08-25)
 ### Changed
