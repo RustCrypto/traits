@@ -249,9 +249,10 @@ macro_rules! impl_seek_num {
                 }
 
                 fn to_block_byte<T: TryFrom<Self>>(self, bs: u8) -> Result<(T, u8), OverflowError> {
-                    let byte = (self as u8) % bs;
-                    let block = T::try_from(self/(bs as Self)).map_err(|_| OverflowError)?;
-                    Ok((block, byte))
+                    let bs = bs as Self;
+                    let byte = self % bs;
+                    let block = T::try_from(self/bs).map_err(|_| OverflowError)?;
+                    Ok((block, byte as u8))
                 }
             }
         )*
