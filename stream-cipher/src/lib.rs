@@ -17,8 +17,7 @@
 extern crate std;
 
 #[cfg(feature = "dev")]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-pub mod dev;
+mod dev;
 
 mod errors;
 
@@ -27,6 +26,9 @@ pub use generic_array::{self, typenum::consts};
 
 #[cfg(feature = "block-cipher")]
 pub use block_cipher;
+
+#[cfg(feature = "dev")]
+pub use blobby;
 
 use core::convert::{TryFrom, TryInto};
 use generic_array::typenum::Unsigned;
@@ -97,7 +99,7 @@ pub trait SyncStreamCipher {
 
 /// Trait for seekable stream ciphers.
 ///
-/// Methods of this trait are generic over the [`NumSeek`] trait, which is
+/// Methods of this trait are generic over the [`SeekNum`] trait, which is
 /// implemented for primitive numeric types, i.e.: `i/u8`, `i/u16`, `i/u32`,
 /// `i/u64`, `i/u128`, and `i/usize`.
 pub trait SyncStreamCipherSeek {

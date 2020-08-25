@@ -1,7 +1,5 @@
 //! Development-related functionality
 
-pub use blobby;
-
 /// Test core functionality of synchronous stream cipher
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
@@ -9,7 +7,7 @@ macro_rules! new_sync_test {
     ($name:ident, $cipher:ty, $test_name:expr) => {
         #[test]
         fn $name() {
-            use stream_cipher::dev::blobby::Blob4Iterator;
+            use stream_cipher::blobby::Blob4Iterator;
             use stream_cipher::generic_array::GenericArray;
             use stream_cipher::{NewStreamCipher, SyncStreamCipher};
 
@@ -99,7 +97,7 @@ macro_rules! new_async_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
         #[test]
         fn $name() {
-            use stream_cipher::dev::blobby::Blob4Iterator;
+            use stream_cipher::blobby::Blob4Iterator;
             use stream_cipher::generic_array::GenericArray;
             use stream_cipher::{NewStreamCipher, StreamCipher};
 
