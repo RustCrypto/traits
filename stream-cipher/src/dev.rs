@@ -61,8 +61,10 @@ macro_rules! new_seek_test {
                 let n = if pl > MAX_SEEK { MAX_SEEK } else { pl };
                 for seek_n in 0..n {
                     let mut pt = pt[seek_n..].to_vec();
-                    mode.seek(seek_n as u64);
+                    mode.seek(seek_n);
+                    assert_eq!(mode.current_pos::<usize>(), seek_n);
                     mode.apply_keystream(&mut pt);
+                    assert_eq!(mode.current_pos::<usize>(), ct.len());
                     if pt != &ct[seek_n..] {
                         panic!(
                             "Failed seek test №{}, seek pos: {}\n\
