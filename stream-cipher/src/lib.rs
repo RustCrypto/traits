@@ -116,7 +116,7 @@ pub trait SyncStreamCipherSeek {
     ///
     /// # Panics
     /// If position can not be represented by type `T`
-    fn get_pos<T: SeekNum>(&self) -> T {
+    fn current_pos<T: SeekNum>(&self) -> T {
         self.try_current_pos().unwrap()
     }
 
