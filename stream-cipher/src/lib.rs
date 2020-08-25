@@ -255,6 +255,4 @@ macro_rules! impl_seek_num {
     };
 }
 
-// note: the trait is implemented for i32 to allow expressions
-// like `cipher.seek(10)`
 impl_seek_num! { u8 i8 u16 i16 u32 i32 u64 i64 u128 i128 }
