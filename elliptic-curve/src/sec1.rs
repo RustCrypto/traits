@@ -151,15 +151,21 @@ where
         T::from_encoded_point(self)
     }
 
+    /// Get the SEC1 tag for this [`EncodedPoint`]
+    pub fn tag(&self) -> Tag {
+        // Tag is ensured valid by the constructor
+        Tag::from_u8(self.bytes[0]).expect("invalid tag")
+    }
+
     /// Get the x-coordinate for this [`EncodedPoint`]
-    pub(crate) fn x(&self) -> &ElementBytes<C> {
+    pub fn x(&self) -> &ElementBytes<C> {
         self.coordinates().0
     }
 
     /// Get the y-coordinate for this [`EncodedPoint`].
     ///
     /// Returns `None` if this point is compressed.
-    fn y(&self) -> Option<&ElementBytes<C>> {
+    pub fn y(&self) -> Option<&ElementBytes<C>> {
         self.coordinates().1
     }
 
@@ -173,12 +179,6 @@ where
         } else {
             (x.into(), Some(y.into()))
         }
-    }
-
-    /// Get the SEC1 tag for this [`EncodedPoint`]
-    fn tag(&self) -> Tag {
-        // Tag is ensured valid by the constructor
-        Tag::from_u8(self.bytes[0]).expect("invalid tag")
     }
 }
 
@@ -261,7 +261,7 @@ where
 /// Tag byte used by the `Elliptic-Curve-Point-to-Octet-String` encoding.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[repr(u8)]
-enum Tag {
+pub enum Tag {
     /// Compressed point with even y-coordinate
     CompressedEvenY = 2,
 
@@ -283,18 +283,6 @@ impl Tag {
         }
     }
 
-    /// Compress the given y-coordinate, returning a `Tag::Compressed*` value
-    pub fn compress_y(y: &[u8]) -> Self {
-        debug_assert!(!y.is_empty());
-
-        // Is the y-coordinate odd in the SEC1 sense: `self mod 2 == 1`?
-        if y.as_ref().last().unwrap() & 1 == 1 {
-            Tag::CompressedOddY
-        } else {
-            Tag::CompressedEvenY
-        }
-    }
-
     /// Is this point compressed?
     pub fn is_compressed(self) -> bool {
         match self {
@@ -311,6 +299,18 @@ impl Tag {
             field_element_size
         } else {
             field_element_size * 2
+        }
+    }
+
+    /// Compress the given y-coordinate, returning a `Tag::Compressed*` value
+    fn compress_y(y: &[u8]) -> Self {
+        debug_assert!(!y.is_empty());
+
+        // Is the y-coordinate odd in the SEC1 sense: `self mod 2 == 1`?
+        if y.as_ref().last().unwrap() & 1 == 1 {
+            Tag::CompressedOddY
+        } else {
+            Tag::CompressedEvenY
         }
     }
 }
