@@ -98,8 +98,8 @@ pub trait SyncStreamCipher {
 /// Trait for seekable stream ciphers.
 ///
 /// Methods of this trait are generic over the [`NumSeek`] trait, which is
-/// implemented for the following numeric types: `u8`, `u16`, `u32`, `i32`,
-/// `u64`, and `u128`.
+/// implemented for primitive numeric types, i.e.: `i/u8`, `i/u16`, `i/u32`,
+/// `i/u64`, and `i/u128`.
 pub trait SyncStreamCipherSeek {
     /// Try to get current keystream position
     ///
@@ -214,23 +214,17 @@ where
 /// Trait implemented for numeric types which can be used with the
 /// [`SyncStreamCipherSeek`] trait.
 ///
-/// This trait is implemented for the following primitive numeric types:
-/// `u8`, `u16`, `u32`, `i32`, `u64`, and `u128`. It is not intended to
-/// be implemented in third-party crates.
+/// This trait is implemented for primitive numeric types, i.e. `i/u8`,
+/// `i/u16`, `i/u32`, `i/u64`, and `i/u128`. It is not intended to be
+/// implemented in third-party crates.
+#[rustfmt::skip]
 pub trait SeekNum:
     Sized
-    + TryInto<u8>
-    + TryFrom<u8>
-    + TryInto<u16>
-    + TryFrom<u16>
-    + TryInto<u32>
-    + TryFrom<u32>
-    + TryInto<i32>
-    + TryFrom<i32>
-    + TryInto<u64>
-    + TryFrom<u64>
-    + TryInto<u128>
-    + TryFrom<u128>
+    + TryInto<u8> + TryFrom<u8> + TryInto<i8> + TryFrom<i8>
+    + TryInto<u16> + TryFrom<u16> + TryInto<i16> + TryFrom<i16>
+    + TryInto<u32> + TryFrom<u32> + TryInto<i32> + TryFrom<i32>
+    + TryInto<u64> + TryFrom<u64> + TryInto<i64> + TryFrom<i64>
+    + TryInto<u128> + TryFrom<u128> + TryInto<i128> + TryFrom<i128>
 {
     /// Try to get position for block number `block`, byte position inside
     /// block `byte`, and block size `bs`.
@@ -263,4 +257,4 @@ macro_rules! impl_seek_num {
 
 // note: the trait is implemented for i32 to allow expressions
 // like `cipher.seek(10)`
-impl_seek_num! { i32 u8 u16 u32 u64 u128 }
+impl_seek_num! { u8 i8 u16 i16 u32 i32 u64 i64 u128 i128 }
