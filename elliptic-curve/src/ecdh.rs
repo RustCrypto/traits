@@ -61,16 +61,15 @@ where
 {
     /// Generate a new [`EphemeralSecret`].
     pub fn generate(rng: impl CryptoRng + RngCore) -> Self {
-        Self {
-            scalar: NonZeroScalar::generate(rng),
-        }
+        let scalar = NonZeroScalar::generate(rng);
+        Self { scalar }
     }
 
     /// Get the public key associated with this ephemeral secret.
     ///
     /// The `compress` flag enables point compression.
     pub fn public_key(&self) -> PublicKey<C> {
-        PublicKey::from(C::AffinePoint::generator() * self.scalar.clone())
+        PublicKey::from(C::AffinePoint::generator() * self.scalar)
     }
 
     /// Compute a Diffie-Hellman shared secret from an ephemeral secret and the
@@ -79,7 +78,7 @@ where
         let affine_point = C::AffinePoint::from_encoded_point(public_key);
 
         if affine_point.is_some().into() {
-            let shared_secret = affine_point.unwrap() * self.scalar.clone();
+            let shared_secret = affine_point.unwrap() * self.scalar;
             Ok(SharedSecret::new(shared_secret.into()))
         } else {
             Err(Error)

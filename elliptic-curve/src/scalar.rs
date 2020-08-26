@@ -1,7 +1,7 @@
 //! Scalar types
 
-use crate::{Arithmetic, Curve, FromBytes};
-use subtle::{ConstantTimeEq, CtOption};
+use crate::{Arithmetic, Curve, ElementBytes, FromBytes};
+use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "rand")]
 use crate::{
@@ -44,6 +44,29 @@ where
 {
     fn as_ref(&self) -> &C::Scalar {
         &self.scalar
+    }
+}
+
+impl<C> ConditionallySelectable for NonZeroScalar<C>
+where
+    C: Curve + Arithmetic,
+{
+    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
+        let scalar = C::Scalar::conditional_select(&a.scalar, &b.scalar, choice);
+        Self { scalar }
+    }
+}
+
+impl<C> Copy for NonZeroScalar<C> where C: Curve + Arithmetic {}
+
+impl<C> FromBytes for NonZeroScalar<C>
+where
+    C: Curve + Arithmetic,
+{
+    type Size = C::ElementSize;
+
+    fn from_bytes(bytes: &ElementBytes<C>) -> CtOption<Self> {
+        C::Scalar::from_bytes(bytes).and_then(Self::new)
     }
 }
 
