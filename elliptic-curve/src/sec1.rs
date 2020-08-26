@@ -6,8 +6,10 @@
 //! <https://www.secg.org/sec1-v2.pdf>
 
 use crate::{
-    point::Generator, scalar::NonZeroScalar, weierstrass::Curve, Arithmetic, ElementBytes, Error,
-    FromBytes, SecretKey,
+    point::Generator,
+    scalar::NonZeroScalar,
+    weierstrass::{point::Decompress, Curve},
+    Arithmetic, ElementBytes, Error, FromBytes, SecretKey,
 };
 use core::{
     fmt::{self, Debug},
@@ -17,7 +19,7 @@ use generic_array::{
     typenum::{Unsigned, U1},
     ArrayLength, GenericArray,
 };
-use subtle::CtOption;
+use subtle::{Choice, CtOption};
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
@@ -133,19 +135,6 @@ where
         Ok(Self::encode(affine_point, compress))
     }
 
-    /// Encode an [`EncodedPoint`] from the desired type
-    pub fn encode<T>(encodable: T, compress: bool) -> Self
-    where
-        T: ToEncodedPoint<C>,
-    {
-        encodable.to_encoded_point(compress)
-    }
-
-    /// Is this [`EncodedPoint`] compressed?
-    pub fn is_compressed(&self) -> bool {
-        self.tag().is_compressed()
-    }
-
     /// Get the length of the encoded point in bytes
     pub fn len(&self) -> usize {
         self.tag().message_len(C::ElementSize::to_usize())
@@ -163,13 +152,40 @@ where
         self.as_bytes().to_vec().into_boxed_slice()
     }
 
+    /// Is this [`EncodedPoint`] compressed?
+    pub fn is_compressed(&self) -> bool {
+        self.tag().is_compressed()
+    }
+
     /// Compress this [`EncodedPoint`], returning a new [`EncodedPoint`].
     pub fn compress(&self) -> Self {
-        if self.tag().is_compressed() {
+        if self.is_compressed() {
             self.clone()
         } else {
             Self::from_affine_coords(self.x(), self.y().unwrap(), true)
         }
+    }
+
+    /// Decompress this [`EncodedPoint`], returning a new [`EncodedPoint`].
+    pub fn decompress(&self) -> CtOption<Self>
+    where
+        C: Arithmetic,
+        C::Scalar: Decompress<C> + ToEncodedPoint<C>,
+    {
+        if self.is_compressed() {
+            C::Scalar::decompress(self.x(), Choice::from(self.tag() as u8 & 1))
+                .map(|s| s.to_encoded_point(false))
+        } else {
+            CtOption::new(self.clone(), Choice::from(1))
+        }
+    }
+
+    /// Encode an [`EncodedPoint`] from the desired type
+    pub fn encode<T>(encodable: T, compress: bool) -> Self
+    where
+        T: ToEncodedPoint<C>,
+    {
+        encodable.to_encoded_point(compress)
     }
 
     /// Decode this [`EncodedPoint`] into the desired type
