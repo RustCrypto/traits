@@ -1,6 +1,6 @@
 //! Scalar types
 
-use crate::{Arithmetic, Curve, ElementBytes, FromBytes};
+use crate::{ops::Invert, Arithmetic, Curve, ElementBytes, FromBytes};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "rand")]
@@ -81,6 +81,19 @@ where
 {
     fn from(scalar: NonZeroScalar<C>) -> ElementBytes<C> {
         scalar.to_bytes()
+    }
+}
+
+impl<C> Invert for NonZeroScalar<C>
+where
+    C: Curve + Arithmetic,
+    C::Scalar: Invert,
+{
+    type Output = <C::Scalar as Invert>::Output;
+
+    /// Perform a scalar inversion
+    fn invert(&self) -> CtOption<Self::Output> {
+        self.scalar.invert()
     }
 }
 
