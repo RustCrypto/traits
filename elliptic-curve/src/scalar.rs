@@ -36,6 +36,11 @@ where
         let is_zero = scalar.ct_eq(&zero);
         CtOption::new(Self { scalar }, !is_zero)
     }
+
+    /// Serialize this [`NonZeroScalar`] as a byte array
+    pub fn to_bytes(&self) -> ElementBytes<C> {
+        self.scalar.into()
+    }
 }
 
 impl<C> AsRef<C::Scalar> for NonZeroScalar<C>
@@ -70,6 +75,15 @@ where
     }
 }
 
+impl<C> From<NonZeroScalar<C>> for ElementBytes<C>
+where
+    C: Curve + Arithmetic,
+{
+    fn from(scalar: NonZeroScalar<C>) -> ElementBytes<C> {
+        scalar.to_bytes()
+    }
+}
+
 #[cfg(feature = "rand")]
 impl<C> Generate for NonZeroScalar<C>
 where
@@ -77,7 +91,7 @@ where
     C::Scalar: Generate,
 {
     fn generate(mut rng: impl CryptoRng + RngCore) -> Self {
-        // Use rejection sampling to eliminate zeroes
+        // Use rejection sampling to eliminate zero values
         loop {
             let result = Self::new(C::Scalar::generate(&mut rng));
 
