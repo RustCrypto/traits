@@ -15,7 +15,7 @@ categories = ["cryptography", "no-std"]
 keywords   = ["crypto", "ecc", "elliptic", "weierstrass"]
 
 [dependencies]
-digest = { version = "0.9", optional = true, path = "../digest" }
+digest = { version = "0.9", optional = true }
 generic-array = { version = "0.14", default-features = false }
 oid = { package = "const-oid", version = "0.1", optional = true }
 rand_core = { version = "0.5", optional = true, default-features = false }
