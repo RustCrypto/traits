@@ -1,6 +1,7 @@
 //! Scalar types
 
 use crate::{ops::Invert, Arithmetic, Curve, ElementBytes, FromBytes};
+use core::ops::Deref;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "rand")]
@@ -63,6 +64,17 @@ where
 }
 
 impl<C> Copy for NonZeroScalar<C> where C: Curve + Arithmetic {}
+
+impl<C> Deref for NonZeroScalar<C>
+where
+    C: Curve + Arithmetic,
+{
+    type Target = C::Scalar;
+
+    fn deref(&self) -> &C::Scalar {
+        &self.scalar
+    }
+}
 
 impl<C> FromBytes for NonZeroScalar<C>
 where
