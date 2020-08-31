@@ -47,6 +47,9 @@ pub use self::{error::Error, secret_key::SecretKey};
 pub use generic_array::{self, typenum::consts};
 pub use subtle;
 
+#[cfg(feature = "digest")]
+pub use digest::{self, Digest};
+
 #[cfg(feature = "oid")]
 pub use oid;
 
@@ -105,6 +108,19 @@ pub trait FromBytes: ConditionallySelectable + Sized {
 
     /// Try to decode this object from bytes
     fn from_bytes(bytes: &GenericArray<u8, Self::Size>) -> CtOption<Self>;
+}
+
+/// Instantiate this type from the output of a digest.
+///
+/// This can be used for implementing hash-to-scalar (e.g. as in ECDSA) or
+/// hash-to-curve algorithms.
+#[cfg(feature = "digest")]
+#[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
+pub trait FromDigest<C: Curve> {
+    /// Instantiate this type from a [`Digest`] instance
+    fn from_digest<D>(digest: D) -> Self
+    where
+        D: Digest<OutputSize = C::ElementSize>;
 }
 
 /// Randomly generate a value.
