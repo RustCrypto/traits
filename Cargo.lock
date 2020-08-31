@@ -128,7 +128,7 @@ name = "elliptic-curve"
 version = "0.5.0"
 dependencies = [
  "const-oid",
- "digest 0.9.0",
+ "digest 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "generic-array 0.14.4",
  "hex-literal",
  "rand_core",
