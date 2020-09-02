@@ -380,9 +380,7 @@ mod tests {
         type FieldSize = U32;
     }
 
-    impl weierstrass::Curve for ExampleCurve {
-        const COMPRESS_POINTS: bool = false;
-    }
+    impl weierstrass::Curve for ExampleCurve {}
 
     type EncodedPoint = super::EncodedPoint<ExampleCurve>;
 
