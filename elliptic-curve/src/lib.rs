@@ -30,6 +30,7 @@ pub mod ops;
 pub mod point;
 pub mod scalar;
 pub mod secret_key;
+pub mod util;
 
 #[cfg(feature = "ecdh")]
 #[cfg_attr(docsrs, doc(cfg(feature = "ecdh")))]
