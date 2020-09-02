@@ -71,7 +71,7 @@ use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
 use rand_core::{CryptoRng, RngCore};
 
 /// Byte array containing a serialized scalar value (i.e. an integer)
-pub type ElementBytes<C> = GenericArray<u8, <C as Curve>::ElementSize>;
+pub type ElementBytes<C> = GenericArray<u8, <C as Curve>::FieldSize>;
 
 /// Elliptic curve.
 ///
@@ -82,11 +82,12 @@ pub type ElementBytes<C> = GenericArray<u8, <C as Curve>::ElementSize>;
 /// be impl'd by these ZSTs, facilitating types which are generic over elliptic
 /// curves (e.g. [`SecretKey`]).
 pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
-    /// Number of bytes required to serialize elements of field elements
-    /// associated with this curve, e.g. elements of the base/scalar fields.
+    /// Size of this curve's field in *bytes*, i.e. the number of bytes needed
+    /// to serialize a field element.
     ///
-    /// This is used for computing the sizes for types related to this curve.
-    type ElementSize: ArrayLength<u8> + Add + Eq + Ord + Unsigned;
+    /// This is used for computing the sizes of field element types related to
+    /// this curve and other types composed from them (e.g. signatures).
+    type FieldSize: ArrayLength<u8> + Add + Eq + Ord + Unsigned;
 }
 
 /// Elliptic curve with curve arithmetic support
@@ -95,7 +96,7 @@ pub trait Arithmetic: Curve {
     type Scalar: ConditionallySelectable
         + ConstantTimeEq
         + Default
-        + FromBytes<Size = Self::ElementSize>
+        + FromBytes<Size = Self::FieldSize>
         + Into<ElementBytes<Self>>;
 
     /// Affine point type for a given curve
@@ -121,7 +122,7 @@ pub trait FromDigest<C: Curve> {
     /// Instantiate this type from a [`Digest`] instance
     fn from_digest<D>(digest: D) -> Self
     where
-        D: Digest<OutputSize = C::ElementSize>;
+        D: Digest<OutputSize = C::FieldSize>;
 }
 
 /// Randomly generate a value.

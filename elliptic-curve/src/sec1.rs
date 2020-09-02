@@ -30,7 +30,7 @@ use zeroize::Zeroize;
 /// Size of a compressed point for the given elliptic curve when encoded
 /// using the SEC1 `Elliptic-Curve-Point-to-Octet-String` algorithm
 /// (including leading `0x02` or `0x03` tag byte).
-pub type CompressedPointSize<C> = <<C as crate::Curve>::ElementSize as Add<U1>>::Output;
+pub type CompressedPointSize<C> = <<C as crate::Curve>::FieldSize as Add<U1>>::Output;
 
 /// Size of an uncompressed point for the given elliptic curve when encoded
 /// using the SEC1 `Elliptic-Curve-Point-to-Octet-String` algorithm
@@ -38,7 +38,7 @@ pub type CompressedPointSize<C> = <<C as crate::Curve>::ElementSize as Add<U1>>:
 pub type UncompressedPointSize<C> = <UntaggedPointSize<C> as Add<U1>>::Output;
 
 /// Size of an untagged point for given elliptic curve.
-pub type UntaggedPointSize<C> = <<C as crate::Curve>::ElementSize as Add>::Output;
+pub type UntaggedPointSize<C> = <<C as crate::Curve>::FieldSize as Add>::Output;
 
 /// SEC1 encoded curve point.
 ///
@@ -75,7 +75,7 @@ where
         let tag = input.first().cloned().ok_or(Error).and_then(Tag::from_u8)?;
 
         // Validate length
-        let expected_len = tag.message_len(C::ElementSize::to_usize());
+        let expected_len = tag.message_len(C::FieldSize::to_usize());
 
         if input.len() != expected_len {
             return Err(Error);
@@ -90,7 +90,7 @@ where
     /// encoded as the concatenated `x || y` coordinates with no leading SEC1
     /// tag byte (which would otherwise be `0x04` for an uncompressed point).
     pub fn from_untagged_bytes(bytes: &GenericArray<u8, UntaggedPointSize<C>>) -> Self {
-        let (x, y) = bytes.split_at(C::ElementSize::to_usize());
+        let (x, y) = bytes.split_at(C::FieldSize::to_usize());
         Self::from_affine_coords(x.into(), y.into(), false)
     }
 
@@ -106,7 +106,7 @@ where
         let mut bytes = GenericArray::default();
         bytes[0] = tag.into();
 
-        let element_size = C::ElementSize::to_usize();
+        let element_size = C::FieldSize::to_usize();
         bytes[1..(element_size + 1)].copy_from_slice(x);
 
         if !compress {
@@ -137,7 +137,7 @@ where
 
     /// Get the length of the encoded point in bytes
     pub fn len(&self) -> usize {
-        self.tag().message_len(C::ElementSize::to_usize())
+        self.tag().message_len(C::FieldSize::to_usize())
     }
 
     /// Get byte slice containing the serialized [`EncodedPoint`].
@@ -217,7 +217,7 @@ where
     /// Get the coordinates for this [`EncodedPoint`] as a pair
     #[inline]
     fn coordinates(&self) -> (&ElementBytes<C>, Option<&ElementBytes<C>>) {
-        let (x, y) = self.bytes[1..].split_at(C::ElementSize::to_usize());
+        let (x, y) = self.bytes[1..].split_at(C::FieldSize::to_usize());
 
         if self.is_compressed() {
             (x.into(), None)
@@ -377,7 +377,7 @@ mod tests {
     struct ExampleCurve;
 
     impl Curve for ExampleCurve {
-        type ElementSize = U32;
+        type FieldSize = U32;
     }
 
     impl weierstrass::Curve for ExampleCurve {

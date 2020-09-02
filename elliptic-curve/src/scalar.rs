@@ -80,7 +80,7 @@ impl<C> FromBytes for NonZeroScalar<C>
 where
     C: Curve + Arithmetic,
 {
-    type Size = C::ElementSize;
+    type Size = C::FieldSize;
 
     fn from_bytes(bytes: &ElementBytes<C>) -> CtOption<Self> {
         C::Scalar::from_bytes(bytes).and_then(Self::new)
