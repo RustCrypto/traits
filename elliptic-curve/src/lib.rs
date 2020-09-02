@@ -100,7 +100,9 @@ pub trait Arithmetic: Curve {
         + Into<ElementBytes<Self>>;
 
     /// Affine point type for a given curve
-    type AffinePoint: ConditionallySelectable + Mul<scalar::NonZeroScalar<Self>> + point::Generator;
+    type AffinePoint: ConditionallySelectable
+        + Mul<scalar::NonZeroScalar<Self>, Output = Self::AffinePoint>
+        + point::Generator;
 }
 
 /// Try to decode the given bytes into a curve element
