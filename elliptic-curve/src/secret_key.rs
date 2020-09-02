@@ -52,7 +52,7 @@ impl<C: Curve> TryFrom<&[u8]> for SecretKey<C> {
     type Error = Error;
 
     fn try_from(slice: &[u8]) -> Result<Self, Error> {
-        if slice.len() == C::ElementSize::to_usize() {
+        if slice.len() == C::FieldSize::to_usize() {
             Ok(SecretKey {
                 scalar: GenericArray::clone_from_slice(slice),
             })
