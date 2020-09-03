@@ -129,11 +129,23 @@ version = "0.5.0"
 dependencies = [
  "const-oid",
  "digest 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ff",
  "generic-array 0.14.4",
  "hex-literal",
  "rand_core",
  "subtle",
  "zeroize",
+]
+
+[[package]]
+name = "ff"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01d11efdc125f2647dde5a0f5f88010a5b0f89b700f86052afa1d148c4696047"
+dependencies = [
+ "byteorder",
+ "rand_core",
+ "subtle",
 ]
 
 [[package]]

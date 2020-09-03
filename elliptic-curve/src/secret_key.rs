@@ -8,17 +8,13 @@
 //! zeroing it out of memory securely on drop.
 
 use crate::{error::Error, Curve, ElementBytes};
+use crate::{Arithmetic, Generate};
 use core::{
     convert::{TryFrom, TryInto},
     fmt::{self, Debug},
 };
 use generic_array::{typenum::Unsigned, GenericArray};
-
-#[cfg(feature = "rand")]
-use {
-    crate::{Arithmetic, Generate},
-    rand_core::{CryptoRng, RngCore},
-};
+use rand_core::{CryptoRng, RngCore};
 
 /// Elliptic curve secret keys.
 ///
@@ -68,8 +64,6 @@ impl<C: Curve> Debug for SecretKey<C> {
     }
 }
 
-#[cfg(feature = "rand")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand")))]
 impl<C> Generate for SecretKey<C>
 where
     C: Curve + Arithmetic,

@@ -26,26 +26,23 @@ extern crate alloc;
 extern crate std;
 
 pub mod error;
+pub mod group;
 pub mod ops;
 pub mod point;
 pub mod scalar;
+pub mod sec1;
 pub mod secret_key;
 pub mod util;
+pub mod weierstrass;
 
 #[cfg(feature = "ecdh")]
 #[cfg_attr(docsrs, doc(cfg(feature = "ecdh")))]
 pub mod ecdh;
 
-#[cfg(feature = "weierstrass")]
-#[cfg_attr(docsrs, doc(cfg(feature = "weierstrass")))]
-pub mod sec1;
-
-#[cfg(feature = "weierstrass")]
-#[cfg_attr(docsrs, doc(cfg(feature = "weierstrass")))]
-pub mod weierstrass;
-
 pub use self::{error::Error, secret_key::SecretKey};
+pub use ff;
 pub use generic_array::{self, typenum::consts};
+pub use rand_core;
 pub use subtle;
 
 #[cfg(feature = "digest")]
@@ -53,9 +50,6 @@ pub use digest::{self, Digest};
 
 #[cfg(feature = "oid")]
 pub use oid;
-
-#[cfg(feature = "rand")]
-pub use rand_core;
 
 #[cfg(feature = "zeroize")]
 pub use zeroize;
@@ -65,10 +59,8 @@ use core::{
     ops::{Add, Mul},
 };
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
-use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
-
-#[cfg(feature = "rand")]
 use rand_core::{CryptoRng, RngCore};
+use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
 
 /// Byte array containing a serialized scalar value (i.e. an integer)
 pub type ElementBytes<C> = GenericArray<u8, <C as Curve>::FieldSize>;
@@ -114,6 +106,14 @@ pub trait FromBytes: ConditionallySelectable + Sized {
     fn from_bytes(bytes: &GenericArray<u8, Self::Size>) -> CtOption<Self>;
 }
 
+/// Randomly generate a value.
+///
+/// Primarily intended for use with scalar types for a particular curve.
+pub trait Generate {
+    /// Generate a random element of this type using the provided [`CryptoRng`]
+    fn generate(rng: impl CryptoRng + RngCore) -> Self;
+}
+
 /// Instantiate this type from the output of a digest.
 ///
 /// This can be used for implementing hash-to-scalar (e.g. as in ECDSA) or
@@ -125,16 +125,6 @@ pub trait FromDigest<C: Curve> {
     fn from_digest<D>(digest: D) -> Self
     where
         D: Digest<OutputSize = C::FieldSize>;
-}
-
-/// Randomly generate a value.
-///
-/// Primarily intended for use with scalar types for a particular curve.
-#[cfg(feature = "rand")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand")))]
-pub trait Generate {
-    /// Generate a random element of this type using the provided [`CryptoRng`]
-    fn generate(rng: impl CryptoRng + RngCore) -> Self;
 }
 
 /// Associate an object identifier (OID) with a curve
