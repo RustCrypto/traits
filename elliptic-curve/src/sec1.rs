@@ -91,12 +91,16 @@ where
     /// tag byte (which would otherwise be `0x04` for an uncompressed point).
     pub fn from_untagged_bytes(bytes: &GenericArray<u8, UntaggedPointSize<C>>) -> Self {
         let (x, y) = bytes.split_at(C::FieldSize::to_usize());
-        Self::from_affine_coords(x.into(), y.into(), false)
+        Self::from_affine_coordinates(x.into(), y.into(), false)
     }
 
     /// Encode an elliptic curve point from big endian serialized coordinates
     /// (with optional point compression)
-    pub fn from_affine_coords(x: &ElementBytes<C>, y: &ElementBytes<C>, compress: bool) -> Self {
+    pub fn from_affine_coordinates(
+        x: &ElementBytes<C>,
+        y: &ElementBytes<C>,
+        compress: bool,
+    ) -> Self {
         let tag = if compress {
             Tag::compress_y(y.as_slice())
         } else {
@@ -159,10 +163,9 @@ where
 
     /// Compress this [`EncodedPoint`], returning a new [`EncodedPoint`].
     pub fn compress(&self) -> Self {
-        if self.is_compressed() {
-            self.clone()
-        } else {
-            Self::from_affine_coords(self.x(), self.y().unwrap(), true)
+        match self.coordinates() {
+            Coordinates::Compressed { .. } => self.clone(),
+            Coordinates::Uncompressed { x, y } => Self::from_affine_coordinates(x, y, true),
         }
     }
 
@@ -172,11 +175,12 @@ where
         C: Arithmetic,
         C::Scalar: Decompress<C> + ToEncodedPoint<C>,
     {
-        if self.is_compressed() {
-            C::Scalar::decompress(self.x(), Choice::from(self.tag() as u8 & 1))
-                .map(|s| s.to_encoded_point(false))
-        } else {
-            CtOption::new(self.clone(), Choice::from(1))
+        match self.coordinates() {
+            Coordinates::Compressed { x, y_is_odd } => {
+                C::Scalar::decompress(x, Choice::from(y_is_odd as u8))
+                    .map(|s| s.to_encoded_point(false))
+            }
+            Coordinates::Uncompressed { .. } => CtOption::new(self.clone(), Choice::from(1)),
         }
     }
 
@@ -202,27 +206,39 @@ where
         Tag::from_u8(self.bytes[0]).expect("invalid tag")
     }
 
+    /// Get the [`Coordinates`] for this [`EncodedPoint`].
+    #[inline]
+    pub fn coordinates(&self) -> Coordinates<'_, C> {
+        let (x, y) = self.bytes[1..].split_at(C::FieldSize::to_usize());
+
+        if self.is_compressed() {
+            Coordinates::Compressed {
+                x: x.into(),
+                y_is_odd: self.tag() as u8 & 1 == 1,
+            }
+        } else {
+            Coordinates::Uncompressed {
+                x: x.into(),
+                y: y.into(),
+            }
+        }
+    }
+
     /// Get the x-coordinate for this [`EncodedPoint`]
     pub fn x(&self) -> &ElementBytes<C> {
-        self.coordinates().0
+        match self.coordinates() {
+            Coordinates::Compressed { x, .. } => x,
+            Coordinates::Uncompressed { x, .. } => x,
+        }
     }
 
     /// Get the y-coordinate for this [`EncodedPoint`].
     ///
     /// Returns `None` if this point is compressed.
     pub fn y(&self) -> Option<&ElementBytes<C>> {
-        self.coordinates().1
-    }
-
-    /// Get the coordinates for this [`EncodedPoint`] as a pair
-    #[inline]
-    fn coordinates(&self) -> (&ElementBytes<C>, Option<&ElementBytes<C>>) {
-        let (x, y) = self.bytes[1..].split_at(C::FieldSize::to_usize());
-
-        if self.is_compressed() {
-            (x.into(), None)
-        } else {
-            (x.into(), Some(y.into()))
+        match self.coordinates() {
+            Coordinates::Compressed { .. } => None,
+            Coordinates::Uncompressed { y, .. } => Some(y),
         }
     }
 }
@@ -271,6 +287,29 @@ where
     }
 }
 
+/// Enum representing the coordinates of either compressed or uncompressed
+/// SEC1-encoded elliptic curve points.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum Coordinates<'a, C: Curve> {
+    /// Compressed curve point
+    Compressed {
+        /// x-coordinate
+        x: &'a ElementBytes<C>,
+
+        /// Is the y-coordinate odd?
+        y_is_odd: bool,
+    },
+
+    /// Uncompressed curve point
+    Uncompressed {
+        /// x-coordinate
+        x: &'a ElementBytes<C>,
+
+        /// y-coordinate
+        y: &'a ElementBytes<C>,
+    },
+}
+
 /// Trait for deserializing a value from a SEC1 encoded curve point.
 ///
 /// This is intended for use with the `AffinePoint` type for a given elliptic curve.
@@ -307,13 +346,13 @@ where
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[repr(u8)]
 pub enum Tag {
-    /// Compressed point with even y-coordinate
+    /// Compressed point with even y-coordinate (`0x02`)
     CompressedEvenY = 2,
 
-    /// Compressed point with odd y-coordinate
+    /// Compressed point with odd y-coordinate (`0x03`)
     CompressedOddY = 3,
 
-    /// Uncompressed point
+    /// Uncompressed point (`0x04`)
     Uncompressed = 4,
 }
 
@@ -368,7 +407,7 @@ impl From<Tag> for u8 {
 
 #[cfg(test)]
 mod tests {
-    use super::Tag;
+    use super::{Coordinates, Tag};
     use crate::{weierstrass, Curve};
     use generic_array::{typenum::U32, GenericArray};
     use hex_literal::hex;
@@ -401,13 +440,22 @@ mod tests {
 
         assert!(compressed_even_y.is_compressed());
         assert_eq!(compressed_even_y.tag(), Tag::CompressedEvenY);
+        assert_eq!(compressed_even_y.len(), 33);
+        assert_eq!(compressed_even_y.as_bytes(), &compressed_even_y_bytes[..]);
+
+        assert_eq!(
+            compressed_even_y.coordinates(),
+            Coordinates::Compressed {
+                x: &hex!("0100000000000000000000000000000000000000000000000000000000000000").into(),
+                y_is_odd: false
+            }
+        );
+
         assert_eq!(
             compressed_even_y.x(),
             &hex!("0100000000000000000000000000000000000000000000000000000000000000").into()
         );
         assert_eq!(compressed_even_y.y(), None);
-        assert_eq!(compressed_even_y.len(), 33);
-        assert_eq!(compressed_even_y.as_bytes(), &compressed_even_y_bytes[..]);
 
         // Odd y-coordinate
         let compressed_odd_y_bytes =
@@ -417,13 +465,22 @@ mod tests {
 
         assert!(compressed_odd_y.is_compressed());
         assert_eq!(compressed_odd_y.tag(), Tag::CompressedOddY);
+        assert_eq!(compressed_odd_y.len(), 33);
+        assert_eq!(compressed_odd_y.as_bytes(), &compressed_odd_y_bytes[..]);
+
+        assert_eq!(
+            compressed_odd_y.coordinates(),
+            Coordinates::Compressed {
+                x: &hex!("0200000000000000000000000000000000000000000000000000000000000000").into(),
+                y_is_odd: true
+            }
+        );
+
         assert_eq!(
             compressed_odd_y.x(),
             &hex!("0200000000000000000000000000000000000000000000000000000000000000").into()
         );
         assert_eq!(compressed_odd_y.y(), None);
-        assert_eq!(compressed_odd_y.len(), 33);
-        assert_eq!(compressed_odd_y.as_bytes(), &compressed_odd_y_bytes[..]);
     }
 
     #[test]
@@ -432,6 +489,17 @@ mod tests {
 
         assert!(!uncompressed_point.is_compressed());
         assert_eq!(uncompressed_point.tag(), Tag::Uncompressed);
+        assert_eq!(uncompressed_point.len(), 65);
+        assert_eq!(uncompressed_point.as_bytes(), &UNCOMPRESSED_BYTES[..]);
+
+        assert_eq!(
+            uncompressed_point.coordinates(),
+            Coordinates::Uncompressed {
+                x: &hex!("1111111111111111111111111111111111111111111111111111111111111111").into(),
+                y: &hex!("2222222222222222222222222222222222222222222222222222222222222222").into()
+            }
+        );
+
         assert_eq!(
             uncompressed_point.x(),
             &hex!("1111111111111111111111111111111111111111111111111111111111111111").into()
@@ -440,8 +508,6 @@ mod tests {
             uncompressed_point.y().unwrap(),
             &hex!("2222222222222222222222222222222222222222222222222222222222222222").into()
         );
-        assert_eq!(uncompressed_point.len(), 65);
-        assert_eq!(uncompressed_point.as_bytes(), &UNCOMPRESSED_BYTES[..]);
     }
 
     #[test]
@@ -482,14 +548,14 @@ mod tests {
     }
 
     #[test]
-    fn from_affine_coords() {
+    fn from_affine_coordinates() {
         let x = hex!("1111111111111111111111111111111111111111111111111111111111111111");
         let y = hex!("2222222222222222222222222222222222222222222222222222222222222222");
 
-        let uncompressed_point = EncodedPoint::from_affine_coords(&x.into(), &y.into(), false);
+        let uncompressed_point = EncodedPoint::from_affine_coordinates(&x.into(), &y.into(), false);
         assert_eq!(uncompressed_point.as_bytes(), &UNCOMPRESSED_BYTES[..]);
 
-        let compressed_point = EncodedPoint::from_affine_coords(&x.into(), &y.into(), true);
+        let compressed_point = EncodedPoint::from_affine_coordinates(&x.into(), &y.into(), true);
         assert_eq!(compressed_point.as_bytes(), &COMPRESSED_BYTES[..]);
     }
 
