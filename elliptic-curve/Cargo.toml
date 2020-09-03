@@ -16,9 +16,11 @@ keywords   = ["crypto", "ecc", "elliptic", "weierstrass"]
 
 [dependencies]
 digest = { version = "0.9", optional = true }
+ff = { version = "0.7", default-features = false }
+group = { version = "0.7", default-features = false }
 generic-array = { version = "0.14", default-features = false }
 oid = { package = "const-oid", version = "0.1", optional = true }
-rand_core = { version = "0.5", optional = true, default-features = false }
+rand_core = { version = "0.5", default-features = false }
 subtle = { version = "2.2", default-features = false }
 zeroize = { version = "1", optional = true,  default-features = false }
 
@@ -26,11 +28,9 @@ zeroize = { version = "1", optional = true,  default-features = false }
 hex-literal = "0.2"
 
 [features]
-default = ["rand"]
+default = []
 alloc = []
-ecdh = ["rand", "weierstrass", "zeroize"]
-rand = ["rand_core"]
-weierstrass = []
+ecdh = ["zeroize"]
 std = ["alloc"]
 
 [package.metadata.docs.rs]

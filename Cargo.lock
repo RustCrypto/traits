@@ -129,11 +129,24 @@ version = "0.5.0"
 dependencies = [
  "const-oid",
  "digest 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ff",
  "generic-array 0.14.4",
+ "group",
  "hex-literal",
  "rand_core",
  "subtle",
  "zeroize",
+]
+
+[[package]]
+name = "ff"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01d11efdc125f2647dde5a0f5f88010a5b0f89b700f86052afa1d148c4696047"
+dependencies = [
+ "byteorder",
+ "rand_core",
+ "subtle",
 ]
 
 [[package]]
@@ -162,6 +175,17 @@ checksum = "501466ecc8a30d1d3b7fc9229b122b2ce8ed6e9d9223f1138d4babb253e51817"
 dependencies = [
  "typenum",
  "version_check",
+]
+
+[[package]]
+name = "group"
+version = "0.7.0"
+source = "git+https://github.com/zkcrypto/group.git#2942324876cdbb5c94140ad39ae83da642c30374"
+dependencies = [
+ "byteorder",
+ "ff",
+ "rand_core",
+ "subtle",
 ]
 
 [[package]]
@@ -218,9 +242,9 @@ checksum = "99c605b9a0adc77b7211c6b1f722dcb613d68d66859a44f3d485a6da332b0598"
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.19"
+version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04f5f085b5d71e2188cb8271e5da0161ad52c3f227a661a3c135fdf28e258b12"
+checksum = "175c513d55719db99da20232b06cda8bab6b83ec2d04e3283edf0213c37c1a29"
 dependencies = [
  "unicode-xid",
 ]
@@ -297,9 +321,9 @@ checksum = "502d53007c02d7605a05df1c1a73ee436952781653da5d0bf57ad608f66932c1"
 
 [[package]]
 name = "syn"
-version = "1.0.38"
+version = "1.0.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e69abc24912995b3038597a7a593be5053eb0fb44f3cc5beec0deb421790c1f4"
+checksum = "891d8d6567fe7c7f8835a3a98af4208f3846fba258c1bc3c31d6e506239f11f9"
 dependencies = [
  "proc-macro2",
  "quote",

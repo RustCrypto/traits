@@ -1,14 +1,12 @@
 //! Scalar types
 
-use crate::{ops::Invert, Arithmetic, Curve, ElementBytes, FromBytes};
+use crate::{
+    ops::Invert,
+    rand_core::{CryptoRng, RngCore},
+    Arithmetic, Curve, ElementBytes, FromBytes, Generate,
+};
 use core::ops::Deref;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
-
-#[cfg(feature = "rand")]
-use crate::{
-    rand_core::{CryptoRng, RngCore},
-    Generate,
-};
 
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
@@ -109,7 +107,6 @@ where
     }
 }
 
-#[cfg(feature = "rand")]
 impl<C> Generate for NonZeroScalar<C>
 where
     C: Curve + Arithmetic,

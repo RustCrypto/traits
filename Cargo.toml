@@ -10,3 +10,6 @@ members = [
     "stream-cipher",
     "universal-hash",
 ]
+
+[patch.crates-io]
+group = { git = "https://github.com/zkcrypto/group.git" }
