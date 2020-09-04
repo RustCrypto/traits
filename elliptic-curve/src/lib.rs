@@ -62,8 +62,9 @@ use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 use rand_core::{CryptoRng, RngCore};
 use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
 
-/// Byte array containing a serialized scalar value (i.e. an integer)
-pub type ElementBytes<C> = GenericArray<u8, <C as Curve>::FieldSize>;
+/// Byte array containing a serialized field element, i.e. an element
+/// of the given curve's base or scalar fields.
+pub type FEBytes<C> = GenericArray<u8, <C as Curve>::FieldSize>;
 
 /// Elliptic curve.
 ///
@@ -89,7 +90,7 @@ pub trait Arithmetic: Curve {
         + ConstantTimeEq
         + Default
         + FromBytes<Size = Self::FieldSize>
-        + Into<ElementBytes<Self>>;
+        + Into<FEBytes<Self>>;
 
     /// Affine point type for a given curve
     type AffinePoint: ConditionallySelectable

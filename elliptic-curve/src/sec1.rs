@@ -9,7 +9,7 @@ use crate::{
     point::Generator,
     scalar::NonZeroScalar,
     weierstrass::{point::Decompress, Curve},
-    Arithmetic, ElementBytes, Error, FromBytes, SecretKey,
+    Arithmetic, Error, FEBytes, FromBytes, SecretKey,
 };
 use core::{
     fmt::{self, Debug},
@@ -96,11 +96,7 @@ where
 
     /// Encode an elliptic curve point from big endian serialized coordinates
     /// (with optional point compression)
-    pub fn from_affine_coordinates(
-        x: &ElementBytes<C>,
-        y: &ElementBytes<C>,
-        compress: bool,
-    ) -> Self {
+    pub fn from_affine_coordinates(x: &FEBytes<C>, y: &FEBytes<C>, compress: bool) -> Self {
         let tag = if compress {
             Tag::compress_y(y.as_slice())
         } else {
@@ -225,7 +221,7 @@ where
     }
 
     /// Get the x-coordinate for this [`EncodedPoint`]
-    pub fn x(&self) -> &ElementBytes<C> {
+    pub fn x(&self) -> &FEBytes<C> {
         match self.coordinates() {
             Coordinates::Compressed { x, .. } => x,
             Coordinates::Uncompressed { x, .. } => x,
@@ -235,7 +231,7 @@ where
     /// Get the y-coordinate for this [`EncodedPoint`].
     ///
     /// Returns `None` if this point is compressed.
-    pub fn y(&self) -> Option<&ElementBytes<C>> {
+    pub fn y(&self) -> Option<&FEBytes<C>> {
         match self.coordinates() {
             Coordinates::Compressed { .. } => None,
             Coordinates::Uncompressed { y, .. } => Some(y),
@@ -294,7 +290,7 @@ pub enum Coordinates<'a, C: Curve> {
     /// Compressed curve point
     Compressed {
         /// x-coordinate
-        x: &'a ElementBytes<C>,
+        x: &'a FEBytes<C>,
 
         /// Is the y-coordinate odd?
         y_is_odd: bool,
@@ -303,10 +299,10 @@ pub enum Coordinates<'a, C: Curve> {
     /// Uncompressed curve point
     Uncompressed {
         /// x-coordinate
-        x: &'a ElementBytes<C>,
+        x: &'a FEBytes<C>,
 
         /// y-coordinate
-        y: &'a ElementBytes<C>,
+        y: &'a FEBytes<C>,
     },
 }
 

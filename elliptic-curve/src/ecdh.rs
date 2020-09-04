@@ -27,7 +27,7 @@ use crate::{
     scalar::NonZeroScalar,
     sec1::{self, FromEncodedPoint, UncompressedPointSize, UntaggedPointSize},
     weierstrass::Curve,
-    Arithmetic, ElementBytes, Error, Generate,
+    Arithmetic, Error, FEBytes, Generate,
 };
 use core::ops::{Add, Mul};
 use rand_core::{CryptoRng, RngCore};
@@ -135,7 +135,7 @@ where
 /// Function (KDF) or cryptographic hash function to produce a symmetric key.
 pub struct SharedSecret<C: Curve + Arithmetic> {
     /// Computed secret value
-    secret_bytes: ElementBytes<C>,
+    secret_bytes: FEBytes<C>,
 }
 
 impl<C> SharedSecret<C>
@@ -158,7 +158,7 @@ where
     /// should not be used directly as a symmetric encryption key, but instead
     /// as input to a KDF (or failing that, a hash function) used to produce
     /// a symmetric key.
-    pub fn as_bytes(&self) -> &ElementBytes<C> {
+    pub fn as_bytes(&self) -> &FEBytes<C> {
         &self.secret_bytes
     }
 }
