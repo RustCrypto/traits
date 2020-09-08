@@ -84,12 +84,16 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
 
 /// Elliptic curve with curve arithmetic support
 pub trait Arithmetic: Curve {
-    /// Scalar type for a given curve
-    type Scalar: ConditionallySelectable
+    /// Scalar type for a given curve.
+    type Scalar: ff::PrimeField
         + ConstantTimeEq
         + Default
         + FromBytes<Size = Self::FieldSize>
         + Into<ElementBytes<Self>>;
+
+    /// Elliptic curve point in projective coordinates.
+    type ProjectivePoint: group::Curve<AffineRepr = Self::AffinePoint>
+        + group::Group<Scalar = Self::Scalar>;
 
     /// Affine point type for a given curve
     type AffinePoint: ConditionallySelectable
