@@ -5,11 +5,15 @@ use crate::{
     rand_core::{CryptoRng, RngCore},
     Arithmetic, Curve, ElementBytes, FromBytes, Generate,
 };
+use bitvec::{array::BitArray, order::Lsb0};
 use core::ops::Deref;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
+
+/// Bit representation of a scalar field element of a given curve.
+pub type ScalarBits<C> = BitArray<Lsb0, <<C as Arithmetic>::Scalar as ff::PrimeField>::ReprBits>;
 
 /// Non-zero scalar type.
 ///
