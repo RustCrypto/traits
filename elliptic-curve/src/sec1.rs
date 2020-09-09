@@ -20,10 +20,10 @@ use subtle::CtOption;
 use alloc::boxed::Box;
 
 #[cfg(feature = "arithmetic")]
-use crate::{
-    ops::Mul, point::Generator, scalar::NonZeroScalar, subtle::Choice,
-    weierstrass::point::Decompress, Arithmetic, FromBytes, SecretKey,
-};
+use crate::{subtle::Choice, weierstrass::point::Decompress, Arithmetic};
+
+#[cfg(all(feature = "arithmetic", feature = "zeroize"))]
+use crate::{ops::Mul, point::Generator, scalar::NonZeroScalar, secret_key::SecretKey, FromBytes};
 
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
@@ -121,14 +121,16 @@ where
     /// [`SecretKey`].
     ///
     /// The `compress` flag requests point compression.
-    #[cfg(feature = "arithmetic")]
+    #[cfg(all(feature = "arithmetic", feature = "zeroize"))]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
     pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Result<Self, Error>
     where
         C: Arithmetic,
         C::AffinePoint: Mul<NonZeroScalar<C>, Output = C::AffinePoint> + ToEncodedPoint<C>,
+        C::Scalar: Zeroize,
     {
-        let ct_option = C::Scalar::from_bytes(secret_key.as_bytes()).and_then(NonZeroScalar::new);
+        let ct_option = C::Scalar::from_bytes(&secret_key.to_bytes()).and_then(NonZeroScalar::new);
 
         if ct_option.is_none().into() {
             return Err(Error);

@@ -29,7 +29,6 @@ pub mod error;
 pub mod ops;
 pub mod point;
 pub mod sec1;
-pub mod secret_key;
 pub mod util;
 pub mod weierstrass;
 
@@ -41,7 +40,11 @@ pub mod scalar;
 #[cfg_attr(docsrs, doc(cfg(feature = "ecdh")))]
 pub mod ecdh;
 
-pub use self::{error::Error, secret_key::SecretKey};
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+pub mod secret_key;
+
+pub use self::error::Error;
 
 pub use generic_array::{self, typenum::consts};
 pub use rand_core;
@@ -61,6 +64,8 @@ pub use digest::{self, Digest};
 #[cfg(feature = "oid")]
 pub use oid;
 
+#[cfg(feature = "zeroize")]
+pub use secret_key::SecretKey;
 #[cfg(feature = "zeroize")]
 pub use zeroize;
 

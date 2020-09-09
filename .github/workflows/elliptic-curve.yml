@@ -37,6 +37,8 @@ jobs:
           override: true
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
       - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features arithmetic
+      - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features zeroize
+      - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features ecdh
   test:
     runs-on: ubuntu-latest
     strategy:
