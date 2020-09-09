@@ -5,24 +5,25 @@
 //!
 //! <https://www.secg.org/sec1-v2.pdf>
 
-use crate::{
-    point::Generator,
-    scalar::NonZeroScalar,
-    weierstrass::{point::Decompress, Curve},
-    Arithmetic, ElementBytes, Error, FromBytes, SecretKey,
-};
+use crate::{weierstrass::Curve, ElementBytes, Error};
 use core::{
     fmt::{self, Debug},
-    ops::{Add, Mul},
+    ops::Add,
 };
 use generic_array::{
     typenum::{Unsigned, U1},
     ArrayLength, GenericArray,
 };
-use subtle::{Choice, CtOption};
+use subtle::CtOption;
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
+
+#[cfg(feature = "arithmetic")]
+use crate::{
+    ops::Mul, point::Generator, scalar::NonZeroScalar, subtle::Choice,
+    weierstrass::point::Decompress, Arithmetic, FromBytes, SecretKey,
+};
 
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
@@ -124,6 +125,8 @@ where
     /// [`SecretKey`].
     ///
     /// The `compress` flag requests point compression.
+    #[cfg(feature = "arithmetic")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Result<Self, Error>
     where
         C: Arithmetic,
@@ -170,6 +173,8 @@ where
     }
 
     /// Decompress this [`EncodedPoint`], returning a new [`EncodedPoint`].
+    #[cfg(feature = "arithmetic")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn decompress(&self) -> CtOption<Self>
     where
         C: Arithmetic,

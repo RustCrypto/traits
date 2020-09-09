@@ -1,5 +1,7 @@
 //! Traits for arithmetic operations on elliptic curve field elements
 
+pub use core::ops::{Add, Mul};
+
 use subtle::CtOption;
 
 /// Perform an inversion on a field element (i.e. base field element or scalar)
