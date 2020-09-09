@@ -28,22 +28,32 @@ extern crate std;
 pub mod error;
 pub mod ops;
 pub mod point;
-pub mod scalar;
 pub mod sec1;
 pub mod secret_key;
 pub mod util;
 pub mod weierstrass;
+
+#[cfg(feature = "arithmetic")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+pub mod scalar;
 
 #[cfg(feature = "ecdh")]
 #[cfg_attr(docsrs, doc(cfg(feature = "ecdh")))]
 pub mod ecdh;
 
 pub use self::{error::Error, secret_key::SecretKey};
-pub use ff;
+
 pub use generic_array::{self, typenum::consts};
-pub use group;
 pub use rand_core;
 pub use subtle;
+
+// TODO(tarcieri): source this via ff crate: https://github.com/zkcrypto/ff/pull/40
+#[cfg(feature = "arithmetic")]
+pub use bitvec::view::BitView;
+#[cfg(feature = "arithmetic")]
+pub use ff;
+#[cfg(feature = "arithmetic")]
+pub use group;
 
 #[cfg(feature = "digest")]
 pub use digest::{self, Digest};
@@ -54,15 +64,24 @@ pub use oid;
 #[cfg(feature = "zeroize")]
 pub use zeroize;
 
-use core::{
-    fmt::Debug,
-    ops::{Add, Mul},
-};
+use core::{fmt::Debug, ops::Add};
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 use rand_core::{CryptoRng, RngCore};
-use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
+use subtle::{ConditionallySelectable, CtOption};
 
-/// Byte array containing a serialized scalar value (i.e. an integer)
+#[cfg(feature = "arithmetic")]
+use bitvec::{array::BitArray, order::Lsb0};
+#[cfg(feature = "arithmetic")]
+use core::ops::Mul;
+#[cfg(feature = "arithmetic")]
+use subtle::ConstantTimeEq;
+
+/// Bit representation of a scalar field element of a given curve.
+#[cfg(feature = "arithmetic")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+pub type FieldBits<C> = BitArray<Lsb0, <<C as Arithmetic>::Scalar as ff::PrimeField>::ReprBits>;
+
+/// Byte representation of a base/scalar field element of a given curve.
 pub type ElementBytes<C> = GenericArray<u8, <C as Curve>::FieldSize>;
 
 /// Elliptic curve.
@@ -83,6 +102,8 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
 }
 
 /// Elliptic curve with arithmetic implementation.
+#[cfg(feature = "arithmetic")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub trait Arithmetic: Curve {
     /// Scalar field element modulo the curve's order.
     type Scalar: ff::PrimeField
