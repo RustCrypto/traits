@@ -1,6 +1,6 @@
 //! Traits for arithmetic operations on elliptic curve field elements
 
-pub use core::ops::{Add, Mul};
+pub use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
 use subtle::CtOption;
 
@@ -11,4 +11,13 @@ pub trait Invert {
 
     /// Invert a field element.
     fn invert(&self) -> CtOption<Self::Output>;
+}
+
+#[cfg(feature = "arithmetic")]
+impl<F: ff::Field> Invert for F {
+    type Output = F;
+
+    fn invert(&self) -> CtOption<F> {
+        ff::Field::invert(self)
+    }
 }

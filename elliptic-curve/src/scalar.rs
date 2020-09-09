@@ -3,10 +3,11 @@
 use crate::{
     ops::Invert,
     rand_core::{CryptoRng, RngCore},
-    Arithmetic, Curve, ElementBytes, FromBytes, Generate,
+    Arithmetic, Curve, ElementBytes, FromBytes,
 };
 use bitvec::{array::BitArray, order::Lsb0};
 use core::ops::Deref;
+use ff::Field;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "zeroize")]
@@ -32,6 +33,18 @@ impl<C> NonZeroScalar<C>
 where
     C: Curve + Arithmetic,
 {
+    /// Generate a random `NonZeroScalar`
+    pub fn random(mut rng: impl CryptoRng + RngCore) -> Self {
+        // Use rejection sampling to eliminate zero values
+        loop {
+            let result = Self::new(C::Scalar::random(&mut rng));
+
+            if result.is_some().into() {
+                break result.unwrap();
+            }
+        }
+    }
+
     /// Create a [`NonZeroScalar`] from a scalar, performing a constant-time
     /// check that it's non-zero.
     pub fn new(scalar: C::Scalar) -> CtOption<Self> {
@@ -103,28 +116,11 @@ where
     C: Curve + Arithmetic,
     C::Scalar: Invert,
 {
-    type Output = <C::Scalar as Invert>::Output;
+    type Output = C::Scalar;
 
     /// Perform a scalar inversion
     fn invert(&self) -> CtOption<Self::Output> {
-        self.scalar.invert()
-    }
-}
-
-impl<C> Generate for NonZeroScalar<C>
-where
-    C: Curve + Arithmetic,
-    C::Scalar: Generate,
-{
-    fn generate(mut rng: impl CryptoRng + RngCore) -> Self {
-        // Use rejection sampling to eliminate zero values
-        loop {
-            let result = Self::new(C::Scalar::generate(&mut rng));
-
-            if result.is_some().into() {
-                break result.unwrap();
-            }
-        }
+        ff::Field::invert(&self.scalar)
     }
 }
 

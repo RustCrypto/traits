@@ -15,7 +15,7 @@ use core::{
 use generic_array::{typenum::Unsigned, GenericArray};
 
 #[cfg(feature = "arithmetic")]
-use crate::{scalar::NonZeroScalar, Arithmetic, Generate};
+use crate::{scalar::NonZeroScalar, Arithmetic};
 #[cfg(feature = "arithmetic")]
 use rand_core::{CryptoRng, RngCore};
 
@@ -31,6 +31,18 @@ pub struct SecretKey<C: Curve> {
 }
 
 impl<C: Curve> SecretKey<C> {
+    /// Generate a random [`SecretKey`]
+    #[cfg(feature = "arithmetic")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+    pub fn random(rng: impl CryptoRng + RngCore) -> Self
+    where
+        C: Arithmetic,
+    {
+        Self {
+            scalar: NonZeroScalar::<C>::random(rng).into(),
+        }
+    }
+
     /// Create a new secret key from a serialized scalar value
     pub fn new(bytes: ElementBytes<C>) -> Self {
         Self { scalar: bytes }
@@ -64,20 +76,6 @@ impl<C: Curve> TryFrom<&[u8]> for SecretKey<C> {
 impl<C: Curve> Debug for SecretKey<C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "SecretKey<{:?}>{{ ... }}", C::default())
-    }
-}
-
-#[cfg(feature = "arithmetic")]
-impl<C> Generate for SecretKey<C>
-where
-    C: Curve + Arithmetic,
-    C::Scalar: Generate + Into<ElementBytes<C>>,
-{
-    /// Generate a new [`SecretKey`]
-    fn generate(rng: impl CryptoRng + RngCore) -> Self {
-        Self {
-            scalar: NonZeroScalar::<C>::generate(rng).into(),
-        }
     }
 }
 

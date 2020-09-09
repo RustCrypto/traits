@@ -66,7 +66,6 @@ pub use zeroize;
 
 use core::{fmt::Debug, ops::Add};
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
-use rand_core::{CryptoRng, RngCore};
 use subtle::{ConditionallySelectable, CtOption};
 
 #[cfg(feature = "arithmetic")]
@@ -122,14 +121,6 @@ pub trait FromBytes: ConditionallySelectable + Sized {
 
     /// Try to decode this object from bytes
     fn from_bytes(bytes: &GenericArray<u8, Self::Size>) -> CtOption<Self>;
-}
-
-/// Randomly generate a value.
-///
-/// Primarily intended for use with scalar types for a particular curve.
-pub trait Generate {
-    /// Generate a random element of this type using the provided [`CryptoRng`]
-    fn generate(rng: impl CryptoRng + RngCore) -> Self;
 }
 
 /// Instantiate this type from the output of a digest.
