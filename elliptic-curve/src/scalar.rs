@@ -3,7 +3,7 @@
 use crate::{
     ops::Invert,
     rand_core::{CryptoRng, RngCore},
-    Arithmetic, Curve, ElementBytes, FromBytes,
+    Arithmetic, Curve, FieldBytes, FromBytes,
 };
 use bitvec::{array::BitArray, order::Lsb0};
 use core::ops::Deref;
@@ -54,7 +54,7 @@ where
     }
 
     /// Serialize this [`NonZeroScalar`] as a byte array
-    pub fn to_bytes(&self) -> ElementBytes<C> {
+    pub fn to_bytes(&self) -> FieldBytes<C> {
         self.scalar.into()
     }
 }
@@ -97,16 +97,16 @@ where
 {
     type Size = C::FieldSize;
 
-    fn from_bytes(bytes: &ElementBytes<C>) -> CtOption<Self> {
+    fn from_bytes(bytes: &FieldBytes<C>) -> CtOption<Self> {
         C::Scalar::from_bytes(bytes).and_then(Self::new)
     }
 }
 
-impl<C> From<NonZeroScalar<C>> for ElementBytes<C>
+impl<C> From<NonZeroScalar<C>> for FieldBytes<C>
 where
     C: Curve + Arithmetic,
 {
-    fn from(scalar: NonZeroScalar<C>) -> ElementBytes<C> {
+    fn from(scalar: NonZeroScalar<C>) -> FieldBytes<C> {
         scalar.to_bytes()
     }
 }
