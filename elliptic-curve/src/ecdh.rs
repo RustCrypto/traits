@@ -27,7 +27,7 @@ use crate::{
     scalar::NonZeroScalar,
     sec1::{self, FromEncodedPoint, UncompressedPointSize, UntaggedPointSize},
     weierstrass::Curve,
-    Arithmetic, ElementBytes, Error, Generate,
+    Arithmetic, ElementBytes, Error,
 };
 use core::ops::{Add, Mul};
 use rand_core::{CryptoRng, RngCore};
@@ -45,7 +45,7 @@ pub type PublicKey<C> = sec1::EncodedPoint<C>;
 pub struct EphemeralSecret<C>
 where
     C: Curve + Arithmetic,
-    C::Scalar: Generate + Zeroize,
+    C::Scalar: Zeroize,
 {
     scalar: NonZeroScalar<C>,
 }
@@ -53,15 +53,15 @@ where
 impl<C> EphemeralSecret<C>
 where
     C: Curve + Arithmetic,
-    C::Scalar: Clone + Generate + Zeroize,
+    C::Scalar: Clone + Zeroize,
     C::AffinePoint: FromEncodedPoint<C> + Mul<NonZeroScalar<C>, Output = C::AffinePoint> + Zeroize,
     PublicKey<C>: From<C::AffinePoint>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
-    /// Generate a new [`EphemeralSecret`].
-    pub fn generate(rng: impl CryptoRng + RngCore) -> Self {
-        let scalar = NonZeroScalar::generate(rng);
+    /// Generate a cryptographically random [`EphemeralSecret`].
+    pub fn random(rng: impl CryptoRng + RngCore) -> Self {
+        let scalar = NonZeroScalar::random(rng);
         Self { scalar }
     }
 
@@ -89,7 +89,7 @@ where
 impl<C> From<&EphemeralSecret<C>> for PublicKey<C>
 where
     C: Curve + Arithmetic,
-    C::Scalar: Clone + Generate + Zeroize,
+    C::Scalar: Clone + Zeroize,
     C::AffinePoint: FromEncodedPoint<C> + Mul<NonZeroScalar<C>, Output = C::AffinePoint> + Zeroize,
     PublicKey<C>: From<C::AffinePoint>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -103,7 +103,7 @@ where
 impl<C> Zeroize for EphemeralSecret<C>
 where
     C: Curve + Arithmetic,
-    C::Scalar: Generate + Zeroize,
+    C::Scalar: Zeroize,
 {
     fn zeroize(&mut self) {
         self.scalar.zeroize()
@@ -113,7 +113,7 @@ where
 impl<C> Drop for EphemeralSecret<C>
 where
     C: Curve + Arithmetic,
-    C::Scalar: Generate + Zeroize,
+    C::Scalar: Zeroize,
 {
     fn drop(&mut self) {
         self.zeroize();
