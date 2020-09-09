@@ -70,16 +70,9 @@ use rand_core::{CryptoRng, RngCore};
 use subtle::{ConditionallySelectable, CtOption};
 
 #[cfg(feature = "arithmetic")]
-use bitvec::{array::BitArray, order::Lsb0};
-#[cfg(feature = "arithmetic")]
 use core::ops::Mul;
 #[cfg(feature = "arithmetic")]
 use subtle::ConstantTimeEq;
-
-/// Bit representation of a scalar field element of a given curve.
-#[cfg(feature = "arithmetic")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-pub type FieldBits<C> = BitArray<Lsb0, <<C as Arithmetic>::Scalar as ff::PrimeField>::ReprBits>;
 
 /// Byte representation of a base/scalar field element of a given curve.
 pub type ElementBytes<C> = GenericArray<u8, <C as Curve>::FieldSize>;
