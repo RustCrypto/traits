@@ -7,7 +7,7 @@
 //! When the `zeroize` feature of this crate is enabled, it also handles
 //! zeroing it out of memory securely on drop.
 
-use crate::{error::Error, Curve, ElementBytes};
+use crate::{error::Error, Curve, FieldBytes};
 use core::{
     convert::{TryFrom, TryInto},
     fmt::{self, Debug},
@@ -27,7 +27,7 @@ use rand_core::{CryptoRng, RngCore};
 #[derive(Clone)]
 pub struct SecretKey<C: Curve> {
     /// Private scalar value
-    scalar: ElementBytes<C>,
+    scalar: FieldBytes<C>,
 }
 
 impl<C: Curve> SecretKey<C> {
@@ -44,7 +44,7 @@ impl<C: Curve> SecretKey<C> {
     }
 
     /// Create a new secret key from a serialized scalar value
-    pub fn new(bytes: ElementBytes<C>) -> Self {
+    pub fn new(bytes: FieldBytes<C>) -> Self {
         Self { scalar: bytes }
     }
 
@@ -54,7 +54,7 @@ impl<C: Curve> SecretKey<C> {
     }
 
     /// Expose the byte serialization of the value this [`SecretKey`] wraps
-    pub fn as_bytes(&self) -> &ElementBytes<C> {
+    pub fn as_bytes(&self) -> &FieldBytes<C> {
         &self.scalar
     }
 }

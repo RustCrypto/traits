@@ -74,7 +74,7 @@ use core::ops::Mul;
 use subtle::ConstantTimeEq;
 
 /// Byte representation of a base/scalar field element of a given curve.
-pub type ElementBytes<C> = GenericArray<u8, <C as Curve>::FieldSize>;
+pub type FieldBytes<C> = GenericArray<u8, <C as Curve>::FieldSize>;
 
 /// Elliptic curve.
 ///
@@ -102,7 +102,7 @@ pub trait Arithmetic: Curve {
         + ConstantTimeEq
         + Default
         + FromBytes<Size = Self::FieldSize>
-        + Into<ElementBytes<Self>>;
+        + Into<FieldBytes<Self>>;
 
     /// Elliptic curve point in affine coordinates.
     type AffinePoint: ConditionallySelectable
