@@ -82,7 +82,7 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
     type FieldSize: ArrayLength<u8> + Add + Eq + Ord + Unsigned;
 }
 
-/// Elliptic curve with curve arithmetic support
+/// Elliptic curve with arithmetic implementation.
 pub trait Arithmetic: Curve {
     /// Scalar field element modulo the curve's order.
     type Scalar: ff::PrimeField
@@ -98,7 +98,7 @@ pub trait Arithmetic: Curve {
 
     /// Elliptic curve point in projective coordinates.
     type ProjectivePoint: group::Curve<AffineRepr = Self::AffinePoint>
-    + group::Group<Scalar = Self::Scalar>;
+        + group::Group<Scalar = Self::Scalar>;
 }
 
 /// Try to decode the given bytes into a curve element
