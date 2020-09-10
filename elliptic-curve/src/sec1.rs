@@ -23,7 +23,9 @@ use alloc::boxed::Box;
 use crate::{subtle::Choice, weierstrass::point::Decompress, Arithmetic};
 
 #[cfg(all(feature = "arithmetic", feature = "zeroize"))]
-use crate::{ops::Mul, point::Generator, scalar::NonZeroScalar, secret_key::SecretKey, FromBytes};
+use crate::{
+    ops::Mul, point::Generator, scalar::NonZeroScalar, secret_key::SecretKey, FromFieldBytes,
+};
 
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
@@ -130,14 +132,14 @@ where
         C::AffinePoint: Mul<NonZeroScalar<C>, Output = C::AffinePoint> + ToEncodedPoint<C>,
         C::Scalar: Zeroize,
     {
-        let ct_option = C::Scalar::from_bytes(&secret_key.to_bytes()).and_then(NonZeroScalar::new);
-
-        if ct_option.is_none().into() {
-            return Err(Error);
+        if let Some(scalar) = C::Scalar::from_field_bytes(&secret_key.to_bytes())
+            .and_then(NonZeroScalar::new)
+            .into()
+        {
+            Ok(Self::encode(C::AffinePoint::generator() * scalar, compress))
+        } else {
+            Err(Error)
         }
-
-        let affine_point = C::AffinePoint::generator() * ct_option.unwrap();
-        Ok(Self::encode(affine_point, compress))
     }
 
     /// Get the length of the encoded point in bytes

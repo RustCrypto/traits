@@ -106,7 +106,7 @@ pub trait Arithmetic: Curve {
     type Scalar: ff::PrimeField
         + ConstantTimeEq
         + Default
-        + FromBytes<Size = Self::FieldSize>
+        + FromFieldBytes<Self>
         + Into<FieldBytes<Self>>;
 
     /// Elliptic curve point in affine coordinates.
@@ -119,13 +119,10 @@ pub trait Arithmetic: Curve {
         + group::Group<Scalar = Self::Scalar>;
 }
 
-/// Try to decode the given bytes into a curve element
-pub trait FromBytes: ConditionallySelectable + Sized {
-    /// Size of the serialized byte array
-    type Size: ArrayLength<u8>;
-
+/// Decode the given serialized field element
+pub trait FromFieldBytes<C: Curve>: ConditionallySelectable + Sized {
     /// Try to decode this object from bytes
-    fn from_bytes(bytes: &GenericArray<u8, Self::Size>) -> CtOption<Self>;
+    fn from_field_bytes(bytes: &FieldBytes<C>) -> CtOption<Self>;
 }
 
 /// Instantiate this type from the output of a digest.
