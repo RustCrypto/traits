@@ -20,12 +20,18 @@ use subtle::CtOption;
 use alloc::boxed::Box;
 
 #[cfg(feature = "arithmetic")]
-use crate::{subtle::Choice, weierstrass::point::Decompress, Arithmetic};
+use crate::{
+    ff::PrimeField, subtle::Choice, weierstrass::point::Decompress, ProjectiveArithmetic, Scalar,
+};
 
 #[cfg(all(feature = "arithmetic", feature = "zeroize"))]
 use crate::{
-    ops::Mul, point::Generator, scalar::NonZeroScalar, secret_key::SecretKey, FromFieldBytes,
+    group::{Curve as _, Group},
+    AffinePoint,
 };
+
+#[cfg(all(feature = "arithmetic", feature = "zeroize"))]
+use crate::secret_key::SecretKey;
 
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
@@ -126,20 +132,16 @@ where
     #[cfg(all(feature = "arithmetic", feature = "zeroize"))]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-    pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Result<Self, Error>
+    pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Self
     where
-        C: Arithmetic,
-        C::AffinePoint: Mul<NonZeroScalar<C>, Output = C::AffinePoint> + ToEncodedPoint<C>,
-        C::Scalar: Zeroize,
+        C: Curve + ProjectiveArithmetic,
+        FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+        AffinePoint<C>: ToEncodedPoint<C>,
+        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
-        if let Some(scalar) = C::Scalar::from_field_bytes(&secret_key.to_bytes())
-            .and_then(NonZeroScalar::new)
-            .into()
-        {
-            Ok(Self::encode(C::AffinePoint::generator() * scalar, compress))
-        } else {
-            Err(Error)
-        }
+        (C::ProjectivePoint::generator() * secret_key.secret_scalar())
+            .to_affine()
+            .to_encoded_point(compress)
     }
 
     /// Get the length of the encoded point in bytes
@@ -177,12 +179,13 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn decompress(&self) -> CtOption<Self>
     where
-        C: Arithmetic,
-        C::Scalar: Decompress<C> + ToEncodedPoint<C>,
+        C: Curve + ProjectiveArithmetic,
+        FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Decompress<C> + ToEncodedPoint<C>,
     {
         match self.coordinates() {
             Coordinates::Compressed { x, y_is_odd } => {
-                C::Scalar::decompress(x, Choice::from(y_is_odd as u8))
+                Scalar::<C>::decompress(x, Choice::from(y_is_odd as u8))
                     .map(|s| s.to_encoded_point(false))
             }
             Coordinates::Uncompressed { .. } => CtOption::new(self.clone(), Choice::from(1)),

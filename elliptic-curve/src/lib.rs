@@ -27,11 +27,13 @@ extern crate std;
 
 pub mod error;
 pub mod ops;
-pub mod point;
 pub mod sec1;
 pub mod util;
 pub mod weierstrass;
 
+#[cfg(feature = "arithmetic")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+pub mod point;
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub mod scalar;
@@ -50,13 +52,17 @@ pub use generic_array::{self, typenum::consts};
 pub use rand_core;
 pub use subtle;
 
-// TODO(tarcieri): source this via ff crate: https://github.com/zkcrypto/ff/pull/40
 #[cfg(feature = "arithmetic")]
-pub use bitvec::view::BitView;
+pub use self::{
+    point::{AffinePoint, ProjectiveArithmetic, ProjectivePoint},
+    scalar::Scalar,
+};
 #[cfg(feature = "arithmetic")]
-pub use ff;
+pub use bitvec::view::BitView; // TODO: https://github.com/zkcrypto/ff/pull/40
 #[cfg(feature = "arithmetic")]
-pub use group;
+pub use ff::{self, Field};
+#[cfg(feature = "arithmetic")]
+pub use group::{self, Group};
 
 #[cfg(feature = "digest")]
 pub use digest::{self, Digest};
@@ -71,15 +77,6 @@ pub use zeroize;
 
 use core::{fmt::Debug, ops::Add};
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
-use subtle::{ConditionallySelectable, CtOption};
-
-#[cfg(feature = "arithmetic")]
-use core::ops::Mul;
-#[cfg(feature = "arithmetic")]
-use subtle::ConstantTimeEq;
-
-/// Byte representation of a base/scalar field element of a given curve.
-pub type FieldBytes<C> = GenericArray<u8, <C as Curve>::FieldSize>;
 
 /// Elliptic curve.
 ///
@@ -98,32 +95,8 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
     type FieldSize: ArrayLength<u8> + Add + Eq + Ord + Unsigned;
 }
 
-/// Elliptic curve with arithmetic implementation.
-#[cfg(feature = "arithmetic")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-pub trait Arithmetic: Curve {
-    /// Scalar field element modulo the curve's order.
-    type Scalar: ff::PrimeField
-        + ConstantTimeEq
-        + Default
-        + FromFieldBytes<Self>
-        + Into<FieldBytes<Self>>;
-
-    /// Elliptic curve point in affine coordinates.
-    type AffinePoint: ConditionallySelectable
-        + Mul<scalar::NonZeroScalar<Self>, Output = Self::AffinePoint>
-        + point::Generator;
-
-    /// Elliptic curve point in projective coordinates.
-    type ProjectivePoint: group::Curve<AffineRepr = Self::AffinePoint>
-        + group::Group<Scalar = Self::Scalar>;
-}
-
-/// Decode the given serialized field element
-pub trait FromFieldBytes<C: Curve>: ConditionallySelectable + Sized {
-    /// Try to decode this object from bytes
-    fn from_field_bytes(bytes: &FieldBytes<C>) -> CtOption<Self>;
-}
+/// Byte representation of a base/scalar field element of a given curve.
+pub type FieldBytes<C> = GenericArray<u8, <C as Curve>::FieldSize>;
 
 /// Instantiate this type from the output of a digest.
 ///

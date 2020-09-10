@@ -12,11 +12,14 @@ use core::{
     convert::{TryFrom, TryInto},
     fmt::{self, Debug},
 };
-use subtle::CtOption;
 use zeroize::Zeroize;
 
 #[cfg(feature = "arithmetic")]
-use crate::{scalar::NonZeroScalar, Arithmetic, FromFieldBytes};
+use crate::{
+    ff::PrimeField,
+    scalar::{NonZeroScalar, Scalar},
+    ProjectiveArithmetic,
+};
 #[cfg(feature = "arithmetic")]
 use rand_core::{CryptoRng, RngCore};
 
@@ -26,18 +29,21 @@ pub trait SecretValue: Curve {
     type Secret: Into<FieldBytes<Self>> + Zeroize;
 
     /// Parse the secret value from bytes
-    fn from_secret_bytes(bytes: &FieldBytes<Self>) -> CtOption<Self::Secret>;
+    // TODO(tarcieri): make this constant time?
+    fn from_secret_bytes(bytes: &FieldBytes<Self>) -> Option<Self::Secret>;
 }
 
 #[cfg(feature = "arithmetic")]
-impl<C: Curve + Arithmetic> SecretValue for C
+impl<C> SecretValue for C
 where
-    C::Scalar: Zeroize,
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
 {
     type Secret = NonZeroScalar<C>;
 
-    fn from_secret_bytes(bytes: &FieldBytes<C>) -> CtOption<NonZeroScalar<C>> {
-        NonZeroScalar::from_field_bytes(bytes)
+    fn from_secret_bytes(repr: &FieldBytes<C>) -> Option<NonZeroScalar<C>> {
+        NonZeroScalar::from_repr(repr.clone())
     }
 }
 
@@ -63,7 +69,9 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn random(rng: impl CryptoRng + RngCore) -> Self
     where
-        C: Arithmetic + SecretValue<Secret = NonZeroScalar<C>>,
+        C: ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
+        FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
+        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
         Self {
             secret_value: NonZeroScalar::<C>::random(rng),
@@ -81,7 +89,7 @@ where
             .as_ref()
             .try_into()
             .ok()
-            .and_then(|bytes| C::from_secret_bytes(bytes).into())
+            .and_then(C::from_secret_bytes)
             .map(|secret_value| SecretKey { secret_value })
             .ok_or(Error)
     }
@@ -93,16 +101,20 @@ where
 
     /// Borrow the inner secret scalar value.
     ///
-    /// # Notice
+    /// # Warning
     ///
-    /// This value is key material. Please treat it accordingly!
+    /// This value is key material.
+    ///
+    /// Please treat it with the care it deserves!
     #[cfg(feature = "arithmetic")]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-    pub fn secret_scalar(&self) -> &NonZeroScalar<C>
+    pub fn secret_scalar(&self) -> &Scalar<C>
     where
-        C: Arithmetic + SecretValue<Secret = NonZeroScalar<C>>,
+        C: ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
+        FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
+        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
-        &self.secret_value
+        self.secret_value.as_ref()
     }
 }
 
