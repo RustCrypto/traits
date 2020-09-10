@@ -16,7 +16,7 @@ use subtle::CtOption;
 use zeroize::Zeroize;
 
 #[cfg(feature = "arithmetic")]
-use crate::{scalar::NonZeroScalar, Arithmetic, FromBytes};
+use crate::{scalar::NonZeroScalar, Arithmetic, FromFieldBytes};
 #[cfg(feature = "arithmetic")]
 use rand_core::{CryptoRng, RngCore};
 
@@ -37,7 +37,7 @@ where
     type Secret = NonZeroScalar<C>;
 
     fn from_secret_bytes(bytes: &FieldBytes<C>) -> CtOption<NonZeroScalar<C>> {
-        NonZeroScalar::from_bytes(bytes)
+        NonZeroScalar::from_field_bytes(bytes)
     }
 }
 

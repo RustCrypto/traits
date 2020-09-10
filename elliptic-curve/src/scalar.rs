@@ -3,7 +3,7 @@
 use crate::{
     ops::Invert,
     rand_core::{CryptoRng, RngCore},
-    Arithmetic, Curve, FieldBytes, FromBytes,
+    Arithmetic, Curve, FieldBytes, FromFieldBytes,
 };
 use bitvec::{array::BitArray, order::Lsb0};
 use core::ops::Deref;
@@ -48,7 +48,7 @@ where
     /// Create a [`NonZeroScalar`] from a scalar, performing a constant-time
     /// check that it's non-zero.
     pub fn new(scalar: C::Scalar) -> CtOption<Self> {
-        let zero = C::Scalar::from_bytes(&Default::default()).unwrap();
+        let zero = C::Scalar::from_field_bytes(&Default::default()).unwrap();
         let is_zero = scalar.ct_eq(&zero);
         CtOption::new(Self { scalar }, !is_zero)
     }
@@ -91,14 +91,12 @@ where
     }
 }
 
-impl<C> FromBytes for NonZeroScalar<C>
+impl<C> FromFieldBytes<C> for NonZeroScalar<C>
 where
     C: Curve + Arithmetic,
 {
-    type Size = C::FieldSize;
-
-    fn from_bytes(bytes: &FieldBytes<C>) -> CtOption<Self> {
-        C::Scalar::from_bytes(bytes).and_then(Self::new)
+    fn from_field_bytes(bytes: &FieldBytes<C>) -> CtOption<Self> {
+        C::Scalar::from_field_bytes(bytes).and_then(Self::new)
     }
 }
 
