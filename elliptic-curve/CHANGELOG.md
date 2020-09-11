@@ -4,6 +4,61 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.6.0 (2020-09-11)
+### Added
+- `arithmetic` feature ([#293])
+- Generic curve/field arithmetic using the `ff` and `group` crates
+  ([#287], [#291], [#292])
+- `sec1::Coordinates` ([#286])
+- `weierstrass::point::Compression` trait ([#283], [#300])
+- Arithmetic helper functions ([#281])
+- `digest` feature and `FromDigest` trait ([#279])
+- impl `Deref` for `NonZeroScalar` ([#278])
+- Conditionally impl `Invert` for `NonZeroScalar` ([#277])
+- `NonZeroScalar::to_bytes` ([#276])
+- `EncodedPoint::decompress` ([#275])
+- `sec1::Tag` ([#270])
+- `weierstrass::point::Decompress` trait ([#266])
+- `alloc` feature + `EncodedPoint::to_bytes()` ([#265])
+
+### Changed
+- Renamed `Arithmetic` trait to `point::ProjectiveArithmetic` ([#300])
+- Replaced `Arithmetic::Scalar` and `Arithmetic::AffinePoint`
+  with `Scalar<C>` and `AffinePoint<C>` ([#300])
+- Made `SecretKey<C>` inner type generic ([#297])
+- Renamed `ElementBytes<C>` to `FieldBytes<C>` ([#296])
+- MSRV 1.44 ([#292])
+- Minimum `subtle` version now v2.3 ([#290])
+- Renamed `Curve::ElementSize` to `::FieldSize` ([#282])
+- Refactor `PublicKey` into `sec1::EncodedPoint` ([#264])
+
+### Removed
+- `FromBytes` trait ([#300])
+- `Generate` trait ([#295])
+
+[#300]: https://github.com/RustCrypto/traits/pull/300
+[#297]: https://github.com/RustCrypto/traits/pull/297
+[#296]: https://github.com/RustCrypto/traits/pull/296
+[#295]: https://github.com/RustCrypto/traits/pull/295
+[#293]: https://github.com/RustCrypto/traits/pull/293
+[#292]: https://github.com/RustCrypto/traits/pull/292
+[#291]: https://github.com/RustCrypto/traits/pull/291
+[#290]: https://github.com/RustCrypto/traits/pull/290
+[#287]: https://github.com/RustCrypto/traits/pull/293
+[#286]: https://github.com/RustCrypto/traits/pull/286
+[#283]: https://github.com/RustCrypto/traits/pull/283
+[#282]: https://github.com/RustCrypto/traits/pull/282
+[#281]: https://github.com/RustCrypto/traits/pull/281
+[#279]: https://github.com/RustCrypto/traits/pull/279
+[#278]: https://github.com/RustCrypto/traits/pull/278
+[#277]: https://github.com/RustCrypto/traits/pull/277
+[#276]: https://github.com/RustCrypto/traits/pull/276
+[#275]: https://github.com/RustCrypto/traits/pull/275
+[#270]: https://github.com/RustCrypto/traits/pull/270
+[#266]: https://github.com/RustCrypto/traits/pull/266
+[#265]: https://github.com/RustCrypto/traits/pull/265
+[#264]: https://github.com/RustCrypto/traits/pull/264
+
 ## 0.5.0 (2020-08-10)
 ### Added
 - `Arithmetic` trait ([#219])
