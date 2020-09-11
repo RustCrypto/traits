@@ -3,18 +3,23 @@
 use crate::{
     ops::Invert,
     rand_core::{CryptoRng, RngCore},
-    Arithmetic, Curve, FieldBytes, FromFieldBytes,
+    Curve, Error, FieldBytes, ProjectiveArithmetic,
 };
 use bitvec::{array::BitArray, order::Lsb0};
-use core::ops::Deref;
-use ff::Field;
-use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
+use core::{convert::TryFrom, ops::Deref};
+use ff::{Field, PrimeField};
+use generic_array::{typenum::Unsigned, GenericArray};
+use group::Group;
+use subtle::{Choice, ConditionallySelectable, CtOption};
 
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
 
+/// Scalar field element for a particular elliptic curve.
+pub type Scalar<C> = <<C as ProjectiveArithmetic>::ProjectivePoint as Group>::Scalar;
+
 /// Bit representation of a scalar field element of a given curve.
-pub type ScalarBits<C> = BitArray<Lsb0, <<C as Arithmetic>::Scalar as ff::PrimeField>::ReprBits>;
+pub type ScalarBits<C> = BitArray<Lsb0, <Scalar<C> as PrimeField>::ReprBits>;
 
 /// Non-zero scalar type.
 ///
@@ -25,96 +30,110 @@ pub type ScalarBits<C> = BitArray<Lsb0, <<C as Arithmetic>::Scalar as ff::PrimeF
 /// In the context of ECC, it's useful for ensuring that scalar multiplication
 /// cannot result in the point at infinity.
 #[derive(Clone)]
-pub struct NonZeroScalar<C: Curve + Arithmetic> {
-    scalar: C::Scalar,
+pub struct NonZeroScalar<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+{
+    scalar: Scalar<C>,
 }
 
 impl<C> NonZeroScalar<C>
 where
-    C: Curve + Arithmetic,
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     /// Generate a random `NonZeroScalar`
     pub fn random(mut rng: impl CryptoRng + RngCore) -> Self {
         // Use rejection sampling to eliminate zero values
         loop {
-            let result = Self::new(C::Scalar::random(&mut rng));
-
-            if result.is_some().into() {
-                break result.unwrap();
+            if let Some(result) = Self::new(Field::random(&mut rng)) {
+                break result;
             }
         }
     }
 
-    /// Create a [`NonZeroScalar`] from a scalar, performing a constant-time
-    /// check that it's non-zero.
-    pub fn new(scalar: C::Scalar) -> CtOption<Self> {
-        let zero = C::Scalar::from_field_bytes(&Default::default()).unwrap();
-        let is_zero = scalar.ct_eq(&zero);
-        CtOption::new(Self { scalar }, !is_zero)
+    /// Decode a [`NonZeroScalar] from a serialized field element
+    pub fn from_repr(repr: FieldBytes<C>) -> Option<Self> {
+        Scalar::<C>::from_repr(repr).and_then(Self::new)
     }
 
-    /// Serialize this [`NonZeroScalar`] as a byte array
-    pub fn to_bytes(&self) -> FieldBytes<C> {
-        self.scalar.into()
+    /// Create a [`NonZeroScalar`] from a scalar.
+    // TODO(tarcieri): make this constant time?
+    pub fn new(scalar: Scalar<C>) -> Option<Self> {
+        if scalar.is_zero() {
+            None
+        } else {
+            Some(Self { scalar })
+        }
     }
 }
 
-impl<C> AsRef<C::Scalar> for NonZeroScalar<C>
+impl<C> AsRef<Scalar<C>> for NonZeroScalar<C>
 where
-    C: Curve + Arithmetic,
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
-    fn as_ref(&self) -> &C::Scalar {
+    fn as_ref(&self) -> &Scalar<C> {
         &self.scalar
     }
 }
 
 impl<C> ConditionallySelectable for NonZeroScalar<C>
 where
-    C: Curve + Arithmetic,
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        let scalar = C::Scalar::conditional_select(&a.scalar, &b.scalar, choice);
-        Self { scalar }
+        Self {
+            scalar: Scalar::<C>::conditional_select(&a.scalar, &b.scalar, choice),
+        }
     }
 }
 
-impl<C> Copy for NonZeroScalar<C> where C: Curve + Arithmetic {}
+impl<C> Copy for NonZeroScalar<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+{
+}
 
 impl<C> Deref for NonZeroScalar<C>
 where
-    C: Curve + Arithmetic,
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
-    type Target = C::Scalar;
+    type Target = Scalar<C>;
 
-    fn deref(&self) -> &C::Scalar {
+    fn deref(&self) -> &Scalar<C> {
         &self.scalar
-    }
-}
-
-impl<C> FromFieldBytes<C> for NonZeroScalar<C>
-where
-    C: Curve + Arithmetic,
-{
-    fn from_field_bytes(bytes: &FieldBytes<C>) -> CtOption<Self> {
-        C::Scalar::from_field_bytes(bytes).and_then(Self::new)
     }
 }
 
 impl<C> From<NonZeroScalar<C>> for FieldBytes<C>
 where
-    C: Curve + Arithmetic,
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     fn from(scalar: NonZeroScalar<C>) -> FieldBytes<C> {
-        scalar.to_bytes()
+        scalar.scalar.into()
     }
 }
 
 impl<C> Invert for NonZeroScalar<C>
 where
-    C: Curve + Arithmetic,
-    C::Scalar: Invert,
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Invert,
 {
-    type Output = C::Scalar;
+    type Output = Scalar<C>;
 
     /// Perform a scalar inversion
     fn invert(&self) -> CtOption<Self::Output> {
@@ -122,11 +141,29 @@ where
     }
 }
 
+impl<C> TryFrom<&[u8]> for NonZeroScalar<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+{
+    type Error = Error;
+
+    fn try_from(bytes: &[u8]) -> Result<Self, Error> {
+        if bytes.len() == C::FieldSize::to_usize() {
+            NonZeroScalar::from_repr(GenericArray::clone_from_slice(bytes)).ok_or(Error)
+        } else {
+            Err(Error)
+        }
+    }
+}
+
 #[cfg(feature = "zeroize")]
 impl<C> Zeroize for NonZeroScalar<C>
 where
-    C: Curve + Arithmetic,
-    C::Scalar: Zeroize,
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
 {
     fn zeroize(&mut self) {
         self.scalar.zeroize();
