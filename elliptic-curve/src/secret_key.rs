@@ -49,7 +49,7 @@ where
 
 /// Elliptic curve secret keys.
 ///
-/// This type wraps a serialized scalar value, helping to prevent accidental
+/// This type wraps a secret scalar value, helping to prevent accidental
 /// exposure and securely erasing the value from memory when dropped
 /// (when the `zeroize` feature of this crate is enabled).
 #[derive(Clone)]
