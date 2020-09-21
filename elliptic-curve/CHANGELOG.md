@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.6.0 (2020-09-11)
+## 0.6.1 (2020-09-21)
+### Fixed
+- `sec1::EncodedPoint::decompress` ([#309])
+
+[#309]: https://github.com/RustCrypto/traits/pull/309
+
+## 0.6.0 (2020-09-11) [YANKED]
 ### Added
 - `arithmetic` feature ([#293])
 - Generic curve/field arithmetic using the `ff` and `group` crates
