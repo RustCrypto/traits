@@ -21,14 +21,14 @@ use alloc::boxed::Box;
 
 #[cfg(feature = "arithmetic")]
 use crate::{
-    ff::PrimeField, subtle::Choice, weierstrass::point::Decompress, ProjectiveArithmetic, Scalar,
+    ff::PrimeField,
+    subtle::{Choice, ConditionallySelectable},
+    weierstrass::point::Decompress,
+    AffinePoint, ProjectiveArithmetic, Scalar,
 };
 
 #[cfg(all(feature = "arithmetic", feature = "zeroize"))]
-use crate::{
-    group::{Curve as _, Group},
-    AffinePoint,
-};
+use crate::group::{Curve as _, Group};
 
 #[cfg(all(feature = "arithmetic", feature = "zeroize"))]
 use crate::secret_key::SecretKey;
@@ -181,11 +181,12 @@ where
     where
         C: Curve + ProjectiveArithmetic,
         FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Decompress<C> + ToEncodedPoint<C>,
+        Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+        AffinePoint<C>: ConditionallySelectable + Default + Decompress<C> + ToEncodedPoint<C>,
     {
         match self.coordinates() {
             Coordinates::Compressed { x, y_is_odd } => {
-                Scalar::<C>::decompress(x, Choice::from(y_is_odd as u8))
+                AffinePoint::<C>::decompress(x, Choice::from(y_is_odd as u8))
                     .map(|s| s.to_encoded_point(false))
             }
             Coordinates::Uncompressed { .. } => CtOption::new(self.clone(), Choice::from(1)),
