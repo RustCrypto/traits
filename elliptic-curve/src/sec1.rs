@@ -161,6 +161,25 @@ where
         self.as_bytes().to_vec().into_boxed_slice()
     }
 
+    /// Serialize point as raw uncompressed coordinates without tag byte, i.e.
+    /// encoded as the concatenated `x || y` coordinates.
+    #[cfg(feature = "arithmetic")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+    pub fn to_untagged_bytes(&self) -> Option<GenericArray<u8, UntaggedPointSize<C>>>
+    where
+        C: Curve + ProjectiveArithmetic,
+        FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+        Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+        AffinePoint<C>: ConditionallySelectable + Default + Decompress<C> + ToEncodedPoint<C>,
+    {
+        let decompressed: Option<EncodedPoint<C>> = self.decompress().into();
+        decompressed.map(|point| {
+            let mut bytes = GenericArray::<u8, UntaggedPointSize<C>>::default();
+            bytes.copy_from_slice(&point.as_bytes()[1..]);
+            bytes
+        })
+    }
+
     /// Is this [`EncodedPoint`] compressed?
     pub fn is_compressed(&self) -> bool {
         self.tag().is_compressed()
