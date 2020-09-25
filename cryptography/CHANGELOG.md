@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.0 (2020-09-25)
+### Changed
+- Bump `signature` dependency to 1.2.0 ([#314])
+- Bump `elliptic-curve` dependency to 0.6 ([#302])
+- Bump `stream-cipher` dependency to 0.7 ([#260])
+
+[#314]: https://github.com/RustCrypto/traits/pull/314
+[#302]: https://github.com/RustCrypto/traits/pull/302
+[#260]: https://github.com/RustCrypto/traits/pull/260
+
 ## 0.3.0 (2020-08-10)
 ### Added
 - `elliptic-curve` feature ([#213])
