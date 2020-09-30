@@ -35,8 +35,9 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
-      - run: cargo build --release --target ${{ matrix.target }}
-      - run: cargo build --all-features --release --target ${{ matrix.target }}
+      - run: cargo build --no-default-features --release --target ${{ matrix.target }}
+      - run: cargo build --no-default-features --release --target ${{ matrix.target }}
+               --features aead,block-cipher,mac,digest,elliptic-curve,signature,stream-cipher,universal-hash
   test:
     runs-on: ubuntu-latest
     strategy:
