@@ -50,7 +50,7 @@ where
     D: Digest,
     S: Signature,
 {
-    /// Sign the given prehashed message `Digest`, returning a signature.
+    /// Sign the given prehashed message [`Digest`], returning a signature.
     ///
     /// Panics in the event of a signing error.
     fn sign_digest(&self, digest: D) -> S {
@@ -58,7 +58,7 @@ where
             .expect("signature operation failed")
     }
 
-    /// Attempt to sign the given prehashed message `Digest`, returning a
+    /// Attempt to sign the given prehashed message [`Digest`], returning a
     /// digital signature on success, or an error if something went wrong.
     fn try_sign_digest(&self, digest: D) -> Result<S, Error>;
 }

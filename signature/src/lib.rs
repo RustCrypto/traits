@@ -147,8 +147,12 @@
 //!   systems which rely on a cryptographically secure random number generator
 //!   for security.
 //!
+//! NOTE: the [`async-signature`] crate contains experimental `async` support
+//! for [`Signer`] and [`DigestSigner`].
+//!
+//! [`async-signature`]: https://docs.rs/async-signature
+//! [`digest`]: https://docs.rs/digest/
 //! [`Digest`]: https://docs.rs/digest/latest/digest/trait.Digest.html
-//! [`digest`]: https://docs.rs/digest/latest/digest/
 //! [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 
 #![no_std]
@@ -159,12 +163,7 @@
     html_root_url = "https://docs.rs/signature/1.2.2"
 )]
 #![forbid(unsafe_code)]
-#![warn(
-    missing_docs,
-    rust_2018_idioms,
-    unused_qualifications,
-    intra_doc_link_resolution_failure
-)]
+#![warn(missing_docs, rust_2018_idioms, unused_qualifications)]
 
 #[cfg(feature = "std")]
 extern crate std;
