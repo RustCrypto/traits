@@ -4,6 +4,7 @@
 [![Docs][docs-image]][docs-link]
 ![Apache2/MIT licensed][license-image]
 ![Rust Version][rustc-image]
+[![Project Chat][chat-image]][chat-link]
 [![Build Status][build-image]][build-link]
 
 General purpose Elliptic Curve Cryptography (ECC) support, including types
@@ -47,5 +48,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-link]: https://docs.rs/elliptic-curve/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.44+-blue.svg
+[chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
+[chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260040-elliptic-curves
 [build-image]: https://github.com/RustCrypto/elliptic-curves/workflows/elliptic-curve%20crate/badge.svg?branch=master&event=push
 [build-link]: https://github.com/RustCrypto/elliptic-curves/actions?query=workflow%3A%22elliptic-curve+crate%22

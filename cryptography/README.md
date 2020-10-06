@@ -4,6 +4,7 @@
 [![Docs][docs-image]][docs-link]
 ![Apache2/MIT licensed][license-image]
 ![Rust Version][rustc-image]
+[![Project Chat][chat-image]][chat-link]
 [![Build Status][build-image]][build-link]
 
 Facade crate for [RustCrypto Traits][1], providing a single place to
@@ -46,6 +47,8 @@ dual licensed as above, without any additional terms or conditions.
 [docs-link]: https://docs.rs/cryptography/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.44+-blue.svg
+[chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
+[chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260050-Traits
 [build-image]: https://github.com/RustCrypto/traits/workflows/cryptography/badge.svg?branch=master&event=push
 [build-link]: https://github.com/RustCrypto/traits/actions?query=workflow%3Acryptography
 
