@@ -41,6 +41,6 @@ where
     D: Digest,
     S: Signature,
 {
-    /// Verify the signature against the given `Digest` output.
+    /// Verify the signature against the given [`Digest`] output.
     fn verify_digest(&self, digest: D, signature: &S) -> Result<(), Error>;
 }
