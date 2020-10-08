@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.6.6 (2020-10-08)
+### Added
+- Derive `Clone` on `SecretBytes` ([#330])
+
+[#300]: https://github.com/RustCrypto/traits/pull/300
+
 ## 0.6.5 (2020-10-08)
 ### Fixed
 - Work around `nightly-2020-10-06` breakage ([#328])
