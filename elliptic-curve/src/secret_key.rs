@@ -11,6 +11,7 @@ use crate::{error::Error, Curve, FieldBytes};
 use core::{
     convert::{TryFrom, TryInto},
     fmt::{self, Debug},
+    ops::Deref,
 };
 use zeroize::Zeroize;
 
@@ -146,5 +147,36 @@ where
 {
     fn drop(&mut self) {
         self.secret_value.zeroize();
+    }
+}
+
+/// Newtype wrapper for [`FieldBytes`] which impls [`Zeroize`].
+///
+/// This allows it to fulfill the [`Zeroize`] bound on [`SecretValue::Secret`].
+pub struct SecretBytes<C: Curve>(FieldBytes<C>);
+
+impl<C: Curve> From<FieldBytes<C>> for SecretBytes<C> {
+    fn from(bytes: FieldBytes<C>) -> SecretBytes<C> {
+        Self(bytes)
+    }
+}
+
+impl<C: Curve> AsRef<[u8]> for SecretBytes<C> {
+    fn as_ref(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl<C: Curve> Deref for SecretBytes<C> {
+    type Target = FieldBytes<C>;
+
+    fn deref(&self) -> &FieldBytes<C> {
+        &self.0
+    }
+}
+
+impl<C: Curve> Zeroize for SecretBytes<C> {
+    fn zeroize(&mut self) {
+        self.0.as_mut().zeroize();
     }
 }
