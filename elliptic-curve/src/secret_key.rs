@@ -26,7 +26,22 @@ use rand_core::{CryptoRng, RngCore};
 
 /// Inner value stored by a [`SecretKey`].
 pub trait SecretValue: Curve {
-    /// Inner secret value
+    /// Inner secret value.
+    ///
+    /// ⚠️ WARNING ⚠️
+    ///
+    /// This type is not intended to be part of the public API and in future
+    /// versions of this crate we will try to explore ways to hide it.
+    ///
+    /// Crates such as `k256` and `p256` conditionally define this type
+    /// differently depending on what cargo features are enabled.
+    /// This means any consumers of this crate attempting to use this type
+    /// may experience breakages if the cargo features are not what are
+    /// expected.
+    ///
+    /// We regret exposing it as part of the public API for now, however if
+    /// you do reference this type as a downstream consumer of a curve crate,
+    /// be aware you will experience breakages!
     type Secret: Into<FieldBytes<Self>> + Zeroize;
 
     /// Parse the secret value from bytes
@@ -158,6 +173,12 @@ pub struct SecretBytes<C: Curve>(FieldBytes<C>);
 impl<C: Curve> From<FieldBytes<C>> for SecretBytes<C> {
     fn from(bytes: FieldBytes<C>) -> SecretBytes<C> {
         Self(bytes)
+    }
+}
+
+impl<C: Curve> From<SecretBytes<C>> for FieldBytes<C> {
+    fn from(bytes: SecretBytes<C>) -> FieldBytes<C> {
+        bytes.0
     }
 }
 
