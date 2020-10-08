@@ -73,7 +73,8 @@ where
     ///
     /// The `compress` flag enables point compression.
     pub fn public_key(&self) -> PublicKey<C> {
-        (C::ProjectivePoint::generator() * &self.scalar)
+        #[allow(clippy::op_ref)]
+        (C::ProjectivePoint::generator() * &*self.scalar)
             .to_affine()
             .into()
     }
