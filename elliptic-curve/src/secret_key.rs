@@ -168,6 +168,7 @@ where
 /// Newtype wrapper for [`FieldBytes`] which impls [`Zeroize`].
 ///
 /// This allows it to fulfill the [`Zeroize`] bound on [`SecretValue::Secret`].
+#[derive(Clone)]
 pub struct SecretBytes<C: Curve>(FieldBytes<C>);
 
 impl<C: Curve> From<FieldBytes<C>> for SecretBytes<C> {
