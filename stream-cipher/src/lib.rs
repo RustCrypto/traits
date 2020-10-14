@@ -35,7 +35,7 @@ use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
 
 #[cfg(feature = "block-cipher")]
-use block_cipher::{BlockCipher, NewBlockCipher};
+use block_cipher::{BlockCipher, BlockCipherMut, NewBlockCipher};
 
 /// Key for an algorithm that implements [`NewStreamCipher`].
 pub type Key<C> = GenericArray<u8, <C as NewStreamCipher>::KeySize>;
@@ -184,18 +184,50 @@ pub trait FromBlockCipher {
     ) -> Self;
 }
 
+/// Trait for initializing a stream cipher from a mutable block cipher
+#[cfg(feature = "block-cipher")]
+#[cfg_attr(docsrs, doc(cfg(feature = "block-cipher")))]
+pub trait FromBlockCipherMut {
+    /// Block cipher
+    type BlockCipher: BlockCipherMut;
+    /// Nonce size in bytes
+    type NonceSize: ArrayLength<u8>;
+
+    /// Instantiate a stream cipher from a block cipher
+    fn from_block_cipher_mut(
+        cipher: Self::BlockCipher,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+    ) -> Self;
+}
+
+#[cfg(feature = "block-cipher")]
+impl<C> FromBlockCipherMut for C
+where
+    C: FromBlockCipher,
+{
+    type BlockCipher = <Self as FromBlockCipher>::BlockCipher;
+    type NonceSize = <Self as FromBlockCipher>::NonceSize;
+
+    fn from_block_cipher_mut(
+        cipher: Self::BlockCipher,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+    ) -> C {
+        C::from_block_cipher(cipher, nonce)
+    }
+}
+
 #[cfg(feature = "block-cipher")]
 impl<C> NewStreamCipher for C
 where
-    C: FromBlockCipher,
+    C: FromBlockCipherMut,
     C::BlockCipher: NewBlockCipher,
 {
-    type KeySize = <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::KeySize;
-    type NonceSize = <Self as FromBlockCipher>::NonceSize;
+    type KeySize = <<Self as FromBlockCipherMut>::BlockCipher as NewBlockCipher>::KeySize;
+    type NonceSize = <Self as FromBlockCipherMut>::NonceSize;
 
     fn new(key: &Key<Self>, nonce: &Nonce<Self>) -> C {
-        C::from_block_cipher(
-            <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::new(key),
+        C::from_block_cipher_mut(
+            <<Self as FromBlockCipherMut>::BlockCipher as NewBlockCipher>::new(key),
             nonce,
         )
     }
@@ -208,7 +240,7 @@ where
                 .map_err(|_| InvalidKeyNonceLength)
                 .map(|cipher| {
                     let nonce = GenericArray::from_slice(nonce);
-                    Self::from_block_cipher(cipher, nonce)
+                    Self::from_block_cipher_mut(cipher, nonce)
                 })
         }
     }
