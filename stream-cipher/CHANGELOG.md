@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.8.0-pre (2020-10-14)
+### Added
+- `FromBlockCipherMut` trait ([#334])
+
+### Removed
+- `NewBlockCipher` bound on `FromBlockCipher` ([#333])
+
+[#334]: https://github.com/RustCrypto/traits/pull/334
+[#333]: https://github.com/RustCrypto/traits/pull/333
+
 ## 0.7.1 (2020-08-25)
 ### Fixed
 - Computation of `SeekNum::to_block_byte` for numbers which are not a power of 2 ([#268])
