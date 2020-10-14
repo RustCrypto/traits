@@ -173,7 +173,7 @@ impl<C: SyncStreamCipher> SyncStreamCipher for &mut C {
 #[cfg_attr(docsrs, doc(cfg(feature = "block-cipher")))]
 pub trait FromBlockCipher {
     /// Block cipher
-    type BlockCipher: BlockCipher + NewBlockCipher;
+    type BlockCipher: BlockCipher;
     /// Nonce size in bytes
     type NonceSize: ArrayLength<u8>;
 
@@ -188,6 +188,7 @@ pub trait FromBlockCipher {
 impl<C> NewStreamCipher for C
 where
     C: FromBlockCipher,
+    C::BlockCipher: NewBlockCipher,
 {
     type KeySize = <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::KeySize;
     type NonceSize = <Self as FromBlockCipher>::NonceSize;
