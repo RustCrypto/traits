@@ -24,12 +24,11 @@
 //! | Re-export | Cargo feature | Description |
 //! |-----------|---------------|-------------|
 //! | [`aead`](https://docs.rs/aead) | `aead` | Authenticated Encryption with Associated Data (i.e. high-level symmetric encryption) |
-//! | [`block_cipher`](https://docs.rs/block-cipher) | `block‑cipher` | Block-based cryptographic permutations (i.e. low-level symmetric encryption) |
+//! | [`cipher`](https://docs.rs/cipher) | `cipher` | Block and stream ciphers (i.e. low-level symmetric encryption) |
 //! | [`digest`](https://docs.rs/digest) | `digest` | Cryptographic hash functions |
 //! | [`elliptic_curve`](https://docs.rs/elliptic-curve) | `elliptic-curve` | Elliptic curve cryptography |
 //! | [`mac`](https://docs.rs/crypto-mac) | `mac` | Message Authentication Codes (i.e. symmetric message authentication) |
 //! | [`signature`](https://docs.rs/signature) | `signature` | Digital signatures (i.e. public key-based message authentication) |
-//! | [`stream_cipher`](https://docs.rs/stream-cipher) | `stream‑cipher` | Ciphers based on randomly generated keystreams (i.e. low-level symmetric encryption) |
 //! | [`universal_hash`](https://docs.rs/universal-hash) | `universal‑hash` | Universal Hash Functions (used to build MACs) |
 //!
 //! [1]: https://github.com/RustCrypto/traits
@@ -46,8 +45,8 @@
 #[cfg(feature = "aead")]
 pub use aead;
 
-#[cfg(feature = "block-cipher")]
-pub use block_cipher;
+#[cfg(feature = "cipher")]
+pub use cipher;
 
 #[cfg(feature = "digest")]
 pub use digest;
@@ -60,9 +59,6 @@ pub use mac;
 
 #[cfg(feature = "signature")]
 pub use signature;
-
-#[cfg(feature = "stream-cipher")]
-pub use stream_cipher;
 
 #[cfg(feature = "universal-hash")]
 pub use universal_hash;

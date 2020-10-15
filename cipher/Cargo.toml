@@ -1,27 +1,21 @@
 [package]
-name = "stream-cipher"
-description = "Stream cipher traits"
-version = "0.8.0-pre"
+name = "cipher"
+description = "Traits for describing block ciphers and stream ciphers"
+version = "0.2.0-pre"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 edition = "2018"
-documentation = "https://docs.rs/stream-cipher"
+documentation = "https://docs.rs/cipher"
 repository = "https://github.com/RustCrypto/traits"
-keywords = ["crypto", "stream-cipher", "trait"]
+keywords = ["crypto", "block-cipher", "stream-cipher", "trait"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = "0.14"
 blobby = { version = "0.3", optional = true }
 
-[dependencies.block-cipher]
-version = "0.8"
-optional = true
-path = "../block-cipher"
-
 [features]
-default = ["block-cipher"]
 std = []
 dev = ["blobby"]
 

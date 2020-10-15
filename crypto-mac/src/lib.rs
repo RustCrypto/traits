@@ -12,10 +12,10 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-#[cfg(feature = "block-cipher")]
-pub use block_cipher;
-#[cfg(feature = "block-cipher")]
-use block_cipher::{BlockCipher, NewBlockCipher};
+#[cfg(feature = "cipher")]
+pub use cipher;
+#[cfg(feature = "cipher")]
+use cipher::{BlockCipher, NewBlockCipher};
 
 #[cfg(feature = "dev")]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
@@ -126,8 +126,8 @@ impl<M: Mac> PartialEq for Output<M> {
 
 impl<M: Mac> Eq for Output<M> {}
 
-#[cfg(feature = "block-cipher")]
-#[cfg_attr(docsrs, doc(cfg(feature = "block-cipher")))]
+#[cfg(feature = "cipher")]
+#[cfg_attr(docsrs, doc(cfg(feature = "cipher")))]
 /// Trait for MAC functions which can be created from block cipher.
 pub trait FromBlockCipher {
     /// Block cipher type
@@ -137,8 +137,8 @@ pub trait FromBlockCipher {
     fn from_cipher(cipher: Self::Cipher) -> Self;
 }
 
-#[cfg(feature = "block-cipher")]
-#[cfg_attr(docsrs, doc(cfg(feature = "block-cipher")))]
+#[cfg(feature = "cipher")]
+#[cfg_attr(docsrs, doc(cfg(feature = "cipher")))]
 impl<T> NewMac for T
 where
     T: FromBlockCipher,
