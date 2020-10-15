@@ -4,16 +4,16 @@ Collection of traits which describe functionality of cryptographic primitives.
 
 ## Crates
 
-| Crate name          | Algorithm                          | Crates.io | Docs  | Build Status |
-|---------------------|------------------------------------|-----------|-------|--------------|
-| [`aead`]            | [Authenticated encryption]         | [![crates.io](https://img.shields.io/crates/v/aead.svg)](https://crates.io/crates/aead) | [![Documentation](https://docs.rs/aead/badge.svg)](https://docs.rs/aead) | ![build](https://github.com/RustCrypto/traits/workflows/aead/badge.svg?branch=master&event=push) |
-| [`async-signature`] | [Digital signature]                | [![crates.io](https://img.shields.io/crates/v/async-signature.svg)](https://crates.io/crates/async-signature) | [![Documentation](https://docs.rs/async-signature/badge.svg)](https://docs.rs/async-signature) | ![build](https://github.com/RustCrypto/traits/workflows/async-signature/badge.svg?branch=master&event=push) |
-| [`cipher`]          | [Block cipher] and [Stream cipher] | [![crates.io](https://img.shields.io/crates/v/cipher.svg)](https://crates.io/crates/cipher) | [![Documentation](https://docs.rs/cipher/badge.svg)](https://docs.rs/cipher) | ![build](https://github.com/RustCrypto/traits/workflows/cipher/badge.svg?branch=master&event=push) |
-| [`crypto‑mac`]      | [Message authentication code]      | [![crates.io](https://img.shields.io/crates/v/crypto-mac.svg)](https://crates.io/crates/crypto-mac) | [![Documentation](https://docs.rs/crypto-mac/badge.svg)](https://docs.rs/crypto-mac) | ![build](https://github.com/RustCrypto/traits/workflows/crypto-mac/badge.svg?branch=master&event=push) |
-| [`digest`]          | [Cryptographic hash function]      | [![crates.io](https://img.shields.io/crates/v/digest.svg)](https://crates.io/crates/digest) | [![Documentation](https://docs.rs/digest/badge.svg)](https://docs.rs/digest) | ![build](https://github.com/RustCrypto/traits/workflows/digest/badge.svg?branch=master&event=push) |
-| [`elliptic-curve`]  | [Elliptic curve cryptography]      | [![crates.io](https://img.shields.io/crates/v/elliptic-curve.svg)](https://crates.io/crates/elliptic-curve) | [![Documentation](https://docs.rs/elliptic-curve/badge.svg)](https://docs.rs/elliptic-curve) | ![build](https://github.com/RustCrypto/traits/workflows/elliptic-curve/badge.svg?branch=master&event=push) |
-| [`signature`]       | [Digital signature]                | [![crates.io](https://img.shields.io/crates/v/signature.svg)](https://crates.io/crates/signature) | [![Documentation](https://docs.rs/signature/badge.svg)](https://docs.rs/signature) | ![build](https://github.com/RustCrypto/traits/workflows/signature/badge.svg?branch=master&event=push) |
-| [`universal‑hash`]  | [Universal hash function]          | [![crates.io](https://img.shields.io/crates/v/universal-hash.svg)](https://crates.io/crates/universal-hash) | [![Documentation](https://docs.rs/universal-hash/badge.svg)](https://docs.rs/universal-hash) | ![build](https://github.com/RustCrypto/traits/workflows/universal-hash/badge.svg?branch=master&event=push) |
+| Crate name          | Algorithm                     | Crates.io | Docs  | Build Status |
+|---------------------|-------------------------------|-----------|-------|--------------|
+| [`aead`]            | [Authenticated encryption]    | [![crates.io](https://img.shields.io/crates/v/aead.svg)](https://crates.io/crates/aead) | [![Documentation](https://docs.rs/aead/badge.svg)](https://docs.rs/aead) | ![build](https://github.com/RustCrypto/traits/workflows/aead/badge.svg?branch=master&event=push) |
+| [`async-signature`] | [Digital signature]           | [![crates.io](https://img.shields.io/crates/v/async-signature.svg)](https://crates.io/crates/async-signature) | [![Documentation](https://docs.rs/async-signature/badge.svg)](https://docs.rs/async-signature) | ![build](https://github.com/RustCrypto/traits/workflows/async-signature/badge.svg?branch=master&event=push) |
+| [`cipher`]          | [Block] and [stream cipher]   | [![crates.io](https://img.shields.io/crates/v/cipher.svg)](https://crates.io/crates/cipher) | [![Documentation](https://docs.rs/cipher/badge.svg)](https://docs.rs/cipher) | ![build](https://github.com/RustCrypto/traits/workflows/cipher/badge.svg?branch=master&event=push) |
+| [`crypto‑mac`]      | [Message authentication code] | [![crates.io](https://img.shields.io/crates/v/crypto-mac.svg)](https://crates.io/crates/crypto-mac) | [![Documentation](https://docs.rs/crypto-mac/badge.svg)](https://docs.rs/crypto-mac) | ![build](https://github.com/RustCrypto/traits/workflows/crypto-mac/badge.svg?branch=master&event=push) |
+| [`digest`]          | [Cryptographic hash function] | [![crates.io](https://img.shields.io/crates/v/digest.svg)](https://crates.io/crates/digest) | [![Documentation](https://docs.rs/digest/badge.svg)](https://docs.rs/digest) | ![build](https://github.com/RustCrypto/traits/workflows/digest/badge.svg?branch=master&event=push) |
+| [`elliptic-curve`]  | [Elliptic curve cryptography] | [![crates.io](https://img.shields.io/crates/v/elliptic-curve.svg)](https://crates.io/crates/elliptic-curve) | [![Documentation](https://docs.rs/elliptic-curve/badge.svg)](https://docs.rs/elliptic-curve) | ![build](https://github.com/RustCrypto/traits/workflows/elliptic-curve/badge.svg?branch=master&event=push) |
+| [`signature`]       | [Digital signature]           | [![crates.io](https://img.shields.io/crates/v/signature.svg)](https://crates.io/crates/signature) | [![Documentation](https://docs.rs/signature/badge.svg)](https://docs.rs/signature) | ![build](https://github.com/RustCrypto/traits/workflows/signature/badge.svg?branch=master&event=push) |
+| [`universal‑hash`]  | [Universal hash function]     | [![crates.io](https://img.shields.io/crates/v/universal-hash.svg)](https://crates.io/crates/universal-hash) | [![Documentation](https://docs.rs/universal-hash/badge.svg)](https://docs.rs/universal-hash) | ![build](https://github.com/RustCrypto/traits/workflows/universal-hash/badge.svg?branch=master&event=push) |
 
 ### Additional crates
 
@@ -64,7 +64,7 @@ dual licensed as above, without any additional terms or conditions.
 [//]: # (algorithms)
 
 [Authenticated encryption]: https://en.wikipedia.org/wiki/Authenticated_encryption
-[Block cipher]: https://en.wikipedia.org/wiki/Block_cipher
+[Block]: https://en.wikipedia.org/wiki/Block_cipher
 [Message authentication code]: https://en.wikipedia.org/wiki/Message_authentication_code
 [Cryptographic hash function]: https://en.wikipedia.org/wiki/Cryptographic_hash_function
 [Digital signature]: https://en.wikipedia.org/wiki/Digital_signature
