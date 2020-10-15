@@ -1,4 +1,4 @@
-# RustCrypto: Stream Cipher Traits
+# RustCrypto: Cipher Traits
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -7,9 +7,10 @@
 [![Project Chat][chat-image]][chat-link]
 [![Build Status][build-image]][build-link]
 
-Traits which define functionality of [stream ciphers].
+Traits which define the functionality of [block ciphers] and [stream ciphers].
 
-See [RustCrypto/stream-ciphers] for implementations which use this trait.
+See [RustCrypto/block-ciphers] and [RustCrypto/stream-ciphers] for algorithm
+implementations which use this trait.
 
 [Documentation][docs-link]
 
@@ -42,18 +43,20 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/stream-cipher.svg
-[crate-link]: https://crates.io/crates/stream-cipher
-[docs-image]: https://docs.rs/stream-cipher/badge.svg
-[docs-link]: https://docs.rs/stream-cipher/
+[crate-image]: https://img.shields.io/crates/v/cipher.svg
+[crate-link]: https://crates.io/crates/cipher
+[docs-image]: https://docs.rs/cipher/badge.svg
+[docs-link]: https://docs.rs/cipher/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
-[chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260049-stream-ciphers
-[build-image]: https://github.com/RustCrypto/traits/workflows/stream-cipher/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/traits/actions?query=workflow%3Astream-cipher
+[chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260050-traits
+[build-image]: https://github.com/RustCrypto/traits/workflows/cipher/badge.svg?branch=master&event=push
+[build-link]: https://github.com/RustCrypto/traits/actions?query=workflow:cipher
 
 [//]: # (general links)
 
+[block ciphers]: https://en.wikipedia.org/wiki/Block_cipher
 [stream ciphers]: https://en.wikipedia.org/wiki/Stream_cipher
+[RustCrypto/block-ciphers]: https://github.com/RustCrypto/block-ciphers
 [RustCrypto/stream-ciphers]: https://github.com/RustCrypto/stream-ciphers

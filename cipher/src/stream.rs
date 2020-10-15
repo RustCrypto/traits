@@ -1,20 +1,7 @@
-//! This crate defines a set of traits which define functionality of
-//! stream ciphers.
+//! Traits which define functionality of stream ciphers.
 //!
 //! See [RustCrypto/stream-ciphers](https://github.com/RustCrypto/stream-ciphers)
 //! for ciphers implementation.
-
-#![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
-)]
-#![forbid(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms)]
-
-#[cfg(feature = "std")]
-extern crate std;
 
 #[cfg(feature = "dev")]
 mod dev;
@@ -24,18 +11,13 @@ mod errors;
 pub use errors::{InvalidKeyNonceLength, LoopError, OverflowError};
 pub use generic_array::{self, typenum::consts};
 
-#[cfg(feature = "block-cipher")]
-pub use block_cipher;
-
 #[cfg(feature = "dev")]
 pub use blobby;
 
+use crate::block::{BlockCipher, BlockCipherMut, NewBlockCipher};
 use core::convert::{TryFrom, TryInto};
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
-
-#[cfg(feature = "block-cipher")]
-use block_cipher::{BlockCipher, BlockCipherMut, NewBlockCipher};
 
 /// Key for an algorithm that implements [`NewStreamCipher`].
 pub type Key<C> = GenericArray<u8, <C as NewStreamCipher>::KeySize>;
@@ -169,8 +151,6 @@ impl<C: SyncStreamCipher> SyncStreamCipher for &mut C {
 }
 
 /// Trait for initializing a stream cipher from a block cipher
-#[cfg(feature = "block-cipher")]
-#[cfg_attr(docsrs, doc(cfg(feature = "block-cipher")))]
 pub trait FromBlockCipher {
     /// Block cipher
     type BlockCipher: BlockCipher;
@@ -185,8 +165,6 @@ pub trait FromBlockCipher {
 }
 
 /// Trait for initializing a stream cipher from a mutable block cipher
-#[cfg(feature = "block-cipher")]
-#[cfg_attr(docsrs, doc(cfg(feature = "block-cipher")))]
 pub trait FromBlockCipherMut {
     /// Block cipher
     type BlockCipher: BlockCipherMut;
@@ -200,7 +178,6 @@ pub trait FromBlockCipherMut {
     ) -> Self;
 }
 
-#[cfg(feature = "block-cipher")]
 impl<C> FromBlockCipherMut for C
 where
     C: FromBlockCipher,
@@ -216,7 +193,6 @@ where
     }
 }
 
-#[cfg(feature = "block-cipher")]
 impl<C> NewStreamCipher for C
 where
     C: FromBlockCipherMut,

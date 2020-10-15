@@ -1,13 +1,12 @@
 [workspace]
 members = [
     "aead",
-    "block-cipher",
+    "cipher",
     "crypto-mac",
     "cryptography",
     "digest",
     "elliptic-curve",
     "signature",
     "signature/async",
-    "stream-cipher",
     "universal-hash",
 ]

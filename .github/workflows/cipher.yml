@@ -1,16 +1,16 @@
-name: block-cipher
+name: cipher
 
 on:
   pull_request:
     paths:
-      - "block-cipher/**"
+      - "cipher/**"
       - "Cargo.*"
   push:
     branches: master
 
 defaults:
   run:
-    working-directory: block-cipher
+    working-directory: cipher
 
 env:
   CARGO_INCREMENTAL: 0

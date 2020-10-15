@@ -1,5 +1,4 @@
-//! This crate defines a set of simple traits used to define functionality of
-//! [block ciphers][1].
+//! Traits used to define functionality of [block ciphers][1].
 //!
 //! # About block ciphers
 //!
@@ -10,29 +9,16 @@
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher
 //! [2]: https://en.wikipedia.org/wiki/Symmetric-key_algorithm
 
-#![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
-)]
-#![forbid(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms)]
-
-#[cfg(feature = "std")]
-extern crate std;
-
 #[cfg(feature = "dev")]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
 mod errors;
 
-pub use crate::errors::InvalidKeyLength;
+pub use errors::InvalidKeyLength;
 pub use generic_array::{self, typenum::consts};
 
-use generic_array::typenum::Unsigned;
-use generic_array::{ArrayLength, GenericArray};
+use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
 /// Key for an algorithm that implements [`NewBlockCipher`].
 pub type Key<B> = GenericArray<u8, <B as NewBlockCipher>::KeySize>;

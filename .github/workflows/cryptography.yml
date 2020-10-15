@@ -37,7 +37,7 @@ jobs:
           override: true
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
-               --features aead,block-cipher,mac,digest,elliptic-curve,signature,stream-cipher,universal-hash
+               --features aead,cipher,mac,digest,elliptic-curve,signature,universal-hash
   test:
     runs-on: ubuntu-latest
     strategy:
