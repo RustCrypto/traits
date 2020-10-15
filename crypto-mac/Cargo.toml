@@ -1,7 +1,7 @@
 [package]
 name = "crypto-mac"
 description = "Trait for Message Authentication Code (MAC) algorithms"
-version = "0.10.0-pre"
+version = "0.10.0"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
