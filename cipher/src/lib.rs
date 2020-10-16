@@ -23,3 +23,4 @@ pub use crate::{
     block::{BlockCipher, BlockCipherMut, NewBlockCipher},
     stream::{NewStreamCipher, StreamCipher, SyncStreamCipher, SyncStreamCipherSeek},
 };
+pub use generic_array::{self, typenum::consts};
