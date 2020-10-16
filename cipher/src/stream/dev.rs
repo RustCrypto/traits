@@ -7,9 +7,8 @@ macro_rules! new_sync_test {
     ($name:ident, $cipher:ty, $test_name:expr) => {
         #[test]
         fn $name() {
-            use stream_cipher::blobby::Blob4Iterator;
-            use stream_cipher::generic_array::GenericArray;
-            use stream_cipher::{NewStreamCipher, SyncStreamCipher};
+            use cipher::generic_array::GenericArray;
+            use cipher::stream::{blobby::Blob4Iterator, NewStreamCipher, SyncStreamCipher};
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
@@ -44,8 +43,8 @@ macro_rules! new_seek_test {
     ($name:ident, $cipher:ty) => {
         #[test]
         fn $name() {
-            use stream_cipher::generic_array::GenericArray;
-            use stream_cipher::{NewStreamCipher, SyncStreamCipher, SyncStreamCipherSeek};
+            use cipher::generic_array::GenericArray;
+            use cipher::stream::{NewStreamCipher, SyncStreamCipher, SyncStreamCipherSeek};
 
             fn get_cipher() -> $cipher {
                 <$cipher>::new(&Default::default(), &Default::default())
@@ -97,9 +96,8 @@ macro_rules! new_async_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
         #[test]
         fn $name() {
-            use stream_cipher::blobby::Blob4Iterator;
-            use stream_cipher::generic_array::GenericArray;
-            use stream_cipher::{NewStreamCipher, StreamCipher};
+            use cipher::generic_array::GenericArray;
+            use cipher::stream::{blobby::Blob4Iterator, NewStreamCipher, StreamCipher};
 
             fn run_test(
                 key: &[u8],
@@ -174,8 +172,8 @@ macro_rules! bench_sync {
     ($cipher:path) => {
         extern crate test;
 
-        use stream_cipher::generic_array::GenericArray;
-        use stream_cipher::{NewStreamCipher, SyncStreamCipher};
+        use cipher::generic_array::GenericArray;
+        use cipher::stream::{NewStreamCipher, SyncStreamCipher};
         use test::Bencher;
 
         #[inline(never)]
@@ -227,8 +225,8 @@ macro_rules! bench_async {
     ($cipher:path) => {
         extern crate test;
 
-        use stream_cipher::generic_array::GenericArray;
-        use stream_cipher::{NewStreamCipher, StreamCipher};
+        use cipher::generic_array::GenericArray;
+        use cipher::stream::{NewStreamCipher, StreamCipher};
         use test::Bencher;
 
         #[inline(never)]
