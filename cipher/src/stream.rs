@@ -9,6 +9,8 @@ mod dev;
 mod errors;
 
 pub use errors::{InvalidKeyNonceLength, LoopError, OverflowError};
+
+// TODO(tarcieri): remove these re-exports in favor of the toplevel one
 pub use generic_array::{self, typenum::consts};
 
 #[cfg(feature = "dev")]
