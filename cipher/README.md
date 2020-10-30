@@ -10,7 +10,7 @@
 Traits which define the functionality of [block ciphers] and [stream ciphers].
 
 See [RustCrypto/block-ciphers] and [RustCrypto/stream-ciphers] for algorithm
-implementations which use this trait.
+implementations which use these traits.
 
 [Documentation][docs-link]
 
