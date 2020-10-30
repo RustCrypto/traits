@@ -1,4 +1,4 @@
-//! This crate defines a set of simple traits used to define functionality of
+//! This crate defines a set of traits which describe the functionality of
 //! [block ciphers][1] and [stream ciphers][2].
 //!
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher

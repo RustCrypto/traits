@@ -2,10 +2,10 @@
 
 pub use blobby;
 
-/// Define test
+/// Define block cipher test
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-macro_rules! new_test {
+macro_rules! block_cipher_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
         #[test]
         fn $name() {
@@ -104,10 +104,10 @@ macro_rules! new_test {
     };
 }
 
-/// Define benchmark
+/// Define block cipher benchmark
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-macro_rules! bench {
+macro_rules! block_cipher_bench {
     ($cipher:path, $key_len:expr) => {
         extern crate test;
 
@@ -137,5 +137,27 @@ macro_rules! bench {
             });
             bh.bytes = block.len() as u64;
         }
+    };
+}
+
+//
+// Below are deprecated legacy macro wrappers. They should be removed in v0.3.
+//
+
+/// Define tests
+#[macro_export]
+#[deprecated(since = "0.2.2", note = "use `block_cipher_test!` instead")]
+macro_rules! new_test {
+    ($name:ident, $test_name:expr, $cipher:ty) => {
+        block_cipher_test!($name, $test_name, $cipher)
+    };
+}
+
+/// Define benchmark
+#[macro_export]
+#[deprecated(since = "0.2.2", note = "use `block_cipher_bench!` instead")]
+macro_rules! bench {
+    ($cipher:path, $key_len:expr) => {
+        block_cipher_bench!($cipher, $key_len)
     };
 }

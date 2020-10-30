@@ -3,7 +3,7 @@
 /// Test core functionality of synchronous stream cipher
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-macro_rules! new_sync_test {
+macro_rules! stream_cipher_sync_test {
     ($name:ident, $cipher:ty, $test_name:expr) => {
         #[test]
         fn $name() {
@@ -39,7 +39,7 @@ macro_rules! new_sync_test {
 /// Test stream synchronous stream cipher seeking capabilities
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-macro_rules! new_seek_test {
+macro_rules! stream_cipher_seek_test {
     ($name:ident, $cipher:ty) => {
         #[test]
         fn $name() {
@@ -92,7 +92,7 @@ macro_rules! new_seek_test {
 /// Test core functionality of asynchronous stream cipher
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-macro_rules! new_async_test {
+macro_rules! stream_cipher_async_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
         #[test]
         fn $name() {
@@ -153,7 +153,7 @@ macro_rules! new_async_test {
 /// Create synchronous stream cipher benchmarks
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-macro_rules! bench_sync {
+macro_rules! stream_cipher_sync_bench {
     ($name:ident, $cipher:path, $data_len:expr) => {
         #[bench]
         pub fn $name(bh: &mut Bencher) {
@@ -189,10 +189,10 @@ macro_rules! bench_sync {
     };
 }
 
-/// Create synchronous stream cipher benchmarks
+/// Create asynchronous stream cipher benchmarks
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-macro_rules! bench_async {
+macro_rules! stream_cipher_async_bench {
     ($enc_name:ident, $dec_name:ident, $cipher:path, $data_len:expr) => {
         #[bench]
         pub fn $enc_name(bh: &mut Bencher) {
@@ -239,5 +239,54 @@ macro_rules! bench_async {
         $crate::bench_async!(encrypt_1000, decrypt_1000, $cipher, 1000);
         $crate::bench_async!(encrypt_10000, decrypt_10000, $cipher, 10000);
         $crate::bench_async!(encrypt_100000, decrypt_100000, $cipher, 100000);
+    };
+}
+
+//
+// Below are deprecated legacy macro wrappers. They should be removed in v0.3.
+//
+
+/// Test core functionality of synchronous stream cipher
+#[macro_export]
+#[deprecated(since = "0.2.2", note = "use `stream_cipher_sync_test!` instead")]
+macro_rules! new_sync_test {
+    ($name:ident, $cipher:ty, $test_name:expr) => {
+        stream_cipher_sync_test!($name, $cipher, $test_name)
+    };
+}
+
+/// Test stream synchronous stream cipher seeking capabilities
+#[macro_export]
+#[deprecated(since = "0.2.2", note = "use `stream_cipher_seek_test!` instead")]
+macro_rules! new_seek_test {
+    ($name:ident, $cipher:ty) => {
+        stream_cipher_seek_test!($name, $cipher)
+    };
+}
+
+/// Test core functionality of asynchronous stream cipher
+#[macro_export]
+#[deprecated(since = "0.2.2", note = "use `stream_cipher_async_test!` instead")]
+macro_rules! new_async_test {
+    ($name:ident, $test_name:expr, $cipher:ty) => {
+        stream_cipher_async_test!($name, $test_name, $cipher)
+    };
+}
+
+/// Create synchronous stream cipher benchmarks
+#[macro_export]
+#[deprecated(since = "0.2.2", note = "use `stream_cipher_sync_bench!` instead")]
+macro_rules! bench_sync {
+    ($name:ident, $cipher:path, $data_len:expr) => {
+        stream_cipher_sync_bench!($name, $cipher, $data_len)
+    };
+}
+
+/// Create asynchronous stream cipher benchmarks
+#[macro_export]
+#[deprecated(since = "0.2.2", note = "use `stream_cipher_async_bench!` instead")]
+macro_rules! bench_async {
+    ($enc_name:ident, $dec_name:ident, $cipher:path, $data_len:expr) => {
+        stream_cipher_async_bench!($enc_name, $dec_name, $cipher, $data_len)
     };
 }
