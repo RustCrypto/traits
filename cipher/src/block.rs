@@ -185,3 +185,97 @@ impl<Alg: BlockCipher> BlockCipher for &Alg {
         Alg::decrypt_blocks(self, blocks);
     }
 }
+
+/// Encrypt-only functionality for block ciphers
+pub trait Encrypt {
+    /// Size of the block in bytes
+    type BlockSize: ArrayLength<u8>;
+
+    /// Number of blocks which can be processed in parallel by
+    /// cipher implementation
+    type ParBlocks: ArrayLength<GenericArray<u8, Self::BlockSize>>;
+
+    /// Encrypt block in-place
+    fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>);
+
+    /// Encrypt several blocks in parallel using instruction level parallelism
+    /// if possible.
+    ///
+    /// If `ParBlocks` equals to 1 it's equivalent to `encrypt_block`.
+    #[inline]
+    fn encrypt_par_blocks(
+        &self,
+        blocks: &mut GenericArray<GenericArray<u8, Self::BlockSize>, Self::ParBlocks>,
+    ) {
+        for block in blocks.iter_mut() {
+            self.encrypt_block(block);
+        }
+    }
+
+    /// Encrypt a slice of blocks, leveraging parallelism when available.
+    #[inline]
+    fn encrypt_blocks(&self, mut blocks: &mut [GenericArray<u8, Self::BlockSize>]) {
+        let pb = Self::ParBlocks::to_usize();
+
+        if pb > 1 {
+            let mut iter = blocks.chunks_exact_mut(pb);
+
+            for chunk in &mut iter {
+                self.encrypt_par_blocks(chunk.try_into().unwrap())
+            }
+
+            blocks = iter.into_remainder();
+        }
+
+        for block in blocks {
+            self.encrypt_block(block);
+        }
+    }
+}
+
+/// Decrypt-only functionality for block ciphers
+pub trait Decrypt {
+    /// Size of the block in bytes
+    type BlockSize: ArrayLength<u8>;
+
+    /// Number of blocks which can be processed in parallel by
+    /// cipher implementation
+    type ParBlocks: ArrayLength<GenericArray<u8, Self::BlockSize>>;
+
+    /// Decrypt block in-place
+    fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>);
+
+    /// Decrypt several blocks in parallel using instruction level parallelism
+    /// if possible.
+    ///
+    /// If `ParBlocks` equals to 1 it's equivalent to `decrypt_block`.
+    #[inline]
+    fn decrypt_par_blocks(
+        &self,
+        blocks: &mut GenericArray<GenericArray<u8, Self::BlockSize>, Self::ParBlocks>,
+    ) {
+        for block in blocks.iter_mut() {
+            self.decrypt_block(block);
+        }
+    }
+
+    /// Decrypt a slice of blocks, leveraging parallelism when available.
+    #[inline]
+    fn decrypt_blocks(&self, mut blocks: &mut [GenericArray<u8, Self::BlockSize>]) {
+        let pb = Self::ParBlocks::to_usize();
+
+        if pb > 1 {
+            let mut iter = blocks.chunks_exact_mut(pb);
+
+            for chunk in &mut iter {
+                self.decrypt_par_blocks(chunk.try_into().unwrap())
+            }
+
+            blocks = iter.into_remainder();
+        }
+
+        for block in blocks {
+            self.decrypt_block(block);
+        }
+    }
+}
