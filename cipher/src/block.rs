@@ -186,11 +186,15 @@ impl<Alg: BlockCipher> BlockCipher for &Alg {
     }
 }
 
-/// Encrypt-only functionality for block ciphers
-pub trait Encrypt {
+/// Marker trait for block size
+// TODO(tarcieri): rename this to `BlockCipher` in the next breaking release
+pub trait BlockSizeMarker {
     /// Size of the block in bytes
     type BlockSize: ArrayLength<u8>;
+}
 
+/// Encrypt-only functionality for block ciphers
+pub trait BlockEncrypt: BlockSizeMarker {
     /// Number of blocks which can be processed in parallel by
     /// cipher implementation
     type ParBlocks: ArrayLength<GenericArray<u8, Self::BlockSize>>;
@@ -234,10 +238,7 @@ pub trait Encrypt {
 }
 
 /// Decrypt-only functionality for block ciphers
-pub trait Decrypt {
-    /// Size of the block in bytes
-    type BlockSize: ArrayLength<u8>;
-
+pub trait BlockDecrypt: BlockSizeMarker {
     /// Number of blocks which can be processed in parallel by
     /// cipher implementation
     type ParBlocks: ArrayLength<GenericArray<u8, Self::BlockSize>>;
