@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.2.2 (2020-11-01)
+### Added
+- `BlockCipher::{encrypt_slice, decrypt_slice}` methods ([#351])
+
+### Changed
+- Revamp macro names ([#350])
+
+[#351]: https://github.com/RustCrypto/traits/pull/351
+[#350]: https://github.com/RustCrypto/traits/pull/350
+
 ## 0.2.1 (2020-10-16)
 ### Added
 - Re-export `generic_array` from toplevel ([#343])
