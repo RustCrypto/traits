@@ -20,6 +20,7 @@ pub use errors::InvalidKeyLength;
 // TODO(tarcieri): remove these re-exports in favor of the toplevel one
 pub use generic_array::{self, typenum::consts};
 
+use core::convert::TryInto;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
 /// Key for an algorithm that implements [`NewBlockCipher`].
@@ -79,6 +80,26 @@ pub trait BlockCipher {
         }
     }
 
+    /// Encrypt a slice of blocks, leveraging parallelism when available.
+    #[inline]
+    fn encrypt_slice(&self, mut blocks: &mut [Block<Self>]) {
+        let pb = Self::ParBlocks::to_usize();
+
+        if pb > 1 {
+            let mut iter = blocks.chunks_exact_mut(pb);
+
+            for chunk in &mut iter {
+                self.encrypt_blocks(chunk.try_into().unwrap())
+            }
+
+            blocks = iter.into_remainder();
+        }
+
+        for block in blocks {
+            self.encrypt_block(block);
+        }
+    }
+
     /// Decrypt several blocks in parallel using instruction level parallelism
     /// if possible.
     ///
@@ -86,6 +107,26 @@ pub trait BlockCipher {
     #[inline]
     fn decrypt_blocks(&self, blocks: &mut ParBlocks<Self>) {
         for block in blocks.iter_mut() {
+            self.decrypt_block(block);
+        }
+    }
+
+    /// Decrypt a slice of blocks, leveraging parallelism when available.
+    #[inline]
+    fn decrypt_slice(&self, mut blocks: &mut [Block<Self>]) {
+        let pb = Self::ParBlocks::to_usize();
+
+        if pb > 1 {
+            let mut iter = blocks.chunks_exact_mut(pb);
+
+            for chunk in &mut iter {
+                self.decrypt_blocks(chunk.try_into().unwrap())
+            }
+
+            blocks = iter.into_remainder();
+        }
+
+        for block in blocks {
             self.decrypt_block(block);
         }
     }
