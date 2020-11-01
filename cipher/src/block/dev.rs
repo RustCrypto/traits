@@ -149,7 +149,7 @@ macro_rules! block_cipher_bench {
 #[deprecated(since = "0.2.2", note = "use `block_cipher_test!` instead")]
 macro_rules! new_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
-        block_cipher_test!($name, $test_name, $cipher)
+        $crate::block_cipher_test!($name, $test_name, $cipher)
     };
 }
 
@@ -158,6 +158,6 @@ macro_rules! new_test {
 #[deprecated(since = "0.2.2", note = "use `block_cipher_bench!` instead")]
 macro_rules! bench {
     ($cipher:path, $key_len:expr) => {
-        block_cipher_bench!($cipher, $key_len)
+        $crate::block_cipher_bench!($cipher, $key_len)
     };
 }

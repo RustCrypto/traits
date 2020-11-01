@@ -251,7 +251,7 @@ macro_rules! stream_cipher_async_bench {
 #[deprecated(since = "0.2.2", note = "use `stream_cipher_sync_test!` instead")]
 macro_rules! new_sync_test {
     ($name:ident, $cipher:ty, $test_name:expr) => {
-        stream_cipher_sync_test!($name, $cipher, $test_name)
+        $crate::stream_cipher_sync_test!($name, $cipher, $test_name)
     };
 }
 
@@ -260,7 +260,7 @@ macro_rules! new_sync_test {
 #[deprecated(since = "0.2.2", note = "use `stream_cipher_seek_test!` instead")]
 macro_rules! new_seek_test {
     ($name:ident, $cipher:ty) => {
-        stream_cipher_seek_test!($name, $cipher)
+        $crate::stream_cipher_seek_test!($name, $cipher)
     };
 }
 
@@ -269,7 +269,7 @@ macro_rules! new_seek_test {
 #[deprecated(since = "0.2.2", note = "use `stream_cipher_async_test!` instead")]
 macro_rules! new_async_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
-        stream_cipher_async_test!($name, $test_name, $cipher)
+        $crate::stream_cipher_async_test!($name, $test_name, $cipher)
     };
 }
 
@@ -278,7 +278,7 @@ macro_rules! new_async_test {
 #[deprecated(since = "0.2.2", note = "use `stream_cipher_sync_bench!` instead")]
 macro_rules! bench_sync {
     ($name:ident, $cipher:path, $data_len:expr) => {
-        stream_cipher_sync_bench!($name, $cipher, $data_len)
+        $crate::stream_cipher_sync_bench!($name, $cipher, $data_len)
     };
 }
 
@@ -287,6 +287,6 @@ macro_rules! bench_sync {
 #[deprecated(since = "0.2.2", note = "use `stream_cipher_async_bench!` instead")]
 macro_rules! bench_async {
     ($enc_name:ident, $dec_name:ident, $cipher:path, $data_len:expr) => {
-        stream_cipher_async_bench!($enc_name, $dec_name, $cipher, $data_len)
+        $crate::stream_cipher_async_bench!($enc_name, $dec_name, $cipher, $data_len)
     };
 }
