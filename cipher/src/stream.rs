@@ -155,7 +155,11 @@ impl<C: SyncStreamCipher> SyncStreamCipher for &mut C {
 /// Trait for initializing a stream cipher from a block cipher
 pub trait FromBlockCipher {
     /// Block cipher
-    type BlockCipher: BlockCipher;
+    type BlockCipher: BlockCipher<Self::BlockSize, Self::ParBlocks>;
+    /// Block size
+    type BlockSize: ArrayLength<u8>;
+    /// Parallel blocks
+    type ParBlocks: ArrayLength<GenericArray<u8, Self::BlockSize>>;
     /// Nonce size in bytes
     type NonceSize: ArrayLength<u8>;
 
@@ -167,62 +171,62 @@ pub trait FromBlockCipher {
 }
 
 /// Trait for initializing a stream cipher from a mutable block cipher
-pub trait FromBlockCipherMut {
-    /// Block cipher
-    type BlockCipher: BlockCipherMut;
-    /// Nonce size in bytes
-    type NonceSize: ArrayLength<u8>;
+// pub trait FromBlockCipherMut {
+//     /// Block cipher
+//     type BlockCipher: BlockCipherMut;
+//     /// Nonce size in bytes
+//     type NonceSize: ArrayLength<u8>;
+//
+//     /// Instantiate a stream cipher from a block cipher
+//     fn from_block_cipher_mut(
+//         cipher: Self::BlockCipher,
+//         nonce: &GenericArray<u8, Self::NonceSize>,
+//     ) -> Self;
+// }
 
-    /// Instantiate a stream cipher from a block cipher
-    fn from_block_cipher_mut(
-        cipher: Self::BlockCipher,
-        nonce: &GenericArray<u8, Self::NonceSize>,
-    ) -> Self;
-}
+// impl<C> FromBlockCipherMut for C
+// where
+//     C: FromBlockCipher,
+// {
+//     type BlockCipher = <Self as FromBlockCipher>::BlockCipher;
+//     type NonceSize = <Self as FromBlockCipher>::NonceSize;
+//
+//     fn from_block_cipher_mut(
+//         cipher: Self::BlockCipher,
+//         nonce: &GenericArray<u8, Self::NonceSize>,
+//     ) -> C {
+//         C::from_block_cipher(cipher, nonce)
+//     }
+// }
 
-impl<C> FromBlockCipherMut for C
-where
-    C: FromBlockCipher,
-{
-    type BlockCipher = <Self as FromBlockCipher>::BlockCipher;
-    type NonceSize = <Self as FromBlockCipher>::NonceSize;
-
-    fn from_block_cipher_mut(
-        cipher: Self::BlockCipher,
-        nonce: &GenericArray<u8, Self::NonceSize>,
-    ) -> C {
-        C::from_block_cipher(cipher, nonce)
-    }
-}
-
-impl<C> NewStreamCipher for C
-where
-    C: FromBlockCipherMut,
-    C::BlockCipher: NewBlockCipher,
-{
-    type KeySize = <<Self as FromBlockCipherMut>::BlockCipher as NewBlockCipher>::KeySize;
-    type NonceSize = <Self as FromBlockCipherMut>::NonceSize;
-
-    fn new(key: &Key<Self>, nonce: &Nonce<Self>) -> C {
-        C::from_block_cipher_mut(
-            <<Self as FromBlockCipherMut>::BlockCipher as NewBlockCipher>::new(key),
-            nonce,
-        )
-    }
-
-    fn new_var(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidKeyNonceLength> {
-        if nonce.len() != Self::NonceSize::USIZE {
-            Err(InvalidKeyNonceLength)
-        } else {
-            C::BlockCipher::new_varkey(key)
-                .map_err(|_| InvalidKeyNonceLength)
-                .map(|cipher| {
-                    let nonce = GenericArray::from_slice(nonce);
-                    Self::from_block_cipher_mut(cipher, nonce)
-                })
-        }
-    }
-}
+// impl<C> NewStreamCipher for C
+// where
+//     C: FromBlockCipherMut,
+//     C::BlockCipher: NewBlockCipher,
+// {
+//     type KeySize = <<Self as FromBlockCipherMut>::BlockCipher as NewBlockCipher>::KeySize;
+//     type NonceSize = <Self as FromBlockCipherMut>::NonceSize;
+//
+//     fn new(key: &Key<Self>, nonce: &Nonce<Self>) -> C {
+//         C::from_block_cipher_mut(
+//             <<Self as FromBlockCipherMut>::BlockCipher as NewBlockCipher>::new(key),
+//             nonce,
+//         )
+//     }
+//
+//     fn new_var(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidKeyNonceLength> {
+//         if nonce.len() != Self::NonceSize::USIZE {
+//             Err(InvalidKeyNonceLength)
+//         } else {
+//             C::BlockCipher::new_varkey(key)
+//                 .map_err(|_| InvalidKeyNonceLength)
+//                 .map(|cipher| {
+//                     let nonce = GenericArray::from_slice(nonce);
+//                     Self::from_block_cipher_mut(cipher, nonce)
+//                 })
+//         }
+//     }
+// }
 
 /// Trait implemented for numeric types which can be used with the
 /// [`SyncStreamCipherSeek`] trait.
