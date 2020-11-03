@@ -93,9 +93,9 @@ dependencies = [
 
 [[package]]
 name = "const-oid"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2d9162b7289a46e86208d6af2c686ca5bfde445878c41a458a9fac706252d0b"
+checksum = "6fc33f77ab0b4232f30cb9049a156775c5ad814b030e929d234d14cd6d7ec17f"
 
 [[package]]
 name = "cpuid-bool"
@@ -145,7 +145,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.6.6"
+version = "0.7.0-pre"
 dependencies = [
  "bitvec",
  "const-oid",
