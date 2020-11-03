@@ -17,12 +17,17 @@ use zeroize::Zeroize;
 
 #[cfg(feature = "arithmetic")]
 use crate::{
+    consts::U1,
     ff::PrimeField,
+    generic_array::ArrayLength,
+    group::{Curve as _, Group},
+    ops::Add,
+    public_key::PublicKey,
+    rand_core::{CryptoRng, RngCore},
     scalar::{NonZeroScalar, Scalar},
-    ProjectiveArithmetic,
+    sec1::{FromEncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize},
+    weierstrass, AffinePoint, ProjectiveArithmetic, ProjectivePoint,
 };
-#[cfg(feature = "arithmetic")]
-use rand_core::{CryptoRng, RngCore};
 
 /// Inner value stored by a [`SecretKey`].
 pub trait SecretValue: Curve {
@@ -115,7 +120,7 @@ where
         self.secret_value.clone().into()
     }
 
-    /// Borrow the inner secret scalar value.
+    /// Borrow the inner secret [`Scalar`] value.
     ///
     /// # Warning
     ///
@@ -131,6 +136,22 @@ where
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
         self.secret_value.as_ref()
+    }
+
+    /// Get the [`PublicKey`] which corresponds to this secret key
+    #[cfg(feature = "arithmetic")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+    pub fn public_key(&self) -> PublicKey<C>
+    where
+        C: weierstrass::Curve + ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
+        FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
+        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+        AffinePoint<C>: Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+        ProjectivePoint<C>: From<AffinePoint<C>>,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        PublicKey::from_affine((C::ProjectivePoint::generator() * self.secret_scalar()).to_affine())
     }
 }
 
