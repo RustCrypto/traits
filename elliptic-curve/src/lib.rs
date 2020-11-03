@@ -36,6 +36,9 @@ pub mod weierstrass;
 pub mod point;
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+pub mod public_key;
+#[cfg(feature = "arithmetic")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub mod scalar;
 
 #[cfg(feature = "ecdh")]
@@ -55,6 +58,7 @@ pub use subtle;
 #[cfg(feature = "arithmetic")]
 pub use self::{
     point::{AffinePoint, ProjectiveArithmetic, ProjectivePoint},
+    public_key::PublicKey,
     scalar::Scalar,
 };
 #[cfg(feature = "arithmetic")]
