@@ -9,13 +9,12 @@ use crate::{
     AffinePoint, Error, FieldBytes, ProjectiveArithmetic, ProjectivePoint, Scalar,
 };
 use core::{
-    convert::TryFrom,
+    convert::{TryFrom, TryInto},
     fmt::Debug,
     ops::{Add, Deref},
 };
 use ff::PrimeField;
 use generic_array::ArrayLength;
-use subtle::CtOption;
 
 /// Elliptic curve public keys.
 ///
@@ -49,7 +48,7 @@ where
     pub fn new(bytes: &[u8]) -> Result<Self, Error> {
         EncodedPoint::from_bytes(bytes)
             .map_err(|_| Error)
-            .and_then(|point| Self::try_from(&point))
+            .and_then(TryInto::try_into)
     }
 
     /// Convert an [`AffinePoint`] into a [`PublicKey`]
@@ -95,6 +94,23 @@ where
     }
 }
 
+impl<C> TryFrom<EncodedPoint<C>> for PublicKey<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+    AffinePoint<C>: Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+    type Error = Error;
+
+    fn try_from(encoded_point: EncodedPoint<C>) -> Result<Self, Error> {
+        encoded_point.decode()
+    }
+}
+
 impl<C> TryFrom<&EncodedPoint<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
@@ -108,14 +124,7 @@ where
     type Error = Error;
 
     fn try_from(encoded_point: &EncodedPoint<C>) -> Result<Self, Error> {
-        let public_key = Self::from_encoded_point(encoded_point);
-
-        // No need to return a CtOption when the input is assumed to be public
-        if public_key.is_some().into() {
-            Ok(public_key.unwrap())
-        } else {
-            Err(Error)
-        }
+        encoded_point.decode()
     }
 }
 
@@ -160,25 +169,8 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     /// Initialize [`PublicKey`] from an [`EncodedPoint`]
-    fn from_encoded_point(encoded_point: &EncodedPoint<C>) -> CtOption<Self> {
-        let affine_point = AffinePoint::<C>::from_encoded_point(encoded_point);
-
-        // Note: not constant time, but these are public keys
-        if affine_point.is_some().into() {
-            CtOption::new(
-                Self {
-                    point: affine_point.unwrap(),
-                },
-                1.into(),
-            )
-        } else {
-            CtOption::new(
-                Self {
-                    point: Default::default(),
-                },
-                0.into(),
-            )
-        }
+    fn from_encoded_point(encoded_point: &EncodedPoint<C>) -> Option<Self> {
+        AffinePoint::<C>::from_encoded_point(encoded_point).map(|point| Self { point })
     }
 }
 
