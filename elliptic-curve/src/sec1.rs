@@ -14,7 +14,6 @@ use generic_array::{
     typenum::{Unsigned, U1},
     ArrayLength, GenericArray,
 };
-use subtle::CtOption;
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
@@ -172,8 +171,7 @@ where
         Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
         AffinePoint<C>: ConditionallySelectable + Default + Decompress<C> + ToEncodedPoint<C>,
     {
-        let decompressed: Option<EncodedPoint<C>> = self.decompress().into();
-        decompressed.map(|point| {
+        self.decompress().map(|point| {
             let mut bytes = GenericArray::<u8, UntaggedPointSize<C>>::default();
             bytes.copy_from_slice(&point.as_bytes()[1..]);
             bytes
@@ -196,7 +194,7 @@ where
     /// Decompress this [`EncodedPoint`], returning a new [`EncodedPoint`].
     #[cfg(feature = "arithmetic")]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-    pub fn decompress(&self) -> CtOption<Self>
+    pub fn decompress(&self) -> Option<Self>
     where
         C: Curve + ProjectiveArithmetic,
         FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
@@ -207,8 +205,9 @@ where
             Coordinates::Compressed { x, y_is_odd } => {
                 AffinePoint::<C>::decompress(x, Choice::from(y_is_odd as u8))
                     .map(|s| s.to_encoded_point(false))
+                    .into()
             }
-            Coordinates::Uncompressed { .. } => CtOption::new(self.clone(), Choice::from(1)),
+            Coordinates::Uncompressed { .. } => Some(self.clone()),
         }
     }
 
@@ -221,11 +220,11 @@ where
     }
 
     /// Decode this [`EncodedPoint`] into the desired type
-    pub fn decode<T>(&self) -> CtOption<T>
+    pub fn decode<T>(&self) -> Result<T, Error>
     where
         T: FromEncodedPoint<C>,
     {
-        T::from_encoded_point(self)
+        T::from_encoded_point(self).ok_or_else(|| Error)
     }
 
     /// Get the SEC1 tag for this [`EncodedPoint`]
@@ -353,7 +352,7 @@ where
     /// # Returns
     ///
     /// `None` if the [`EncodedPoint`] is invalid.
-    fn from_encoded_point(public_key: &EncodedPoint<C>) -> CtOption<Self>;
+    fn from_encoded_point(public_key: &EncodedPoint<C>) -> Option<Self>;
 }
 
 /// Trait for serializing a value to a SEC1 encoded curve point.
