@@ -7,7 +7,7 @@
 //! # Usage
 //!
 //! Have each participant generate an [`EphemeralSecret`] value, compute the
-//! [`PublicKey'] for that value, exchange public keys, then each participant
+//! [`PublicKey`] for that value, exchange public keys, then each participant
 //! uses their [`EphemeralSecret`] and the other participant's [`PublicKey`]
 //! to compute a [`SharedSecret`] value.
 //!
