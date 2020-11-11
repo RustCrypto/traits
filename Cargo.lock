@@ -104,18 +104,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8aebca1129a03dc6dc2b127edd729435bbc4a37e1d5f4d7513165089ceb02634"
 
 [[package]]
-name = "crypto-mac"
-version = "0.10.0"
-dependencies = [
- "blobby 0.3.0",
- "cipher",
- "generic-array 0.14.4",
- "subtle",
-]
-
-[[package]]
-name = "cryptography"
-version = "0.5.0"
+name = "crypto"
+version = "0.2.0-pre"
 dependencies = [
  "aead",
  "cipher",
@@ -124,6 +114,16 @@ dependencies = [
  "elliptic-curve",
  "signature",
  "universal-hash",
+]
+
+[[package]]
+name = "crypto-mac"
+version = "0.10.0"
+dependencies = [
+ "blobby 0.3.0",
+ "cipher",
+ "generic-array 0.14.4",
+ "subtle",
 ]
 
 [[package]]

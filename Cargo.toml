@@ -3,7 +3,7 @@ members = [
     "aead",
     "cipher",
     "crypto-mac",
-    "cryptography",
+    "crypto",
     "digest",
     "elliptic-curve",
     "signature",

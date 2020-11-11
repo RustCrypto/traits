@@ -17,9 +17,9 @@ Collection of traits which describe functionality of cryptographic primitives.
 
 ### Additional crates
 
-| Crate name       | Description | Crates.io | Docs  | Build Status |
-|------------------|-------------|-----------|-------|--------------|
-| [`cryptography`] | Facade for trait crates | [![crates.io](https://img.shields.io/crates/v/cryptography.svg)](https://crates.io/crates/cryptography) | [![Documentation](https://docs.rs/cryptography/badge.svg)](https://docs.rs/cryptography) | ![build](https://github.com/RustCrypto/traits/workflows/cryptography/badge.svg?branch=master&event=push)
+| Crate name | Description             | Crates.io | Docs  | Build Status |
+|------------|-------------------------|-----------|-------|--------------|
+| [`crypto`] | Facade for trait crates | [![crates.io](https://img.shields.io/crates/v/crypto.svg)](https://crates.io/crates/crypto) | [![Documentation](https://docs.rs/crypto/badge.svg)](https://docs.rs/crypto) | ![build](https://github.com/RustCrypto/traits/workflows/crypto/badge.svg?branch=master&event=push)
 
 ### Minimum Supported Rust Version
 
@@ -55,7 +55,7 @@ dual licensed as above, without any additional terms or conditions.
 [`async‑signature`]: https://github.com/RustCrypto/traits/tree/master/signature/async
 [`cipher`]: https://github.com/RustCrypto/traits/tree/master/cipher
 [`crypto‑mac`]: https://github.com/RustCrypto/traits/tree/master/crypto-mac
-[`cryptography`]: https://github.com/RustCrypto/traits/tree/master/cryptography
+[`crypto`]: https://github.com/RustCrypto/traits/tree/master/crypto
 [`digest`]: https://github.com/RustCrypto/traits/tree/master/digest
 [`elliptic‑curve`]: https://github.com/RustCrypto/traits/tree/master/elliptic-curve
 [`signature`]: https://github.com/RustCrypto/traits/tree/master/signature

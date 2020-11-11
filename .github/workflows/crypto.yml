@@ -1,16 +1,16 @@
-name: cryptography
+name: crypto
 
 on:
   pull_request:
     paths:
-      - "cryptography/**"
+      - "crypto/**"
       - "Cargo.*"
   push:
     branches: master
 
 defaults:
   run:
-    working-directory: cryptography
+    working-directory: crypto
 
 env:
   CARGO_INCREMENTAL: 0
