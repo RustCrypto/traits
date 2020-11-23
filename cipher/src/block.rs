@@ -53,8 +53,7 @@ pub trait NewBlockCipher: Sized {
     }
 }
 
-/// The trait which defines in-place encryption and decryption
-/// over single block or several blocks in parallel.
+/// Trait which marks a type as being a block cipher.
 pub trait BlockCipher {
     /// Size of the block in bytes
     type BlockSize: ArrayLength<u8>;
@@ -62,155 +61,19 @@ pub trait BlockCipher {
     /// Number of blocks which can be processed in parallel by
     /// cipher implementation
     type ParBlocks: ArrayLength<Block<Self>>;
-
-    /// Encrypt block in-place
-    fn encrypt_block(&self, block: &mut Block<Self>);
-
-    /// Decrypt block in-place
-    fn decrypt_block(&self, block: &mut Block<Self>);
-
-    /// Encrypt several blocks in parallel using instruction level parallelism
-    /// if possible.
-    ///
-    /// If `ParBlocks` equals to 1 it's equivalent to `encrypt_block`.
-    #[inline]
-    fn encrypt_blocks(&self, blocks: &mut ParBlocks<Self>) {
-        for block in blocks.iter_mut() {
-            self.encrypt_block(block);
-        }
-    }
-
-    /// Encrypt a slice of blocks, leveraging parallelism when available.
-    #[inline]
-    fn encrypt_slice(&self, mut blocks: &mut [Block<Self>]) {
-        let pb = Self::ParBlocks::to_usize();
-
-        if pb > 1 {
-            let mut iter = blocks.chunks_exact_mut(pb);
-
-            for chunk in &mut iter {
-                self.encrypt_blocks(chunk.try_into().unwrap())
-            }
-
-            blocks = iter.into_remainder();
-        }
-
-        for block in blocks {
-            self.encrypt_block(block);
-        }
-    }
-
-    /// Decrypt several blocks in parallel using instruction level parallelism
-    /// if possible.
-    ///
-    /// If `ParBlocks` equals to 1 it's equivalent to `decrypt_block`.
-    #[inline]
-    fn decrypt_blocks(&self, blocks: &mut ParBlocks<Self>) {
-        for block in blocks.iter_mut() {
-            self.decrypt_block(block);
-        }
-    }
-
-    /// Decrypt a slice of blocks, leveraging parallelism when available.
-    #[inline]
-    fn decrypt_slice(&self, mut blocks: &mut [Block<Self>]) {
-        let pb = Self::ParBlocks::to_usize();
-
-        if pb > 1 {
-            let mut iter = blocks.chunks_exact_mut(pb);
-
-            for chunk in &mut iter {
-                self.decrypt_blocks(chunk.try_into().unwrap())
-            }
-
-            blocks = iter.into_remainder();
-        }
-
-        for block in blocks {
-            self.decrypt_block(block);
-        }
-    }
-}
-
-/// Stateful block cipher which permits `&mut self` access.
-///
-/// The main use case for this trait is hardware encryption engines which
-/// require `&mut self` access to an underlying hardware peripheral.
-pub trait BlockCipherMut {
-    /// Size of the block in bytes
-    type BlockSize: ArrayLength<u8>;
-
-    /// Encrypt block in-place
-    fn encrypt_block(&mut self, block: &mut GenericArray<u8, Self::BlockSize>);
-
-    /// Decrypt block in-place
-    fn decrypt_block(&mut self, block: &mut GenericArray<u8, Self::BlockSize>);
-}
-
-impl<Alg: BlockCipher> BlockCipherMut for Alg {
-    type BlockSize = Alg::BlockSize;
-
-    #[inline]
-    fn encrypt_block(&mut self, block: &mut GenericArray<u8, Self::BlockSize>) {
-        <Self as BlockCipher>::encrypt_block(self, block);
-    }
-
-    #[inline]
-    fn decrypt_block(&mut self, block: &mut GenericArray<u8, Self::BlockSize>) {
-        <Self as BlockCipher>::decrypt_block(self, block);
-    }
-}
-
-impl<Alg: BlockCipher> BlockCipher for &Alg {
-    type BlockSize = Alg::BlockSize;
-    type ParBlocks = Alg::ParBlocks;
-
-    #[inline]
-    fn encrypt_block(&self, block: &mut Block<Self>) {
-        Alg::encrypt_block(self, block);
-    }
-
-    #[inline]
-    fn decrypt_block(&self, block: &mut Block<Self>) {
-        Alg::decrypt_block(self, block);
-    }
-
-    #[inline]
-    fn encrypt_blocks(&self, blocks: &mut ParBlocks<Self>) {
-        Alg::encrypt_blocks(self, blocks);
-    }
-
-    #[inline]
-    fn decrypt_blocks(&self, blocks: &mut ParBlocks<Self>) {
-        Alg::decrypt_blocks(self, blocks);
-    }
-}
-
-/// Marker trait for block size
-// TODO(tarcieri): rename this to `BlockCipher` in the next breaking release
-pub trait BlockSizeMarker {
-    /// Size of the block in bytes
-    type BlockSize: ArrayLength<u8>;
 }
 
 /// Encrypt-only functionality for block ciphers
-pub trait BlockEncrypt: BlockSizeMarker {
-    /// Number of blocks which can be processed in parallel by
-    /// cipher implementation
-    type ParBlocks: ArrayLength<GenericArray<u8, Self::BlockSize>>;
-
+pub trait BlockEncrypt: BlockCipher {
     /// Encrypt block in-place
-    fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>);
+    fn encrypt_block(&self, block: &mut Block<Self>);
 
     /// Encrypt several blocks in parallel using instruction level parallelism
     /// if possible.
     ///
     /// If `ParBlocks` equals to 1 it's equivalent to `encrypt_block`.
     #[inline]
-    fn encrypt_par_blocks(
-        &self,
-        blocks: &mut GenericArray<GenericArray<u8, Self::BlockSize>, Self::ParBlocks>,
-    ) {
+    fn encrypt_par_blocks(&self, blocks: &mut ParBlocks<Self>) {
         for block in blocks.iter_mut() {
             self.encrypt_block(block);
         }
@@ -218,7 +81,7 @@ pub trait BlockEncrypt: BlockSizeMarker {
 
     /// Encrypt a slice of blocks, leveraging parallelism when available.
     #[inline]
-    fn encrypt_blocks(&self, mut blocks: &mut [GenericArray<u8, Self::BlockSize>]) {
+    fn encrypt_blocks(&self, mut blocks: &mut [Block<Self>]) {
         let pb = Self::ParBlocks::to_usize();
 
         if pb > 1 {
@@ -238,23 +101,16 @@ pub trait BlockEncrypt: BlockSizeMarker {
 }
 
 /// Decrypt-only functionality for block ciphers
-pub trait BlockDecrypt: BlockSizeMarker {
-    /// Number of blocks which can be processed in parallel by
-    /// cipher implementation
-    type ParBlocks: ArrayLength<GenericArray<u8, Self::BlockSize>>;
-
+pub trait BlockDecrypt: BlockCipher {
     /// Decrypt block in-place
-    fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>);
+    fn decrypt_block(&self, block: &mut Block<Self>);
 
     /// Decrypt several blocks in parallel using instruction level parallelism
     /// if possible.
     ///
     /// If `ParBlocks` equals to 1 it's equivalent to `decrypt_block`.
     #[inline]
-    fn decrypt_par_blocks(
-        &self,
-        blocks: &mut GenericArray<GenericArray<u8, Self::BlockSize>, Self::ParBlocks>,
-    ) {
+    fn decrypt_par_blocks(&self, blocks: &mut ParBlocks<Self>) {
         for block in blocks.iter_mut() {
             self.decrypt_block(block);
         }
@@ -262,7 +118,7 @@ pub trait BlockDecrypt: BlockSizeMarker {
 
     /// Decrypt a slice of blocks, leveraging parallelism when available.
     #[inline]
-    fn decrypt_blocks(&self, mut blocks: &mut [GenericArray<u8, Self::BlockSize>]) {
+    fn decrypt_blocks(&self, mut blocks: &mut [Block<Self>]) {
         let pb = Self::ParBlocks::to_usize();
 
         if pb > 1 {
@@ -278,5 +134,35 @@ pub trait BlockDecrypt: BlockSizeMarker {
         for block in blocks {
             self.decrypt_block(block);
         }
+    }
+}
+
+/// Encrypt-only functionality for block ciphers with mutable access to `self`.
+///
+/// The main use case for this trait is hardware encryption engines which
+/// require `&mut self` access to an underlying hardware peripheral.
+pub trait BlockEncryptMut: BlockCipher {
+    /// Encrypt block in-place
+    fn encrypt_block_mut(&mut self, block: &mut Block<Self>);
+}
+
+/// Decrypt-only functionality for block ciphers with mutable access to `self`.
+///
+/// The main use case for this trait is hardware encryption engines which
+/// require `&mut self` access to an underlying hardware peripheral.
+pub trait BlockDecryptMut: BlockCipher {
+    /// Decrypt block in-place
+    fn decrypt_block_mut(&mut self, block: &mut Block<Self>);
+}
+
+impl<Alg: BlockEncrypt> BlockEncryptMut for Alg {
+    fn encrypt_block_mut(&mut self, block: &mut Block<Self>) {
+        self.encrypt_block(block);
+    }
+}
+
+impl<Alg: BlockDecrypt> BlockDecryptMut for Alg {
+    fn decrypt_block_mut(&mut self, block: &mut Block<Self>) {
+        self.decrypt_block(block);
     }
 }
