@@ -20,7 +20,9 @@ pub mod block;
 pub mod stream;
 
 pub use crate::{
-    block::{BlockCipher, BlockCipherMut, NewBlockCipher},
+    block::{
+        BlockCipher, BlockDecrypt, BlockDecryptMut, BlockEncrypt, BlockEncryptMut, NewBlockCipher,
+    },
     stream::{NewStreamCipher, StreamCipher, SyncStreamCipher, SyncStreamCipherSeek},
 };
 pub use generic_array::{self, typenum::consts};
