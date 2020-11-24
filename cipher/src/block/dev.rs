@@ -139,25 +139,3 @@ macro_rules! block_cipher_bench {
         }
     };
 }
-
-//
-// Below are deprecated legacy macro wrappers. They should be removed in v0.3.
-//
-
-/// Define tests
-#[macro_export]
-#[deprecated(since = "0.2.2", note = "use `block_cipher_test!` instead")]
-macro_rules! new_test {
-    ($name:ident, $test_name:expr, $cipher:ty) => {
-        $crate::block_cipher_test!($name, $test_name, $cipher);
-    };
-}
-
-/// Define benchmark
-#[macro_export]
-#[deprecated(since = "0.2.2", note = "use `block_cipher_bench!` instead")]
-macro_rules! bench {
-    ($cipher:path, $key_len:expr) => {
-        $crate::block_cipher_bench!($cipher, $key_len);
-    };
-}
