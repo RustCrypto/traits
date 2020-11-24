@@ -17,9 +17,6 @@ mod errors;
 
 pub use errors::InvalidKeyLength;
 
-// TODO(tarcieri): remove these re-exports in favor of the toplevel one
-pub use generic_array::{self, typenum::consts};
-
 use core::convert::TryInto;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
