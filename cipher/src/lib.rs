@@ -17,6 +17,7 @@
 extern crate std;
 
 pub mod block;
+pub mod errors;
 pub mod stream;
 
 pub use crate::{
