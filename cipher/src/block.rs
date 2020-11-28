@@ -13,10 +13,7 @@
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
-mod errors;
-
-pub use errors::InvalidKeyLength;
-
+use crate::errors::InvalidLength;
 use core::convert::TryInto;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
@@ -41,9 +38,9 @@ pub trait NewBlockCipher: Sized {
     ///
     /// Default implementation will accept only keys with length equal to
     /// `KeySize`, but some ciphers can accept range of key lengths.
-    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+    fn new_varkey(key: &[u8]) -> Result<Self, InvalidLength> {
         if key.len() != Self::KeySize::to_usize() {
-            Err(InvalidKeyLength)
+            Err(InvalidLength)
         } else {
             Ok(Self::new(GenericArray::from_slice(key)))
         }

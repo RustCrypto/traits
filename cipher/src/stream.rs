@@ -6,14 +6,13 @@
 #[cfg(feature = "dev")]
 mod dev;
 
-mod errors;
-
-pub use errors::{InvalidKeyNonceLength, LoopError, OverflowError};
-
 #[cfg(feature = "dev")]
 pub use blobby;
 
-use crate::block::{BlockCipher, NewBlockCipher};
+use crate::{
+    block::{BlockCipher, NewBlockCipher},
+    errors::{InvalidLength, LoopError, OverflowError},
+};
 use core::convert::{TryFrom, TryInto};
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
@@ -39,11 +38,11 @@ pub trait NewStreamCipher: Sized {
 
     /// Create new stream cipher instance from variable length key and nonce.
     #[inline]
-    fn new_var(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidKeyNonceLength> {
+    fn new_var(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidLength> {
         let kl = Self::KeySize::to_usize();
         let nl = Self::NonceSize::to_usize();
         if key.len() != kl || nonce.len() != nl {
-            Err(InvalidKeyNonceLength)
+            Err(InvalidLength)
         } else {
             let key = GenericArray::from_slice(key);
             let nonce = GenericArray::from_slice(nonce);
@@ -178,12 +177,12 @@ where
         )
     }
 
-    fn new_var(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidKeyNonceLength> {
+    fn new_var(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidLength> {
         if nonce.len() != Self::NonceSize::USIZE {
-            Err(InvalidKeyNonceLength)
+            Err(InvalidLength)
         } else {
             C::BlockCipher::new_varkey(key)
-                .map_err(|_| InvalidKeyNonceLength)
+                .map_err(|_| InvalidLength)
                 .map(|cipher| {
                     let nonce = GenericArray::from_slice(nonce);
                     Self::from_block_cipher(cipher, nonce)
