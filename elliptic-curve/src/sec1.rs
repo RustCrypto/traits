@@ -224,7 +224,7 @@ where
     where
         T: FromEncodedPoint<C>,
     {
-        T::from_encoded_point(self).ok_or_else(|| Error)
+        T::from_encoded_point(self).ok_or(Error)
     }
 
     /// Get the SEC1 tag for this [`EncodedPoint`]

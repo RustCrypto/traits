@@ -11,7 +11,7 @@ use crate::{
 use core::{
     convert::{TryFrom, TryInto},
     fmt::Debug,
-    ops::{Add, Deref},
+    ops::Add,
 };
 use ff::PrimeField;
 use generic_array::ArrayLength;
@@ -56,6 +56,13 @@ where
         Self { point }
     }
 
+    /// Borrow the inner [`AffinePoint`] from this [`PublicKey`].
+    ///
+    /// In ECC, public keys are elliptic curve points.
+    pub fn as_affine(&self) -> &AffinePoint<C> {
+        &self.point
+    }
+
     /// Convert this [`PublicKey`] to a [`ProjectivePoint`] for the given curve
     pub fn to_projective(&self) -> ProjectivePoint<C> {
         self.point.clone().into()
@@ -73,24 +80,7 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn as_ref(&self) -> &AffinePoint<C> {
-        &self.point
-    }
-}
-
-impl<C> Deref for PublicKey<C>
-where
-    C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
-    AffinePoint<C>: Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    type Target = AffinePoint<C>;
-
-    fn deref(&self) -> &AffinePoint<C> {
-        &self.point
+        self.as_affine()
     }
 }
 
