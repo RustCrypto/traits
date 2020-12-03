@@ -17,16 +17,12 @@ use zeroize::Zeroize;
 
 #[cfg(feature = "arithmetic")]
 use crate::{
-    consts::U1,
     ff::PrimeField,
-    generic_array::ArrayLength,
     group::{Curve as _, Group},
-    ops::Add,
     public_key::PublicKey,
     rand_core::{CryptoRng, RngCore},
     scalar::{NonZeroScalar, Scalar},
-    sec1::{FromEncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize},
-    weierstrass, AffinePoint, ProjectiveArithmetic, ProjectivePoint,
+    weierstrass, AffinePoint, ProjectiveArithmetic,
 };
 
 /// Inner value stored by a [`SecretKey`].
@@ -157,10 +153,7 @@ where
         C: weierstrass::Curve + ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
         FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
-        AffinePoint<C>: Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-        ProjectivePoint<C>: From<AffinePoint<C>>,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        AffinePoint<C>: Copy + Clone + Debug + Default,
     {
         PublicKey::from_affine((C::ProjectivePoint::generator() * self.secret_scalar()).to_affine())
     }
