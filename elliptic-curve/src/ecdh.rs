@@ -24,9 +24,7 @@ use crate::{
     consts::U1,
     public_key::PublicKey,
     scalar::NonZeroScalar,
-    sec1::{
-        EncodedPoint, FromEncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize,
-    },
+    sec1::{EncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize},
     weierstrass::Curve,
     AffinePoint, FieldBytes, ProjectiveArithmetic, ProjectivePoint, Scalar,
 };
@@ -55,13 +53,7 @@ where
     C: Curve + ProjectiveArithmetic,
     FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
-    AffinePoint<C>: Clone
-        + Debug
-        + Default
-        + Into<EncodedPoint<C>>
-        + FromEncodedPoint<C>
-        + ToEncodedPoint<C>
-        + Zeroize,
+    AffinePoint<C>: Copy + Clone + Debug + ToEncodedPoint<C> + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -94,13 +86,7 @@ where
     C: Curve + ProjectiveArithmetic,
     FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
-    AffinePoint<C>: Clone
-        + Debug
-        + Default
-        + Into<EncodedPoint<C>>
-        + FromEncodedPoint<C>
-        + ToEncodedPoint<C>
-        + Zeroize,
+    AffinePoint<C>: Copy + Clone + Debug + ToEncodedPoint<C> + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
