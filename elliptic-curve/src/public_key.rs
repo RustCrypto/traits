@@ -20,7 +20,7 @@ use generic_array::ArrayLength;
 ///
 /// These are a thin wrapper around [`AffinePoint`] which simplifies
 /// encoding/decoding.
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
@@ -183,6 +183,15 @@ where
     fn to_encoded_point(&self, compress: bool) -> EncodedPoint<C> {
         self.point.to_encoded_point(compress)
     }
+}
+
+impl<C> Copy for PublicKey<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+    AffinePoint<C>: Copy + Clone + Debug,
+{
 }
 
 impl<C> Eq for PublicKey<C>
