@@ -44,16 +44,21 @@ where
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
-    /// Initialize [`PublicKey`] from a SEC1-encoded public key
-    pub fn new(bytes: &[u8]) -> Result<Self, Error> {
-        EncodedPoint::from_bytes(bytes)
-            .map_err(|_| Error)
-            .and_then(TryInto::try_into)
-    }
-
     /// Convert an [`AffinePoint`] into a [`PublicKey`]
     pub fn from_affine(point: AffinePoint<C>) -> Self {
         Self { point }
+    }
+
+    /// Decode [`PublicKey`] (compressed or uncompressed) from the
+    /// `Elliptic-Curve-Point-to-Octet-String` encoding described in
+    /// SEC 1: Elliptic Curve Cryptography (Version 2.0) section
+    /// 2.3.3 (page 10).
+    ///
+    /// <http://www.secg.org/sec1-v2.pdf>
+    pub fn from_sec1_bytes(bytes: &[u8]) -> Result<Self, Error> {
+        EncodedPoint::from_bytes(bytes)
+            .map_err(|_| Error)
+            .and_then(TryInto::try_into)
     }
 
     /// Borrow the inner [`AffinePoint`] from this [`PublicKey`].
