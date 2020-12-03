@@ -185,3 +185,44 @@ where
         self.point.to_encoded_point(compress)
     }
 }
+
+impl<C> Copy for PublicKey<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+}
+
+impl<C> Eq for PublicKey<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+}
+
+impl<C> PartialEq for PublicKey<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+    fn eq(&self, other: &Self) -> bool {
+        // TODO(tarcieri): more efficient implementation?
+        // This is implemented this way to reduce bounds for `AffinePoint<C>`
+        self.to_encoded_point(false) == other.to_encoded_point(false)
+    }
+}
