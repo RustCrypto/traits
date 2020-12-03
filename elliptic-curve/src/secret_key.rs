@@ -120,6 +120,17 @@ where
         self.secret_value.clone().into()
     }
 
+    /// Borrow the inner generic secret value.
+    ///
+    /// # Warning
+    ///
+    /// This value is key material.
+    ///
+    /// Please treat it with the care it deserves!
+    pub fn secret_value(&self) -> &C::Secret {
+        &self.secret_value
+    }
+
     /// Borrow the inner secret [`Scalar`] value.
     ///
     /// # Warning
