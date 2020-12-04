@@ -1,4 +1,4 @@
-//! Error type
+//! Error type.
 
 use core::fmt::{self, Display};
 

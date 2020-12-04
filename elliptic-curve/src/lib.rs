@@ -82,8 +82,10 @@ pub use zeroize;
 use core::{fmt::Debug, ops::Add};
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
-/// Algorithm [`ObjectIdentifier`] for elliptic curve public key cryptography.
-/// <https://oid-info.com/get/1.2.840.10045.2.1>
+/// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic
+/// curve public key cryptography.
+///
+/// <http://oid-info.com/get/1.2.840.10045.2.1>
 #[cfg(feature = "pkcs8")]
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
