@@ -27,6 +27,8 @@ use crate::{
 
 #[cfg(feature = "pkcs8")]
 use crate::{generic_array::typenum::Unsigned, AlgorithmParameters, ALGORITHM_OID};
+#[cfg(feature = "pkcs8")]
+use pkcs8::FromPkcs8;
 
 #[cfg(feature = "pem")]
 use core::str::FromStr;
@@ -117,82 +119,6 @@ where
             .ok_or(Error)
     }
 
-    /// Deserialize PKCS#8-encoded private key from ASN.1 DER
-    /// (binary format).
-    #[cfg(feature = "pkcs8")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
-    pub fn from_pkcs8_der(bytes: &[u8]) -> Result<Self, Error>
-    where
-        C: AlgorithmParameters,
-    {
-        Self::from_pkcs8_private_key_info(pkcs8::PrivateKeyInfo::from_der(bytes)?)
-    }
-
-    /// Deserialize PKCS#8-encoded private key from PEM.
-    ///
-    /// Keys in this format begin with the following delimiter:
-    ///
-    /// ```text
-    /// -----BEGIN PRIVATE KEY-----
-    /// ```
-    #[cfg(feature = "pem")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
-    pub fn from_pkcs8_pem(s: &str) -> Result<Self, Error>
-    where
-        C: AlgorithmParameters,
-    {
-        let pkcs8_doc = pkcs8::Document::from_pem(s)?;
-        Self::from_pkcs8_private_key_info(pkcs8_doc.private_key_info())
-    }
-
-    /// Parse the `private_key` field of a PKCS#8-encoded private key's
-    /// `PrivateKeyInfo`.
-    #[cfg(feature = "pkcs8")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
-    fn from_pkcs8_private_key_info(
-        private_key_info: pkcs8::PrivateKeyInfo<'_>,
-    ) -> Result<Self, Error>
-    where
-        C: AlgorithmParameters,
-    {
-        if private_key_info.algorithm.oid != ALGORITHM_OID
-            || private_key_info.algorithm.parameters != Some(C::OID)
-        {
-            return Err(Error);
-        }
-
-        let bytes = private_key_info.private_key;
-
-        // Ensure private key is AT LEAST as long as a scalar field element
-        // for this curve along with the following overhead:
-        //
-        // 2-bytes: SEQUENCE header: tag byte + length
-        // 3-bytes: INTEGER version: tag byte + length + value
-        // 2-bytes: OCTET STRING header: tag byte + length
-        if bytes.len() < 2 + 3 + 2 + C::FieldSize::to_usize() {
-            return Err(Error);
-        }
-
-        // Check key begins with ASN.1 DER SEQUENCE tag (0x30) + valid length,
-        // where the length omits the leading SEQUENCE header (tag + length byte)
-        if bytes[0] != 0x30 || bytes[1].checked_add(2).unwrap() as usize != bytes.len() {
-            return Err(Error);
-        }
-
-        // Validate version field (ASN.1 DER INTEGER value: 1)
-        if bytes[2..=4] != [0x02, 0x01, 0x01] {
-            return Err(Error);
-        }
-
-        // Validate ASN.1 DER OCTET STRING header: tag (0x04) + valid length
-        if bytes[5] != 0x04 || bytes[6] as usize != C::FieldSize::to_usize() {
-            return Err(Error);
-        }
-
-        // TODO(tarcieri): extract and validate public key
-        Ok(Self::from_bytes(&bytes[7..(7 + C::FieldSize::to_usize())])?)
-    }
-
     /// Expose the byte serialization of the value this [`SecretKey`] wraps
     pub fn to_bytes(&self) -> FieldBytes<C> {
         self.secret_value.clone().into()
@@ -254,6 +180,59 @@ where
     }
 }
 
+#[cfg(feature = "pkcs8")]
+#[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
+impl<C> FromPkcs8 for SecretKey<C>
+where
+    C: Curve + AlgorithmParameters + SecretValue,
+    C::Secret: Clone + Zeroize,
+    FieldBytes<C>: From<C::Secret>,
+{
+    fn from_pkcs8_private_key_info(
+        private_key_info: pkcs8::PrivateKeyInfo<'_>,
+    ) -> pkcs8::Result<Self>
+    where
+        C: AlgorithmParameters,
+    {
+        if private_key_info.algorithm.oid != ALGORITHM_OID
+            || private_key_info.algorithm.parameters != Some(C::OID)
+        {
+            return Err(pkcs8::Error);
+        }
+
+        let bytes = private_key_info.private_key;
+
+        // Ensure private key is AT LEAST as long as a scalar field element
+        // for this curve along with the following overhead:
+        //
+        // 2-bytes: SEQUENCE header: tag byte + length
+        // 3-bytes: INTEGER version: tag byte + length + value
+        // 2-bytes: OCTET STRING header: tag byte + length
+        if bytes.len() < 2 + 3 + 2 + C::FieldSize::to_usize() {
+            return Err(pkcs8::Error);
+        }
+
+        // Check key begins with ASN.1 DER SEQUENCE tag (0x30) + valid length,
+        // where the length omits the leading SEQUENCE header (tag + length byte)
+        if bytes[0] != 0x30 || bytes[1].checked_add(2).unwrap() as usize != bytes.len() {
+            return Err(pkcs8::Error);
+        }
+
+        // Validate version field (ASN.1 DER INTEGER value: 1)
+        if bytes[2..=4] != [0x02, 0x01, 0x01] {
+            return Err(pkcs8::Error);
+        }
+
+        // Validate ASN.1 DER OCTET STRING header: tag (0x04) + valid length
+        if bytes[5] != 0x04 || bytes[6] as usize != C::FieldSize::to_usize() {
+            return Err(pkcs8::Error);
+        }
+
+        // TODO(tarcieri): extract and validate public key
+        Self::from_bytes(&bytes[7..(7 + C::FieldSize::to_usize())]).map_err(|_| pkcs8::Error)
+    }
+}
+
 #[cfg(feature = "pem")]
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for SecretKey<C>
@@ -265,7 +244,7 @@ where
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Error> {
-        Self::from_pkcs8_pem(s)
+        Self::from_pkcs8_pem(s).map_err(|_| Error)
     }
 }
 

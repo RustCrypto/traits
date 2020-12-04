@@ -94,7 +94,7 @@ dependencies = [
 [[package]]
 name = "const-oid"
 version = "0.3.0-pre"
-source = "git+https://github.com/RustCrypto/utils.git#8285d34b124c726a350e6108f9fb284787fd3976"
+source = "git+https://github.com/RustCrypto/utils.git#4183dbfdab9797d2b90e11e19b8750b426d2e179"
 
 [[package]]
 name = "cpuid-bool"
@@ -263,7 +263,7 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 [[package]]
 name = "pkcs8"
 version = "0.0.0"
-source = "git+https://github.com/RustCrypto/utils.git#8285d34b124c726a350e6108f9fb284787fd3976"
+source = "git+https://github.com/RustCrypto/utils.git#4183dbfdab9797d2b90e11e19b8750b426d2e179"
 dependencies = [
  "const-oid",
  "subtle-encoding",
