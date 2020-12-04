@@ -28,6 +28,9 @@ use crate::{
 #[cfg(feature = "pkcs8")]
 use crate::{generic_array::typenum::Unsigned, AlgorithmParameters, ALGORITHM_OID};
 
+#[cfg(feature = "pem")]
+use core::str::FromStr;
+
 /// Inner value stored by a [`SecretKey`].
 pub trait SecretValue: Curve {
     /// Inner secret value.
@@ -115,31 +118,51 @@ where
     }
 
     /// Deserialize PKCS#8-encoded private key from ASN.1 DER
+    /// (binary format).
     #[cfg(feature = "pkcs8")]
     #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
     pub fn from_pkcs8_der(bytes: &[u8]) -> Result<Self, Error>
     where
         C: AlgorithmParameters,
     {
-        let private_key_info = pkcs8::PrivateKeyInfo::from_der(bytes)?;
+        Self::from_pkcs8_private_key_info(pkcs8::PrivateKeyInfo::from_der(bytes)?)
+    }
 
-        if private_key_info.algorithm.oid != ALGORITHM_OID
-            || private_key_info.algorithm.parameters != Some(C::OID)
-        {
-            return Err(Error);
-        }
-
-        Self::from_pkcs8_private_key(private_key_info.private_key)
+    /// Deserialize PKCS#8-encoded private key from PEM.
+    ///
+    /// Keys in this format begin with the following delimiter:
+    ///
+    /// ```text
+    /// -----BEGIN PRIVATE KEY-----
+    /// ```
+    #[cfg(feature = "pem")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
+    pub fn from_pkcs8_pem(s: &str) -> Result<Self, Error>
+    where
+        C: AlgorithmParameters,
+    {
+        let pkcs8_doc = pkcs8::Document::from_pem(s)?;
+        Self::from_pkcs8_private_key_info(pkcs8_doc.private_key_info())
     }
 
     /// Parse the `private_key` field of a PKCS#8-encoded private key's
     /// `PrivateKeyInfo`.
     #[cfg(feature = "pkcs8")]
     #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
-    fn from_pkcs8_private_key(bytes: &[u8]) -> Result<Self, Error>
+    fn from_pkcs8_private_key_info(
+        private_key_info: pkcs8::PrivateKeyInfo<'_>,
+    ) -> Result<Self, Error>
     where
         C: AlgorithmParameters,
     {
+        if private_key_info.algorithm.oid != ALGORITHM_OID
+            || private_key_info.algorithm.parameters != Some(C::OID)
+        {
+            return Err(Error);
+        }
+
+        let bytes = private_key_info.private_key;
+
         // Ensure private key is AT LEAST as long as a scalar field element
         // for this curve along with the following overhead:
         //
@@ -231,11 +254,27 @@ where
     }
 }
 
+#[cfg(feature = "pem")]
+#[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
+impl<C> FromStr for SecretKey<C>
+where
+    C: Curve + AlgorithmParameters + SecretValue,
+    C::Secret: Clone + Zeroize,
+    FieldBytes<C>: From<C::Secret>,
+{
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Error> {
+        Self::from_pkcs8_pem(s)
+    }
+}
+
 impl<C> Debug for SecretKey<C>
 where
     C: Curve + SecretValue,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // TODO(tarcieri): use `debug_struct` and `finish_non_exhaustive` when stable
         write!(f, "SecretKey<{:?}>{{ ... }}", C::default())
     }
 }
