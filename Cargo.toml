@@ -10,3 +10,7 @@ members = [
     "signature/async",
     "universal-hash",
 ]
+
+[patch.crates-io]
+const-oid = { git = "https://github.com/RustCrypto/utils.git" }
+pkcs8 = { git = "https://github.com/RustCrypto/utils.git" }

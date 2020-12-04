@@ -12,5 +12,12 @@ impl Display for Error {
     }
 }
 
+#[cfg(feature = "pkcs8")]
+impl From<pkcs8::Error> for Error {
+    fn from(_: pkcs8::Error) -> Error {
+        Error
+    }
+}
+
 #[cfg(feature = "std")]
 impl std::error::Error for Error {}

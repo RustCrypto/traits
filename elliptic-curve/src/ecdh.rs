@@ -75,7 +75,8 @@ where
     /// Compute a Diffie-Hellman shared secret from an ephemeral secret and the
     /// public key of the other participant in the exchange.
     pub fn diffie_hellman(&self, public_key: &PublicKey<C>) -> SharedSecret<C> {
-        let shared_secret = public_key.to_projective() * &self.scalar;
+        #[allow(clippy::op_ref)]
+        let shared_secret = public_key.to_projective() * &*self.scalar;
         // SharedSecret::new expects an uncompressed point
         SharedSecret::new(shared_secret.to_affine().to_encoded_point(false))
     }

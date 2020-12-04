@@ -93,9 +93,8 @@ dependencies = [
 
 [[package]]
 name = "const-oid"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fc33f77ab0b4232f30cb9049a156775c5ad814b030e929d234d14cd6d7ec17f"
+version = "0.3.0-pre"
+source = "git+https://github.com/RustCrypto/utils.git#a9ebedcd9be0af538c9aef319d2025fa607e9566"
 
 [[package]]
 name = "cpuid-bool"
@@ -148,12 +147,12 @@ name = "elliptic-curve"
 version = "0.7.0-pre"
 dependencies = [
  "bitvec",
- "const-oid",
  "digest 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ff",
  "generic-array 0.14.4",
  "group",
  "hex-literal",
+ "pkcs8",
  "rand_core",
  "subtle",
  "zeroize",
@@ -260,6 +259,14 @@ name = "opaque-debug"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
+
+[[package]]
+name = "pkcs8"
+version = "0.0.0"
+source = "git+https://github.com/RustCrypto/utils.git#a9ebedcd9be0af538c9aef319d2025fa607e9566"
+dependencies = [
+ "const-oid",
+]
 
 [[package]]
 name = "proc-macro-hack"

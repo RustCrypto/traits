@@ -71,8 +71,8 @@ pub use group::{self, Group};
 #[cfg(feature = "digest")]
 pub use digest::{self, Digest};
 
-#[cfg(feature = "oid")]
-pub use oid;
+#[cfg(feature = "pkcs8")]
+pub use pkcs8;
 
 #[cfg(feature = "zeroize")]
 pub use secret_key::SecretKey;
@@ -81,6 +81,13 @@ pub use zeroize;
 
 use core::{fmt::Debug, ops::Add};
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+
+/// Algorithm [`ObjectIdentifier`] for elliptic curve public key cryptography.
+/// <https://oid-info.com/get/1.2.840.10045.2.1>
+#[cfg(feature = "pkcs8")]
+#[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
+pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
+    pkcs8::ObjectIdentifier::new(&[1, 2, 840, 10045, 2, 1]);
 
 /// Elliptic curve.
 ///
@@ -115,10 +122,15 @@ pub trait FromDigest<C: Curve> {
         D: Digest<OutputSize = C::FieldSize>;
 }
 
-/// Associate an object identifier (OID) with a curve
-#[cfg(feature = "oid")]
-#[cfg_attr(docsrs, doc(cfg(feature = "oid")))]
-pub trait Identifier: Curve {
+/// Associate an [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] (OID) with an
+/// elliptic curve algorithm implementation.
+///
+/// This is used as as the `parameters` of an `AlgorithmIdentifier` as
+/// described in RFC 5280 Section 4.1.1.2:
+/// <https://tools.ietf.org/html/rfc5280#section-4.1.1.2>
+#[cfg(feature = "pkcs8")]
+#[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
+pub trait AlgorithmParameters: Curve {
     /// Object Identifier (OID) for this curve
-    const OID: oid::ObjectIdentifier;
+    const OID: pkcs8::ObjectIdentifier;
 }
