@@ -33,6 +33,7 @@ default = ["arithmetic"]
 alloc = []
 arithmetic = ["bitvec", "ff", "group"]
 ecdh = ["arithmetic", "zeroize"]
+pem = ["pkcs8/pem"]
 std = ["alloc"]
 
 [package.metadata.docs.rs]
