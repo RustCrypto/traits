@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.7.0 (2020-12-06)
+### Added
+- Impl `pkcs8::FromPublicKey` for `PublicKey<C>` ([#385])
+- Impl `pkcs8::FromPrivateKey` trait for `SecretKey<C>` ([#381], [#383])
+- PKCS#8 PEM support ([#382])
+- `SecretKey::secret_value()` method ([#375])
+- `PublicKey<C>` type ([#363], [#366])
+
+### Changed
+- Rename `PublicKey::from_bytes()` to `::from_sec1_bytes()` ([#376])
+- `sec1::EncodedPoint` uses `Option` instead of `subtle::CtOption` ([#367])
+- Bump `const-oid` to v0.3; MSRV 1.46+ ([#365], [#381])
+
+### Fixed
+- `ecdh` rustdoc ([#364])
+
+[#385]: https://github.com/RustCrypto/traits/pull/385
+[#383]: https://github.com/RustCrypto/traits/pull/383
+[#382]: https://github.com/RustCrypto/traits/pull/382
+[#381]: https://github.com/RustCrypto/traits/pull/381
+[#376]: https://github.com/RustCrypto/traits/pull/376
+[#375]: https://github.com/RustCrypto/traits/pull/375
+[#367]: https://github.com/RustCrypto/traits/pull/367
+[#366]: https://github.com/RustCrypto/traits/pull/366
+[#365]: https://github.com/RustCrypto/traits/pull/365
+[#364]: https://github.com/RustCrypto/traits/pull/364
+[#363]: https://github.com/RustCrypto/traits/pull/363
+
 ## 0.6.6 (2020-10-08)
 ### Added
 - Derive `Clone` on `SecretBytes` ([#330])
