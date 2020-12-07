@@ -263,9 +263,9 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "pkcs8"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a2298039b56d6be1d9bf341c9ba6aa0936bd508152c2829c8cab6d3f57675f4"
+checksum = "6529960a627342f19f68d43a07b268c98fd347e68668df3743a3cb9211c0975f"
 dependencies = [
  "const-oid",
  "subtle-encoding",
