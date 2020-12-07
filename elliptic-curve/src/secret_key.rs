@@ -92,8 +92,9 @@ where
 ///
 /// To decode an elliptic curve private key from PKCS#8, enable the `pkcs8`
 /// feature of this crate (or the `pkcs8` feature of a specific RustCrypto
-/// elliptic curve crate) and use the [`pkcs8::FromPrivateKey`] trait to
-/// parse it.
+/// elliptic curve crate) and use the
+/// [`elliptic_curve::pkcs8::FromPrivateKey`][`pkcs8::FromPrivateKey`]
+/// trait to parse it.
 ///
 /// When the `pem` feature of this crate (or a specific RustCrypto elliptic
 /// curve crate) is enabled, a [`FromStr`] impl is also available.
