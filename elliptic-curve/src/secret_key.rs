@@ -33,45 +33,6 @@ use pkcs8::FromPrivateKey;
 #[cfg(feature = "pem")]
 use core::str::FromStr;
 
-/// Inner value stored by a [`SecretKey`].
-pub trait SecretValue: Curve {
-    /// Inner secret value.
-    ///
-    /// ⚠️ WARNING ⚠️
-    ///
-    /// This type is not intended to be part of the public API and in future
-    /// versions of this crate we will try to explore ways to hide it.
-    ///
-    /// Crates such as `k256` and `p256` conditionally define this type
-    /// differently depending on what cargo features are enabled.
-    /// This means any consumers of this crate attempting to use this type
-    /// may experience breakages if the cargo features are not what are
-    /// expected.
-    ///
-    /// We regret exposing it as part of the public API for now, however if
-    /// you do reference this type as a downstream consumer of a curve crate,
-    /// be aware you will experience breakages!
-    type Secret: Into<FieldBytes<Self>> + Zeroize;
-
-    /// Parse the secret value from bytes
-    // TODO(tarcieri): make this constant time?
-    fn from_secret_bytes(bytes: &FieldBytes<Self>) -> Option<Self::Secret>;
-}
-
-#[cfg(feature = "arithmetic")]
-impl<C> SecretValue for C
-where
-    C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
-{
-    type Secret = NonZeroScalar<C>;
-
-    fn from_secret_bytes(repr: &FieldBytes<C>) -> Option<NonZeroScalar<C>> {
-        NonZeroScalar::from_repr(repr.clone())
-    }
-}
-
 /// Elliptic curve secret keys.
 ///
 /// This type wraps a secret scalar value, helping to prevent accidental
@@ -145,14 +106,21 @@ where
         self.secret_value.clone().into()
     }
 
-    /// Borrow the inner generic secret value.
+    /// Borrow the inner [`NonZeroScalar`] secret value.
     ///
     /// # Warning
     ///
     /// This value is key material.
     ///
     /// Please treat it with the care it deserves!
-    pub fn secret_value(&self) -> &C::Secret {
+    #[cfg(feature = "arithmetic")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+    pub fn secret_value(&self) -> &NonZeroScalar<C>
+    where
+        C: ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
+        FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
+        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+    {
         &self.secret_value
     }
 
@@ -282,6 +250,45 @@ where
 {
     fn drop(&mut self) {
         self.secret_value.zeroize();
+    }
+}
+
+/// Inner value stored by a [`SecretKey`].
+pub trait SecretValue: Curve {
+    /// Inner secret value.
+    ///
+    /// ⚠️ WARNING ⚠️
+    ///
+    /// This type is not intended to be part of the public API and in future
+    /// versions of this crate we will try to explore ways to hide it.
+    ///
+    /// Crates such as `k256` and `p256` conditionally define this type
+    /// differently depending on what cargo features are enabled.
+    /// This means any consumers of this crate attempting to use this type
+    /// may experience breakages if the cargo features are not what are
+    /// expected.
+    ///
+    /// We regret exposing it as part of the public API for now, however if
+    /// you do reference this type as a downstream consumer of a curve crate,
+    /// be aware you will experience breakages!
+    type Secret: Into<FieldBytes<Self>> + Zeroize;
+
+    /// Parse the secret value from bytes
+    // TODO(tarcieri): make this constant time?
+    fn from_secret_bytes(bytes: &FieldBytes<Self>) -> Option<Self::Secret>;
+}
+
+#[cfg(feature = "arithmetic")]
+impl<C> SecretValue for C
+where
+    C: Curve + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+{
+    type Secret = NonZeroScalar<C>;
+
+    fn from_secret_bytes(repr: &FieldBytes<C>) -> Option<NonZeroScalar<C>> {
+        NonZeroScalar::from_repr(repr.clone())
     }
 }
 
