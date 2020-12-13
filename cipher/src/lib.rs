@@ -15,15 +15,23 @@
 
 #[cfg(feature = "std")]
 extern crate std;
+#[cfg(feature = "block-mode")]
+pub extern crate block_padding;
 
 pub mod block;
+pub mod common;
 pub mod errors;
+#[cfg(feature = "block-padding")]
+pub mod mode;
 pub mod stream;
 
 pub use crate::{
     block::{
         BlockCipher, BlockDecrypt, BlockDecryptMut, BlockEncrypt, BlockEncryptMut, NewBlockCipher,
     },
-    stream::{NewStreamCipher, StreamCipher, SyncStreamCipher, SyncStreamCipherSeek},
+    common::{NewCipher, FromBlockCipher},
+    stream::{AsyncStreamCipher, StreamCipher, StreamCipherSeek},
 };
+#[cfg(feature = "block-mode")]
+pub use crate::mode::{BlockModeCore};
 pub use generic_array::{self, typenum::consts};

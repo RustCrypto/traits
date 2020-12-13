@@ -48,3 +48,16 @@ impl From<OverflowError> for LoopError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for OverflowError {}
+
+/// Block mode error.
+#[derive(Clone, Copy, Debug)]
+pub struct BlockModeError;
+
+impl fmt::Display for BlockModeError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("BlockModeError")
+    }
+}
+
+#[cfg(feature = "std")]
+impl error::Error for BlockModeError {}
