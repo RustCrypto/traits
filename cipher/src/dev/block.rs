@@ -9,8 +9,8 @@ macro_rules! block_cipher_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
         #[test]
         fn $name() {
-            use cipher::block::{
-                dev::blobby::Blob3Iterator, BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
+            use cipher::{
+                blobby::Blob3Iterator, BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
             };
             use cipher::generic_array::{typenum::Unsigned, GenericArray};
 
@@ -113,7 +113,7 @@ macro_rules! block_cipher_bench {
     ($cipher:path, $key_len:expr) => {
         extern crate test;
 
-        use cipher::block::{BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
+        use cipher::{BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
         use test::Bencher;
 
         #[bench]

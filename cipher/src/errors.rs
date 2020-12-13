@@ -1,4 +1,4 @@
-//! Error types
+//! Error types.
 
 use core::fmt;
 
@@ -60,4 +60,4 @@ impl fmt::Display for BlockModeError {
 }
 
 #[cfg(feature = "std")]
-impl error::Error for BlockModeError {}
+impl std::error::Error for BlockModeError {}

@@ -97,7 +97,7 @@ macro_rules! stream_cipher_async_test {
         #[test]
         fn $name() {
             use cipher::generic_array::GenericArray;
-            use cipher::stream::{blobby::Blob4Iterator, NewCipher, AsyncStreamCipher};
+            use cipher::{blobby::Blob4Iterator, NewCipher, AsyncStreamCipher};
 
             fn run_test(
                 key: &[u8],
@@ -172,8 +172,7 @@ macro_rules! stream_cipher_sync_bench {
     ($cipher:path) => {
         extern crate test;
 
-        use cipher::generic_array::GenericArray;
-        use cipher::{NewCipher, StreamCipher};
+        use cipher::{NewCipher, StreamCipher, generic_array::GenericArray};
         use test::Bencher;
 
         #[inline(never)]
@@ -225,8 +224,7 @@ macro_rules! stream_cipher_async_bench {
     ($cipher:path) => {
         extern crate test;
 
-        use cipher::generic_array::GenericArray;
-        use cipher::{NewCipher, AsyncStreamCipher};
+        use cipher::{NewCipher, AsyncStreamCipher, generic_array::GenericArray};
         use test::Bencher;
 
         #[inline(never)]

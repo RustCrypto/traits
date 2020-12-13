@@ -20,20 +20,20 @@ pub extern crate block_padding;
 #[cfg(feature = "dev")]
 pub extern crate blobby;
 
-pub mod block;
-pub mod common;
 pub mod errors;
+#[cfg(feature = "dev")]
+mod dev;
+mod block;
+mod common;
 #[cfg(feature = "block-padding")]
-pub mod mode;
-pub mod stream;
+mod mode;
+mod stream;
 
 pub use crate::{
-    block::{
-        BlockCipher, BlockDecrypt, BlockDecryptMut, BlockEncrypt, BlockEncryptMut, NewBlockCipher,
-    },
-    common::{NewCipher, FromBlockCipher},
-    stream::{AsyncStreamCipher, StreamCipher, StreamCipherSeek},
+    block::*,
+    common::*,
+    stream::*,
 };
 #[cfg(feature = "block-mode")]
-pub use crate::mode::{BlockModeCore};
+pub use crate::mode::BlockModeCore;
 pub use generic_array::{self, typenum::consts};

@@ -2,7 +2,7 @@ use generic_array::{ArrayLength, GenericArray, typenum::Unsigned};
 use crate::{BlockCipher, NewBlockCipher, errors::InvalidLength};
 
 /// Key for an algorithm that implements [`NewCipher`].
-pub type Key<C> = GenericArray<u8, <C as NewCipher>::KeySize>;
+pub type CipherKey<C> = GenericArray<u8, <C as NewCipher>::KeySize>;
 
 /// Nonce for an algorithm that implements [`NewCipher`].
 pub type Nonce<C> = GenericArray<u8, <C as NewCipher>::NonceSize>;
@@ -18,7 +18,7 @@ pub trait NewCipher: Sized {
     type NonceSize: ArrayLength<u8>;
 
     /// Create new stream cipher instance from variable length key and nonce.
-    fn new(key: &Key<Self>, nonce: &Nonce<Self>) -> Self;
+    fn new(key: &CipherKey<Self>, nonce: &Nonce<Self>) -> Self;
 
     /// Create new stream cipher instance from variable length key and nonce.
     #[inline]
@@ -35,7 +35,7 @@ pub trait NewCipher: Sized {
     }
 }
 
-/// Trait for initializing a stream cipher from a block cipher
+/// Trait for types which can be initialized from a block cipher and nonce.
 pub trait FromBlockCipher {
     /// Block cipher
     type BlockCipher: BlockCipher;
@@ -57,7 +57,7 @@ where
     type KeySize = <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::KeySize;
     type NonceSize = <Self as FromBlockCipher>::NonceSize;
 
-    fn new(key: &Key<Self>, nonce: &Nonce<Self>) -> C {
+    fn new(key: &CipherKey<Self>, nonce: &Nonce<Self>) -> C {
         C::from_block_cipher(
             <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::new(key),
             nonce,

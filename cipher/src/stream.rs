@@ -3,12 +3,6 @@
 //! See [RustCrypto/stream-ciphers](https://github.com/RustCrypto/stream-ciphers)
 //! for ciphers implementation.
 
-#[cfg(feature = "dev")]
-mod dev;
-
-#[cfg(feature = "dev")]
-pub use blobby;
-
 use crate::errors::{LoopError, OverflowError};
 use core::convert::{TryFrom, TryInto};
 
