@@ -3,12 +3,12 @@
 /// Test core functionality of synchronous stream cipher
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-macro_rules! stream_cipher_sync_test {
+macro_rules! stream_cipher_test {
     ($name:ident, $cipher:ty, $test_name:expr) => {
         #[test]
         fn $name() {
             use cipher::generic_array::GenericArray;
-            use cipher::stream::{blobby::Blob4Iterator, NewStreamCipher, SyncStreamCipher};
+            use cipher::{blobby::Blob4Iterator, NewCipher, StreamCipher};
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
@@ -44,7 +44,7 @@ macro_rules! stream_cipher_seek_test {
         #[test]
         fn $name() {
             use cipher::generic_array::GenericArray;
-            use cipher::stream::{NewStreamCipher, SyncStreamCipher, SyncStreamCipherSeek};
+            use cipher::{NewCipher, StreamCipher, StreamCipherSeek};
 
             fn get_cipher() -> $cipher {
                 <$cipher>::new(&Default::default(), &Default::default())
@@ -97,7 +97,7 @@ macro_rules! stream_cipher_async_test {
         #[test]
         fn $name() {
             use cipher::generic_array::GenericArray;
-            use cipher::stream::{blobby::Blob4Iterator, NewStreamCipher, StreamCipher};
+            use cipher::stream::{blobby::Blob4Iterator, NewCipher, AsyncStreamCipher};
 
             fn run_test(
                 key: &[u8],
@@ -173,7 +173,7 @@ macro_rules! stream_cipher_sync_bench {
         extern crate test;
 
         use cipher::generic_array::GenericArray;
-        use cipher::stream::{NewStreamCipher, SyncStreamCipher};
+        use cipher::{NewCipher, StreamCipher};
         use test::Bencher;
 
         #[inline(never)]
@@ -226,7 +226,7 @@ macro_rules! stream_cipher_async_bench {
         extern crate test;
 
         use cipher::generic_array::GenericArray;
-        use cipher::stream::{NewStreamCipher, StreamCipher};
+        use cipher::{NewCipher, AsyncStreamCipher};
         use test::Bencher;
 
         #[inline(never)]
