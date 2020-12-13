@@ -17,6 +17,8 @@
 extern crate std;
 #[cfg(feature = "block-mode")]
 pub extern crate block_padding;
+#[cfg(feature = "dev")]
+pub extern crate blobby;
 
 pub mod block;
 pub mod common;
