@@ -120,8 +120,17 @@ macro_rules! impl_seek_num {
             impl SeekNum for $t {
                 fn from_block_byte<T: TryInto<Self>>(block: T, byte: u8, bs: u8) -> Result<Self, OverflowError> {
                     debug_assert!(byte < bs);
-                    let block = block.try_into().map_err(|_| OverflowError)?;
-                    let pos = block.checked_mul(bs as Self).ok_or(OverflowError)? + (byte as Self);
+                    let pos = block
+                        .try_into()
+                        .ok()
+                        .and_then(|v| match byte == 0 {
+                            true => Some(v),
+                            // if `byte` is not zero, then block counter was incremented
+                            false => v.checked_sub(1),
+                        })
+                        .and_then(|v| v.checked_mul(bs as Self))
+                        .and_then(|v| v.checked_add(byte as Self))
+                        .ok_or(OverflowError)?;
                     Ok(pos)
                 }
 
