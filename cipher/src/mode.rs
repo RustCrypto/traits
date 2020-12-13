@@ -15,9 +15,6 @@ pub trait BlockModeCore {
 
     /// Decrypt blocks of data
     fn decrypt_blocks(&mut self, blocks: &mut [Block<Self>]);
-
-    ///
-    fn into_encryptor<>(self) -> BlockModeEncryptor<Self, P>
 }
 
 pub struct BlockModeEncryptor<M: BlockModeCore, P: Padding>{
