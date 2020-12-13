@@ -94,7 +94,7 @@ impl<C: StreamCipher> StreamCipher for &mut C {
 /// [`StreamCipherSeek`] trait.
 ///
 /// This trait is implemented for primitive numeric types, i.e. `i/u8`,
-/// `u16`, `u32`, `u64`, `u128`, and `usize`. It is not intended
+/// `u16`, `u32`, `u64`, `u128`, `usize`, and `i32`. It is not intended
 /// to be implemented in third-party crates.
 #[rustfmt::skip]
 pub trait SeekNum:
@@ -145,4 +145,4 @@ macro_rules! impl_seek_num {
     };
 }
 
-impl_seek_num! { u8 u16 u32 u64 u128 usize }
+impl_seek_num! { u8 u16 u32 u64 u128 usize i32 }
