@@ -93,9 +93,9 @@ dependencies = [
 
 [[package]]
 name = "const-oid"
-version = "0.3.2"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4fa30214c17255a4c120bd6a199a61bfacb28e4a9f0be8eecf629f2847e84d4"
+checksum = "8e143857ef5e50b46bba431bb0ed990426912f5eea85d6048214d8196d83efed"
 
 [[package]]
 name = "cpuid-bool"
@@ -263,9 +263,9 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "pkcs8"
-version = "0.1.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6529960a627342f19f68d43a07b268c98fd347e68668df3743a3cb9211c0975f"
+checksum = "4a76ea85a01aad5d73ae320fcc514ca72bf2660db7e7c69d3649fdc0653407fc"
 dependencies = [
  "const-oid",
  "subtle-encoding",
