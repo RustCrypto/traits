@@ -178,6 +178,11 @@ where
         })
     }
 
+    /// Is this [`EncodedPoint`] the additive identity? (a.k.a. point at infinity)
+    pub fn is_identity(&self) -> bool {
+        self.tag().is_identity()
+    }
+
     /// Is this [`EncodedPoint`] compressed?
     pub fn is_compressed(&self) -> bool {
         self.tag().is_compressed()
@@ -186,7 +191,7 @@ where
     /// Compress this [`EncodedPoint`], returning a new [`EncodedPoint`].
     pub fn compress(&self) -> Self {
         match self.coordinates() {
-            Coordinates::Compressed { .. } => self.clone(),
+            Coordinates::Identity | Coordinates::Compressed { .. } => self.clone(),
             Coordinates::Uncompressed { x, y } => Self::from_affine_coordinates(x, y, true),
         }
     }
@@ -202,6 +207,7 @@ where
         AffinePoint<C>: ConditionallySelectable + Default + Decompress<C> + ToEncodedPoint<C>,
     {
         match self.coordinates() {
+            Coordinates::Identity => None,
             Coordinates::Compressed { x, y_is_odd } => {
                 AffinePoint::<C>::decompress(x, Choice::from(y_is_odd as u8))
                     .map(|s| s.to_encoded_point(false))
@@ -236,6 +242,10 @@ where
     /// Get the [`Coordinates`] for this [`EncodedPoint`].
     #[inline]
     pub fn coordinates(&self) -> Coordinates<'_, C> {
+        if self.is_identity() {
+            return Coordinates::Identity;
+        }
+
         let (x, y) = self.bytes[1..].split_at(C::FieldSize::to_usize());
 
         if self.is_compressed() {
@@ -251,20 +261,23 @@ where
         }
     }
 
-    /// Get the x-coordinate for this [`EncodedPoint`]
-    pub fn x(&self) -> &FieldBytes<C> {
+    /// Get the x-coordinate for this [`EncodedPoint`].
+    ///
+    /// Returns `None` if this point is the identity point.
+    pub fn x(&self) -> Option<&FieldBytes<C>> {
         match self.coordinates() {
-            Coordinates::Compressed { x, .. } => x,
-            Coordinates::Uncompressed { x, .. } => x,
+            Coordinates::Identity => None,
+            Coordinates::Compressed { x, .. } => Some(x),
+            Coordinates::Uncompressed { x, .. } => Some(x),
         }
     }
 
     /// Get the y-coordinate for this [`EncodedPoint`].
     ///
-    /// Returns `None` if this point is compressed.
+    /// Returns `None` if this point is compressed or the identity point.
     pub fn y(&self) -> Option<&FieldBytes<C>> {
         match self.coordinates() {
-            Coordinates::Compressed { .. } => None,
+            Coordinates::Compressed { .. } | Coordinates::Identity => None,
             Coordinates::Uncompressed { y, .. } => Some(y),
         }
     }
@@ -318,6 +331,9 @@ where
 /// SEC1-encoded elliptic curve points.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Coordinates<'a, C: Curve> {
+    /// Identity point (a.k.a. point at infinity)
+    Identity,
+
     /// Compressed curve point
     Compressed {
         /// x-coordinate
@@ -373,6 +389,9 @@ where
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[repr(u8)]
 pub enum Tag {
+    /// Identity point (`0x00`)
+    Identity = 0,
+
     /// Compressed point with even y-coordinate (`0x02`)
     CompressedEvenY = 2,
 
@@ -387,6 +406,7 @@ impl Tag {
     /// Parse a tag value from a byte
     pub fn from_u8(byte: u8) -> Result<Self, Error> {
         match byte {
+            0 => Ok(Tag::Identity),
             2 => Ok(Tag::CompressedEvenY),
             3 => Ok(Tag::CompressedOddY),
             4 => Ok(Tag::Uncompressed),
@@ -394,22 +414,24 @@ impl Tag {
         }
     }
 
+    /// Is this point the identity point?
+    pub fn is_identity(self) -> bool {
+        self == Tag::Identity
+    }
+
     /// Is this point compressed?
     pub fn is_compressed(self) -> bool {
-        match self {
-            Tag::CompressedEvenY | Tag::CompressedOddY => true,
-            Tag::Uncompressed => false,
-        }
+        matches!(self, Tag::CompressedEvenY | Tag::CompressedOddY)
     }
 
     /// Compute the expected total message length for a message prefixed
     /// with this tag (including the tag byte), given the field element size
     /// (in bytes) for a particular elliptic curve.
     pub fn message_len(self, field_element_size: usize) -> usize {
-        1 + if self.is_compressed() {
-            field_element_size
-        } else {
-            field_element_size * 2
+        1 + match self {
+            Tag::Identity => 0,
+            Tag::CompressedEvenY | Tag::CompressedOddY => field_element_size,
+            Tag::Uncompressed => field_element_size * 2,
         }
     }
 
@@ -450,6 +472,9 @@ mod tests {
 
     type EncodedPoint = super::EncodedPoint<ExampleCurve>;
 
+    /// Identity point
+    const IDENTITY_BYTES: [u8; 1] = [0];
+
     /// Example uncompressed point
     const UNCOMPRESSED_BYTES: [u8; 65] = hex!("0411111111111111111111111111111111111111111111111111111111111111112222222222222222222222222222222222222222222222222222222222222222");
 
@@ -479,7 +504,7 @@ mod tests {
         );
 
         assert_eq!(
-            compressed_even_y.x(),
+            compressed_even_y.x().unwrap(),
             &hex!("0100000000000000000000000000000000000000000000000000000000000000").into()
         );
         assert_eq!(compressed_even_y.y(), None);
@@ -504,7 +529,7 @@ mod tests {
         );
 
         assert_eq!(
-            compressed_odd_y.x(),
+            compressed_odd_y.x().unwrap(),
             &hex!("0200000000000000000000000000000000000000000000000000000000000000").into()
         );
         assert_eq!(compressed_odd_y.y(), None);
@@ -528,13 +553,25 @@ mod tests {
         );
 
         assert_eq!(
-            uncompressed_point.x(),
+            uncompressed_point.x().unwrap(),
             &hex!("1111111111111111111111111111111111111111111111111111111111111111").into()
         );
         assert_eq!(
             uncompressed_point.y().unwrap(),
             &hex!("2222222222222222222222222222222222222222222222222222222222222222").into()
         );
+    }
+
+    #[test]
+    fn decode_identity() {
+        let identity_point = EncodedPoint::from_bytes(&IDENTITY_BYTES[..]).unwrap();
+        assert!(identity_point.is_identity());
+        assert_eq!(identity_point.tag(), Tag::Identity);
+        assert_eq!(identity_point.len(), 1);
+        assert_eq!(identity_point.as_bytes(), &IDENTITY_BYTES[..]);
+        assert_eq!(identity_point.coordinates(), Coordinates::Identity);
+        assert_eq!(identity_point.x(), None);
+        assert_eq!(identity_point.y(), None);
     }
 
     #[test]

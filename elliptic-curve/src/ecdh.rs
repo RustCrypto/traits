@@ -153,7 +153,11 @@ where
 {
     /// Create a new shared secret from the given uncompressed curve point
     fn new(mut encoded_point: EncodedPoint<C>) -> Self {
-        let secret_bytes = encoded_point.x().clone();
+        let secret_bytes = encoded_point
+            .x()
+            .cloned()
+            .expect("encoded point is identity");
+
         encoded_point.zeroize();
         Self { secret_bytes }
     }
