@@ -152,7 +152,7 @@ where
     }
 }
 
-impl<C> From<PublicKey<C>> for EncodedPoint<C>
+impl<C> TryFrom<PublicKey<C>> for EncodedPoint<C>
 where
     C: Curve + ProjectiveArithmetic + point::Compression,
     FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
@@ -162,12 +162,14 @@ where
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
-    fn from(public_key: PublicKey<C>) -> EncodedPoint<C> {
-        EncodedPoint::<C>::from(&public_key)
+    type Error = Error;
+
+    fn try_from(public_key: PublicKey<C>) -> Result<EncodedPoint<C>, Error> {
+        EncodedPoint::<C>::try_from(&public_key)
     }
 }
 
-impl<C> From<&PublicKey<C>> for EncodedPoint<C>
+impl<C> TryFrom<&PublicKey<C>> for EncodedPoint<C>
 where
     C: Curve + ProjectiveArithmetic + point::Compression,
     FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
@@ -177,8 +179,10 @@ where
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
-    fn from(public_key: &PublicKey<C>) -> EncodedPoint<C> {
-        public_key.to_encoded_point(C::COMPRESS_POINTS)
+    type Error = Error;
+
+    fn try_from(public_key: &PublicKey<C>) -> Result<EncodedPoint<C>, Error> {
+        public_key.to_encoded_point(C::COMPRESS_POINTS).ok_or(Error)
     }
 }
 
@@ -210,7 +214,7 @@ where
 {
     /// Serialize this [`PublicKey`] as a SEC1 [`EncodedPoint`], optionally applying
     /// point compression
-    fn to_encoded_point(&self, compress: bool) -> EncodedPoint<C> {
+    fn to_encoded_point(&self, compress: bool) -> Option<EncodedPoint<C>> {
         self.point.to_encoded_point(compress)
     }
 }

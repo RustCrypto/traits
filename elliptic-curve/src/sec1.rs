@@ -141,6 +141,7 @@ where
         (C::ProjectivePoint::generator() * secret_key.secret_scalar())
             .to_affine()
             .to_encoded_point(compress)
+            .expect("secret is identity")
     }
 
     /// Get the length of the encoded point in bytes
@@ -204,7 +205,7 @@ where
         match self.coordinates() {
             Coordinates::Compressed { x, y_is_odd } => {
                 AffinePoint::<C>::decompress(x, Choice::from(y_is_odd as u8))
-                    .map(|s| s.to_encoded_point(false))
+                    .map(|s| s.to_encoded_point(false).expect("point is identity"))
                     .into()
             }
             Coordinates::Uncompressed { .. } => Some(self.clone()),
@@ -212,11 +213,11 @@ where
     }
 
     /// Encode an [`EncodedPoint`] from the desired type
-    pub fn encode<T>(encodable: T, compress: bool) -> Self
+    pub fn encode<T>(encodable: T, compress: bool) -> Result<Self, Error>
     where
         T: ToEncodedPoint<C>,
     {
-        encodable.to_encoded_point(compress)
+        encodable.to_encoded_point(compress).ok_or(Error)
     }
 
     /// Decode this [`EncodedPoint`] into the desired type
@@ -366,7 +367,16 @@ where
 {
     /// Serialize this value as a SEC1 [`EncodedPoint`], optionally applying
     /// point compression.
-    fn to_encoded_point(&self, compress: bool) -> EncodedPoint<C>;
+    ///
+    /// # Returns
+    ///
+    /// `None` if this point is the additive identity (a.k.a. point-at-infinity).
+    ///
+    /// Though the additive identity can technically be encoded using the
+    /// `Elliptic-Curve-Point-to-Octet-String` encoding specified in SEC1
+    /// Section 2.3.3, this encoding is not supported by [`EncodedPoint`] and
+    /// implementers of this trait should return `None` for this case instead.
+    fn to_encoded_point(&self, compress: bool) -> Option<EncodedPoint<C>>;
 }
 
 /// Tag byte used by the `Elliptic-Curve-Point-to-Octet-String` encoding.

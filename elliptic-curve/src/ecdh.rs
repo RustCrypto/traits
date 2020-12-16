@@ -78,7 +78,12 @@ where
         #[allow(clippy::op_ref)]
         let shared_secret = public_key.to_projective() * &*self.scalar;
         // SharedSecret::new expects an uncompressed point
-        SharedSecret::new(shared_secret.to_affine().to_encoded_point(false))
+        SharedSecret::new(
+            shared_secret
+                .to_affine()
+                .to_encoded_point(false)
+                .expect("secret is identity"),
+        )
     }
 }
 
