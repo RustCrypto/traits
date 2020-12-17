@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.8.0 (2020-12-16)
+### Added
+- Impl `subtle::ConditionallySelectable` for `sec1::EncodedPoint` ([#409])
+- `sec1::EncodedPoint::identity()` method ([#408])
+- `sec1::Coordinates::tag` method ([#407])
+- Support for SEC1 identity encoding ([#401])
+
+### Changed
+- Bump `pkcs8` crate dependency to v0.3 ([#405])
+- Ensure `PublicKey<C>` is not the identity point ([#404])
+- Have `SecretKey::secret_scalar` return `NonZeroScalar` ([#402])
+
+### Removed
+- `SecretKey::secret_value` ([#403])
+
+[#409]: https://github.com/RustCrypto/traits/pull/409
+[#408]: https://github.com/RustCrypto/traits/pull/408
+[#407]: https://github.com/RustCrypto/traits/pull/407
+[#405]: https://github.com/RustCrypto/traits/pull/405
+[#404]: https://github.com/RustCrypto/traits/pull/404
+[#403]: https://github.com/RustCrypto/traits/pull/403
+[#402]: https://github.com/RustCrypto/traits/pull/402
+[#401]: https://github.com/RustCrypto/traits/pull/401
+
 ## 0.7.1 (2020-12-07)
 ### Changed
 - Have `SecretKey::secret_value` always return `NonZeroScalar` ([#390])
