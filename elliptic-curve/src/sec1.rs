@@ -499,6 +499,7 @@ mod tests {
     use crate::{weierstrass, Curve};
     use generic_array::{typenum::U32, GenericArray};
     use hex_literal::hex;
+    use subtle::ConditionallySelectable;
 
     #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Ord)]
     struct ExampleCurve;
@@ -667,6 +668,18 @@ mod tests {
         let uncompressed_point = EncodedPoint::from_bytes(&UNCOMPRESSED_BYTES[..]).unwrap();
         let compressed_point = uncompressed_point.compress();
         assert_eq!(compressed_point.as_bytes(), &COMPRESSED_BYTES[..]);
+    }
+
+    #[test]
+    fn conditional_select() {
+        let a = EncodedPoint::from_bytes(&COMPRESSED_BYTES[..]).unwrap();
+        let b = EncodedPoint::from_bytes(&UNCOMPRESSED_BYTES[..]).unwrap();
+
+        let a_selected = EncodedPoint::conditional_select(&a, &b, 0.into());
+        assert_eq!(a, a_selected);
+
+        let b_selected = EncodedPoint::conditional_select(&a, &b, 1.into());
+        assert_eq!(b, b_selected);
     }
 
     #[test]
