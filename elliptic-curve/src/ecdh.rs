@@ -31,7 +31,7 @@ use crate::{
 use core::{fmt::Debug, ops::Add};
 use ff::PrimeField;
 use generic_array::ArrayLength;
-use group::{Curve as _, Group};
+use group::Curve as _;
 use rand_core::{CryptoRng, RngCore};
 use zeroize::Zeroize;
 
@@ -69,7 +69,7 @@ where
     ///
     /// The `compress` flag enables point compression.
     pub fn public_key(&self) -> PublicKey<C> {
-        PublicKey::from_affine((C::ProjectivePoint::generator() * self.scalar.as_ref()).to_affine())
+        PublicKey::from_secret_scalar(&self.scalar)
     }
 
     /// Compute a Diffie-Hellman shared secret from an ephemeral secret and the

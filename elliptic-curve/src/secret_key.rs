@@ -18,11 +18,10 @@ use zeroize::Zeroize;
 #[cfg(feature = "arithmetic")]
 use crate::{
     ff::PrimeField,
-    group::{Curve as _, Group},
     public_key::PublicKey,
     rand_core::{CryptoRng, RngCore},
     scalar::{NonZeroScalar, Scalar},
-    weierstrass, AffinePoint, ProjectiveArithmetic,
+    weierstrass, AffinePoint, ProjectiveArithmetic, ProjectivePoint,
 };
 
 #[cfg(feature = "pkcs8")]
@@ -133,8 +132,9 @@ where
         FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
         AffinePoint<C>: Copy + Clone + Debug + Default,
+        ProjectivePoint<C>: From<AffinePoint<C>>,
     {
-        PublicKey::from_affine((C::ProjectivePoint::generator() * self.secret_scalar()).to_affine())
+        PublicKey::from_secret_scalar(self.secret_scalar())
     }
 }
 
