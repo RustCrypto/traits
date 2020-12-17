@@ -163,9 +163,9 @@ where
         private_key_info: pkcs8::PrivateKeyInfo<'_>,
     ) -> pkcs8::Result<Self> {
         if private_key_info.algorithm.oid != ALGORITHM_OID
-            || private_key_info.algorithm.parameters != Some(C::OID)
+            || private_key_info.algorithm.parameters_oid() != Some(C::OID)
         {
-            return Err(pkcs8::Error);
+            return Err(pkcs8::Error::Decode);
         }
 
         let bytes = private_key_info.private_key;
@@ -177,27 +177,28 @@ where
         // 3-bytes: INTEGER version: tag byte + length + value
         // 2-bytes: OCTET STRING header: tag byte + length
         if bytes.len() < 2 + 3 + 2 + C::FieldSize::to_usize() {
-            return Err(pkcs8::Error);
+            return Err(pkcs8::Error::Decode);
         }
 
         // Check key begins with ASN.1 DER SEQUENCE tag (0x30) + valid length,
         // where the length omits the leading SEQUENCE header (tag + length byte)
         if bytes[0] != 0x30 || bytes[1].checked_add(2).unwrap() as usize != bytes.len() {
-            return Err(pkcs8::Error);
+            return Err(pkcs8::Error::Decode);
         }
 
         // Validate version field (ASN.1 DER INTEGER value: 1)
         if bytes[2..=4] != [0x02, 0x01, 0x01] {
-            return Err(pkcs8::Error);
+            return Err(pkcs8::Error::Decode);
         }
 
         // Validate ASN.1 DER OCTET STRING header: tag (0x04) + valid length
         if bytes[5] != 0x04 || bytes[6] as usize != C::FieldSize::to_usize() {
-            return Err(pkcs8::Error);
+            return Err(pkcs8::Error::Decode);
         }
 
         // TODO(tarcieri): extract and validate public key
-        Self::from_bytes(&bytes[7..(7 + C::FieldSize::to_usize())]).map_err(|_| pkcs8::Error)
+        Self::from_bytes(&bytes[7..(7 + C::FieldSize::to_usize())])
+            .map_err(|_| pkcs8::Error::Decode)
     }
 }
 
