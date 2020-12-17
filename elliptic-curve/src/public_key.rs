@@ -85,7 +85,7 @@ where
     pub fn from_secret_scalar(scalar: &NonZeroScalar<C>) -> Self {
         // `NonZeroScalar` ensures the resulting point is not the identity
         Self {
-            point: (C::ProjectivePoint::generator() * scalar).to_affine(),
+            point: (C::ProjectivePoint::generator() * scalar.as_ref()).to_affine(),
         }
     }
 

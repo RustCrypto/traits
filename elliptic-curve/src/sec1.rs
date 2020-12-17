@@ -136,7 +136,7 @@ where
         AffinePoint<C>: ToEncodedPoint<C>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
-        (C::ProjectivePoint::generator() * secret_key.secret_scalar())
+        (C::ProjectivePoint::generator() * secret_key.secret_scalar().as_ref())
             .to_affine()
             .to_encoded_point(compress)
     }
