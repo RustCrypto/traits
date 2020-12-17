@@ -353,36 +353,21 @@ pub enum Coordinates<'a, C: Curve> {
     },
 }
 
-/// Trait for deserializing a value from a SEC1 encoded curve point.
-///
-/// This is intended for use with the `AffinePoint` type for a given elliptic curve.
-pub trait FromEncodedPoint<C>
-where
-    C: Curve,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-    Self: Sized,
-{
-    /// Deserialize the type this trait is impl'd on from an [`EncodedPoint`].
-    ///
-    /// # Returns
-    ///
-    /// `None` if the [`EncodedPoint`] is invalid.
-    fn from_encoded_point(public_key: &EncodedPoint<C>) -> Option<Self>;
-}
-
-/// Trait for serializing a value to a SEC1 encoded curve point.
-///
-/// This is intended for use with the `AffinePoint` type for a given elliptic curve.
-pub trait ToEncodedPoint<C>
-where
-    C: Curve,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    /// Serialize this value as a SEC1 [`EncodedPoint`], optionally applying
-    /// point compression.
-    fn to_encoded_point(&self, compress: bool) -> EncodedPoint<C>;
+impl<'a, C: Curve> Coordinates<'a, C> {
+    /// Get the tag value needed to encode this set of [`Coordinates`]
+    pub fn tag(&self) -> Tag {
+        match self {
+            Coordinates::Identity => Tag::Identity,
+            Coordinates::Compressed { y_is_odd, .. } => {
+                if *y_is_odd {
+                    Tag::CompressedOddY
+                } else {
+                    Tag::CompressedEvenY
+                }
+            }
+            Coordinates::Uncompressed { .. } => Tag::Uncompressed,
+        }
+    }
 }
 
 /// Tag byte used by the `Elliptic-Curve-Point-to-Octet-String` encoding.
@@ -452,6 +437,38 @@ impl From<Tag> for u8 {
     fn from(tag: Tag) -> u8 {
         tag as u8
     }
+}
+
+/// Trait for deserializing a value from a SEC1 encoded curve point.
+///
+/// This is intended for use with the `AffinePoint` type for a given elliptic curve.
+pub trait FromEncodedPoint<C>
+where
+    C: Curve,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+    Self: Sized,
+{
+    /// Deserialize the type this trait is impl'd on from an [`EncodedPoint`].
+    ///
+    /// # Returns
+    ///
+    /// `None` if the [`EncodedPoint`] is invalid.
+    fn from_encoded_point(public_key: &EncodedPoint<C>) -> Option<Self>;
+}
+
+/// Trait for serializing a value to a SEC1 encoded curve point.
+///
+/// This is intended for use with the `AffinePoint` type for a given elliptic curve.
+pub trait ToEncodedPoint<C>
+where
+    C: Curve,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+    /// Serialize this value as a SEC1 [`EncodedPoint`], optionally applying
+    /// point compression.
+    fn to_encoded_point(&self, compress: bool) -> EncodedPoint<C>;
 }
 
 #[cfg(test)]
