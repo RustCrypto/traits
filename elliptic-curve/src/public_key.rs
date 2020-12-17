@@ -2,6 +2,7 @@
 
 use crate::{
     consts::U1,
+    scalar::NonZeroScalar,
     sec1::{
         EncodedPoint, FromEncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize,
     },
@@ -15,6 +16,7 @@ use core::{
 };
 use ff::PrimeField;
 use generic_array::ArrayLength;
+use group::{Curve as _, Group};
 
 #[cfg(feature = "pkcs8")]
 use crate::{AlgorithmParameters, ALGORITHM_OID};
@@ -26,8 +28,8 @@ use core::str::FromStr;
 
 /// Elliptic curve public keys.
 ///
-/// These are a thin wrapper around [`AffinePoint`] which simplifies
-/// encoding/decoding.
+/// This is a wrapper type for [`AffinePoint`] which ensures an inner
+/// non-identity point and provides a common place to handle encoding/decoding.
 ///
 /// # Parsing "SPKI" Keys
 ///
@@ -67,10 +69,24 @@ where
     FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
 {
     /// Convert an [`AffinePoint`] into a [`PublicKey`]
-    pub fn from_affine(point: AffinePoint<C>) -> Self {
-        Self { point }
+    pub fn from_affine(point: AffinePoint<C>) -> Result<Self, Error> {
+        if ProjectivePoint::<C>::from(point).is_identity().into() {
+            Err(Error)
+        } else {
+            Ok(Self { point })
+        }
+    }
+
+    /// Compute a [`PublicKey`] from a secret [`NonZeroScalar`] value
+    /// (i.e. a secret key represented as a raw scalar value)
+    pub fn from_secret_scalar(scalar: &NonZeroScalar<C>) -> Self {
+        // `NonZeroScalar` ensures the resulting point is not the identity
+        Self {
+            point: (C::ProjectivePoint::generator() * scalar).to_affine(),
+        }
     }
 
     /// Decode [`PublicKey`] (compressed or uncompressed) from the
@@ -98,10 +114,7 @@ where
     }
 
     /// Convert this [`PublicKey`] to a [`ProjectivePoint`] for the given curve
-    pub fn to_projective(&self) -> ProjectivePoint<C>
-    where
-        ProjectivePoint<C>: From<AffinePoint<C>>,
-    {
+    pub fn to_projective(&self) -> ProjectivePoint<C> {
         self.point.clone().into()
     }
 }
@@ -112,6 +125,7 @@ where
     FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
 {
     fn as_ref(&self) -> &AffinePoint<C> {
         self.as_affine()
@@ -262,6 +276,7 @@ where
     FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -291,6 +306,7 @@ where
     FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
