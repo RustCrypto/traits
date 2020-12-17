@@ -143,6 +143,12 @@ where
             .to_encoded_point(compress)
     }
 
+    /// Return [`EncodedPoint`] representing the additive identity
+    /// (a.k.a. point at infinity)
+    pub fn identity() -> Self {
+        Self::from_bytes(&[0]).unwrap()
+    }
+
     /// Get the length of the encoded point in bytes
     pub fn len(&self) -> usize {
         self.tag().message_len(C::FieldSize::to_usize())
@@ -645,6 +651,14 @@ mod tests {
         let uncompressed_point = EncodedPoint::from_bytes(&UNCOMPRESSED_BYTES[..]).unwrap();
         let compressed_point = uncompressed_point.compress();
         assert_eq!(compressed_point.as_bytes(), &COMPRESSED_BYTES[..]);
+    }
+
+    #[test]
+    fn identity() {
+        let identity_point = EncodedPoint::identity();
+        assert_eq!(identity_point.tag(), Tag::Identity);
+        assert_eq!(identity_point.len(), 1);
+        assert_eq!(identity_point.as_bytes(), &IDENTITY_BYTES[..]);
     }
 
     #[cfg(feature = "alloc")]
