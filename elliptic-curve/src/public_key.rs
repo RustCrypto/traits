@@ -281,8 +281,8 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn from_spki(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> pkcs8::Result<Self> {
-        if spki.algorithm.oid != ALGORITHM_OID || spki.algorithm.parameters != Some(C::OID) {
-            return Err(pkcs8::Error);
+        if spki.algorithm.oid != ALGORITHM_OID || spki.algorithm.parameters_oid() != Some(C::OID) {
+            return Err(pkcs8::Error::Decode);
         }
 
         // Strip leading `0` byte if it exists
@@ -290,10 +290,10 @@ where
         let bytes = match spki.subject_public_key.get(0) {
             Some(0) => &spki.subject_public_key[1..],
             Some(_) => spki.subject_public_key,
-            None => return Err(pkcs8::Error),
+            None => return Err(pkcs8::Error::Decode),
         };
 
-        Self::from_sec1_bytes(bytes).map_err(|_| pkcs8::Error)
+        Self::from_sec1_bytes(bytes).map_err(|_| pkcs8::Error::Decode)
     }
 }
 
