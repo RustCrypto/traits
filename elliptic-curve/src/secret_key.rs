@@ -133,13 +133,13 @@ where
     /// Please treat it with the care it deserves!
     #[cfg(feature = "arithmetic")]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-    pub fn secret_scalar(&self) -> &Scalar<C>
+    pub fn secret_scalar(&self) -> &NonZeroScalar<C>
     where
         C: ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
         FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
-        self.secret_value.as_ref()
+        &self.secret_value
     }
 
     /// Get the [`PublicKey`] which corresponds to this secret key
