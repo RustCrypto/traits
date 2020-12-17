@@ -14,23 +14,21 @@ use generic_array::{
     typenum::{Unsigned, U1},
     ArrayLength, GenericArray,
 };
+use subtle::{Choice, ConditionallySelectable};
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
 
 #[cfg(feature = "arithmetic")]
 use crate::{
-    ff::PrimeField,
-    subtle::{Choice, ConditionallySelectable},
-    weierstrass::point::Decompress,
-    AffinePoint, ProjectiveArithmetic, Scalar,
+    ff::PrimeField, weierstrass::point::Decompress, AffinePoint, ProjectiveArithmetic, Scalar,
 };
 
 #[cfg(all(feature = "arithmetic", feature = "zeroize"))]
-use crate::group::{Curve as _, Group};
-
-#[cfg(all(feature = "arithmetic", feature = "zeroize"))]
-use crate::secret_key::SecretKey;
+use crate::{
+    group::{Curve as _, Group},
+    secret_key::SecretKey,
+};
 
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroize;
@@ -298,6 +296,24 @@ where
     #[inline]
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
+    }
+}
+
+impl<C> ConditionallySelectable for EncodedPoint<C>
+where
+    C: Curve,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+    <UncompressedPointSize<C> as ArrayLength<u8>>::ArrayType: Copy,
+{
+    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
+        let mut bytes = GenericArray::default();
+
+        for (i, byte) in bytes.iter_mut().enumerate() {
+            *byte = u8::conditional_select(&a.bytes[i], &b.bytes[i], choice);
+        }
+
+        Self { bytes }
     }
 }
 
