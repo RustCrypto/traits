@@ -106,24 +106,6 @@ where
         self.secret_value.clone().into()
     }
 
-    /// Borrow the inner [`NonZeroScalar`] secret value.
-    ///
-    /// # Warning
-    ///
-    /// This value is key material.
-    ///
-    /// Please treat it with the care it deserves!
-    #[cfg(feature = "arithmetic")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-    pub fn secret_value(&self) -> &NonZeroScalar<C>
-    where
-        C: ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
-        FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
-    {
-        &self.secret_value
-    }
-
     /// Borrow the inner secret [`Scalar`] value.
     ///
     /// # Warning
