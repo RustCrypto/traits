@@ -208,7 +208,8 @@ where
 {
     /// Initialize [`PublicKey`] from an [`EncodedPoint`]
     fn from_encoded_point(encoded_point: &EncodedPoint<C>) -> Option<Self> {
-        AffinePoint::<C>::from_encoded_point(encoded_point).map(|point| Self { point })
+        AffinePoint::<C>::from_encoded_point(encoded_point)
+            .and_then(|point| PublicKey::from_affine(point).ok())
     }
 }
 
