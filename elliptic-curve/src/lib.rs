@@ -41,6 +41,10 @@ pub mod public_key;
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub mod scalar;
 
+#[cfg(feature = "dev")]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
+pub mod dev;
+
 #[cfg(feature = "ecdh")]
 #[cfg_attr(docsrs, doc(cfg(feature = "ecdh")))]
 pub mod ecdh;
