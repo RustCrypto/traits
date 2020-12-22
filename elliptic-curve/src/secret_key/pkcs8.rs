@@ -15,10 +15,9 @@ use zeroize::Zeroize;
 
 // Imports for the `ToPrivateKey` impl
 // TODO(tarcieri): use weak activation of `pkcs8/alloc` for gating `ToPrivateKey` impl
-#[cfg(all(feature = "pem"))]
+#[cfg(all(feature = "arithmetic", feature = "pem"))]
 use {
     crate::{
-        error::Error,
         ff::PrimeField,
         scalar::Scalar,
         sec1::{FromEncodedPoint, ToEncodedPoint},
@@ -32,13 +31,13 @@ use {
 
 // Imports for actual PEM support
 #[cfg(feature = "pem")]
-use core::str::FromStr;
+use {crate::error::Error, core::str::FromStr};
 
 /// Version
 const VERSION: i8 = 1;
 
 /// Encoding error message
-#[cfg(feature = "pem")]
+#[cfg(all(feature = "arithmetic", feature = "pem"))]
 const ENCODING_ERROR_MSG: &str = "DER encoding error";
 
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
@@ -109,7 +108,8 @@ where
 // TODO(tarcieri): use weak activation of `pkcs8/alloc` for this when possible
 // It doesn't strictly depend on `pkcs8/pem` but we can't easily activate `pkcs8/alloc`
 // without adding a separate crate feature just for this functionality.
-#[cfg(feature = "pem")]
+#[cfg(all(feature = "arithmetic", feature = "pem"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> ToPrivateKey for SecretKey<C>
 where
