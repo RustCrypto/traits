@@ -42,6 +42,7 @@ jobs:
       - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features pem
       - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features pkcs8
       - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features zeroize
+      - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features pem,zeroize
   test:
     runs-on: ubuntu-latest
     strategy:
