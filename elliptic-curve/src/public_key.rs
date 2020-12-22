@@ -286,15 +286,12 @@ where
             return Err(pkcs8::Error::Decode);
         }
 
-        // Strip leading `0` byte if it exists
-        // TODO(tarcieri): determine if there's actually any case where this byte doesn't exist
-        let bytes = match spki.subject_public_key.get(0) {
-            Some(0) => &spki.subject_public_key[1..],
-            Some(_) => spki.subject_public_key,
-            None => return Err(pkcs8::Error::Decode),
-        };
+        // Look for a leading `0x00` byte in the bitstring
+        if spki.subject_public_key.get(0).cloned() != Some(0x00) {
+            return Err(pkcs8::Error::Decode);
+        }
 
-        Self::from_sec1_bytes(bytes).map_err(|_| pkcs8::Error::Decode)
+        Self::from_sec1_bytes(&spki.subject_public_key[1..]).map_err(|_| pkcs8::Error::Decode)
     }
 }
 

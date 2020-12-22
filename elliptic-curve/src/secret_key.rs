@@ -25,9 +25,18 @@ use crate::{
 };
 
 #[cfg(feature = "pkcs8")]
-use crate::{generic_array::typenum::Unsigned, AlgorithmParameters, ALGORITHM_OID};
-#[cfg(feature = "pkcs8")]
-use pkcs8::FromPrivateKey;
+use {
+    crate::{
+        sec1::{self, UncompressedPointSize, UntaggedPointSize},
+        AlgorithmParameters, ALGORITHM_OID,
+    },
+    core::ops::Add,
+    generic_array::{typenum::U1, ArrayLength},
+    pkcs8::{
+        der::{self, Decodable},
+        FromPrivateKey,
+    },
+};
 
 #[cfg(feature = "pem")]
 use core::str::FromStr;
@@ -155,9 +164,11 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 impl<C> FromPrivateKey for SecretKey<C>
 where
-    C: Curve + AlgorithmParameters + SecretValue,
+    C: weierstrass::Curve + AlgorithmParameters + SecretValue,
     C::Secret: Clone + Zeroize,
     FieldBytes<C>: From<C::Secret>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn from_pkcs8_private_key_info(
         private_key_info: pkcs8::PrivateKeyInfo<'_>,
@@ -168,37 +179,51 @@ where
             return Err(pkcs8::Error::Decode);
         }
 
-        let bytes = private_key_info.private_key;
+        let mut decoder = der::Decoder::new(private_key_info.private_key);
 
-        // Ensure private key is AT LEAST as long as a scalar field element
-        // for this curve along with the following overhead:
-        //
-        // 2-bytes: SEQUENCE header: tag byte + length
-        // 3-bytes: INTEGER version: tag byte + length + value
-        // 2-bytes: OCTET STRING header: tag byte + length
-        if bytes.len() < 2 + 3 + 2 + C::FieldSize::to_usize() {
-            return Err(pkcs8::Error::Decode);
-        }
+        let result = decoder.sequence(|decoder| {
+            // Parse and validate `version` INTEGER.
+            if i8::decode(decoder)? != 1 {
+                return Err(der::ErrorKind::Value {
+                    tag: der::Tag::Integer,
+                }
+                .into());
+            }
 
-        // Check key begins with ASN.1 DER SEQUENCE tag (0x30) + valid length,
-        // where the length omits the leading SEQUENCE header (tag + length byte)
-        if bytes[0] != 0x30 || bytes[1].checked_add(2).unwrap() as usize != bytes.len() {
-            return Err(pkcs8::Error::Decode);
-        }
+            let secret_key_field = decoder.octet_string()?;
+            let secret_key = Self::from_bytes(secret_key_field).map_err(|_| {
+                der::Error::from(der::ErrorKind::Value {
+                    tag: der::Tag::Sequence,
+                })
+            })?;
 
-        // Validate version field (ASN.1 DER INTEGER value: 1)
-        if bytes[2..=4] != [0x02, 0x01, 0x01] {
-            return Err(pkcs8::Error::Decode);
-        }
+            let public_key_field = decoder.any()?;
+            public_key_field
+                .tag()
+                .assert_eq(der::Tag::ContextSpecific1)?;
 
-        // Validate ASN.1 DER OCTET STRING header: tag (0x04) + valid length
-        if bytes[5] != 0x04 || bytes[6] as usize != C::FieldSize::to_usize() {
-            return Err(pkcs8::Error::Decode);
-        }
+            let mut public_key_decoder = der::Decoder::new(public_key_field.as_bytes());
+            let public_key_bitstring = public_key_decoder.bit_string()?.as_bytes();
 
-        // TODO(tarcieri): extract and validate public key
-        Self::from_bytes(&bytes[7..(7 + C::FieldSize::to_usize())])
-            .map_err(|_| pkcs8::Error::Decode)
+            // Look for a leading `0x00` byte in the bitstring
+            if public_key_bitstring.get(0).cloned() != Some(0x00) {
+                return Err(der::ErrorKind::Value {
+                    tag: der::Tag::BitString,
+                }
+                .into());
+            }
+
+            // TODO(tarcieri): add validations for public key
+            sec1::EncodedPoint::<C>::from_bytes(&public_key_bitstring[1..]).map_err(|_| {
+                der::Error::from(der::ErrorKind::Value {
+                    tag: der::Tag::BitString,
+                })
+            })?;
+
+            Ok(secret_key)
+        })?;
+
+        Ok(decoder.finish(result)?)
     }
 }
 
@@ -206,9 +231,11 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for SecretKey<C>
 where
-    C: Curve + AlgorithmParameters + SecretValue,
+    C: weierstrass::Curve + AlgorithmParameters + SecretValue,
     C::Secret: Clone + Zeroize,
     FieldBytes<C>: From<C::Secret>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
 {
     type Err = Error;
 
