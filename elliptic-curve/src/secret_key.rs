@@ -27,6 +27,9 @@ use crate::{
     weierstrass, AffinePoint, ProjectiveArithmetic, ProjectivePoint,
 };
 
+#[cfg(all(docsrs, feature = "pkcs8"))]
+use {crate::pkcs8::FromPrivateKey, core::str::FromStr};
+
 /// Elliptic curve secret keys.
 ///
 /// This type wraps a secret scalar value, helping to prevent accidental
@@ -48,7 +51,7 @@ use crate::{
 /// To decode an elliptic curve private key from PKCS#8, enable the `pkcs8`
 /// feature of this crate (or the `pkcs8` feature of a specific RustCrypto
 /// elliptic curve crate) and use the
-/// [`elliptic_curve::pkcs8::FromPrivateKey`][`pkcs8::FromPrivateKey`]
+/// [`elliptic_curve::pkcs8::FromPrivateKey`][`FromPrivateKey`]
 /// trait to parse it.
 ///
 /// When the `pem` feature of this crate (or a specific RustCrypto elliptic
