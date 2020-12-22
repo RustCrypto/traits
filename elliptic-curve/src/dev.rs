@@ -13,7 +13,7 @@ use crate::{
     util::{adc64, sbb64},
     weierstrass,
     zeroize::Zeroize,
-    Curve, FromDigest, ProjectiveArithmetic,
+    AlgorithmParameters, Curve, FromDigest, ProjectiveArithmetic,
 };
 use core::{
     convert::TryInto,
@@ -39,6 +39,11 @@ impl ProjectiveArithmetic for MockCurve {
     type ProjectivePoint = ProjectivePoint;
 }
 
+impl AlgorithmParameters for MockCurve {
+    /// OID for NIST P-256
+    const OID: pkcs8::ObjectIdentifier = pkcs8::ObjectIdentifier::new(&[1, 2, 840, 10045, 3, 1, 7]);
+}
+
 /// SEC1 encoded point.
 pub type EncodedPoint = crate::sec1::EncodedPoint<MockCurve>;
 
@@ -47,6 +52,12 @@ pub type FieldBytes = crate::FieldBytes<MockCurve>;
 
 /// Non-zero scalar value.
 pub type NonZeroScalar = crate::scalar::NonZeroScalar<MockCurve>;
+
+/// Public key.
+pub type PublicKey = crate::PublicKey<MockCurve>;
+
+/// Secret key.
+pub type SecretKey = crate::SecretKey<MockCurve>;
 
 const LIMBS: usize = 4;
 
@@ -361,9 +372,8 @@ impl Scalar {
 /// Example affine point type
 #[derive(Clone, Copy, Debug)]
 pub struct AffinePoint {
-    /// Is this point supposed to be the additive identity?
-    /// (a.k.a. point at infinity)
-    identity: bool,
+    /// Wrap [`EncodedPoint`] to allow certain conversions
+    inner: EncodedPoint,
 }
 
 impl ConditionallySelectable for AffinePoint {
@@ -374,23 +384,25 @@ impl ConditionallySelectable for AffinePoint {
 
 impl Default for AffinePoint {
     fn default() -> Self {
-        Self { identity: true }
+        Self {
+            inner: EncodedPoint::identity(),
+        }
     }
 }
 
 impl FromEncodedPoint<MockCurve> for AffinePoint {
     fn from_encoded_point(point: &EncodedPoint) -> Option<Self> {
-        if point.is_identity() {
-            Some(Self::default())
-        } else {
-            unimplemented!();
-        }
+        Some(Self { inner: *point })
     }
 }
 
 impl ToEncodedPoint<MockCurve> for AffinePoint {
-    fn to_encoded_point(&self, _compress: bool) -> EncodedPoint {
-        unimplemented!();
+    fn to_encoded_point(&self, compress: bool) -> EncodedPoint {
+        if compress == self.inner.is_compressed() {
+            self.inner
+        } else {
+            unimplemented!();
+        }
     }
 }
 
@@ -419,7 +431,7 @@ impl Default for ProjectivePoint {
 impl From<AffinePoint> for ProjectivePoint {
     fn from(point: AffinePoint) -> ProjectivePoint {
         Self {
-            identity: point.identity,
+            identity: point.inner.is_identity(),
         }
     }
 }
