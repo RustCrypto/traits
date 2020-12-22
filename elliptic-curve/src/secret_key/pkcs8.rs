@@ -20,7 +20,7 @@ use {
     crate::{
         error::Error,
         ff::PrimeField,
-        scalar::{NonZeroScalar, Scalar},
+        scalar::Scalar,
         sec1::{FromEncodedPoint, ToEncodedPoint},
         AffinePoint, ProjectiveArithmetic, ProjectivePoint,
     },
@@ -111,10 +111,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> ToPrivateKey for SecretKey<C>
 where
-    C: weierstrass::Curve
-        + AlgorithmParameters
-        + ProjectiveArithmetic
-        + SecretValue<Secret = NonZeroScalar<C>>,
+    C: weierstrass::Curve + AlgorithmParameters + ProjectiveArithmetic,
     FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
