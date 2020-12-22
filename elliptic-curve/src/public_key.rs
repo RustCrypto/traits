@@ -19,12 +19,17 @@ use generic_array::ArrayLength;
 use group::{Curve as _, Group};
 
 #[cfg(feature = "pkcs8")]
-use crate::{AlgorithmParameters, ALGORITHM_OID};
-#[cfg(feature = "pkcs8")]
-use pkcs8::FromPublicKey;
+use {
+    crate::{AlgorithmParameters, ALGORITHM_OID},
+    pkcs8::FromPublicKey,
+};
 
 #[cfg(feature = "pem")]
-use core::str::FromStr;
+use {
+    alloc::vec::Vec,
+    core::str::FromStr,
+    pkcs8::der::{self, Encodable},
+};
 
 /// Elliptic curve public keys.
 ///
@@ -116,6 +121,25 @@ where
     /// Convert this [`PublicKey`] to a [`ProjectivePoint`] for the given curve
     pub fn to_projective(&self) -> ProjectivePoint<C> {
         self.point.clone().into()
+    }
+
+    /// Encode this public key as an ASN.1 DER bitstring as used in both
+    /// PKCS#8 private keys and SPKI public keys.
+    #[cfg(feature = "pem")]
+    pub(crate) fn to_der_bitstring(&self) -> Vec<u8>
+    where
+        AffinePoint<C>: Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+        ProjectivePoint<C>: From<AffinePoint<C>>,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        let mut body_bytes = Vec::new();
+        body_bytes.push(0);
+        body_bytes.extend_from_slice(self.to_encoded_point(false).as_ref());
+
+        der::BitString::new(&body_bytes)
+            .and_then(|bit_string| bit_string.to_vec())
+            .expect("DER encoding error")
     }
 }
 

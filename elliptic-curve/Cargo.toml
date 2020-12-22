@@ -32,9 +32,9 @@ hex-literal = "0.2"
 default = ["arithmetic"]
 alloc = []
 arithmetic = ["bitvec", "ff", "group"]
-dev = ["arithmetic", "digest", "pkcs8", "zeroize"]
+dev = ["arithmetic", "digest", "pem", "zeroize"]
 ecdh = ["arithmetic", "zeroize"]
-pem = ["pkcs8/pem"]
+pem = ["alloc", "pkcs8/pem"]
 std = ["alloc"]
 
 [package.metadata.docs.rs]
