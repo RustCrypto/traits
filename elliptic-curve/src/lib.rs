@@ -139,4 +139,12 @@ pub trait FromDigest<C: Curve> {
 pub trait AlgorithmParameters: Curve {
     /// Object Identifier (OID) for this curve
     const OID: pkcs8::ObjectIdentifier;
+
+    /// Get the [`pkcs8::AlgorithmIdentifier`] for this curve
+    fn algorithm_identifier() -> pkcs8::AlgorithmIdentifier {
+        pkcs8::AlgorithmIdentifier {
+            oid: ALGORITHM_OID,
+            parameters: Some(Self::OID.into()),
+        }
+    }
 }

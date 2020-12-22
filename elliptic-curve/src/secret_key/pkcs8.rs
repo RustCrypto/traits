@@ -26,7 +26,8 @@ use {
     },
     alloc::vec::Vec,
     core::{fmt::Debug, iter},
-    pkcs8::ToPrivateKey,
+    pkcs8::{der::Encodable, ToPrivateKey},
+    zeroize::Zeroizing,
 };
 
 // Imports for actual PEM support
@@ -37,6 +38,7 @@ use core::str::FromStr;
 const VERSION: i8 = 1;
 
 /// Encoding error message
+#[cfg(feature = "pem")]
 const ENCODING_ERROR_MSG: &str = "DER encoding error";
 
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
@@ -120,20 +122,25 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn to_pkcs8_der(&self) -> pkcs8::PrivateKeyDocument {
+        // TODO(tarcieri): wrap `secret_key_bytes` in `Zeroizing`
         let mut secret_key_bytes = self.to_bytes();
         let secret_key_field = der::OctetString::new(&secret_key_bytes).expect(ENCODING_ERROR_MSG);
 
-        let public_key_bytes = self.public_key().to_der_bitstring();
+        let public_key_body = self.public_key().to_der_bitstring();
+        let public_key_bytes = der::BitString::new(&public_key_body)
+            .and_then(|bit_string| bit_string.to_vec())
+            .expect("DER encoding error");
         let public_key_field =
             der::Any::new(der::Tag::ContextSpecific1, &public_key_bytes).expect(ENCODING_ERROR_MSG);
 
-        let der_message_fields: &[&dyn der::Encodable] =
+        let der_message_fields: &[&dyn Encodable] =
             &[&VERSION, &secret_key_field, &public_key_field];
+
         let encoded_len = der::sequence::encoded_len(der_message_fields)
             .expect(ENCODING_ERROR_MSG)
             .to_usize();
 
-        let mut der_message = Vec::new();
+        let mut der_message = Zeroizing::new(Vec::new());
         der_message.reserve(encoded_len);
         der_message.extend(iter::repeat(0).take(encoded_len));
 
@@ -141,22 +148,15 @@ where
         encoder
             .sequence(der_message_fields)
             .expect(ENCODING_ERROR_MSG);
+
         encoder.finish().expect(ENCODING_ERROR_MSG);
+        secret_key_bytes.zeroize();
 
-        let algorithm = pkcs8::AlgorithmIdentifier {
-            oid: ALGORITHM_OID,
-            parameters: Some(C::OID.into()),
-        };
-
-        let result = pkcs8::PrivateKeyInfo {
-            algorithm,
+        pkcs8::PrivateKeyInfo {
+            algorithm: C::algorithm_identifier(),
             private_key: &der_message,
         }
-        .to_der();
-
-        secret_key_bytes.zeroize();
-        der_message.zeroize();
-        result
+        .to_der()
     }
 }
 
