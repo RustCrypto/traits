@@ -8,6 +8,7 @@ use crate::{
     group,
     rand_core::RngCore,
     scalar::ScalarBits,
+    sec1::{FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     util::{adc64, sbb64},
     weierstrass,
@@ -37,6 +38,9 @@ impl weierstrass::Curve for MockCurve {}
 impl ProjectiveArithmetic for MockCurve {
     type ProjectivePoint = ProjectivePoint;
 }
+
+/// SEC1 encoded point.
+pub type EncodedPoint = crate::sec1::EncodedPoint<MockCurve>;
 
 /// Field element bytes.
 pub type FieldBytes = crate::FieldBytes<MockCurve>;
@@ -356,10 +360,36 @@ impl Scalar {
 
 /// Example affine point type
 #[derive(Clone, Copy, Debug)]
-pub struct AffinePoint {}
+pub struct AffinePoint {
+    /// Is this point supposed to be the additive identity?
+    /// (a.k.a. point at infinity)
+    identity: bool,
+}
 
 impl ConditionallySelectable for AffinePoint {
     fn conditional_select(_a: &Self, _b: &Self, _choice: Choice) -> Self {
+        unimplemented!();
+    }
+}
+
+impl Default for AffinePoint {
+    fn default() -> Self {
+        Self { identity: true }
+    }
+}
+
+impl FromEncodedPoint<MockCurve> for AffinePoint {
+    fn from_encoded_point(point: &EncodedPoint) -> Option<Self> {
+        if point.is_identity() {
+            Some(Self::default())
+        } else {
+            unimplemented!();
+        }
+    }
+}
+
+impl ToEncodedPoint<MockCurve> for AffinePoint {
+    fn to_encoded_point(&self, _compress: bool) -> EncodedPoint {
         unimplemented!();
     }
 }
@@ -374,7 +404,37 @@ impl Mul<NonZeroScalar> for AffinePoint {
 
 /// Example projective point type
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct ProjectivePoint {}
+pub struct ProjectivePoint {
+    /// Is this point supposed to be the additive identity?
+    /// (a.k.a. point at infinity)
+    identity: bool,
+}
+
+impl Default for ProjectivePoint {
+    fn default() -> Self {
+        Self { identity: true }
+    }
+}
+
+impl From<AffinePoint> for ProjectivePoint {
+    fn from(point: AffinePoint) -> ProjectivePoint {
+        Self {
+            identity: point.identity,
+        }
+    }
+}
+
+impl FromEncodedPoint<MockCurve> for ProjectivePoint {
+    fn from_encoded_point(_point: &EncodedPoint) -> Option<Self> {
+        unimplemented!();
+    }
+}
+
+impl ToEncodedPoint<MockCurve> for ProjectivePoint {
+    fn to_encoded_point(&self, _compress: bool) -> EncodedPoint {
+        unimplemented!();
+    }
+}
 
 impl group::Group for ProjectivePoint {
     type Scalar = Scalar;
@@ -392,7 +452,7 @@ impl group::Group for ProjectivePoint {
     }
 
     fn is_identity(&self) -> Choice {
-        unimplemented!();
+        Choice::from(self.identity as u8)
     }
 
     #[must_use]
