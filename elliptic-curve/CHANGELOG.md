@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.8.2 (2020-12-22)
+### Added
+- Low-level ECDH API ([#418])
+- `dev` module ([#419])
+- Impl `pkcs8::ToPrivateKey` for `SecretKey<C>` ([#423])
+- Impl `pkcs8::ToPublicKey` for `PublicKey<C>` ([#427])
+
+### Changed
+- Bump `subtle` dependency to 2.4.0 ([#414])
+- Bump `pkcs8` dependency to v0.3.3 ([#425])
+- Use `der` crate to parse `SecretKey` ([#422])
+
+### Fixed
+- Make `PublicKey::from_encoded_point` go through `PublicKey::from_affine` ([#416])
+
+[#414]: https://github.com/RustCrypto/traits/pull/414
+[#416]: https://github.com/RustCrypto/traits/pull/416
+[#418]: https://github.com/RustCrypto/traits/pull/418
+[#419]: https://github.com/RustCrypto/traits/pull/419
+[#422]: https://github.com/RustCrypto/traits/pull/422
+[#423]: https://github.com/RustCrypto/traits/pull/423
+[#425]: https://github.com/RustCrypto/traits/pull/425
+[#427]: https://github.com/RustCrypto/traits/pull/427
+
 ## 0.8.1 (2020-12-16)
 ### Fixed
 - Builds on Rust `nightly` compiler ([#412])
