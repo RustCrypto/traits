@@ -26,9 +26,12 @@ use {
 
 #[cfg(feature = "pem")]
 use {
-    alloc::vec::Vec,
+    alloc::{
+        string::{String, ToString},
+        vec::Vec,
+    },
     core::str::FromStr,
-    pkcs8::der::{self, Encodable},
+    pkcs8::ToPublicKey,
 };
 
 /// Elliptic curve public keys.
@@ -133,13 +136,10 @@ where
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
-        let mut body_bytes = Vec::new();
-        body_bytes.push(0);
-        body_bytes.extend_from_slice(self.to_encoded_point(false).as_ref());
-
-        der::BitString::new(&body_bytes)
-            .and_then(|bit_string| bit_string.to_vec())
-            .expect("DER encoding error")
+        let mut bitstring = Vec::new();
+        bitstring.push(0);
+        bitstring.extend_from_slice(self.to_encoded_point(false).as_ref());
+        bitstring
     }
 }
 
@@ -321,6 +321,29 @@ where
 
 #[cfg(feature = "pem")]
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
+impl<C> ToPublicKey for PublicKey<C>
+where
+    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+    fn to_public_key_der(&self) -> pkcs8::PublicKeyDocument {
+        let public_key_bytes = self.to_der_bitstring();
+
+        pkcs8::SubjectPublicKeyInfo {
+            algorithm: C::algorithm_identifier(),
+            subject_public_key: &public_key_bytes,
+        }
+        .to_der()
+    }
+}
+
+#[cfg(feature = "pem")]
+#[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for PublicKey<C>
 where
     Self: TryFrom<EncodedPoint<C>, Error = Error>,
@@ -336,6 +359,23 @@ where
 
     fn from_str(s: &str) -> Result<Self, Error> {
         Self::from_public_key_pem(s).map_err(|_| Error)
+    }
+}
+
+#[cfg(feature = "pem")]
+#[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
+impl<C> ToString for PublicKey<C>
+where
+    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+    fn to_string(&self) -> String {
+        self.to_public_key_pem()
     }
 }
 
