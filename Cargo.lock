@@ -93,9 +93,8 @@ dependencies = [
 
 [[package]]
 name = "const-oid"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "069b46dab00267d018567b1154f38b706d6ed93c4915301a2fa73bc24a03a1e7"
+version = "0.4.1"
+source = "git+https://github.com/RustCrypto/utils.git#022007f591e92bfb14a16bd3192309d398d2f2f0"
 
 [[package]]
 name = "cpuid-bool"
@@ -124,6 +123,14 @@ dependencies = [
  "cipher",
  "generic-array 0.14.4",
  "subtle",
+]
+
+[[package]]
+name = "der"
+version = "0.0.0"
+source = "git+https://github.com/RustCrypto/utils.git#022007f591e92bfb14a16bd3192309d398d2f2f0"
+dependencies = [
+ "const-oid",
 ]
 
 [[package]]
@@ -264,10 +271,9 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 [[package]]
 name = "pkcs8"
 version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9911ed9965aeee333588f226ad2baeabda478bf5ec151550735ed1760df759ba"
+source = "git+https://github.com/RustCrypto/utils.git#022007f591e92bfb14a16bd3192309d398d2f2f0"
 dependencies = [
- "const-oid",
+ "der",
  "subtle-encoding",
  "zeroize",
 ]
