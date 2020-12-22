@@ -7,6 +7,9 @@
 //! When the `zeroize` feature of this crate is enabled, it also handles
 //! zeroing it out of memory securely on drop.
 
+#[cfg(feature = "pkcs8")]
+mod pkcs8;
+
 use crate::{error::Error, Curve, FieldBytes};
 use core::{
     convert::{TryFrom, TryInto},
@@ -23,23 +26,6 @@ use crate::{
     scalar::{NonZeroScalar, Scalar},
     weierstrass, AffinePoint, ProjectiveArithmetic, ProjectivePoint,
 };
-
-#[cfg(feature = "pkcs8")]
-use {
-    crate::{
-        sec1::{self, UncompressedPointSize, UntaggedPointSize},
-        AlgorithmParameters, ALGORITHM_OID,
-    },
-    core::ops::Add,
-    generic_array::{typenum::U1, ArrayLength},
-    pkcs8::{
-        der::{self, Decodable},
-        FromPrivateKey,
-    },
-};
-
-#[cfg(feature = "pem")]
-use core::str::FromStr;
 
 /// Elliptic curve secret keys.
 ///
@@ -157,90 +143,6 @@ where
 
     fn try_from(slice: &[u8]) -> Result<Self, Error> {
         Self::from_bytes(slice)
-    }
-}
-
-#[cfg(feature = "pkcs8")]
-#[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
-impl<C> FromPrivateKey for SecretKey<C>
-where
-    C: weierstrass::Curve + AlgorithmParameters + SecretValue,
-    C::Secret: Clone + Zeroize,
-    FieldBytes<C>: From<C::Secret>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    fn from_pkcs8_private_key_info(
-        private_key_info: pkcs8::PrivateKeyInfo<'_>,
-    ) -> pkcs8::Result<Self> {
-        if private_key_info.algorithm.oid != ALGORITHM_OID
-            || private_key_info.algorithm.parameters_oid() != Some(C::OID)
-        {
-            return Err(pkcs8::Error::Decode);
-        }
-
-        let mut decoder = der::Decoder::new(private_key_info.private_key);
-
-        let result = decoder.sequence(|decoder| {
-            // Parse and validate `version` INTEGER.
-            if i8::decode(decoder)? != 1 {
-                return Err(der::ErrorKind::Value {
-                    tag: der::Tag::Integer,
-                }
-                .into());
-            }
-
-            let secret_key_field = decoder.octet_string()?;
-            let secret_key = Self::from_bytes(secret_key_field).map_err(|_| {
-                der::Error::from(der::ErrorKind::Value {
-                    tag: der::Tag::Sequence,
-                })
-            })?;
-
-            let public_key_field = decoder.any()?;
-            public_key_field
-                .tag()
-                .assert_eq(der::Tag::ContextSpecific1)?;
-
-            let mut public_key_decoder = der::Decoder::new(public_key_field.as_bytes());
-            let public_key_bitstring = public_key_decoder.bit_string()?.as_bytes();
-
-            // Look for a leading `0x00` byte in the bitstring
-            if public_key_bitstring.get(0).cloned() != Some(0x00) {
-                return Err(der::ErrorKind::Value {
-                    tag: der::Tag::BitString,
-                }
-                .into());
-            }
-
-            // TODO(tarcieri): add validations for public key
-            sec1::EncodedPoint::<C>::from_bytes(&public_key_bitstring[1..]).map_err(|_| {
-                der::Error::from(der::ErrorKind::Value {
-                    tag: der::Tag::BitString,
-                })
-            })?;
-
-            Ok(secret_key)
-        })?;
-
-        Ok(decoder.finish(result)?)
-    }
-}
-
-#[cfg(feature = "pem")]
-#[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
-impl<C> FromStr for SecretKey<C>
-where
-    C: weierstrass::Curve + AlgorithmParameters + SecretValue,
-    C::Secret: Clone + Zeroize,
-    FieldBytes<C>: From<C::Secret>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Error> {
-        Self::from_pkcs8_pem(s).map_err(|_| Error)
     }
 }
 
