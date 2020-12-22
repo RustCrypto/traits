@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.8.2 (2020-12-22)
+## 0.8.3 (2020-12-22)
+### Fixed
+- Regression in combination of `pem`+`zeroize` features ([#429])
+
+[#429]: https://github.com/RustCrypto/traits/pull/429
+
+## 0.8.2 (2020-12-22) [YANKED]
 ### Added
 - Low-level ECDH API ([#418])
 - `dev` module ([#419])
@@ -28,13 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#425]: https://github.com/RustCrypto/traits/pull/425
 [#427]: https://github.com/RustCrypto/traits/pull/427
 
-## 0.8.1 (2020-12-16)
+## 0.8.1 (2020-12-16) [YANKED]
 ### Fixed
 - Builds on Rust `nightly` compiler ([#412])
 
 [#412]: https://github.com/RustCrypto/traits/pull/412
 
-## 0.8.0 (2020-12-16)
+## 0.8.0 (2020-12-16) [YANKED]
 ### Added
 - Impl `subtle::ConditionallySelectable` for `sec1::EncodedPoint` ([#409])
 - `sec1::EncodedPoint::identity()` method ([#408])
