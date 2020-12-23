@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.8.4 (2020-12-23)
+### Fixed
+- Rust `nightly` regression ([#432])
+
+[#432]: https://github.com/RustCrypto/traits/pull/432
+
 ## 0.8.3 (2020-12-22)
 ### Fixed
 - Regression in combination of `pem`+`zeroize` features ([#429])
