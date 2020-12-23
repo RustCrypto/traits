@@ -74,7 +74,8 @@ where
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
-    let shared_secret = ProjectivePoint::<C>::from(*public_key.borrow()) * secret_key.borrow();
+    let shared_secret =
+        ProjectivePoint::<C>::from(*public_key.borrow()) * secret_key.borrow().as_ref();
 
     // SharedSecret::new expects an uncompressed point
     // TODO(tarcieri): avoid point encoding when computing shared secret
