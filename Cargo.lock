@@ -41,12 +41,24 @@ dependencies = [
 
 [[package]]
 name = "bitvec"
-version = "0.18.3"
+version = "0.18.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64143ed23541fe0c6e2235905eaae37ceae1ca69e14dce4afcd6ec9643359d00"
+checksum = "1d2838fdd79e8776dbe07a106c784b0f8dda571a21b2750a092cc4cbaa653c8e"
 dependencies = [
  "funty",
- "radium",
+ "radium 0.4.1",
+ "wyz",
+]
+
+[[package]]
+name = "bitvec"
+version = "0.20.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f5011ffc90248764d7005b0e10c7294f5aa1bd87d9dd7248f4ad475b347c294d"
+dependencies = [
+ "funty",
+ "radium 0.6.1",
+ "tap",
  "wyz",
 ]
 
@@ -156,7 +168,7 @@ dependencies = [
 name = "elliptic-curve"
 version = "0.8.4"
 dependencies = [
- "bitvec",
+ "bitvec 0.20.1",
  "digest 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ff",
  "generic-array 0.14.4",
@@ -174,7 +186,7 @@ version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "01646e077d4ebda82b73f1bca002ea1e91561a77df2431a9e79729bcc31950ef"
 dependencies = [
- "bitvec",
+ "bitvec 0.18.4",
  "rand_core",
  "subtle",
 ]
@@ -307,9 +319,15 @@ dependencies = [
 
 [[package]]
 name = "radium"
-version = "0.3.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "def50a86306165861203e7f84ecffbbdfdea79f0e51039b33de1e952358c47ac"
+checksum = "64de9a0c5361e034f1aefc9f71a86871ec870e766fe31a009734a989b329286a"
+
+[[package]]
+name = "radium"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9e006811e1fdd12672b0820a7f44c18dde429f367d50cec003d22aa9b3c8ddc"
 
 [[package]]
 name = "rand_core"
@@ -394,6 +412,12 @@ dependencies = [
  "syn",
  "unicode-xid",
 ]
+
+[[package]]
+name = "tap"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36474e732d1affd3a6ed582781b3683df3d0563714c59c39591e8ff707cf078e"
 
 [[package]]
 name = "typenum"
