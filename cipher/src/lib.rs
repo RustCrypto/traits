@@ -15,25 +15,16 @@
 
 #[cfg(feature = "std")]
 extern crate std;
-#[cfg(feature = "block-mode")]
-pub extern crate block_padding;
-#[cfg(feature = "dev")]
-pub extern crate blobby;
 
-pub mod errors;
 #[cfg(feature = "dev")]
-mod dev;
+pub use blobby;
+
 mod block;
 mod common;
-#[cfg(feature = "block-padding")]
-mod mode;
+#[cfg(feature = "dev")]
+mod dev;
+pub mod errors;
 mod stream;
 
-pub use crate::{
-    block::*,
-    common::*,
-    stream::*,
-};
-#[cfg(feature = "block-mode")]
-pub use crate::mode::BlockModeCore;
+pub use crate::{block::*, common::*, stream::*};
 pub use generic_array::{self, typenum::consts};

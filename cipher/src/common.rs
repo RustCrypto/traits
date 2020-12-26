@@ -1,5 +1,5 @@
-use generic_array::{ArrayLength, GenericArray, typenum::Unsigned};
-use crate::{BlockCipher, NewBlockCipher, errors::InvalidLength};
+use crate::{errors::InvalidLength, BlockCipher, NewBlockCipher};
+use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
 /// Key for an algorithm that implements [`NewCipher`].
 pub type CipherKey<C> = GenericArray<u8, <C as NewCipher>::KeySize>;

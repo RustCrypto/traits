@@ -9,10 +9,10 @@ macro_rules! block_cipher_test {
     ($name:ident, $test_name:expr, $cipher:ty) => {
         #[test]
         fn $name() {
+            use cipher::generic_array::{typenum::Unsigned, GenericArray};
             use cipher::{
                 blobby::Blob3Iterator, BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
             };
-            use cipher::generic_array::{typenum::Unsigned, GenericArray};
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
                 let state = <$cipher as NewBlockCipher>::new_var(key).unwrap();

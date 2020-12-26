@@ -1,2 +1,2 @@
-mod stream;
 mod block;
+mod stream;
