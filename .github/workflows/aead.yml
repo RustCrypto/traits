@@ -35,7 +35,9 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
-      - run: cargo build --no-default-features --release --target ${{ matrix.target }}
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features stream
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -50,6 +52,6 @@ jobs:
         profile: minimal
         toolchain: ${{ matrix.rust }}
     - run: cargo check --all-features
-    - run: cargo test --no-default-features --release
+    - run: cargo test --release --no-default-features
     - run: cargo test --release
-    - run: cargo test --all-features --release
+    - run: cargo test --release --all-features

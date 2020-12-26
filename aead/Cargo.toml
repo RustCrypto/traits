@@ -19,8 +19,9 @@ blobby = { version = "0.3", optional = true }
 [features]
 default = ["alloc"]
 alloc = []
-std = ["alloc"]
 dev = ["blobby"]
+std = ["alloc"]
+stream = []
 
 [package.metadata.docs.rs]
 all-features = true
