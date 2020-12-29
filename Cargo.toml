@@ -6,6 +6,7 @@ members = [
     "crypto",
     "digest",
     "elliptic-curve",
+    "password-hash",
     "signature",
     "signature/async",
     "universal-hash",
