@@ -3,56 +3,11 @@
 //! See [RustCrypto/stream-ciphers](https://github.com/RustCrypto/stream-ciphers)
 //! for ciphers implementation.
 
-#[cfg(feature = "dev")]
-mod dev;
-
-#[cfg(feature = "dev")]
-pub use blobby;
-
-use crate::{
-    block::{BlockCipher, NewBlockCipher},
-    errors::{InvalidLength, LoopError, OverflowError},
-};
+use crate::errors::{LoopError, OverflowError};
 use core::convert::{TryFrom, TryInto};
-use generic_array::typenum::Unsigned;
-use generic_array::{ArrayLength, GenericArray};
-
-/// Key for an algorithm that implements [`NewStreamCipher`].
-pub type Key<C> = GenericArray<u8, <C as NewStreamCipher>::KeySize>;
-
-/// Nonce for an algorithm that implements [`NewStreamCipher`].
-pub type Nonce<C> = GenericArray<u8, <C as NewStreamCipher>::NonceSize>;
-
-/// Stream cipher creation trait.
-///
-/// It can be used for creation of synchronous and asynchronous ciphers.
-pub trait NewStreamCipher: Sized {
-    /// Key size in bytes
-    type KeySize: ArrayLength<u8>;
-
-    /// Nonce size in bytes
-    type NonceSize: ArrayLength<u8>;
-
-    /// Create new stream cipher instance from variable length key and nonce.
-    fn new(key: &Key<Self>, nonce: &Nonce<Self>) -> Self;
-
-    /// Create new stream cipher instance from variable length key and nonce.
-    #[inline]
-    fn new_var(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidLength> {
-        let kl = Self::KeySize::to_usize();
-        let nl = Self::NonceSize::to_usize();
-        if key.len() != kl || nonce.len() != nl {
-            Err(InvalidLength)
-        } else {
-            let key = GenericArray::from_slice(key);
-            let nonce = GenericArray::from_slice(nonce);
-            Ok(Self::new(key, nonce))
-        }
-    }
-}
 
 /// Synchronous stream cipher core trait.
-pub trait SyncStreamCipher {
+pub trait StreamCipher {
     /// Apply keystream to the data.
     ///
     /// It will XOR generated keystream with the data, which can be both
@@ -63,10 +18,7 @@ pub trait SyncStreamCipher {
     /// method will panic without modifying the provided `data`.
     #[inline]
     fn apply_keystream(&mut self, data: &mut [u8]) {
-        let res = self.try_apply_keystream(data);
-        if res.is_err() {
-            panic!("stream cipher loop detected");
-        }
+        self.try_apply_keystream(data).unwrap();
     }
 
     /// Apply keystream to the data, but return an error if end of a keystream
@@ -82,7 +34,7 @@ pub trait SyncStreamCipher {
 /// Methods of this trait are generic over the [`SeekNum`] trait, which is
 /// implemented for primitive numeric types, i.e.: `i/u8`, `i/u16`, `i/u32`,
 /// `i/u64`, `i/u128`, and `i/usize`.
-pub trait SyncStreamCipherSeek {
+pub trait StreamCipherSeek {
     /// Try to get current keystream position
     ///
     /// Returns [`LoopError`] if position can not be represented by type `T`
@@ -91,7 +43,7 @@ pub trait SyncStreamCipherSeek {
     /// Try to seek to the given position
     ///
     /// Returns [`LoopError`] if provided position value is bigger than
-    /// keystream leangth
+    /// keystream length.
     fn try_seek<T: SeekNum>(&mut self, pos: T) -> Result<(), LoopError>;
 
     /// Get current keystream position
@@ -111,12 +63,8 @@ pub trait SyncStreamCipherSeek {
     }
 }
 
-/// Stream cipher core trait which covers both synchronous and asynchronous
-/// ciphers.
-///
-/// Note that for synchronous ciphers `encrypt` and `decrypt` are equivalent to
-/// each other.
-pub trait StreamCipher {
+/// Asynchronous stream cipher core trait.
+pub trait AsyncStreamCipher {
     /// Encrypt data in place.
     fn encrypt(&mut self, data: &mut [u8]);
 
@@ -124,19 +72,7 @@ pub trait StreamCipher {
     fn decrypt(&mut self, data: &mut [u8]);
 }
 
-impl<C: SyncStreamCipher> StreamCipher for C {
-    #[inline(always)]
-    fn encrypt(&mut self, data: &mut [u8]) {
-        SyncStreamCipher::apply_keystream(self, data);
-    }
-
-    #[inline(always)]
-    fn decrypt(&mut self, data: &mut [u8]) {
-        SyncStreamCipher::apply_keystream(self, data);
-    }
-}
-
-impl<C: SyncStreamCipher> SyncStreamCipher for &mut C {
+impl<C: StreamCipher> StreamCipher for &mut C {
     #[inline]
     fn apply_keystream(&mut self, data: &mut [u8]) {
         C::apply_keystream(self, data);
@@ -148,54 +84,11 @@ impl<C: SyncStreamCipher> SyncStreamCipher for &mut C {
     }
 }
 
-/// Trait for initializing a stream cipher from a block cipher
-pub trait FromBlockCipher {
-    /// Block cipher
-    type BlockCipher: BlockCipher;
-    /// Nonce size in bytes
-    type NonceSize: ArrayLength<u8>;
-
-    /// Instantiate a stream cipher from a block cipher
-    fn from_block_cipher(
-        cipher: Self::BlockCipher,
-        nonce: &GenericArray<u8, Self::NonceSize>,
-    ) -> Self;
-}
-
-impl<C> NewStreamCipher for C
-where
-    C: FromBlockCipher,
-    C::BlockCipher: NewBlockCipher,
-{
-    type KeySize = <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::KeySize;
-    type NonceSize = <Self as FromBlockCipher>::NonceSize;
-
-    fn new(key: &Key<Self>, nonce: &Nonce<Self>) -> C {
-        C::from_block_cipher(
-            <<Self as FromBlockCipher>::BlockCipher as NewBlockCipher>::new(key),
-            nonce,
-        )
-    }
-
-    fn new_var(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidLength> {
-        if nonce.len() != Self::NonceSize::USIZE {
-            Err(InvalidLength)
-        } else {
-            C::BlockCipher::new_varkey(key)
-                .map_err(|_| InvalidLength)
-                .map(|cipher| {
-                    let nonce = GenericArray::from_slice(nonce);
-                    Self::from_block_cipher(cipher, nonce)
-                })
-        }
-    }
-}
-
 /// Trait implemented for numeric types which can be used with the
-/// [`SyncStreamCipherSeek`] trait.
+/// [`StreamCipherSeek`] trait.
 ///
 /// This trait is implemented for primitive numeric types, i.e. `i/u8`,
-/// `i/u16`, `i/u32`, `i/u64`, `i/u128`, and `i/usize`. It is not intended
+/// `u16`, `u32`, `u64`, `u128`, `usize`, and `i32`. It is not intended
 /// to be implemented in third-party crates.
 #[rustfmt::skip]
 pub trait SeekNum:
@@ -221,8 +114,17 @@ macro_rules! impl_seek_num {
             impl SeekNum for $t {
                 fn from_block_byte<T: TryInto<Self>>(block: T, byte: u8, bs: u8) -> Result<Self, OverflowError> {
                     debug_assert!(byte < bs);
-                    let block = block.try_into().map_err(|_| OverflowError)?;
-                    let pos = block.checked_mul(bs as Self).ok_or(OverflowError)? + (byte as Self);
+                    let pos = block
+                        .try_into()
+                        .ok()
+                        .and_then(|v| match byte == 0 {
+                            true => Some(v),
+                            // if `byte` is not zero, then block counter was incremented
+                            false => v.checked_sub(1),
+                        })
+                        .and_then(|v| v.checked_mul(bs as Self))
+                        .and_then(|v| v.checked_add(byte as Self))
+                        .ok_or(OverflowError)?;
                     Ok(pos)
                 }
 
@@ -237,4 +139,4 @@ macro_rules! impl_seek_num {
     };
 }
 
-impl_seek_num! { u8 i8 u16 i16 u32 i32 u64 i64 u128 i128 isize usize }
+impl_seek_num! { u8 u16 u32 u64 u128 usize i32 }

@@ -16,14 +16,15 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-pub mod block;
-pub mod errors;
-pub mod stream;
+#[cfg(feature = "dev")]
+pub use blobby;
 
-pub use crate::{
-    block::{
-        BlockCipher, BlockDecrypt, BlockDecryptMut, BlockEncrypt, BlockEncryptMut, NewBlockCipher,
-    },
-    stream::{NewStreamCipher, StreamCipher, SyncStreamCipher, SyncStreamCipherSeek},
-};
+mod block;
+mod common;
+#[cfg(feature = "dev")]
+mod dev;
+pub mod errors;
+mod stream;
+
+pub use crate::{block::*, common::*, stream::*};
 pub use generic_array::{self, typenum::consts};

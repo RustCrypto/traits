@@ -9,21 +9,17 @@
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher
 //! [2]: https://en.wikipedia.org/wiki/Symmetric-key_algorithm
 
-#[cfg(feature = "dev")]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-pub mod dev;
-
 use crate::errors::InvalidLength;
 use core::convert::TryInto;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
 /// Key for an algorithm that implements [`NewBlockCipher`].
-pub type Key<B> = GenericArray<u8, <B as NewBlockCipher>::KeySize>;
+pub type BlockCipherKey<B> = GenericArray<u8, <B as NewBlockCipher>::KeySize>;
 
 /// Block on which a [`BlockCipher`] operates.
 pub type Block<B> = GenericArray<u8, <B as BlockCipher>::BlockSize>;
 
-/// Blocks being acted over in parallel.
+/// Block on which a [`BlockCipher`] operates in parallel.
 pub type ParBlocks<B> = GenericArray<Block<B>, <B as BlockCipher>::ParBlocks>;
 
 /// Instantiate a [`BlockCipher`] algorithm.
@@ -32,13 +28,13 @@ pub trait NewBlockCipher: Sized {
     type KeySize: ArrayLength<u8>;
 
     /// Create new block cipher instance from key with fixed size.
-    fn new(key: &Key<Self>) -> Self;
+    fn new(key: &BlockCipherKey<Self>) -> Self;
 
     /// Create new block cipher instance from key with variable size.
     ///
     /// Default implementation will accept only keys with length equal to
     /// `KeySize`, but some ciphers can accept range of key lengths.
-    fn new_varkey(key: &[u8]) -> Result<Self, InvalidLength> {
+    fn new_var(key: &[u8]) -> Result<Self, InvalidLength> {
         if key.len() != Self::KeySize::to_usize() {
             Err(InvalidLength)
         } else {
@@ -57,7 +53,7 @@ pub trait BlockCipher {
     type ParBlocks: ArrayLength<Block<Self>>;
 }
 
-/// Encrypt-only functionality for block ciphers
+/// Encrypt-only functionality for block ciphers.
 pub trait BlockEncrypt: BlockCipher {
     /// Encrypt block in-place
     fn encrypt_block(&self, block: &mut Block<Self>);
@@ -94,7 +90,7 @@ pub trait BlockEncrypt: BlockCipher {
     }
 }
 
-/// Decrypt-only functionality for block ciphers
+/// Decrypt-only functionality for block ciphers.
 pub trait BlockDecrypt: BlockCipher {
     /// Decrypt block in-place
     fn decrypt_block(&self, block: &mut Block<Self>);
