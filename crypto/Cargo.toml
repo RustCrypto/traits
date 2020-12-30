@@ -13,7 +13,7 @@ edition = "2018"
 
 [dependencies]
 aead = { version = "0.3", optional = true, path = "../aead" }
-cipher = { version = "=0.3.0-pre.3", optional = true, path = "../cipher" }
+cipher = { version = "=0.3.0-pre.4", optional = true, path = "../cipher" }
 digest = { version = "0.9", optional = true, path = "../digest" }
 elliptic-curve = { version = "0.8", optional = true, path = "../elliptic-curve" }
 mac = { version = "=0.11.0-pre", package = "crypto-mac", optional = true, path = "../crypto-mac" }
