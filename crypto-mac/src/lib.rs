@@ -45,7 +45,7 @@ pub trait NewMac: Sized {
     ///
     /// Default implementation will accept only keys with length equal to
     /// `KeySize`, but some MACs can accept range of key lengths.
-    fn new_var(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidKeyLength> {
         if key.len() != Self::KeySize::to_usize() {
             Err(InvalidKeyLength)
         } else {
@@ -151,8 +151,8 @@ where
         Self::from_cipher(cipher)
     }
 
-    fn new_var(key: &[u8]) -> Result<Self, InvalidKeyLength> {
-        <Self as FromBlockCipher>::Cipher::new_var(key)
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+        <Self as FromBlockCipher>::Cipher::new_from_slice(key)
             .map_err(|_| InvalidKeyLength)
             .map(Self::from_cipher)
     }

@@ -17,12 +17,13 @@ pub trait NewCipher: Sized {
     /// Nonce size in bytes
     type NonceSize: ArrayLength<u8>;
 
-    /// Create new stream cipher instance from variable length key and nonce.
+    /// Create new stream cipher instance from key and nonce arrays.
     fn new(key: &CipherKey<Self>, nonce: &Nonce<Self>) -> Self;
 
-    /// Create new stream cipher instance from variable length key and nonce.
+    /// Create new stream cipher instance from variable length key and nonce
+    /// given as byte slices.
     #[inline]
-    fn new_var(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidLength> {
+    fn new_from_slices(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidLength> {
         let kl = Self::KeySize::to_usize();
         let nl = Self::NonceSize::to_usize();
         if key.len() != kl || nonce.len() != nl {
@@ -64,11 +65,11 @@ where
         )
     }
 
-    fn new_var(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidLength> {
+    fn new_from_slices(key: &[u8], nonce: &[u8]) -> Result<Self, InvalidLength> {
         if nonce.len() != Self::NonceSize::USIZE {
             Err(InvalidLength)
         } else {
-            C::BlockCipher::new_var(key)
+            C::BlockCipher::new_from_slice(key)
                 .map_err(|_| InvalidLength)
                 .map(|cipher| {
                     let nonce = GenericArray::from_slice(nonce);

@@ -34,7 +34,7 @@ pub trait NewBlockCipher: Sized {
     ///
     /// Default implementation will accept only keys with length equal to
     /// `KeySize`, but some ciphers can accept range of key lengths.
-    fn new_var(key: &[u8]) -> Result<Self, InvalidLength> {
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
         if key.len() != Self::KeySize::to_usize() {
             Err(InvalidLength)
         } else {
