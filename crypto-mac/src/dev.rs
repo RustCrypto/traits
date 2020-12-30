@@ -13,7 +13,7 @@ macro_rules! new_test {
             use crypto_mac::{Mac, NewMac};
 
             fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> Option<&'static str> {
-                let mut mac = <$mac as NewMac>::new_varkey(key).unwrap();
+                let mut mac = <$mac as NewMac>::new_from_slice(key).unwrap();
                 mac.update(input);
                 let result = mac.finalize_reset();
                 if &result.into_bytes()[..] != tag {
@@ -25,7 +25,7 @@ macro_rules! new_test {
                     return Some("after reset");
                 }
 
-                let mut mac = <$mac as NewMac>::new_varkey(key).unwrap();
+                let mut mac = <$mac as NewMac>::new_from_slice(key).unwrap();
                 // test reading byte by byte
                 for i in 0..input.len() {
                     mac.update(&input[i..i + 1]);

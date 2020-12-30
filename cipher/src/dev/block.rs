@@ -15,7 +15,7 @@ macro_rules! block_cipher_test {
             };
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
-                let state = <$cipher as NewBlockCipher>::new_var(key).unwrap();
+                let state = <$cipher as NewBlockCipher>::new_from_slice(key).unwrap();
 
                 let mut block = GenericArray::clone_from_slice(pt);
                 state.encrypt_block(&mut block);
@@ -37,7 +37,7 @@ macro_rules! block_cipher_test {
                 type Block = GenericArray<u8, BlockSize>;
                 type ParBlock = GenericArray<Block, ParBlocks>;
 
-                let state = <$cipher as NewBlockCipher>::new_var(key).unwrap();
+                let state = <$cipher as NewBlockCipher>::new_from_slice(key).unwrap();
 
                 let block = Block::clone_from_slice(pt);
                 let mut blocks1 = ParBlock::default();
@@ -118,7 +118,7 @@ macro_rules! block_cipher_bench {
 
         #[bench]
         pub fn encrypt(bh: &mut Bencher) {
-            let state = <$cipher>::new_var(&[1u8; $key_len]).unwrap();
+            let state = <$cipher>::new_from_slice(&[1u8; $key_len]).unwrap();
             let mut block = Default::default();
 
             bh.iter(|| {
@@ -130,7 +130,7 @@ macro_rules! block_cipher_bench {
 
         #[bench]
         pub fn decrypt(bh: &mut Bencher) {
-            let state = <$cipher>::new_var(&[1u8; $key_len]).unwrap();
+            let state = <$cipher>::new_from_slice(&[1u8; $key_len]).unwrap();
             let mut block = Default::default();
 
             bh.iter(|| {

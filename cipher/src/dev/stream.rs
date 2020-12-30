@@ -15,7 +15,7 @@ macro_rules! stream_cipher_test {
                 let [key, iv, pt, ct] = row.unwrap();
 
                 for chunk_n in 1..256 {
-                    let mut mode = <$cipher>::new_var(key, iv).unwrap();
+                    let mut mode = <$cipher>::new_from_slices(key, iv).unwrap();
                     let mut pt = pt.to_vec();
                     for chunk in pt.chunks_mut(chunk_n) {
                         mode.apply_keystream(chunk);
@@ -106,7 +106,7 @@ macro_rules! stream_cipher_async_test {
                 ciphertext: &[u8],
             ) -> Option<&'static str> {
                 for n in 1..=plaintext.len() {
-                    let mut mode = <$cipher>::new_var(key, iv).unwrap();
+                    let mut mode = <$cipher>::new_from_slices(key, iv).unwrap();
                     let mut buf = plaintext.to_vec();
                     for chunk in buf.chunks_mut(n) {
                         mode.encrypt(chunk);
@@ -117,7 +117,7 @@ macro_rules! stream_cipher_async_test {
                 }
 
                 for n in 1..=plaintext.len() {
-                    let mut mode = <$cipher>::new_var(key, iv).unwrap();
+                    let mut mode = <$cipher>::new_from_slices(key, iv).unwrap();
                     let mut buf = ciphertext.to_vec();
                     for chunk in buf.chunks_mut(n) {
                         mode.decrypt(chunk);
