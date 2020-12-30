@@ -156,3 +156,44 @@ impl<Alg: BlockDecrypt> BlockDecryptMut for Alg {
         self.decrypt_block(block);
     }
 }
+
+// Impls of block cipher traits for reference types
+
+impl<Alg: BlockCipher> BlockCipher for &Alg {
+    type BlockSize = Alg::BlockSize;
+    type ParBlocks = Alg::ParBlocks;
+}
+
+impl<Alg: BlockEncrypt> BlockEncrypt for &Alg {
+    #[inline]
+    fn encrypt_block(&self, block: &mut Block<Self>) {
+        Alg::encrypt_block(self, block);
+    }
+
+    #[inline]
+    fn encrypt_par_blocks(&self, blocks: &mut ParBlocks<Self>) {
+        Alg::encrypt_par_blocks(self, blocks);
+    }
+
+    #[inline]
+    fn encrypt_blocks(&self, blocks: &mut [Block<Self>]) {
+        Alg::encrypt_blocks(self, blocks);
+    }
+}
+
+impl<Alg: BlockDecrypt> BlockDecrypt for &Alg {
+    #[inline]
+    fn decrypt_block(&self, block: &mut Block<Self>) {
+        Alg::decrypt_block(self, block);
+    }
+
+    #[inline]
+    fn decrypt_par_blocks(&self, blocks: &mut ParBlocks<Self>) {
+        Alg::decrypt_par_blocks(self, blocks);
+    }
+
+    #[inline]
+    fn decrypt_blocks(&self, blocks: &mut [Block<Self>]) {
+        Alg::decrypt_blocks(self, blocks);
+    }
+}
