@@ -277,6 +277,20 @@ where
     nonce: Nonce<A, Self>,
 }
 
+impl<A> NewStream<A> for StreamBE32<A>
+where
+    A: AeadInPlace,
+    A::NonceSize: Sub<U5>,
+    <<A as AeadInPlace>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
+{
+    fn from_aead(aead: A, nonce: &Nonce<A, Self>) -> Self {
+        Self {
+            aead,
+            nonce: nonce.clone(),
+        }
+    }
+}
+
 impl<A> StreamPrimitive<A> for StreamBE32<A>
 where
     A: AeadInPlace,
@@ -350,6 +364,20 @@ where
 
     /// Nonce (sans STREAM overhead)
     nonce: Nonce<A, Self>,
+}
+
+impl<A> NewStream<A> for StreamLE31<A>
+where
+    A: AeadInPlace,
+    A::NonceSize: Sub<U4>,
+    <<A as AeadInPlace>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
+{
+    fn from_aead(aead: A, nonce: &Nonce<A, Self>) -> Self {
+        Self {
+            aead,
+            nonce: nonce.clone(),
+        }
+    }
 }
 
 impl<A> StreamPrimitive<A> for StreamLE31<A>
