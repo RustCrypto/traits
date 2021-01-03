@@ -290,5 +290,11 @@ impl fmt::Display for VerifyError {
     }
 }
 
+impl From<PhfError> for VerifyError {
+    fn from(_: PhfError) -> VerifyError {
+        VerifyError
+    }
+}
+
 #[cfg(feature = "std")]
 impl std::error::Error for VerifyError {}

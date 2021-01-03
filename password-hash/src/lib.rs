@@ -76,6 +76,25 @@ pub trait PasswordHasher {
         salt: Salt,
         params: Params,
     ) -> Result<PasswordHash, PhfError>;
+
+    /// Compute this password hashing function against the provided password
+    /// using the parameters from the provided password hash and see if the
+    /// computed output matches.
+    fn verify_password(&self, password: &[u8], hash: &PasswordHash) -> Result<(), VerifyError> {
+        if let (Some(salt), Some(expected_output)) = (&hash.salt, &hash.hash) {
+            let computed_hash =
+                self.hash_password(Some(hash.algorithm), password, *salt, hash.params.clone())?;
+
+            if let Some(computed_output) = &computed_hash.hash {
+                // See notes on `Output` about the use of a constant-time comparison
+                if expected_output == computed_output {
+                    return Ok(());
+                }
+            }
+        }
+
+        Err(VerifyError)
+    }
 }
 
 /// Password hash.
@@ -151,23 +170,9 @@ impl PasswordHash {
         phfs: &[&dyn PasswordHasher],
         password: impl AsRef<[u8]>,
     ) -> Result<(), VerifyError> {
-        if let (Some(salt), Some(expected_hash)) = (&self.salt, &self.hash) {
-            for &phf in phfs {
-                // TODO(tarcieri): pass in the algorithm?
-                if let Ok(PasswordHash {
-                    hash: Some(actual_hash),
-                    ..
-                }) = phf.hash_password(
-                    Some(self.algorithm),
-                    password.as_ref(),
-                    *salt,
-                    self.params.clone(),
-                ) {
-                    // See notes on `Output` about the use of a constant-time comparison
-                    if expected_hash == &actual_hash {
-                        return Ok(());
-                    }
-                }
+        for &phf in phfs {
+            if phf.verify_password(password.as_ref(), self).is_ok() {
+                return Ok(());
             }
         }
 
