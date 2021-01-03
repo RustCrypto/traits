@@ -17,23 +17,9 @@ use crate::{
     b64,
     errors::{B64Error, ParseError},
 };
-use core::{
-    convert::TryFrom,
-    fmt::{self, Write},
-    str::{self, FromStr},
-};
+use core::{convert::TryFrom, fmt, str};
 
 /// Maximum size of a parameter value in ASCII characters.
-///
-/// This value is selected based on the maximum value size used in the
-/// [Argon2 Encoding][1] as described in the PHC string format specification.
-///
-/// Namely the `data` parameter, when encoded as B64, can be up to 43
-/// characters.
-///
-/// This implementation rounds that up to 48 as a safe maximum limit.
-///
-/// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
 const MAX_LENGTH: usize = 48;
 
 /// Type used to represent decimal (i.e. integer) values.
@@ -41,38 +27,121 @@ pub type Decimal = i32;
 
 /// Algorithm parameter value.
 ///
+/// Provides an enum over [`Decimal`] and string (i.e. [`ValueStr`]) values
+/// to allow ergonomically using and parsing integer values, which is the
+/// main use case for this type.
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum Value<'a> {
+    /// Decimal value.
+    Decimal(Decimal),
+
+    /// String value.
+    Str(ValueStr<'a>),
+}
+
+impl<'a> Value<'a> {
+    /// Parse a [`Value`] from the provided `str`, validating it according to
+    /// the PHC string format's rules.
+    pub fn new(input: &'a str) -> Result<Self, ParseError> {
+        ValueStr::new(input).map(Value::Str)
+    }
+
+    /// Borrow the inner value as a `str`, if it is one.
+    ///
+    /// Returns `None` if the inner value is a [`Value::Decimal`].
+    pub fn as_str(&self) -> Option<&'a str> {
+        match self {
+            Self::Decimal(_) => None,
+            Self::Str(s) => Some(s.as_str()),
+        }
+    }
+
+    /// Parse a [`Decimal`] from this [`Value`].
+    ///
+    /// If this value is a [`Value::Decimal`], the decimal value is returned,
+    /// otherwise if it's a [`Value::Str`] the value is parsed using the
+    /// [`ValueStr::decimal`] method.
+    pub fn decimal(&self) -> Result<Decimal, ParseError> {
+        match self {
+            Self::Decimal(x) => Ok(*x),
+            Self::Str(s) => s.decimal(),
+        }
+    }
+
+    /// Does this value parse successfully as a decimal?
+    pub fn is_decimal(&self) -> bool {
+        self.decimal().is_ok()
+    }
+}
+
+impl<'a> From<Decimal> for Value<'a> {
+    fn from(decimal: Decimal) -> Value<'a> {
+        Value::Decimal(decimal)
+    }
+}
+
+impl<'a> TryFrom<u32> for Value<'a> {
+    type Error = ParseError;
+
+    fn try_from(decimal: u32) -> Result<Value<'a>, ParseError> {
+        i32::try_from(decimal)
+            .ok()
+            .map(Into::into)
+            .ok_or_else(ParseError::too_long)
+    }
+}
+
+impl<'a> TryFrom<&'a str> for Value<'a> {
+    type Error = ParseError;
+
+    fn try_from(input: &'a str) -> Result<Self, ParseError> {
+        Self::new(input)
+    }
+}
+
+impl<'a> fmt::Display for Value<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Decimal(x) => write!(f, "{}", x),
+            Self::Str(s) => f.write_str(s.as_str()),
+        }
+    }
+}
+
+impl<'a> fmt::Debug for Value<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Decimal(x) => f.debug_tuple("Value::Decimal").field(x).finish(),
+            Self::Str(s) => f.debug_tuple("Value::Str").field(s).finish(),
+        }
+    }
+}
+
+/// Algorithm parameter value string.
+///
 /// Parameter values are defined in the [PHC string format specification][1].
 ///
 /// # Constraints
 /// - ASCII-encoded string consisting of the characters `[a-zA-Z0-9/+.-]`
 ///   (lowercase letters, digits, and the minus sign)
 /// - Minimum length: 0 (i.e. empty values are allowed)
-/// - Maximum length: 32 ASCII characters (i.e. 32-bytes)
+/// - Maximum length: 48 ASCII characters (i.e. 48-bytes)
 ///
 /// # Additional Notes
 /// The PHC spec allows for algorithm-defined maximum lengths for parameter
 /// values, however in the interest of interoperability this library defines a
 /// [`Value::max_len`] of 48 ASCII characters.
 ///
-/// See method documentation for more information.
-///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 /// [2]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
-#[derive(Copy, Clone, Eq, Hash, PartialEq, PartialOrd, Ord)]
-pub struct Value {
-    /// Byte array containing an ASCII-encoded string.
-    bytes: [u8; MAX_LENGTH],
+#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq, PartialOrd, Ord)]
+pub struct ValueStr<'a>(&'a str);
 
-    /// Length of the string in ASCII characters (i.e. bytes).
-    length: u8,
-}
-
-impl Value {
-    /// Maximum length of an [`Value`] - 48 ASCII characters (i.e. 48-bytes).
+impl<'a> ValueStr<'a> {
+    /// Maximum length of an [`ValueStr`] - 48 ASCII characters (i.e. 48-bytes).
     ///
     /// This value is selected based on the maximum value size used in the
     /// [Argon2 Encoding][1] as described in the PHC string format specification.
-    ///
     /// Namely the `data` parameter, when encoded as B64, can be up to 43
     /// characters.
     ///
@@ -83,28 +152,25 @@ impl Value {
         MAX_LENGTH
     }
 
-    /// Create a new, empty [`Value`].
-    pub fn new() -> Self {
-        Self::default()
+    /// Parse a [`ValueStr`] from the provided `str`, validating it according to
+    /// the PHC string format's rules.
+    pub fn new(input: &'a str) -> Result<Self, ParseError> {
+        let too_long = input.as_bytes().len() > MAX_LENGTH;
+
+        // Check that the characters are permitted in a PHC parameter value.
+        assert_valid_value(input).map_err(|mut e| {
+            e.too_long = too_long;
+            e
+        })?;
+
+        if too_long {
+            return Err(ParseError::too_long());
+        }
+
+        Ok(Self(input))
     }
 
-    /// Encode the given byte slice as [`b64`] and store it in a [`Value`].
-    ///
-    /// Examples of "B64"-encoded parameters in practice are the `keyid` and
-    /// `data` parameters used by the [Argon2 Encoding][1] as described in the
-    /// PHC string format specification.
-    ///
-    /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
-    pub fn b64_encode(input: &[u8]) -> Result<Self, B64Error> {
-        let mut bytes = [0u8; MAX_LENGTH];
-        let encoded_len = b64::encode(input, &mut bytes)?.len();
-        Ok(Self {
-            bytes,
-            length: encoded_len as u8,
-        })
-    }
-
-    /// Attempt to decode a [`b64`]-encoded [`Value`], writing the decoded
+    /// Attempt to decode a [`b64`]-encoded [`ValueStr`], writing the decoded
     /// result into the provided buffer, and returning a slice of the buffer
     /// containing the decoded result on success.
     ///
@@ -113,18 +179,18 @@ impl Value {
     /// PHC string format specification.
     ///
     /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
-    pub fn b64_decode<'a>(&self, buf: &'a mut [u8]) -> Result<&'a [u8], B64Error> {
+    pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8], B64Error> {
         b64::decode(self.as_str(), buf)
     }
 
-    /// Borrow this value as bytes.
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.bytes[..(self.length as usize)]
+    /// Borrow this value as a `str`.
+    pub fn as_str(&self) -> &'a str {
+        self.0
     }
 
-    /// Borrow this value as a `str`.
-    pub fn as_str(&self) -> &str {
-        str::from_utf8(self.as_bytes()).expect("malformed PHC param")
+    /// Borrow this value as bytes.
+    pub fn as_bytes(&self) -> &'a [u8] {
+        self.as_str().as_bytes()
     }
 
     /// Get the length of this value in ASCII characters.
@@ -137,7 +203,7 @@ impl Value {
         self.as_str().is_empty()
     }
 
-    /// Attempt to parse this [`Value`] as a PHC-encoded decimal (i.e. integer).
+    /// Attempt to parse this [`ValueStr`] as a PHC-encoded decimal (i.e. integer).
     ///
     /// Decimal values are integers which follow the rules given in the
     /// ["Decimal Encoding" section of the PHC string format specification][1].
@@ -201,108 +267,39 @@ impl Value {
     }
 }
 
-impl AsRef<str> for Value {
+impl<'a> AsRef<str> for ValueStr<'a> {
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl Default for Value {
-    fn default() -> Self {
-        Self {
-            bytes: [0u8; MAX_LENGTH],
-            length: 0,
-        }
-    }
-}
-
-impl FromStr for Value {
-    type Err = ParseError;
-
-    fn from_str(input: &str) -> Result<Self, ParseError> {
-        // Check that the characters are permitted in a PHC parameter value.
-        assert_valid_value(input).map_err(|mut e| {
-            e.too_long = input.as_bytes().len() > MAX_LENGTH;
-            e
-        })?;
-
-        let input = input.as_bytes();
-        let mut bytes = [0u8; MAX_LENGTH];
-        let output = bytes.get_mut(..input.len());
-
-        if let Some(out) = output {
-            out.copy_from_slice(input);
-            let length = input.len() as u8;
-            Ok(Self { bytes, length })
-        } else {
-            Err(ParseError::too_long())
-        }
-    }
-}
-
-impl From<Decimal> for Value {
-    fn from(decimal: Decimal) -> Value {
-        let mut value = Value::default();
-        write!(&mut value, "{}", decimal).expect("decimal conversion error");
-        value
-    }
-}
-
-impl TryFrom<u32> for Value {
+impl<'a> TryFrom<&'a str> for ValueStr<'a> {
     type Error = ParseError;
 
-    fn try_from(decimal: u32) -> Result<Value, ParseError> {
-        i32::try_from(decimal)
-            .ok()
-            .map(Into::into)
-            .ok_or_else(ParseError::too_long)
+    fn try_from(input: &'a str) -> Result<Self, ParseError> {
+        Self::new(input)
     }
 }
 
-impl TryFrom<Value> for Decimal {
+impl<'a> TryFrom<ValueStr<'a>> for Decimal {
     type Error = ParseError;
 
-    fn try_from(value: Value) -> Result<Decimal, ParseError> {
+    fn try_from(value: ValueStr<'a>) -> Result<Decimal, ParseError> {
         Decimal::try_from(&value)
     }
 }
 
-impl TryFrom<&Value> for Decimal {
+impl<'a> TryFrom<&ValueStr<'a>> for Decimal {
     type Error = ParseError;
 
-    fn try_from(value: &Value) -> Result<Decimal, ParseError> {
+    fn try_from(value: &ValueStr<'a>) -> Result<Decimal, ParseError> {
         value.decimal()
     }
 }
 
-impl fmt::Display for Value {
+impl<'a> fmt::Display for ValueStr<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
-    }
-}
-
-impl fmt::Debug for Value {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_tuple("Value").field(&self.as_str()).finish()
-    }
-}
-
-impl Write for Value {
-    fn write_str(&mut self, input: &str) -> fmt::Result {
-        // Check that the characters are permitted in a PHC parameter value.
-        assert_valid_value(input).map_err(|_| fmt::Error)?;
-
-        let bytes = input.as_bytes();
-        let length = self.length as usize;
-
-        if length + bytes.len() > MAX_LENGTH {
-            return Err(fmt::Error);
-        }
-
-        self.bytes[length..(length + bytes.len())].copy_from_slice(bytes);
-        self.length += bytes.len() as u8;
-
-        Ok(())
     }
 }
 
@@ -327,7 +324,7 @@ fn is_char_valid(c: char) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::Value;
+    use super::ValueStr;
     use core::convert::TryFrom;
 
     // Invalid value examples
@@ -344,7 +341,7 @@ mod tests {
         let valid_decimals = &[("0", 0i32), ("1", 1i32), ("2147483647", i32::MAX)];
 
         for &(s, i) in valid_decimals {
-            let value = s.parse::<Value>().unwrap();
+            let value = ValueStr::new(s).unwrap();
             assert!(value.is_decimal());
             assert_eq!(value.decimal().unwrap(), i)
         }
@@ -352,21 +349,21 @@ mod tests {
 
     #[test]
     fn reject_decimal_with_leading_zero() {
-        let value = "01".parse::<Value>().unwrap();
+        let value = ValueStr::new("01").unwrap();
         let err = i32::try_from(value).err().unwrap();
         assert_eq!(err.invalid_char, Some('0'));
     }
 
     #[test]
     fn reject_overlong_decimal() {
-        let value = "2147483648".parse::<Value>().unwrap();
+        let value = ValueStr::new("2147483648").unwrap();
         let err = i32::try_from(value).err().unwrap();
         assert!(err.too_long);
     }
 
     #[test]
     fn reject_negative() {
-        let value = "-1".parse::<Value>().unwrap();
+        let value = ValueStr::new("-1").unwrap();
         let err = i32::try_from(value).err().unwrap();
         assert_eq!(err.invalid_char, Some('-'));
     }
@@ -388,28 +385,28 @@ mod tests {
         ];
 
         for &example in &valid_examples {
-            let value = example.parse::<Value>().unwrap();
+            let value = ValueStr::new(example).unwrap();
             assert_eq!(value.as_str(), example);
         }
     }
 
     #[test]
     fn reject_invalid_char() {
-        let err = INVALID_CHAR.parse::<Value>().err().unwrap();
+        let err = ValueStr::new(INVALID_CHAR).err().unwrap();
         assert_eq!(err.invalid_char, Some(';'));
         assert!(!err.too_long);
     }
 
     #[test]
     fn reject_too_long() {
-        let err = INVALID_TOO_LONG.parse::<Value>().err().unwrap();
+        let err = ValueStr::new(INVALID_TOO_LONG).err().unwrap();
         assert_eq!(err.invalid_char, None);
         assert!(err.too_long);
     }
 
     #[test]
     fn reject_invalid_char_and_too_long() {
-        let err = INVALID_CHAR_AND_TOO_LONG.parse::<Value>().err().unwrap();
+        let err = ValueStr::new(INVALID_CHAR_AND_TOO_LONG).err().unwrap();
         assert_eq!(err.invalid_char, Some('!'));
         assert!(err.too_long);
     }

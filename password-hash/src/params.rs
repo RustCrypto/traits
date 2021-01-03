@@ -2,7 +2,7 @@
 
 mod value;
 
-pub use self::value::{Decimal, Value};
+pub use self::value::{Decimal, Value, ValueStr};
 
 use crate::{
     errors::{ParamsError, ParseError},
@@ -17,7 +17,7 @@ use core::{
 };
 
 /// Individual parameter name/value pair.
-pub type Pair<'a> = (Ident<'a>, Value);
+pub type Pair<'a> = (Ident<'a>, Value<'a>);
 
 /// Delimiter character between name/value pairs.
 pub(crate) const PAIR_DELIMITER: char = '=';
@@ -67,7 +67,7 @@ impl<'a> Params<'a> {
     }
 
     /// Add another pair to the [`Params`].
-    pub fn add(mut self, name: Ident<'a>, value: Value) -> Result<Self, ParamsError> {
+    pub fn add(mut self, name: Ident<'a>, value: Value<'a>) -> Result<Self, ParamsError> {
         for entry in &mut self.pairs {
             match entry {
                 Some((n, _)) => {
@@ -89,7 +89,7 @@ impl<'a> Params<'a> {
     }
 
     /// Get a parameter value by name.
-    pub fn get(&self, name: Ident<'a>) -> Option<&Value> {
+    pub fn get(&self, name: Ident<'a>) -> Option<&Value<'a>> {
         for entry in &self.pairs {
             match entry {
                 Some((n, v)) => {
@@ -164,7 +164,7 @@ impl<'a> TryFrom<&'a str> for Params<'a> {
                 return Err(ParseError::too_long().into());
             }
 
-            params = params.add(name.try_into()?, value.parse()?)?;
+            params = params.add(name.try_into()?, value.try_into()?)?;
         }
 
         Ok(params)
@@ -172,18 +172,18 @@ impl<'a> TryFrom<&'a str> for Params<'a> {
 }
 
 impl<'a> Index<Ident<'a>> for Params<'a> {
-    type Output = Value;
+    type Output = Value<'a>;
 
-    fn index(&self, name: Ident<'a>) -> &Value {
+    fn index(&self, name: Ident<'a>) -> &Value<'a> {
         self.get(name)
             .unwrap_or_else(|| panic!("no parameter with name `{}`", name))
     }
 }
 
 impl<'a> Index<&'a str> for Params<'a> {
-    type Output = Value;
+    type Output = Value<'a>;
 
-    fn index(&self, name: &'a str) -> &Value {
+    fn index(&self, name: &'a str) -> &Value<'a> {
         &self[Ident::try_from(name).expect("invalid parameter name")]
     }
 }
@@ -209,7 +209,7 @@ impl<'a> fmt::Debug for Params<'a> {
         f.debug_map()
             .entries(
                 self.iter()
-                    .map(|&(ref name, ref value)| (name.as_ref(), value.as_ref())),
+                    .map(|&(ref name, ref value)| (name.as_str(), value)),
             )
             .finish()
     }
