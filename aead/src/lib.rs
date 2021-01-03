@@ -32,6 +32,10 @@ extern crate std;
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
+#[cfg(feature = "stream")]
+#[cfg_attr(docsrs, doc(cfg(feature = "stream")))]
+pub mod stream;
+
 pub use generic_array::{self, typenum::consts};
 
 #[cfg(feature = "heapless")]
