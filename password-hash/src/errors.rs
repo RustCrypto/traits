@@ -1,6 +1,6 @@
 //! Error types.
 
-use crate::{Algorithm, Ident};
+use crate::Ident;
 use core::fmt;
 
 #[cfg(docsrs)]
@@ -180,7 +180,7 @@ impl std::error::Error for ParseError {}
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum PhfError {
     /// Unsupported algorithm.
-    Algorithm(Algorithm),
+    Algorithm(Ident),
 
     /// Cryptographic error.
     Crypto,

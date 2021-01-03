@@ -16,7 +16,5 @@ categories = ["cryptography", "no-std"]
 keywords = ["crypt", "mcf", "password", "pbkdf", "phc"]
 
 [features]
-default = ["registry"]
 alloc = []
 std = ["alloc"]
-registry = []

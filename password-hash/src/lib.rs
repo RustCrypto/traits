@@ -41,7 +41,6 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-pub mod algorithm;
 pub mod b64;
 pub mod errors;
 pub mod params;
@@ -51,7 +50,6 @@ mod output;
 mod salt;
 
 pub use crate::{
-    algorithm::Algorithm,
     errors::{HashError, PhfError, VerifyError},
     ident::Ident,
     output::Output,
@@ -73,7 +71,7 @@ pub trait PasswordHashingFunction {
     /// parameters for a given algorithm.
     fn hash_password(
         &self,
-        alg: Option<Algorithm>,
+        algorithm: Option<Ident>,
         password: &[u8],
         salt: Salt,
         params: Params,
@@ -116,7 +114,7 @@ pub struct PasswordHash {
     ///
     /// This corresponds to the `<id>` field in a PHC string, a.k.a. the
     /// symbolic name for the function.
-    pub algorithm: Algorithm,
+    pub algorithm: Ident,
 
     /// Algorithm-specific [`Params`].
     ///
@@ -201,7 +199,7 @@ impl FromStr for PasswordHash {
         let algorithm = fields
             .next()
             .ok_or_else(ParseError::default)
-            .and_then(Algorithm::from_str)?;
+            .and_then(Ident::from_str)?;
 
         let mut params = Params::new();
         let mut salt = None;
@@ -253,16 +251,5 @@ impl fmt::Display for PasswordHash {
         }
 
         Ok(())
-    }
-}
-
-impl From<Algorithm> for PasswordHash {
-    fn from(algorithm: Algorithm) -> PasswordHash {
-        PasswordHash {
-            algorithm,
-            params: Params::new(),
-            salt: None,
-            hash: None,
-        }
     }
 }
