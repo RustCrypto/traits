@@ -59,11 +59,11 @@ pub use crate::{
 
 use core::{fmt, str::FromStr};
 
-/// Separator character.
-const SEPARATOR: char = '$';
+/// Separator character used in password hashes (e.g. `$6$...`).
+const PASSWORD_HASH_SEPARATOR: char = '$';
 
 /// Trait for password hashing functions.
-pub trait PasswordHashingFunction {
+pub trait PasswordHasher {
     /// Compute a [`PasswordHash`] from the given [`Algorithm`] (or the
     /// recommended default), password, salt, and optional [`Params`].
     ///
@@ -136,7 +136,7 @@ pub struct PasswordHash {
 impl PasswordHash {
     /// Generate a password hash using the supplied algorithm.
     pub fn generate(
-        phf: impl PasswordHashingFunction,
+        phf: impl PasswordHasher,
         password: impl AsRef<[u8]>,
         salt: Salt,
         params: Params,
@@ -148,7 +148,7 @@ impl PasswordHash {
     /// [`PasswordHashingFunction`] objects.
     pub fn verify_password(
         &self,
-        phfs: &[&dyn PasswordHashingFunction],
+        phfs: &[&dyn PasswordHasher],
         password: impl AsRef<[u8]>,
     ) -> Result<(), VerifyError> {
         if let (Some(salt), Some(expected_hash)) = (&self.salt, &self.hash) {
@@ -185,7 +185,7 @@ impl FromStr for PasswordHash {
             return Err(ParseError::default().into());
         }
 
-        let mut fields = s.split(SEPARATOR);
+        let mut fields = s.split(PASSWORD_HASH_SEPARATOR);
         let beginning = fields.next().expect("no first field");
 
         if let Some(first_char) = beginning.chars().next() {
@@ -236,18 +236,18 @@ impl FromStr for PasswordHash {
 
 impl fmt::Display for PasswordHash {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}{}", SEPARATOR, self.algorithm)?;
+        write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, self.algorithm)?;
 
         if !self.params.is_empty() {
-            write!(f, "{}{}", SEPARATOR, self.params)?;
+            write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, self.params)?;
         }
 
         if let Some(salt) = &self.salt {
-            write!(f, "{}{}", SEPARATOR, salt)?;
+            write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, salt)?;
         }
 
         if let Some(hash) = &self.hash {
-            write!(f, "{}{}", SEPARATOR, hash)?;
+            write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, hash)?;
         }
 
         Ok(())

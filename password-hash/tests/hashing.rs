@@ -1,6 +1,6 @@
 /// Password hashing tests
 pub use password_hash::{
-    Ident, Output, Params, PasswordHash, PasswordHashingFunction, PhfError, Salt, VerifyError,
+    Ident, Output, Params, PasswordHash, PasswordHasher, PhfError, Salt, VerifyError,
 };
 
 const ALG: Ident = Ident::new("example");
@@ -8,7 +8,7 @@ const ALG: Ident = Ident::new("example");
 /// Stub password hashing function for testing.
 pub struct StubFunction;
 
-impl PasswordHashingFunction for StubFunction {
+impl PasswordHasher for StubFunction {
     fn hash_password(
         &self,
         algorithm: Option<Ident>,

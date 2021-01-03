@@ -4,7 +4,7 @@ use crate::Ident;
 use core::fmt;
 
 #[cfg(docsrs)]
-use crate::PasswordHashingFunction;
+use crate::PasswordHasher;
 
 /// "B64" encoding errors.
 ///
