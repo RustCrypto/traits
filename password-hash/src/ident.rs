@@ -17,11 +17,7 @@
 //! [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 
 use crate::errors::ParseError;
-use core::{
-    fmt,
-    ops::Deref,
-    str::{self, FromStr},
-};
+use core::{convert::TryFrom, fmt, ops::Deref, str};
 
 /// Maximum size of an identifier.
 const MAX_LENGTH: usize = 32;
@@ -39,15 +35,9 @@ const MAX_LENGTH: usize = 32;
 ///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 #[derive(Copy, Clone, Eq, Hash, PartialEq, PartialOrd, Ord)]
-pub struct Ident {
-    /// Byte array containing an ASCII-encoded string.
-    bytes: [u8; MAX_LENGTH],
+pub struct Ident<'a>(&'a str);
 
-    /// Length of the string in ASCII characters (i.e. bytes).
-    length: u8,
-}
-
-impl Ident {
+impl<'a> Ident<'a> {
     /// Maximum length of an [`Ident`] - 32 ASCII characters (i.e. 32-bytes).
     ///
     /// This value corresponds to the maximum size of a function symbolic names
@@ -68,7 +58,7 @@ impl Ident {
     ///
     /// For fallible non-panicking parsing of an [`Ident`], use the [`FromStr`]
     /// impl on this type instead, e.g. `s.parse::<Ident>()`.
-    pub const fn new(s: &str) -> Self {
+    pub const fn new(s: &'a str) -> Self {
         let input = s.as_bytes();
 
         /// Constant panicking assertion.
@@ -80,106 +70,101 @@ impl Ident {
             };
         }
 
-        const_assert!(!input.is_empty(), "PHC string ident can't be empty");
-        const_assert!(input.len() <= MAX_LENGTH, "PHC string ident too long");
+        const_assert!(!input.is_empty(), "PHC ident string can't be empty");
+        const_assert!(input.len() <= MAX_LENGTH, "PHC ident string too long");
 
-        // TODO(tarcieri): use `const_mut_ref` when stable.
-        // See: <https://github.com/rust-lang/rust/issues/57349>
-        macro_rules! validate_and_extract_byte {
-            ($($pos:expr),+) => {{
-                [$(
+        macro_rules! validate_chars {
+            ($($pos:expr),+) => {
+                $(
                     if $pos < input.len() {
-                        let byte = input[$pos];
-
                         const_assert!(
-                            matches!(byte, b'a'..=b'z' | b'0'..=b'9' | b'-'),
+                            is_char_valid(input[$pos]),
                             "invalid character in PHC string ident"
                         );
-
-                        byte
-                    } else {
-                        0u8
-                    },
-                )+]
-             }};
+                    }
+                )+
+            };
         }
 
-        #[rustfmt::skip]
-        let bytes = validate_and_extract_byte![
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-            17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
-        ];
+        validate_chars!(
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+            24, 25, 26, 27, 28, 29, 30, 31
+        );
 
-        Self {
-            bytes,
-            length: input.len() as u8,
-        }
+        Self(s)
+    }
+
+    /// Borrow this ident as a `str`
+    pub fn as_str(&self) -> &'a str {
+        self.0
     }
 }
 
-impl AsRef<str> for Ident {
+impl<'a> AsRef<str> for Ident<'a> {
     fn as_ref(&self) -> &str {
-        str::from_utf8(&self.bytes[..(self.length as usize)]).expect("malformed PHC ident")
+        self.as_str()
     }
 }
 
-impl Deref for Ident {
+impl<'a> Deref for Ident<'a> {
     type Target = str;
 
     fn deref(&self) -> &str {
-        self.as_ref()
+        self.as_str()
     }
 }
 
-impl FromStr for Ident {
-    type Err = ParseError;
+// Note: this uses `TryFrom` instead of `FromStr` to support a lifetime on
+// the `str` the value is being parsed from.
+impl<'a> TryFrom<&'a str> for Ident<'a> {
+    type Error = ParseError;
 
-    fn from_str(s: &str) -> Result<Self, ParseError> {
-        let input = s.as_bytes();
-
-        if input.is_empty() {
+    fn try_from(s: &'a str) -> Result<Self, ParseError> {
+        if s.is_empty() {
             return Err(ParseError::default());
         }
 
-        let mut bytes = [0u8; MAX_LENGTH];
-        let output = bytes.get_mut(..input.len());
+        let bytes = s.as_bytes();
+        let too_long = bytes.len() > MAX_LENGTH;
 
-        for &char in input {
-            if !matches!(char, b'a'..=b'z' | b'0'..=b'9' | b'-') {
+        for &c in bytes {
+            if !is_char_valid(c) {
                 return Err(ParseError {
-                    invalid_char: Some(char.into()),
-                    too_long: output.is_none(),
+                    invalid_char: Some(c.into()),
+                    too_long,
                 });
             }
         }
 
-        match output {
-            Some(out) => out.copy_from_slice(input),
-            None => return Err(ParseError::too_long()),
+        if too_long {
+            return Err(ParseError::too_long());
         }
 
-        Ok(Self {
-            bytes,
-            length: input.len() as u8,
-        })
+        Ok(Self::new(s))
     }
 }
 
-impl fmt::Display for Ident {
+impl<'a> fmt::Display for Ident<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&*self)
     }
 }
 
-impl fmt::Debug for Ident {
+impl<'a> fmt::Debug for Ident<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("Ident").field(&self.as_ref()).finish()
     }
 }
 
+/// Ensure the given ASCII character (i.e. byte) is allowed in an [`Ident`].
+const fn is_char_valid(c: u8) -> bool {
+    matches!(c, b'a'..=b'z' | b'0'..=b'9' | b'-')
+}
+
 #[cfg(test)]
 mod tests {
     use super::Ident;
+    use core::convert::TryFrom;
 
     // Invalid ident examples
     const INVALID_EMPTY: &str = "";
@@ -193,9 +178,9 @@ mod tests {
 
         for &example in &valid_examples {
             let const_val = Ident::new(example);
-            let from_str_val = example.parse::<Ident>().unwrap();
+            let try_from_val = Ident::try_from(example).unwrap();
             assert_eq!(example, &*const_val);
-            assert_eq!(example, &*from_str_val);
+            assert_eq!(example, &*try_from_val);
         }
     }
 
@@ -207,7 +192,7 @@ mod tests {
 
     #[test]
     fn reject_empty_fallible() {
-        let err = INVALID_EMPTY.parse::<Ident>().err().unwrap();
+        let err = Ident::try_from(INVALID_EMPTY).err().unwrap();
         assert_eq!(err.invalid_char, None);
         assert!(!err.too_long);
     }
@@ -220,7 +205,7 @@ mod tests {
 
     #[test]
     fn reject_invalid_char_fallible() {
-        let err = INVALID_CHAR.parse::<Ident>().err().unwrap();
+        let err = Ident::try_from(INVALID_CHAR).err().unwrap();
         assert_eq!(err.invalid_char, Some(';'));
         assert!(!err.too_long);
     }
@@ -233,7 +218,7 @@ mod tests {
 
     #[test]
     fn reject_too_long_fallible() {
-        let err = INVALID_TOO_LONG.parse::<Ident>().err().unwrap();
+        let err = Ident::try_from(INVALID_TOO_LONG).err().unwrap();
         assert_eq!(err.invalid_char, None);
         assert!(err.too_long);
     }
@@ -246,7 +231,7 @@ mod tests {
 
     #[test]
     fn reject_invalid_char_and_too_long_fallible() {
-        let err = INVALID_CHAR_AND_TOO_LONG.parse::<Ident>().err().unwrap();
+        let err = Ident::try_from(INVALID_CHAR_AND_TOO_LONG).err().unwrap();
         assert_eq!(err.invalid_char, Some('!'));
         assert!(err.too_long);
     }

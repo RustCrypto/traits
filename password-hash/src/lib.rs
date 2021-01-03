@@ -57,7 +57,7 @@ pub use crate::{
     salt::Salt,
 };
 
-use core::{fmt, str::FromStr};
+use core::{convert::TryFrom, fmt};
 
 /// Separator character used in password hashes (e.g. `$6$...`).
 const PASSWORD_HASH_SEPARATOR: char = '$';
@@ -69,18 +69,18 @@ pub trait PasswordHasher {
     ///
     /// Use [`Params::new`] or [`Params::default`] to use the default
     /// parameters for a given algorithm.
-    fn hash_password(
+    fn hash_password<'a>(
         &self,
-        algorithm: Option<Ident>,
+        algorithm: Option<Ident<'a>>,
         password: &[u8],
         salt: Salt,
-        params: Params,
-    ) -> Result<PasswordHash, PhfError>;
+        params: Params<'a>,
+    ) -> Result<PasswordHash<'a>, PhfError>;
 
     /// Compute this password hashing function against the provided password
     /// using the parameters from the provided password hash and see if the
     /// computed output matches.
-    fn verify_password(&self, password: &[u8], hash: &PasswordHash) -> Result<(), VerifyError> {
+    fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<(), VerifyError> {
         if let (Some(salt), Some(expected_output)) = (&hash.salt, &hash.hash) {
             let computed_hash =
                 self.hash_password(Some(hash.algorithm), password, *salt, hash.params.clone())?;
@@ -128,18 +128,18 @@ pub trait PasswordHasher {
 ///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#specification
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct PasswordHash {
+pub struct PasswordHash<'a> {
     /// Password hashing [`Algorithm`].
     ///
     /// This corresponds to the `<id>` field in a PHC string, a.k.a. the
     /// symbolic name for the function.
-    pub algorithm: Ident,
+    pub algorithm: Ident<'a>,
 
     /// Algorithm-specific [`Params`].
     ///
     /// This corresponds to the set of `$<param>=<value>(,<param>=<value>)*`
     /// name/value pairs in a PHC string.
-    pub params: Params,
+    pub params: Params<'a>,
 
     /// [`Salt`] string for personalizing a password hash output.
     ///
@@ -152,38 +152,9 @@ pub struct PasswordHash {
     pub hash: Option<Output>,
 }
 
-impl PasswordHash {
-    /// Generate a password hash using the supplied algorithm.
-    pub fn generate(
-        phf: impl PasswordHasher,
-        password: impl AsRef<[u8]>,
-        salt: Salt,
-        params: Params,
-    ) -> Result<Self, PhfError> {
-        phf.hash_password(None, password.as_ref(), salt, params)
-    }
-
-    /// Verify this password hash using the specified set of supported
-    /// [`PasswordHashingFunction`] objects.
-    pub fn verify_password(
-        &self,
-        phfs: &[&dyn PasswordHasher],
-        password: impl AsRef<[u8]>,
-    ) -> Result<(), VerifyError> {
-        for &phf in phfs {
-            if phf.verify_password(password.as_ref(), self).is_ok() {
-                return Ok(());
-            }
-        }
-
-        Err(VerifyError)
-    }
-}
-
-impl FromStr for PasswordHash {
-    type Err = HashError;
-
-    fn from_str(s: &str) -> Result<PasswordHash, HashError> {
+impl<'a> PasswordHash<'a> {
+    /// Parse a password hash from a string in the PHC string format.
+    pub fn new(s: &'a str) -> Result<Self, HashError> {
         use errors::ParseError;
 
         if s.is_empty() {
@@ -204,7 +175,7 @@ impl FromStr for PasswordHash {
         let algorithm = fields
             .next()
             .ok_or_else(ParseError::default)
-            .and_then(Ident::from_str)?;
+            .and_then(Ident::try_from)?;
 
         let mut params = Params::new();
         let mut salt = None;
@@ -212,7 +183,7 @@ impl FromStr for PasswordHash {
 
         if let Some(field) = fields.next() {
             if field.contains(params::PAIR_DELIMITER) {
-                params = field.parse()?;
+                params = Params::try_from(field)?;
 
                 if let Some(s) = fields.next() {
                     salt = Some(s.parse()?);
@@ -237,9 +208,45 @@ impl FromStr for PasswordHash {
             hash,
         })
     }
+
+    /// Generate a password hash using the supplied algorithm.
+    pub fn generate(
+        phf: impl PasswordHasher,
+        password: impl AsRef<[u8]>,
+        salt: Salt,
+        params: Params<'a>,
+    ) -> Result<Self, PhfError> {
+        phf.hash_password(None, password.as_ref(), salt, params)
+    }
+
+    /// Verify this password hash using the specified set of supported
+    /// [`PasswordHashingFunction`] objects.
+    pub fn verify_password(
+        &self,
+        phfs: &[&dyn PasswordHasher],
+        password: impl AsRef<[u8]>,
+    ) -> Result<(), VerifyError> {
+        for &phf in phfs {
+            if phf.verify_password(password.as_ref(), self).is_ok() {
+                return Ok(());
+            }
+        }
+
+        Err(VerifyError)
+    }
 }
 
-impl fmt::Display for PasswordHash {
+// Note: this uses `TryFrom` instead of `FromStr` to support a lifetime on
+// the `str` the value is being parsed from.
+impl<'a> TryFrom<&'a str> for PasswordHash<'a> {
+    type Error = HashError;
+
+    fn try_from(s: &'a str) -> Result<Self, HashError> {
+        Self::new(s)
+    }
+}
+
+impl<'a> fmt::Display for PasswordHash<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, self.algorithm)?;
 

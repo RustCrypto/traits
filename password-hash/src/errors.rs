@@ -1,6 +1,5 @@
 //! Error types.
 
-use crate::Ident;
 use core::fmt;
 
 #[cfg(docsrs)]
@@ -180,7 +179,7 @@ impl std::error::Error for ParseError {}
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum PhfError {
     /// Unsupported algorithm.
-    Algorithm(Ident),
+    Algorithm,
 
     /// Cryptographic error.
     Crypto,
@@ -189,7 +188,7 @@ pub enum PhfError {
     Output(OutputError),
 
     /// Invalid parameter.
-    Param(Ident),
+    Param,
 
     /// Invalid password.
     Password,
@@ -198,10 +197,10 @@ pub enum PhfError {
 impl fmt::Display for PhfError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
-            Self::Algorithm(alg) => write!(f, "unsupported algorithm: {}", alg),
+            Self::Algorithm => write!(f, "unsupported algorithm"),
             Self::Crypto => write!(f, "cryptographic error"),
             Self::Output(err) => write!(f, "PHF output error: {}", err),
-            Self::Param(name) => write!(f, "invalid algorithm parameter: {}", name),
+            Self::Param => write!(f, "invalid algorithm parameter"),
             Self::Password => write!(f, "invalid password"),
         }
     }

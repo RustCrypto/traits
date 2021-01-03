@@ -9,18 +9,18 @@ const ALG: Ident = Ident::new("example");
 pub struct StubFunction;
 
 impl PasswordHasher for StubFunction {
-    fn hash_password(
+    fn hash_password<'a>(
         &self,
-        algorithm: Option<Ident>,
+        algorithm: Option<Ident<'a>>,
         password: &[u8],
         salt: Salt,
-        params: Params,
-    ) -> Result<PasswordHash, PhfError> {
+        params: Params<'a>,
+    ) -> Result<PasswordHash<'a>, PhfError> {
         let mut output = Vec::new();
 
         if let Some(alg) = algorithm {
             if alg != ALG {
-                return Err(PhfError::Algorithm(alg));
+                return Err(PhfError::Algorithm);
             }
         }
 
