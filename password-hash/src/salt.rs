@@ -9,6 +9,15 @@ use core::{
     str::{self, FromStr},
 };
 
+#[cfg(feature = "rand_core")]
+use rand_core::{CryptoRng, RngCore};
+
+/// Recommended length of a [`Salt`] according to the [PHC string format][1].
+///
+/// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#function-duties
+#[cfg(feature = "rand_core")]
+const RECOMMENDED_LENGTH: usize = 16;
+
 /// Maximum length of a [`Salt`].
 const MAX_LENGTH: usize = 48;
 
@@ -97,6 +106,28 @@ impl Salt {
     /// (i.e. 64 ASCII characters)
     pub const fn b64_max_len() -> usize {
         (MAX_LENGTH * 4) / 3
+    }
+
+    /// Generate a random [`Salt`] using the provided [`CryptoRng`].
+    ///
+    /// Uses the [PHC string format's recommended guidelines][1] of a 16-byte
+    /// salt value:
+    ///
+    /// > The role of salts is to achieve uniqueness. A random salt is fine for
+    /// > that as long as its length is sufficient; a 16-byte salt would work
+    /// > well (by definition, UUID are very good salts, and they encode over
+    /// > exactly 16 bytes).
+    ///
+    /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#function-duties
+    #[cfg(feature = "rand_core")]
+    pub fn random(mut rng: impl CryptoRng + RngCore) -> Self {
+        let mut bytes = [0u8; MAX_LENGTH];
+        rng.fill_bytes(&mut bytes[..RECOMMENDED_LENGTH]);
+
+        Self {
+            bytes,
+            length: RECOMMENDED_LENGTH as u8,
+        }
     }
 
     /// Create a [`Salt`] from the given byte slice, validating it according
