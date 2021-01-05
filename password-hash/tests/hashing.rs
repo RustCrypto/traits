@@ -13,7 +13,7 @@ impl PasswordHasher for StubFunction {
         &self,
         algorithm: Option<Ident<'a>>,
         password: &[u8],
-        salt: Salt,
+        salt: Salt<'a>,
         params: Params<'a>,
     ) -> Result<PasswordHash<'a>, PhfError> {
         let mut output = Vec::new();
@@ -24,7 +24,7 @@ impl PasswordHasher for StubFunction {
             }
         }
 
-        for slice in &[b"pw", password, b",salt:", salt.as_ref()] {
+        for slice in &[b"pw", password, b",salt:", salt.as_bytes()] {
             output.extend_from_slice(slice);
         }
 
@@ -42,7 +42,7 @@ impl PasswordHasher for StubFunction {
 #[test]
 fn verify_password_hash() {
     let valid_password = "test password";
-    let salt = Salt::new(b"test salt").unwrap();
+    let salt = Salt::new("test-salt").unwrap();
     let params = Params::new();
     let hash = PasswordHash::generate(StubFunction, valid_password, salt, params.clone()).unwrap();
 

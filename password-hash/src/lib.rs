@@ -57,7 +57,10 @@ pub use crate::{
     salt::Salt,
 };
 
-use core::{convert::TryFrom, fmt};
+use core::{
+    convert::{TryFrom, TryInto},
+    fmt,
+};
 
 /// Separator character used in password hashes (e.g. `$6$...`).
 const PASSWORD_HASH_SEPARATOR: char = '$';
@@ -74,7 +77,7 @@ pub trait PasswordHasher {
         &self,
         algorithm: Option<Ident<'a>>,
         password: &[u8],
-        salt: Salt,
+        salt: Salt<'a>,
         params: Params<'a>,
     ) -> Result<PasswordHash<'a>, PhfError>;
 
@@ -145,7 +148,7 @@ pub struct PasswordHash<'a> {
     /// [`Salt`] string for personalizing a password hash output.
     ///
     /// This corresponds to the `<salt>` value in a PHC string.
-    pub salt: Option<Salt>,
+    pub salt: Option<Salt<'a>>,
 
     /// Password hashing function [`Output`], a.k.a. hash/digest.
     ///
@@ -187,10 +190,10 @@ impl<'a> PasswordHash<'a> {
                 params = Params::try_from(field)?;
 
                 if let Some(s) = fields.next() {
-                    salt = Some(s.parse()?);
+                    salt = Some(s.try_into()?);
                 }
             } else {
-                salt = Some(field.parse()?);
+                salt = Some(field.try_into()?);
             }
         }
 
@@ -214,7 +217,7 @@ impl<'a> PasswordHash<'a> {
     pub fn generate(
         phf: impl PasswordHasher,
         password: impl AsRef<[u8]>,
-        salt: Salt,
+        salt: Salt<'a>,
         params: Params<'a>,
     ) -> Result<Self, PhfError> {
         phf.hash_password(None, password.as_ref(), salt, params)
