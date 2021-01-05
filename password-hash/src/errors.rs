@@ -250,8 +250,8 @@ impl std::error::Error for OutputError {}
 /// Salt-related errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum SaltError {
-    /// "B64" encoding error.
-    B64(B64Error),
+    /// Parse errors.
+    Parse(ParseError),
 
     /// Salt too short (min 4-bytes).
     TooShort,
@@ -263,16 +263,16 @@ pub enum SaltError {
 impl fmt::Display for SaltError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
-            Self::B64(err) => write!(f, "{}", err),
+            Self::Parse(err) => write!(f, "{}", err),
             Self::TooShort => f.write_str("salt too short (min 4-bytes)"),
             Self::TooLong => f.write_str("salt too long (max 48-bytes)"),
         }
     }
 }
 
-impl From<B64Error> for SaltError {
-    fn from(err: B64Error) -> SaltError {
-        SaltError::B64(err)
+impl From<ParseError> for SaltError {
+    fn from(err: ParseError) -> SaltError {
+        SaltError::Parse(err)
     }
 }
 
