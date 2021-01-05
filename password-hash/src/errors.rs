@@ -175,7 +175,7 @@ impl fmt::Display for ParseError {
 #[cfg(feature = "std")]
 impl std::error::Error for ParseError {}
 
-/// Errors generating password hashes using a [`PasswordHashingFunction`].
+/// Errors generating password hashes using a [`PasswordHasher`].
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum PhfError {
     /// Unsupported algorithm.
