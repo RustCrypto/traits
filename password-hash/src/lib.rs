@@ -64,8 +64,9 @@ const PASSWORD_HASH_SEPARATOR: char = '$';
 
 /// Trait for password hashing functions.
 pub trait PasswordHasher {
-    /// Compute a [`PasswordHash`] from the given [`Algorithm`] (or the
-    /// recommended default), password, salt, and optional [`Params`].
+    /// Compute a [`PasswordHash`] with the given algorithm [`Ident`]
+    /// (or `None` for the recommended default), password, salt, and optional
+    /// [`Params`].
     ///
     /// Use [`Params::new`] or [`Params::default`] to use the default
     /// parameters for a given algorithm.
@@ -129,7 +130,7 @@ pub trait PasswordHasher {
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#specification
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PasswordHash<'a> {
-    /// Password hashing [`Algorithm`].
+    /// Password hashing algorithm identifier.
     ///
     /// This corresponds to the `<id>` field in a PHC string, a.k.a. the
     /// symbolic name for the function.
@@ -220,7 +221,7 @@ impl<'a> PasswordHash<'a> {
     }
 
     /// Verify this password hash using the specified set of supported
-    /// [`PasswordHashingFunction`] objects.
+    /// [`PasswordHasher`] trait objects.
     pub fn verify_password(
         &self,
         phfs: &[&dyn PasswordHasher],

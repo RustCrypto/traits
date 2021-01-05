@@ -56,8 +56,8 @@ impl<'a> Ident<'a> {
     /// This method is intended for use in a `const` context where instead of
     /// panicking it will cause a compile error.
     ///
-    /// For fallible non-panicking parsing of an [`Ident`], use the [`FromStr`]
-    /// impl on this type instead, e.g. `s.parse::<Ident>()`.
+    /// For fallible non-panicking parsing of an [`Ident`], use the [`TryFrom`]
+    /// impl on this type instead.
     pub const fn new(s: &'a str) -> Self {
         let input = s.as_bytes();
 
