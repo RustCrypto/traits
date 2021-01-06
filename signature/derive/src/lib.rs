@@ -45,6 +45,9 @@ decl_derive! {
     /// complete signature algorithm implementation.
     ///
     /// [`Digest`]: https://docs.rs/digest/latest/digest/trait.Digest.html
+    /// [`DigestSigner`]: https://docs.rs/signature/latest/signature/trait.DigestSigner.html
+    /// [`PrehashSignature`]: https://docs.rs/signature/latest/signature/trait.PrehashSignature.html
+    /// [`PrehashSignature::Digest`]: https://docs.rs/signature/latest/signature/trait.PrehashSignature.html#associated-types
     derive_signer
 }
 
@@ -79,6 +82,9 @@ decl_derive! {
     /// complete signature algorithm implementation.
     ///
     /// [`Digest`]: https://docs.rs/digest/latest/digest/trait.Digest.html
+    /// [`DigestVerifier`]: https://docs.rs/signature/latest/signature/trait.DigestVerifier.html
+    /// [`PrehashSignature`]: https://docs.rs/signature/latest/signature/trait.PrehashSignature.html
+    /// [`PrehashSignature::Digest`]: https://docs.rs/signature/latest/signature/trait.PrehashSignature.html#associated-types
     derive_verifier
 }
 
