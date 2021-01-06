@@ -141,6 +141,18 @@ pub struct PasswordHash<'a> {
     /// symbolic name for the function.
     pub algorithm: Ident<'a>,
 
+    /// Optional version field.
+    ///
+    /// An augmented form of the PHC string format used by Argon2 includes
+    /// an additional version field out-of-band from other parameters:
+    ///
+    /// ```text
+    /// $<id>[$v=<version>][$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
+    /// ```
+    ///
+    /// See: <https://github.com/P-H-C/phc-string-format/pull/4>
+    pub version: Option<Decimal>,
+
     /// Algorithm-specific [`Params`].
     ///
     /// This corresponds to the set of `$<param>=<value>(,<param>=<value>)*`
@@ -179,20 +191,39 @@ impl<'a> PasswordHash<'a> {
             .ok_or(ParseError::TooShort)
             .and_then(Ident::try_from)?;
 
+        let mut version = None;
         let mut params = Params::new();
         let mut salt = None;
         let mut hash = None;
 
-        if let Some(field) = fields.next() {
+        let mut next_field = fields.next();
+
+        if let Some(field) = next_field {
+            // v=<version>
+            if field.starts_with("v=") && !field.contains(params::PARAMS_DELIMITER) {
+                version = Some(ValueStr::new(&field[2..]).and_then(|value| value.decimal())?);
+                next_field = None;
+            }
+        }
+
+        if next_field.is_none() {
+            next_field = fields.next();
+        }
+
+        if let Some(field) = next_field {
+            // <param>=<value>
             if field.contains(params::PAIR_DELIMITER) {
                 params = Params::try_from(field)?;
-
-                if let Some(s) = fields.next() {
-                    salt = Some(s.try_into()?);
-                }
-            } else {
-                salt = Some(field.try_into()?);
+                next_field = None;
             }
+        }
+
+        if next_field.is_none() {
+            next_field = fields.next();
+        }
+
+        if let Some(s) = next_field {
+            salt = Some(s.try_into()?);
         }
 
         if let Some(field) = fields.next() {
@@ -205,6 +236,7 @@ impl<'a> PasswordHash<'a> {
 
         Ok(Self {
             algorithm,
+            version,
             params,
             salt,
             hash,
@@ -251,6 +283,10 @@ impl<'a> TryFrom<&'a str> for PasswordHash<'a> {
 impl<'a> fmt::Display for PasswordHash<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, self.algorithm)?;
+
+        if let Some(version) = self.version {
+            write!(f, "{}v={}", PASSWORD_HASH_SEPARATOR, version)?;
+        }
 
         if !self.params.is_empty() {
             write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, self.params)?;
