@@ -13,7 +13,7 @@ categories    = ["cryptography", "no-std"]
 
 [dependencies]
 async-trait = "0.1"
-signature = { version = "1.2.0", path = ".." }
+signature = { version = "1.3.0", path = ".." }
 
 [features]
 digest = ["signature/digest-preview"]
