@@ -348,7 +348,7 @@ dependencies = [
 
 [[package]]
 name = "signature_derive"
-version = "1.0.0-pre.2"
+version = "1.0.0-pre.3"
 dependencies = [
  "proc-macro2",
  "quote",
