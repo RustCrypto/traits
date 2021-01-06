@@ -67,7 +67,6 @@ pub fn diffie_hellman<C>(
 ) -> SharedSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
     AffinePoint<C>: Copy + Clone + Debug + ToEncodedPoint<C> + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
@@ -107,7 +106,6 @@ where
 pub struct EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
 {
     scalar: NonZeroScalar<C>,
@@ -116,7 +114,6 @@ where
 impl<C> EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
     AffinePoint<C>: Copy + Clone + Debug + ToEncodedPoint<C> + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
@@ -147,7 +144,6 @@ where
 impl<C> From<&EphemeralSecret<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
     AffinePoint<C>: Copy + Clone + Debug + ToEncodedPoint<C> + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
@@ -162,7 +158,6 @@ where
 impl<C> Zeroize for EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
 {
     fn zeroize(&mut self) {
@@ -173,7 +168,6 @@ where
 impl<C> Drop for EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
 {
     fn drop(&mut self) {
@@ -199,7 +193,6 @@ where
 pub struct SharedSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     /// Computed secret value
@@ -209,7 +202,6 @@ where
 impl<C> SharedSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -240,7 +232,6 @@ where
 impl<C> Zeroize for SharedSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     fn zeroize(&mut self) {
@@ -251,7 +242,6 @@ where
 impl<C> Drop for SharedSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     fn drop(&mut self) {

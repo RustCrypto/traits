@@ -114,7 +114,6 @@ where
 impl<C> ToPrivateKey for SecretKey<C>
 where
     C: weierstrass::Curve + AlgorithmParameters + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,

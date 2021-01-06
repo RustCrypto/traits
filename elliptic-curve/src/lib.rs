@@ -60,17 +60,15 @@ pub use rand_core;
 pub use subtle;
 
 #[cfg(feature = "arithmetic")]
-pub use self::{
-    point::{AffinePoint, ProjectiveArithmetic, ProjectivePoint},
-    public_key::PublicKey,
-    scalar::Scalar,
+pub use {
+    crate::{
+        point::{AffinePoint, ProjectiveArithmetic, ProjectivePoint},
+        public_key::PublicKey,
+        scalar::Scalar,
+    },
+    ff::{self, BitView, Field},
+    group::{self, Group},
 };
-#[cfg(feature = "arithmetic")]
-pub use bitvec::view::BitView; // TODO: https://github.com/zkcrypto/ff/pull/40
-#[cfg(feature = "arithmetic")]
-pub use ff::{self, Field};
-#[cfg(feature = "arithmetic")]
-pub use group::{self, Group};
 
 #[cfg(feature = "digest")]
 pub use digest::{self, Digest};

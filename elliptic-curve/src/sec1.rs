@@ -132,7 +132,6 @@ where
     pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Self
     where
         C: Curve + ProjectiveArithmetic,
-        FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
         AffinePoint<C>: ToEncodedPoint<C>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
@@ -171,7 +170,6 @@ where
     pub fn to_untagged_bytes(&self) -> Option<GenericArray<u8, UntaggedPointSize<C>>>
     where
         C: Curve + ProjectiveArithmetic,
-        FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
         AffinePoint<C>: ConditionallySelectable + Default + Decompress<C> + ToEncodedPoint<C>,
     {
@@ -206,7 +204,6 @@ where
     pub fn decompress(&self) -> Option<Self>
     where
         C: Curve + ProjectiveArithmetic,
-        FieldBytes<C>: From<Scalar<C>> + for<'r> From<&'r Scalar<C>>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
         AffinePoint<C>: ConditionallySelectable + Default + Decompress<C> + ToEncodedPoint<C>,
     {
