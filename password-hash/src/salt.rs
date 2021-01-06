@@ -2,7 +2,7 @@
 
 use crate::{
     errors::{B64Error, ParseError},
-    params::ValueStr,
+    ValueStr,
 };
 use core::{
     convert::{TryFrom, TryInto},
