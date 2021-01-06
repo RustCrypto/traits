@@ -5,7 +5,6 @@ use crate::{Curve, FieldBytes, Scalar};
 /// Elliptic curve with projective arithmetic implementation.
 pub trait ProjectiveArithmetic: Curve
 where
-    FieldBytes<Self>: From<Scalar<Self>> + for<'r> From<&'r Scalar<Self>>,
     Scalar<Self>: ff::PrimeField<Repr = FieldBytes<Self>>,
 {
     /// Elliptic curve point in projective coordinates.

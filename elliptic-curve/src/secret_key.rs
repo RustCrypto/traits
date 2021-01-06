@@ -74,7 +74,6 @@ where
     pub fn random(rng: impl CryptoRng + RngCore) -> Self
     where
         C: ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
-        FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
         Self {
@@ -115,7 +114,6 @@ where
     pub fn secret_scalar(&self) -> &NonZeroScalar<C>
     where
         C: ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
-        FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
         &self.secret_value
@@ -127,7 +125,6 @@ where
     pub fn public_key(&self) -> PublicKey<C>
     where
         C: weierstrass::Curve + ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
-        FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
         AffinePoint<C>: Copy + Clone + Debug + Default,
         ProjectivePoint<C>: From<AffinePoint<C>>,
@@ -197,7 +194,6 @@ pub trait SecretValue: Curve {
 impl<C> SecretValue for C
 where
     C: Curve + ProjectiveArithmetic,
-    FieldBytes<C>: From<Scalar<C>> + for<'a> From<&'a Scalar<C>>,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
 {
     type Secret = NonZeroScalar<C>;
