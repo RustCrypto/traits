@@ -1,7 +1,7 @@
 //! Salt string support.
 
 use crate::{
-    errors::{B64Error, SaltError},
+    errors::{B64Error, ParseError},
     params::ValueStr,
 };
 use core::{
@@ -99,14 +99,14 @@ impl<'a> Salt<'a> {
 
     /// Create a [`Salt`] from the given `str`, validating it according to
     /// [`Salt::min_len`] and [`Salt::max_len`] length restrictions.
-    pub fn new(input: &'a str) -> Result<Self, SaltError> {
+    pub fn new(input: &'a str) -> Result<Self, ParseError> {
         // TODO(tarcieri): support shorter salts for MCF?
         if input.len() < Self::min_len() {
-            return Err(SaltError::TooShort);
+            return Err(ParseError::TooShort);
         }
 
         if input.len() > Self::max_len() {
-            return Err(SaltError::TooLong);
+            return Err(ParseError::TooLong);
         }
 
         Ok(Self(input.try_into()?))
@@ -144,9 +144,9 @@ impl<'a> AsRef<str> for Salt<'a> {
 }
 
 impl<'a> TryFrom<&'a str> for Salt<'a> {
-    type Error = SaltError;
+    type Error = ParseError;
 
-    fn try_from(input: &'a str) -> Result<Self, SaltError> {
+    fn try_from(input: &'a str) -> Result<Self, ParseError> {
         Self::new(input)
     }
 }
@@ -165,7 +165,7 @@ impl<'a> fmt::Debug for Salt<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{Salt, SaltError};
+    use super::{ParseError, Salt};
 
     #[test]
     fn new_with_valid_min_length_input() {
@@ -185,7 +185,7 @@ mod tests {
     fn reject_new_too_short() {
         for &too_short in &["", "a", "ab", "abc"] {
             let err = Salt::new(too_short).err().unwrap();
-            assert_eq!(err, SaltError::TooShort);
+            assert_eq!(err, ParseError::TooShort);
         }
     }
 
@@ -193,6 +193,6 @@ mod tests {
     fn reject_new_too_long() {
         let s = "0123456789112345678921234567893123456789412345678";
         let err = Salt::new(s).err().unwrap();
-        assert_eq!(err, SaltError::TooLong);
+        assert_eq!(err, ParseError::TooLong);
     }
 }

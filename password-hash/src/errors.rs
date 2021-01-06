@@ -44,9 +44,6 @@ pub enum HashError {
 
     /// Parse error.
     Parse(ParseError),
-
-    /// Salt error.
-    Salt(SaltError),
 }
 
 impl fmt::Display for HashError {
@@ -55,7 +52,6 @@ impl fmt::Display for HashError {
             Self::Hash(err) => write!(f, "invalid password hash: {}", err),
             Self::Params(err) => write!(f, "invalid params: {}", err),
             Self::Parse(err) => write!(f, "parse error: {}", err),
-            Self::Salt(err) => write!(f, "invalid salt: {}", err),
         }
     }
 }
@@ -78,12 +74,6 @@ impl From<ParamsError> for HashError {
 impl From<ParseError> for HashError {
     fn from(err: ParseError) -> HashError {
         HashError::Parse(err)
-    }
-}
-
-impl From<SaltError> for HashError {
-    fn from(err: SaltError) -> HashError {
-        HashError::Salt(err)
     }
 }
 
@@ -122,53 +112,30 @@ impl From<ParseError> for ParamsError {
 #[cfg(feature = "std")]
 impl std::error::Error for ParamsError {}
 
-/// Parsing errors.
-#[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
-pub struct ParseError {
-    /// Ident contains an invalid character.
-    pub invalid_char: Option<char>,
+/// Parse errors.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum ParseError {
+    /// Invalid empty input.
+    Empty,
 
-    /// Ident is too long.
-    pub too_long: bool,
-}
+    /// Input contains invalid character.
+    InvalidChar(char),
 
-impl ParseError {
-    /// Create a parse error for the case where something is too long.
-    pub(crate) fn too_long() -> Self {
-        Self {
-            invalid_char: None,
-            too_long: true,
-        }
-    }
+    /// Input too short.
+    TooShort,
 
-    /// Did the error occur because the input string was empty?
-    pub fn is_empty(self) -> bool {
-        self.invalid_char.is_none() && !self.too_long
-    }
+    /// Input too long.
+    TooLong,
 }
 
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        f.write_str("PHC string parse error: ")?;
-
-        if self.is_empty() {
-            return f.write_str("empty strings not permitted");
+        match self {
+            Self::Empty => f.write_str("invalid empty input"),
+            Self::InvalidChar(char) => write!(f, "invalid character '{}'", char),
+            Self::TooShort => f.write_str("too short"),
+            Self::TooLong => f.write_str("too long"),
         }
-
-        if let Some(invalid_char) = self.invalid_char {
-            write!(f, "invalid character '{}'", invalid_char)?;
-
-            if self.too_long {
-                f.write_str(", ")?;
-            }
-        }
-
-        if self.too_long {
-            // TODO(tarcieri): include const generic maximum length
-            f.write_str("too long")?;
-        }
-
-        Ok(())
     }
 }
 
@@ -246,38 +213,6 @@ impl From<B64Error> for OutputError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for OutputError {}
-
-/// Salt-related errors.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum SaltError {
-    /// Parse errors.
-    Parse(ParseError),
-
-    /// Salt too short (min 4-bytes).
-    TooShort,
-
-    /// Salt too long (max 48-bytes).
-    TooLong,
-}
-
-impl fmt::Display for SaltError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match self {
-            Self::Parse(err) => write!(f, "{}", err),
-            Self::TooShort => f.write_str("salt too short (min 4-bytes)"),
-            Self::TooLong => f.write_str("salt too long (max 48-bytes)"),
-        }
-    }
-}
-
-impl From<ParseError> for SaltError {
-    fn from(err: ParseError) -> SaltError {
-        SaltError::Parse(err)
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for SaltError {}
 
 /// Password verification errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

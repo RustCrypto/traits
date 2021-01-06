@@ -150,18 +150,16 @@ impl<'a> TryFrom<&'a str> for Params<'a> {
             .split(PARAMS_DELIMITER)
             .map(|p| p.split(PAIR_DELIMITER))
         {
-            let name = param.next().ok_or(ParseError {
-                invalid_char: Some(PAIR_DELIMITER),
-                too_long: false,
-            })?;
+            let name = param
+                .next()
+                .ok_or(ParseError::InvalidChar(PAIR_DELIMITER))?;
 
-            let value = param.next().ok_or(ParseError {
-                invalid_char: Some(PAIR_DELIMITER),
-                too_long: false,
-            })?;
+            let value = param
+                .next()
+                .ok_or(ParseError::InvalidChar(PAIR_DELIMITER))?;
 
             if param.next().is_some() {
-                return Err(ParseError::too_long().into());
+                return Err(ParseError::TooLong.into());
             }
 
             params = params.add(name.try_into()?, value.try_into()?)?;

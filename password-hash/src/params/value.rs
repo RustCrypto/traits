@@ -87,7 +87,7 @@ impl<'a> TryFrom<u32> for Value<'a> {
         i32::try_from(decimal)
             .ok()
             .map(Into::into)
-            .ok_or_else(ParseError::too_long)
+            .ok_or(ParseError::TooLong)
     }
 }
 
@@ -155,18 +155,12 @@ impl<'a> ValueStr<'a> {
     /// Parse a [`ValueStr`] from the provided `str`, validating it according to
     /// the PHC string format's rules.
     pub fn new(input: &'a str) -> Result<Self, ParseError> {
-        let too_long = input.as_bytes().len() > MAX_LENGTH;
-
-        // Check that the characters are permitted in a PHC parameter value.
-        assert_valid_value(input).map_err(|mut e| {
-            e.too_long = too_long;
-            e
-        })?;
-
-        if too_long {
-            return Err(ParseError::too_long());
+        if input.as_bytes().len() > MAX_LENGTH {
+            return Err(ParseError::TooLong);
         }
 
+        // Check that the characters are permitted in a PHC parameter value.
+        assert_valid_value(input)?;
         Ok(Self(input))
     }
 
@@ -232,32 +226,26 @@ impl<'a> ValueStr<'a> {
 
         // Empty strings aren't decimals
         if value.is_empty() {
-            return Err(ParseError::default());
+            return Err(ParseError::Empty);
         }
 
         // Ensure all characters are digits
-        for char in value.chars() {
-            if !matches!(char, '0'..='9') {
-                return Err(ParseError {
-                    invalid_char: Some(char),
-                    too_long: false,
-                });
+        for c in value.chars() {
+            if !matches!(c, '0'..='9') {
+                return Err(ParseError::InvalidChar(c));
             }
         }
 
         // Disallow leading zeroes
         if value.starts_with('0') && value.len() > 1 {
-            return Err(ParseError {
-                invalid_char: Some('0'),
-                too_long: false,
-            });
+            return Err(ParseError::InvalidChar('0'));
         }
 
         value.parse().map_err(|_| {
             // In theory a value overflow should be the only potential error here.
             // When `ParseIntError::kind` is stable it might be good to double check:
             // <https://github.com/rust-lang/rust/issues/22639>
-            ParseError::too_long()
+            ParseError::TooLong
         })
     }
 
@@ -305,12 +293,9 @@ impl<'a> fmt::Display for ValueStr<'a> {
 
 /// Are all of the given bytes allowed in a [`Value`]?
 fn assert_valid_value(input: &str) -> Result<(), ParseError> {
-    for char in input.chars() {
-        if !is_char_valid(char) {
-            return Err(ParseError {
-                invalid_char: Some(char),
-                too_long: false,
-            });
+    for c in input.chars() {
+        if !is_char_valid(c) {
+            return Err(ParseError::InvalidChar(c));
         }
     }
 
@@ -324,7 +309,7 @@ fn is_char_valid(c: char) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::ValueStr;
+    use super::{ParseError, ValueStr};
     use core::convert::TryFrom;
 
     // Invalid value examples
@@ -351,21 +336,21 @@ mod tests {
     fn reject_decimal_with_leading_zero() {
         let value = ValueStr::new("01").unwrap();
         let err = i32::try_from(value).err().unwrap();
-        assert_eq!(err.invalid_char, Some('0'));
+        assert!(matches!(err, ParseError::InvalidChar('0')));
     }
 
     #[test]
     fn reject_overlong_decimal() {
         let value = ValueStr::new("2147483648").unwrap();
         let err = i32::try_from(value).err().unwrap();
-        assert!(err.too_long);
+        assert_eq!(err, ParseError::TooLong);
     }
 
     #[test]
     fn reject_negative() {
         let value = ValueStr::new("-1").unwrap();
         let err = i32::try_from(value).err().unwrap();
-        assert_eq!(err.invalid_char, Some('-'));
+        assert!(matches!(err, ParseError::InvalidChar('-')));
     }
 
     //
@@ -393,21 +378,18 @@ mod tests {
     #[test]
     fn reject_invalid_char() {
         let err = ValueStr::new(INVALID_CHAR).err().unwrap();
-        assert_eq!(err.invalid_char, Some(';'));
-        assert!(!err.too_long);
+        assert!(matches!(err, ParseError::InvalidChar(';')));
     }
 
     #[test]
     fn reject_too_long() {
         let err = ValueStr::new(INVALID_TOO_LONG).err().unwrap();
-        assert_eq!(err.invalid_char, None);
-        assert!(err.too_long);
+        assert_eq!(err, ParseError::TooLong);
     }
 
     #[test]
     fn reject_invalid_char_and_too_long() {
         let err = ValueStr::new(INVALID_CHAR_AND_TOO_LONG).err().unwrap();
-        assert_eq!(err.invalid_char, Some('!'));
-        assert!(err.too_long);
+        assert_eq!(err, ParseError::TooLong);
     }
 }
