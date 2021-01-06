@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.3.0 (2021-01-06)
+### Changed
+- Bump `rand_core` to v0.6 ([#457])
+- Bump `signature-derive` v1.0.0-pre.3 ([#459])
+
+[#457]: https://github.com/RustCrypto/traits/pull/457
+[#459]: https://github.com/RustCrypto/traits/pull/459
+
 ## 1.2.2 (2020-07-29)
 ### Added
 - `RandomizedDigestSigner` ([#235])
