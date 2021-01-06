@@ -121,7 +121,7 @@ impl<'a> TryFrom<&'a str> for Ident<'a> {
 
     fn try_from(s: &'a str) -> Result<Self, ParseError> {
         if s.is_empty() {
-            return Err(ParseError::default());
+            return Err(ParseError::Empty);
         }
 
         let bytes = s.as_bytes();
@@ -129,15 +129,12 @@ impl<'a> TryFrom<&'a str> for Ident<'a> {
 
         for &c in bytes {
             if !is_char_valid(c) {
-                return Err(ParseError {
-                    invalid_char: Some(c.into()),
-                    too_long,
-                });
+                return Err(ParseError::InvalidChar(c.into()));
             }
         }
 
         if too_long {
-            return Err(ParseError::too_long());
+            return Err(ParseError::TooLong);
         }
 
         Ok(Self::new(s))
@@ -163,7 +160,7 @@ const fn is_char_valid(c: u8) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::Ident;
+    use super::{Ident, ParseError};
     use core::convert::TryFrom;
 
     // Invalid ident examples
@@ -193,8 +190,7 @@ mod tests {
     #[test]
     fn reject_empty_fallible() {
         let err = Ident::try_from(INVALID_EMPTY).err().unwrap();
-        assert_eq!(err.invalid_char, None);
-        assert!(!err.too_long);
+        assert_eq!(err, ParseError::Empty);
     }
 
     #[test]
@@ -206,8 +202,7 @@ mod tests {
     #[test]
     fn reject_invalid_char_fallible() {
         let err = Ident::try_from(INVALID_CHAR).err().unwrap();
-        assert_eq!(err.invalid_char, Some(';'));
-        assert!(!err.too_long);
+        assert_eq!(err, ParseError::InvalidChar(';'));
     }
 
     #[test]
@@ -219,8 +214,7 @@ mod tests {
     #[test]
     fn reject_too_long_fallible() {
         let err = Ident::try_from(INVALID_TOO_LONG).err().unwrap();
-        assert_eq!(err.invalid_char, None);
-        assert!(err.too_long);
+        assert_eq!(err, ParseError::TooLong);
     }
 
     #[test]
@@ -232,7 +226,6 @@ mod tests {
     #[test]
     fn reject_invalid_char_and_too_long_fallible() {
         let err = Ident::try_from(INVALID_CHAR_AND_TOO_LONG).err().unwrap();
-        assert_eq!(err.invalid_char, Some('!'));
-        assert!(err.too_long);
+        assert_eq!(err, ParseError::InvalidChar('!'));
     }
 }

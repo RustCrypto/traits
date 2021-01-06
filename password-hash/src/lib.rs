@@ -162,23 +162,19 @@ impl<'a> PasswordHash<'a> {
         use errors::ParseError;
 
         if s.is_empty() {
-            return Err(ParseError::default().into());
+            return Err(ParseError::Empty.into());
         }
 
         let mut fields = s.split(PASSWORD_HASH_SEPARATOR);
         let beginning = fields.next().expect("no first field");
 
         if let Some(first_char) = beginning.chars().next() {
-            return Err(ParseError {
-                invalid_char: Some(first_char),
-                too_long: false,
-            }
-            .into());
+            return Err(ParseError::InvalidChar(first_char).into());
         }
 
         let algorithm = fields
             .next()
-            .ok_or_else(ParseError::default)
+            .ok_or(ParseError::TooShort)
             .and_then(Ident::try_from)?;
 
         let mut params = Params::new();
@@ -202,7 +198,7 @@ impl<'a> PasswordHash<'a> {
         }
 
         if fields.next().is_some() {
-            return Err(ParseError::too_long().into());
+            return Err(ParseError::TooLong.into());
         }
 
         Ok(Self {
