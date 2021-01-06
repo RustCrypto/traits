@@ -17,7 +17,7 @@ optional = true
 default-features = false
 
 [dependencies.rand_core]
-version = "0.5"
+version = "0.6"
 optional = true
 default-features = false
 
