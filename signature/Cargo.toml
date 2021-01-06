@@ -22,7 +22,7 @@ optional = true
 default-features = false
 
 [dependencies.signature_derive]
-version = "= 1.0.0-pre.2"
+version = "= 1.0.0-pre.3"
 optional = true
 path = "derive"
 
