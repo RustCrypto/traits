@@ -32,6 +32,7 @@ impl PasswordHasher for StubFunction {
 
         Ok(PasswordHash {
             algorithm: ALG,
+            version: None,
             params,
             salt: Some(salt),
             hash: Some(hash),
