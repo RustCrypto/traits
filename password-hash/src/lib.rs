@@ -41,13 +41,10 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-pub mod b64;
-pub mod errors;
-pub mod params;
-
-mod ident;
-mod output;
-mod salt;
+use core::{
+    convert::{TryFrom, TryInto},
+    fmt,
+};
 
 pub use crate::{
     errors::{HashError, PhfError, VerifyError},
@@ -55,12 +52,17 @@ pub use crate::{
     output::Output,
     params::Params,
     salt::Salt,
+    value::{Decimal, Value, ValueStr},
 };
 
-use core::{
-    convert::{TryFrom, TryInto},
-    fmt,
-};
+pub mod b64;
+pub mod errors;
+
+mod ident;
+mod output;
+mod params;
+mod salt;
+mod value;
 
 /// Separator character used in password hashes (e.g. `$6$...`).
 const PASSWORD_HASH_SEPARATOR: char = '$';

@@ -1,11 +1,8 @@
 //! Algorithm parameters.
 
-mod value;
-
-pub use self::value::{Decimal, Value, ValueStr};
-
 use crate::{
     errors::{ParamsError, ParseError},
+    value::Value,
     Ident,
 };
 use core::{
@@ -104,7 +101,7 @@ impl<'a> Params<'a> {
         None
     }
 
-    /// Iterate over the parameters using [`Iter`].
+    /// Iterate over the parameters.
     pub fn iter(&self) -> Iter<'a, '_> {
         Iter {
             inner: self.pairs.iter(),
@@ -229,11 +226,11 @@ impl<'a, 'b> Iterator for Iter<'a, 'b> {
 
 #[cfg(test)]
 mod tests {
-    use super::{FromIterator, Ident, Params, ParamsError};
-    use core::convert::TryFrom;
-
     #[cfg(feature = "alloc")]
     use alloc::string::ToString;
+    use core::convert::TryFrom;
+
+    use super::{FromIterator, Ident, Params, ParamsError};
 
     #[test]
     fn add_chain() {
