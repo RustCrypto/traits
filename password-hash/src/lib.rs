@@ -1,7 +1,8 @@
 //! This crate defines a set of traits which describe the functionality of
 //! [password hashing algorithms].
 //!
-//! Provides a `no_std`-friendly implementation of the [PHC string format specification]
+//! Provides a `no_std`-friendly implementation of the
+//! [Password Hashing Competition (PHC) string format specification][PHC]
 //! (a well-defined subset of the [Modular Crypt Format a.k.a. MCF][MCF]) which
 //! works in conjunction with the traits this crate defines.
 //!
@@ -20,7 +21,7 @@
 //! For more information, please see the documentation for [`PasswordHash`].
 //!
 //! [password hashing algorithms]: https://en.wikipedia.org/wiki/Cryptographic_hash_function#Password_verification
-//! [PHC string format specification]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
+//! [PHC]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 //! [MCF]: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
 //! [RustCrypto/password-hashes]: https://github.com/RustCrypto/password-hashes
 
@@ -100,6 +101,31 @@ pub trait PasswordHasher {
         }
 
         Err(VerifyError)
+    }
+}
+
+/// Trait for password hashing algorithms which support the legacy
+/// [Modular Crypt Format (MCF)][MCF].
+///
+/// [MCF]: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
+pub trait McfHasher {
+    /// Upgrade an MCF hash to a PHC hash. MCF follow this rough format:
+    ///
+    /// ```text
+    /// $<id>$<content>
+    /// ```
+    ///
+    /// MCF hashes are otherwise largely unstructured and parsed according to
+    /// algorithm-specific rules so hashers must parse a raw string themselves.
+    fn upgrade_mcf_hash(hash: &str) -> Result<PasswordHash<'_>, PhfError>;
+
+    /// Verify a password hash in MCF format against the provided password.
+    fn verify_mcf_hash(&self, password: &[u8], mcf_hash: &str) -> Result<(), VerifyError>
+    where
+        Self: PasswordHasher,
+    {
+        let phc_hash = Self::upgrade_mcf_hash(mcf_hash)?;
+        self.verify_password(password, &phc_hash)
     }
 }
 
