@@ -235,9 +235,9 @@ mod tests {
     #[test]
     fn add_chain() {
         let params = Params::new()
-            .add(Ident::new("a"), 1i32.into())
-            .and_then(|p| p.add(Ident::new("b"), 2i32.into()))
-            .and_then(|p| p.add(Ident::new("c"), 3i32.into()))
+            .add(Ident::new("a"), 1u32.into())
+            .and_then(|p| p.add(Ident::new("b"), 2u32.into()))
+            .and_then(|p| p.add(Ident::new("c"), 3u32.into()))
             .unwrap();
 
         assert_eq!(params.len(), 3);
@@ -249,17 +249,17 @@ mod tests {
     #[test]
     fn duplicate_names() {
         let name = Ident::new("a");
-        let params = Params::new().add(name, 1i32.into()).unwrap();
-        let err = params.add(name, 2i32.into()).err().unwrap();
+        let params = Params::new().add(name, 1u32.into()).unwrap();
+        let err = params.add(name, 2u32.into()).err().unwrap();
         assert_eq!(err, ParamsError::DuplicateName);
     }
 
     #[test]
     fn from_slice() {
         let params = Params::from_slice(&[
-            (Ident::new("a"), 1i32.into()),
-            (Ident::new("b"), 2i32.into()),
-            (Ident::new("c"), 3i32.into()),
+            (Ident::new("a"), 1u32.into()),
+            (Ident::new("b"), 2u32.into()),
+            (Ident::new("c"), 3u32.into()),
         ])
         .unwrap();
 
@@ -273,9 +273,9 @@ mod tests {
     fn from_iterator() {
         let params = Params::from_iter(
             [
-                (Ident::new("a"), 1i32.into()),
-                (Ident::new("b"), 2i32.into()),
-                (Ident::new("c"), 3i32.into()),
+                (Ident::new("a"), 1u32.into()),
+                (Ident::new("b"), 2u32.into()),
+                (Ident::new("c"), 3u32.into()),
             ]
             .iter()
             .cloned(),
@@ -290,16 +290,16 @@ mod tests {
     #[test]
     fn iter() {
         let params = Params::from_slice(&[
-            (Ident::new("a"), 1i32.into()),
-            (Ident::new("b"), 2i32.into()),
-            (Ident::new("c"), 3i32.into()),
+            (Ident::new("a"), 1u32.into()),
+            (Ident::new("b"), 2u32.into()),
+            (Ident::new("c"), 3u32.into()),
         ])
         .unwrap();
 
         let mut i = params.iter();
-        assert_eq!(i.next(), Some(&(Ident::new("a"), 1i32.into())));
-        assert_eq!(i.next(), Some(&(Ident::new("b"), 2i32.into())));
-        assert_eq!(i.next(), Some(&(Ident::new("c"), 3i32.into())));
+        assert_eq!(i.next(), Some(&(Ident::new("a"), 1u32.into())));
+        assert_eq!(i.next(), Some(&(Ident::new("b"), 2u32.into())));
+        assert_eq!(i.next(), Some(&(Ident::new("c"), 3u32.into())));
         assert_eq!(i.next(), None);
     }
 
@@ -343,7 +343,7 @@ mod tests {
     #[test]
     #[cfg(feature = "alloc")]
     fn display_one() {
-        let params = Params::from_slice(&[(Ident::new("a"), 1i32.into())]).unwrap();
+        let params = Params::from_slice(&[(Ident::new("a"), 1u32.into())]).unwrap();
         assert_eq!(params.to_string(), "a=1");
     }
 
@@ -351,9 +351,9 @@ mod tests {
     #[cfg(feature = "alloc")]
     fn display_many() {
         let params = Params::from_slice(&[
-            (Ident::new("a"), 1i32.into()),
-            (Ident::new("b"), 2i32.into()),
-            (Ident::new("c"), 3i32.into()),
+            (Ident::new("a"), 1u32.into()),
+            (Ident::new("b"), 2u32.into()),
+            (Ident::new("c"), 3u32.into()),
         ])
         .unwrap();
 
