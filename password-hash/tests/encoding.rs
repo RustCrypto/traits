@@ -21,9 +21,9 @@ const EXAMPLE_HASH: &[u8] = &[
 /// Example parameters
 fn example_params() -> Params {
     Params::from_slice(&[
-        ("a".parse().unwrap(), 1i32.into()),
-        ("b".parse().unwrap(), 2i32.into()),
-        ("c".parse().unwrap(), 3i32.into()),
+        ("a".parse().unwrap(), 1u32.into()),
+        ("b".parse().unwrap(), 2u32.into()),
+        ("c".parse().unwrap(), 3u32.into()),
     ])
     .unwrap()
 }
@@ -73,7 +73,7 @@ fn salt() {
 
 #[test]
 fn one_param_and_salt() {
-    let params = Params::from_slice(&[("a".parse().unwrap(), 1i32.into())]).unwrap();
+    let params = Params::from_slice(&[("a".parse().unwrap(), 1u32.into())]).unwrap();
 
     let ph = PasswordHash {
         algorithm: EXAMPLE_ALGORITHM,

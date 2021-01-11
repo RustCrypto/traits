@@ -23,7 +23,7 @@ use core::{convert::TryFrom, fmt, str};
 const MAX_LENGTH: usize = 48;
 
 /// Type used to represent decimal (i.e. integer) values.
-pub type Decimal = i32;
+pub type Decimal = u32;
 
 /// Algorithm parameter value.
 ///
@@ -77,17 +77,6 @@ impl<'a> Value<'a> {
 impl<'a> From<Decimal> for Value<'a> {
     fn from(decimal: Decimal) -> Value<'a> {
         Value::Decimal(decimal)
-    }
-}
-
-impl<'a> TryFrom<u32> for Value<'a> {
-    type Error = ParseError;
-
-    fn try_from(decimal: u32) -> Result<Value<'a>, ParseError> {
-        i32::try_from(decimal)
-            .ok()
-            .map(Into::into)
-            .ok_or(ParseError::TooLong)
     }
 }
 
@@ -206,7 +195,7 @@ impl<'a> ValueStr<'a> {
     /// > For an integer value x, its decimal encoding consist in the following:
     /// >
     /// > - If x < 0, then its decimal encoding is the minus sign - followed by the decimal
-    ///     encoding of -x.
+    /// >   encoding of -x.
     /// > - If x = 0, then its decimal encoding is the single character 0.
     /// > - If x > 0, then its decimal encoding is the smallest sequence of ASCII digits that
     /// >   matches its value (i.e. there is no leading zero).
@@ -216,11 +205,15 @@ impl<'a> ValueStr<'a> {
     /// > - The first character is either a - sign, or an ASCII digit.
     /// > - All characters other than the first are ASCII digits.
     /// > - If the first character is - sign, then there is at least another character, and the
-    ///     second character is not a 0.
+    /// >   second character is not a 0.
     /// > - If the string consists in more than one character, then the first one cannot be a 0.
     ///
+    /// Note: this implementation does not support negative decimals despite
+    /// them being allowed per the spec above. If you need to parse a negative
+    /// number, please parse it from the string representation directly e.g.
+    /// `value.as_str().parse::<i32>()`
+    ///
     /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#decimal-encoding
-    // TODO(tarcieri): support for negative decimal values (is there a use case?)
     pub fn decimal(&self) -> Result<Decimal, ParseError> {
         let value = self.as_str();
 
@@ -323,7 +316,7 @@ mod tests {
 
     #[test]
     fn decimal_value() {
-        let valid_decimals = &[("0", 0i32), ("1", 1i32), ("2147483647", i32::MAX)];
+        let valid_decimals = &[("0", 0u32), ("1", 1u32), ("4294967295", u32::MAX)];
 
         for &(s, i) in valid_decimals {
             let value = ValueStr::new(s).unwrap();
@@ -335,21 +328,21 @@ mod tests {
     #[test]
     fn reject_decimal_with_leading_zero() {
         let value = ValueStr::new("01").unwrap();
-        let err = i32::try_from(value).err().unwrap();
+        let err = u32::try_from(value).err().unwrap();
         assert!(matches!(err, ParseError::InvalidChar('0')));
     }
 
     #[test]
     fn reject_overlong_decimal() {
-        let value = ValueStr::new("2147483648").unwrap();
-        let err = i32::try_from(value).err().unwrap();
+        let value = ValueStr::new("4294967296").unwrap();
+        let err = u32::try_from(value).err().unwrap();
         assert_eq!(err, ParseError::TooLong);
     }
 
     #[test]
     fn reject_negative() {
         let value = ValueStr::new("-1").unwrap();
-        let err = i32::try_from(value).err().unwrap();
+        let err = u32::try_from(value).err().unwrap();
         assert!(matches!(err, ParseError::InvalidChar('-')));
     }
 
