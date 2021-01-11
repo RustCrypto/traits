@@ -1,6 +1,6 @@
 /// Password hashing tests
 pub use password_hash::{
-    Ident, Output, Params, PasswordHash, PasswordHasher, PhfError, Salt, VerifyError,
+    HasherError, Ident, Output, Params, PasswordHash, PasswordHasher, Salt, VerifyError,
 };
 
 const ALG: Ident = Ident::new("example");
@@ -15,12 +15,12 @@ impl PasswordHasher for StubFunction {
         password: &[u8],
         salt: Salt<'a>,
         params: Params<'a>,
-    ) -> Result<PasswordHash<'a>, PhfError> {
+    ) -> Result<PasswordHash<'a>, HasherError> {
         let mut output = Vec::new();
 
         if let Some(alg) = algorithm {
             if alg != ALG {
-                return Err(PhfError::Algorithm);
+                return Err(HasherError::Algorithm);
             }
         }
 
