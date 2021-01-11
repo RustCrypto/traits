@@ -92,20 +92,35 @@ impl Output {
     /// Create a [`Output`] from the given byte slice, validating it according
     /// to [`Output::min_len`] and [`Output::max_len`] length restrictions.
     pub fn new(input: &[u8]) -> Result<Self, OutputError> {
-        if input.len() < Self::min_len() {
+        Self::init_with(input.len(), |bytes| {
+            bytes.copy_from_slice(input);
+            Ok(())
+        })
+    }
+
+    /// Initialize an [`Output`] using the provided method, which is given
+    /// a mutable byte slice into which it should write the output.
+    ///
+    /// The `output_size` (in bytes) must be known in advance, as well as at
+    /// least [`Output::min_len`] bytes and at most [`Output::max_len`] bytes.
+    pub fn init_with<F>(output_size: usize, f: F) -> Result<Self, OutputError>
+    where
+        F: FnOnce(&mut [u8]) -> Result<(), OutputError>,
+    {
+        if output_size < Self::min_len() {
             return Err(OutputError::TooShort);
         }
 
-        if input.len() > Self::max_len() {
+        if output_size > Self::max_len() {
             return Err(OutputError::TooLong);
         }
 
         let mut bytes = [0u8; MAX_LENGTH];
-        bytes[..input.len()].copy_from_slice(input);
+        f(&mut bytes[..output_size])?;
 
         Ok(Self {
             bytes,
-            length: input.len() as u8,
+            length: output_size as u8,
         })
     }
 
