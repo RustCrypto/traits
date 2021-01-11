@@ -95,6 +95,9 @@ pub enum HasherError {
     /// Invalid parameter.
     Param,
 
+    /// Parse error.
+    Parse(ParseError),
+
     /// Invalid password.
     Password,
 }
@@ -106,6 +109,7 @@ impl fmt::Display for HasherError {
             Self::Crypto => write!(f, "cryptographic error"),
             Self::Output(err) => write!(f, "PHF output error: {}", err),
             Self::Param => write!(f, "invalid algorithm parameter"),
+            Self::Parse(err) => write!(f, "{}", err),
             Self::Password => write!(f, "invalid password"),
         }
     }
@@ -114,6 +118,12 @@ impl fmt::Display for HasherError {
 impl From<OutputError> for HasherError {
     fn from(err: OutputError) -> HasherError {
         HasherError::Output(err)
+    }
+}
+
+impl From<ParseError> for HasherError {
+    fn from(err: ParseError) -> HasherError {
+        HasherError::Parse(err)
     }
 }
 
