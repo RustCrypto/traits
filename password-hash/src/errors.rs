@@ -86,6 +86,9 @@ pub enum HasherError {
     /// Unsupported algorithm.
     Algorithm,
 
+    /// "B64" encoding error.
+    B64(B64Error),
+
     /// Cryptographic error.
     Crypto,
 
@@ -106,12 +109,19 @@ impl fmt::Display for HasherError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
             Self::Algorithm => write!(f, "unsupported algorithm"),
+            Self::B64(err) => write!(f, "{}", err),
             Self::Crypto => write!(f, "cryptographic error"),
             Self::Output(err) => write!(f, "PHF output error: {}", err),
             Self::Param => write!(f, "invalid algorithm parameter"),
             Self::Parse(err) => write!(f, "{}", err),
             Self::Password => write!(f, "invalid password"),
         }
+    }
+}
+
+impl From<B64Error> for HasherError {
+    fn from(err: B64Error) -> HasherError {
+        HasherError::B64(err)
     }
 }
 
