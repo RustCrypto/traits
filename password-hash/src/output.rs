@@ -1,7 +1,7 @@
 //! Outputs from password hashing functions.
 
 use crate::{b64, errors::OutputError};
-use core::{cmp::PartialEq, convert::TryFrom, fmt, ops::Deref, str::FromStr};
+use core::{cmp::PartialEq, convert::TryFrom, fmt, str::FromStr};
 
 /// Maximum length of password hash function outputs.
 const MAX_LENGTH: usize = 64;
@@ -124,6 +124,16 @@ impl Output {
         })
     }
 
+    /// Borrow the output value as a byte slice.
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.bytes[..self.len()]
+    }
+
+    /// Get the length of the output value as a byte slice.
+    pub fn len(&self) -> usize {
+        usize::from(self.length)
+    }
+
     /// Parse [`b64`]-encoded [`Output`], i.e. using the PHC string
     /// specification's restricted interpretation of Base64.
     pub fn b64_decode(input: &str) -> Result<Self, OutputError> {
@@ -153,15 +163,7 @@ impl Output {
 
 impl AsRef<[u8]> for Output {
     fn as_ref(&self) -> &[u8] {
-        &self.bytes[..(self.length as usize)]
-    }
-}
-
-impl Deref for Output {
-    type Target = [u8];
-
-    fn deref(&self) -> &[u8] {
-        self.as_ref()
+        self.as_bytes()
     }
 }
 
@@ -179,6 +181,8 @@ impl PartialEq for Output {
             return false;
         }
 
+        // Non-short-circuiting comparison.
+        // See "Constant-time comparisons" documentation above.
         self.as_ref()
             .iter()
             .zip(other.as_ref().iter())
