@@ -129,9 +129,9 @@ dependencies = [
 
 [[package]]
 name = "der"
-version = "0.1.0"
+version = "0.2.0-pre"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51f59c66c30bb7445c8320a5f9233e437e3572368099f25532a59054328899b4"
+checksum = "ce3c2453c3322800962d0630f6e4e64a398ffea370e43a4ceb24d02f724441f4"
 dependencies = [
  "const-oid",
 ]
@@ -277,9 +277,9 @@ version = "0.0.0"
 
 [[package]]
 name = "pkcs8"
-version = "0.3.3"
+version = "0.4.0-pre"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4839a901843f3942576e65857f0ebf2e190ef7024d3c62a94099ba3f819ad1d"
+checksum = "9df125c6bec8ba2195e9ef3064e610c9aa00362b38f502ca348e4383eaeef102"
 dependencies = [
  "der",
  "subtle-encoding",
