@@ -80,6 +80,46 @@ impl From<ParseError> for HashError {
 #[cfg(feature = "std")]
 impl std::error::Error for HashError {}
 
+/// Errors generating password hashes using a [`PasswordHasher`].
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum HasherError {
+    /// Unsupported algorithm.
+    Algorithm,
+
+    /// Cryptographic error.
+    Crypto,
+
+    /// Error generating output.
+    Output(OutputError),
+
+    /// Invalid parameter.
+    Param,
+
+    /// Invalid password.
+    Password,
+}
+
+impl fmt::Display for HasherError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        match self {
+            Self::Algorithm => write!(f, "unsupported algorithm"),
+            Self::Crypto => write!(f, "cryptographic error"),
+            Self::Output(err) => write!(f, "PHF output error: {}", err),
+            Self::Param => write!(f, "invalid algorithm parameter"),
+            Self::Password => write!(f, "invalid password"),
+        }
+    }
+}
+
+impl From<OutputError> for HasherError {
+    fn from(err: OutputError) -> HasherError {
+        HasherError::Output(err)
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for HasherError {}
+
 /// Parameter-related errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ParamsError {
@@ -142,46 +182,6 @@ impl fmt::Display for ParseError {
 #[cfg(feature = "std")]
 impl std::error::Error for ParseError {}
 
-/// Errors generating password hashes using a [`PasswordHasher`].
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum PhfError {
-    /// Unsupported algorithm.
-    Algorithm,
-
-    /// Cryptographic error.
-    Crypto,
-
-    /// Error generating output.
-    Output(OutputError),
-
-    /// Invalid parameter.
-    Param,
-
-    /// Invalid password.
-    Password,
-}
-
-impl fmt::Display for PhfError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match self {
-            Self::Algorithm => write!(f, "unsupported algorithm"),
-            Self::Crypto => write!(f, "cryptographic error"),
-            Self::Output(err) => write!(f, "PHF output error: {}", err),
-            Self::Param => write!(f, "invalid algorithm parameter"),
-            Self::Password => write!(f, "invalid password"),
-        }
-    }
-}
-
-impl From<OutputError> for PhfError {
-    fn from(err: OutputError) -> PhfError {
-        PhfError::Output(err)
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for PhfError {}
-
 /// Password hash function output (i.e. hash/digest) errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum OutputError {
@@ -224,8 +224,8 @@ impl fmt::Display for VerifyError {
     }
 }
 
-impl From<PhfError> for VerifyError {
-    fn from(_: PhfError) -> VerifyError {
+impl From<HasherError> for VerifyError {
+    fn from(_: HasherError) -> VerifyError {
         VerifyError
     }
 }

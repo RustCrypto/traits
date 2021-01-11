@@ -48,7 +48,7 @@ use core::{
 };
 
 pub use crate::{
-    errors::{HashError, PhfError, VerifyError},
+    errors::{HashError, HasherError, VerifyError},
     ident::Ident,
     output::Output,
     params::Params,
@@ -82,7 +82,7 @@ pub trait PasswordHasher {
         password: &[u8],
         salt: Salt<'a>,
         params: Params<'a>,
-    ) -> Result<PasswordHash<'a>, PhfError>;
+    ) -> Result<PasswordHash<'a>, HasherError>;
 
     /// Compute this password hashing function against the provided password
     /// using the parameters from the provided password hash and see if the
@@ -117,7 +117,7 @@ pub trait McfHasher {
     ///
     /// MCF hashes are otherwise largely unstructured and parsed according to
     /// algorithm-specific rules so hashers must parse a raw string themselves.
-    fn upgrade_mcf_hash(hash: &str) -> Result<PasswordHash<'_>, PhfError>;
+    fn upgrade_mcf_hash(hash: &str) -> Result<PasswordHash<'_>, HasherError>;
 
     /// Verify a password hash in MCF format against the provided password.
     fn verify_mcf_hash(&self, password: &[u8], mcf_hash: &str) -> Result<(), VerifyError>
@@ -275,7 +275,7 @@ impl<'a> PasswordHash<'a> {
         password: impl AsRef<[u8]>,
         salt: Salt<'a>,
         params: Params<'a>,
-    ) -> Result<Self, PhfError> {
+    ) -> Result<Self, HasherError> {
         phf.hash_password(None, password.as_ref(), salt, params)
     }
 
