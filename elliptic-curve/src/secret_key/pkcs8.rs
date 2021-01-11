@@ -68,35 +68,27 @@ where
                 .into());
             }
 
-            let secret_key_field = decoder.octet_string()?;
-            let secret_key = Self::from_bytes(secret_key_field).map_err(|_| {
+            let secret_key = Self::from_bytes(decoder.octet_string()?).map_err(|_| {
                 der::Error::from(der::ErrorKind::Value {
                     tag: der::Tag::Sequence,
                 })
             })?;
 
             let public_key_field = decoder.any()?;
+
             public_key_field
                 .tag()
                 .assert_eq(der::Tag::ContextSpecific1)?;
 
-            let mut public_key_decoder = der::Decoder::new(public_key_field.as_bytes());
-            let public_key_bitstring = public_key_decoder.bit_string()?.as_bytes();
+            let public_key_bytes = der::Decoder::new(public_key_field.as_bytes()).bit_string()?;
 
-            // Look for a leading `0x00` byte in the bitstring
-            if public_key_bitstring.get(0).cloned() != Some(0x00) {
+            // TODO(tarcieri): validate public key matches secret key
+            if sec1::EncodedPoint::<C>::from_bytes(public_key_bytes.as_ref()).is_err() {
                 return Err(der::ErrorKind::Value {
                     tag: der::Tag::BitString,
                 }
                 .into());
             }
-
-            // TODO(tarcieri): add validations for public key
-            sec1::EncodedPoint::<C>::from_bytes(&public_key_bitstring[1..]).map_err(|_| {
-                der::Error::from(der::ErrorKind::Value {
-                    tag: der::Tag::BitString,
-                })
-            })?;
 
             Ok(secret_key)
         })?;
@@ -125,10 +117,11 @@ where
         let mut secret_key_bytes = self.to_bytes();
         let secret_key_field = der::OctetString::new(&secret_key_bytes).expect(ENCODING_ERROR_MSG);
 
-        let public_key_body = self.public_key().to_der_bitstring();
-        let public_key_bytes = der::BitString::new(&public_key_body)
+        let public_key_body = self.public_key().to_encoded_point(false);
+        let public_key_bytes = der::BitString::new(public_key_body.as_ref())
             .and_then(|bit_string| bit_string.to_vec())
             .expect("DER encoding error");
+
         let public_key_field =
             der::Any::new(der::Tag::ContextSpecific1, &public_key_bytes).expect(ENCODING_ERROR_MSG);
 

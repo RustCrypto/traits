@@ -26,10 +26,7 @@ use {
 
 #[cfg(feature = "pem")]
 use {
-    alloc::{
-        string::{String, ToString},
-        vec::Vec,
-    },
+    alloc::string::{String, ToString},
     core::str::FromStr,
     pkcs8::ToPublicKey,
 };
@@ -122,22 +119,6 @@ where
     /// Convert this [`PublicKey`] to a [`ProjectivePoint`] for the given curve
     pub fn to_projective(&self) -> ProjectivePoint<C> {
         self.point.clone().into()
-    }
-
-    /// Encode this public key as an ASN.1 DER bitstring as used in both
-    /// PKCS#8 private keys and SPKI public keys.
-    #[cfg(feature = "pem")]
-    pub(crate) fn to_der_bitstring(&self) -> Vec<u8>
-    where
-        AffinePoint<C>: Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-        ProjectivePoint<C>: From<AffinePoint<C>>,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
-    {
-        let mut bitstring = Vec::new();
-        bitstring.push(0);
-        bitstring.extend_from_slice(self.to_encoded_point(false).as_ref());
-        bitstring
     }
 }
 
@@ -297,12 +278,7 @@ where
             return Err(pkcs8::Error::Decode);
         }
 
-        // Look for a leading `0x00` byte in the bitstring
-        if spki.subject_public_key.get(0).cloned() != Some(0x00) {
-            return Err(pkcs8::Error::Decode);
-        }
-
-        Self::from_sec1_bytes(&spki.subject_public_key[1..]).map_err(|_| pkcs8::Error::Decode)
+        Self::from_sec1_bytes(&spki.subject_public_key).map_err(|_| pkcs8::Error::Decode)
     }
 }
 
@@ -318,11 +294,11 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn to_public_key_der(&self) -> pkcs8::PublicKeyDocument {
-        let public_key_bytes = self.to_der_bitstring();
+        let public_key_bytes = self.to_encoded_point(false);
 
         pkcs8::SubjectPublicKeyInfo {
             algorithm: C::algorithm_identifier(),
-            subject_public_key: &public_key_bytes,
+            subject_public_key: public_key_bytes.as_ref(),
         }
         .to_der()
     }
