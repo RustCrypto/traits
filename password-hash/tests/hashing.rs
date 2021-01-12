@@ -11,10 +11,10 @@ pub struct StubFunction;
 impl PasswordHasher for StubFunction {
     fn hash_password<'a>(
         &self,
-        algorithm: Option<Ident<'a>>,
         password: &[u8],
-        salt: Salt<'a>,
+        algorithm: Option<Ident<'a>>,
         params: Params<'a>,
+        salt: Salt<'a>,
     ) -> Result<PasswordHash<'a>, HasherError> {
         let mut output = Vec::new();
 
