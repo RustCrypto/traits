@@ -35,8 +35,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-#[cfg(feature = "alloc")]
-#[macro_use]
+#[cfg(all(feature = "alloc", test))]
 extern crate alloc;
 
 #[cfg(feature = "std")]
@@ -56,7 +55,8 @@ pub use crate::{
     value::{Decimal, Value, ValueStr},
 };
 
-pub mod b64;
+pub use b64ct as b64;
+
 pub mod errors;
 
 mod ident;

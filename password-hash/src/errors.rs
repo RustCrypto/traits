@@ -1,37 +1,10 @@
 //! Error types.
 
+use crate::b64;
 use core::fmt;
 
 #[cfg(docsrs)]
 use crate::PasswordHasher;
-
-/// "B64" encoding errors.
-///
-///<https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#b64>
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum B64Error {
-    /// Encoding error.
-    EncodingInvalid,
-
-    /// Invalid length.
-    LengthInvalid,
-
-    /// Trailing whitespace characters.
-    TrailingWhitespace,
-}
-
-impl fmt::Display for B64Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match self {
-            Self::EncodingInvalid => f.write_str("invalid B64 encoding"),
-            Self::LengthInvalid => f.write_str("B64 encoded data has invalid length"),
-            Self::TrailingWhitespace => f.write_str("B64 encoded data has trailing whitespace"),
-        }
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for B64Error {}
 
 /// Password hash errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -87,7 +60,7 @@ pub enum HasherError {
     Algorithm,
 
     /// "B64" encoding error.
-    B64(B64Error),
+    B64(b64::Error),
 
     /// Cryptographic error.
     Crypto,
@@ -119,8 +92,8 @@ impl fmt::Display for HasherError {
     }
 }
 
-impl From<B64Error> for HasherError {
-    fn from(err: B64Error) -> HasherError {
+impl From<b64::Error> for HasherError {
+    fn from(err: b64::Error) -> HasherError {
         HasherError::B64(err)
     }
 }
@@ -206,7 +179,7 @@ impl std::error::Error for ParseError {}
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum OutputError {
     /// "B64" encoding error.
-    B64(B64Error),
+    B64(b64::Error),
 
     /// Output too short (min 10-bytes).
     TooShort,
@@ -225,8 +198,8 @@ impl fmt::Display for OutputError {
     }
 }
 
-impl From<B64Error> for OutputError {
-    fn from(err: B64Error) -> OutputError {
+impl From<b64::Error> for OutputError {
+    fn from(err: b64::Error) -> OutputError {
         OutputError::B64(err)
     }
 }
