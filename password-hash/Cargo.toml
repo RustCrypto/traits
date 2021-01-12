@@ -15,6 +15,9 @@ repository = "https://github.com/RustCrypto/traits/tree/master/password-hash"
 categories = ["cryptography", "no-std"]
 keywords = ["crypt", "mcf", "password", "pbkdf", "phc"]
 
+[dependencies]
+b64ct = "0.1"
+
 [features]
-alloc = []
-std = ["alloc"]
+alloc = ["b64ct/alloc"]
+std = ["alloc", "b64ct/std"]
