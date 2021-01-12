@@ -117,14 +117,14 @@ pub trait McfHasher {
     ///
     /// MCF hashes are otherwise largely unstructured and parsed according to
     /// algorithm-specific rules so hashers must parse a raw string themselves.
-    fn upgrade_mcf_hash(hash: &str) -> Result<PasswordHash<'_>, HasherError>;
+    fn upgrade_mcf_hash(&self, hash: &str) -> Result<PasswordHash<'_>, HasherError>;
 
     /// Verify a password hash in MCF format against the provided password.
     fn verify_mcf_hash(&self, password: &[u8], mcf_hash: &str) -> Result<(), VerifyError>
     where
         Self: PasswordHasher,
     {
-        let phc_hash = Self::upgrade_mcf_hash(mcf_hash)?;
+        let phc_hash = self.upgrade_mcf_hash(mcf_hash)?;
         self.verify_password(password, &phc_hash)
     }
 }
