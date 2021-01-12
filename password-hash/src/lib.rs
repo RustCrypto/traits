@@ -78,10 +78,10 @@ pub trait PasswordHasher {
     /// parameters for a given algorithm.
     fn hash_password<'a>(
         &self,
-        algorithm: Option<Ident<'a>>,
         password: &[u8],
-        salt: Salt<'a>,
+        algorithm: Option<Ident<'a>>,
         params: Params<'a>,
+        salt: Salt<'a>,
     ) -> Result<PasswordHash<'a>, HasherError>;
 
     /// Compute this password hashing function against the provided password
@@ -90,7 +90,7 @@ pub trait PasswordHasher {
     fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<(), VerifyError> {
         if let (Some(salt), Some(expected_output)) = (&hash.salt, &hash.hash) {
             let computed_hash =
-                self.hash_password(Some(hash.algorithm), password, *salt, hash.params.clone())?;
+                self.hash_password(password, Some(hash.algorithm), hash.params.clone(), *salt)?;
 
             if let Some(computed_output) = &computed_hash.hash {
                 // See notes on `Output` about the use of a constant-time comparison
@@ -276,7 +276,7 @@ impl<'a> PasswordHash<'a> {
         salt: Salt<'a>,
         params: Params<'a>,
     ) -> Result<Self, HasherError> {
-        phf.hash_password(None, password.as_ref(), salt, params)
+        phf.hash_password(password.as_ref(), None, params, salt)
     }
 
     /// Verify this password hash using the specified set of supported
