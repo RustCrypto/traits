@@ -1,4 +1,4 @@
-# RustCrypto: Traits ![Rust Version][rustc-image] [![Project Chat][chat-image]][chat-link]
+# RustCrypto: Traits ![Rust Version][rustc-image] [![Project Chat][chat-image]][chat-link] [![dependency status](https://deps.rs/repo/github/RustCrypto/traits/status.svg)](https://deps.rs/repo/github/RustCrypto/traits)
 
 Collection of traits which describe functionality of cryptographic primitives.
 
