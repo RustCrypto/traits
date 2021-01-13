@@ -27,16 +27,11 @@
 //! [SIGMA]: https://webee.technion.ac.il/~hugo/sigma-pdf.pdf
 
 use crate::{
-    consts::U1,
-    public_key::PublicKey,
-    scalar::NonZeroScalar,
-    sec1::{EncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize},
-    weierstrass::Curve,
-    AffinePoint, FieldBytes, ProjectiveArithmetic, ProjectivePoint, Scalar,
+    public_key::PublicKey, scalar::NonZeroScalar, weierstrass::Curve, AffinePoint, FieldBytes,
+    ProjectiveArithmetic, ProjectivePoint, Scalar,
 };
-use core::{borrow::Borrow, fmt::Debug, ops::Add};
+use core::{borrow::Borrow, fmt::Debug};
 use ff::PrimeField;
-use generic_array::ArrayLength;
 use group::Curve as _;
 use rand_core::{CryptoRng, RngCore};
 use zeroize::Zeroize;
@@ -68,18 +63,15 @@ pub fn diffie_hellman<C>(
 where
     C: Curve + ProjectiveArithmetic,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
-    AffinePoint<C>: Copy + Clone + Debug + ToEncodedPoint<C> + Zeroize,
+    AffinePoint<C>: Copy + Clone + Debug + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
-    let shared_secret =
-        ProjectivePoint::<C>::from(*public_key.borrow()) * secret_key.borrow().as_ref();
-
-    // SharedSecret::new expects an uncompressed point
-    // TODO(tarcieri): avoid point encoding when computing shared secret
-    // See: <https://github.com/RustCrypto/traits/issues/417>
-    SharedSecret::new(shared_secret.to_affine().to_encoded_point(false))
+    let public_point = ProjectivePoint::<C>::from(*public_key.borrow());
+    let mut secret_point = (public_point * secret_key.borrow().as_ref()).to_affine();
+    let shared_secret = SharedSecret::from(&secret_point);
+    secret_point.zeroize();
+    shared_secret
 }
 
 /// Ephemeral Diffie-Hellman Secret.
@@ -115,10 +107,9 @@ impl<C> EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
-    AffinePoint<C>: Copy + Clone + Debug + ToEncodedPoint<C> + Zeroize,
+    AffinePoint<C>: Copy + Clone + Debug + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     /// Generate a cryptographically random [`EphemeralSecret`].
     pub fn random(rng: impl CryptoRng + RngCore) -> Self {
@@ -145,10 +136,9 @@ impl<C> From<&EphemeralSecret<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
-    AffinePoint<C>: Copy + Clone + Debug + ToEncodedPoint<C> + Zeroize,
+    AffinePoint<C>: Copy + Clone + Debug + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     fn from(ephemeral_secret: &EphemeralSecret<C>) -> Self {
         ephemeral_secret.public_key()
@@ -188,36 +178,14 @@ where
 ///
 /// Instead, the resulting value should be used as input to a Key Derivation
 /// Function (KDF) or cryptographic hash function to produce a symmetric key.
-// TODO(tarcieri): avoid SEC1 point encoding when computing shared secret
-// See: <https://github.com/RustCrypto/traits/issues/417>
-pub struct SharedSecret<C>
-where
-    C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
-{
+// TODO(tarcieri): KDF traits and support for deriving uniform keys
+// See: https://github.com/RustCrypto/traits/issues/5
+pub struct SharedSecret<C: Curve> {
     /// Computed secret value
     secret_bytes: FieldBytes<C>,
 }
 
-impl<C> SharedSecret<C>
-where
-    C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
-    AffinePoint<C>: Zeroize,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    /// Create a new shared secret from the given uncompressed curve point
-    fn new(mut encoded_point: EncodedPoint<C>) -> Self {
-        let secret_bytes = encoded_point
-            .x()
-            .cloned()
-            .expect("encoded point is identity");
-
-        encoded_point.zeroize();
-        Self { secret_bytes }
-    }
-
+impl<C: Curve> SharedSecret<C> {
     /// Shared secret value, serialized as bytes.
     ///
     /// As noted in the comments for this struct, this value is non-uniform and
@@ -229,21 +197,25 @@ where
     }
 }
 
-impl<C> Zeroize for SharedSecret<C>
-where
-    C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
-{
+impl<C: Curve> From<FieldBytes<C>> for SharedSecret<C> {
+    /// NOTE: this impl is intended to be used by curve implementations to
+    /// instantiate a [`SharedSecret`] value from their respective
+    /// [`AffinePoint`] type.
+    ///
+    /// Curve implementations should provide the field element representing
+    /// the affine x-coordinate as `secret_bytes`.
+    fn from(secret_bytes: FieldBytes<C>) -> Self {
+        Self { secret_bytes }
+    }
+}
+
+impl<C: Curve> Zeroize for SharedSecret<C> {
     fn zeroize(&mut self) {
         self.secret_bytes.zeroize()
     }
 }
 
-impl<C> Drop for SharedSecret<C>
-where
-    C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
-{
+impl<C: Curve> Drop for SharedSecret<C> {
     fn drop(&mut self) {
         self.zeroize();
     }
