@@ -39,14 +39,14 @@ const MAX_LENGTH: usize = 8;
 ///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#specification
 #[derive(Clone, Default, Eq, PartialEq)]
-pub struct Params<'a> {
+pub struct ParamsBuf<'a> {
     /// Name/value pairs.
     ///
     /// Name (i.e. the [`Ident`]) *MUST* be unique.
     pairs: [Option<Pair<'a>>; MAX_LENGTH],
 }
 
-impl<'a> Params<'a> {
+impl<'a> ParamsBuf<'a> {
     /// Create new empty [`Params`].
     pub fn new() -> Self {
         Self::default()
@@ -119,13 +119,13 @@ impl<'a> Params<'a> {
     }
 }
 
-impl<'a> FromIterator<Pair<'a>> for Params<'a> {
+impl<'a> FromIterator<Pair<'a>> for ParamsBuf<'a> {
     fn from_iter<I>(iter: I) -> Self
     where
         I: IntoIterator<Item = Pair<'a>>,
     {
         iter.into_iter()
-            .fold(Params::new(), |params, (name, value)| {
+            .fold(ParamsBuf::new(), |params, (name, value)| {
                 params.add(name, value).expect("error adding param")
             })
     }
@@ -133,11 +133,11 @@ impl<'a> FromIterator<Pair<'a>> for Params<'a> {
 
 // Note: this uses `TryFrom` instead of `FromStr` to support a lifetime on
 // the `str` the value is being parsed from.
-impl<'a> TryFrom<&'a str> for Params<'a> {
+impl<'a> TryFrom<&'a str> for ParamsBuf<'a> {
     type Error = ParamsError;
 
     fn try_from(input: &'a str) -> Result<Self, ParamsError> {
-        let mut params = Params::new();
+        let mut params = ParamsBuf::new();
 
         if input.is_empty() {
             return Ok(params);
@@ -166,7 +166,7 @@ impl<'a> TryFrom<&'a str> for Params<'a> {
     }
 }
 
-impl<'a> Index<Ident<'a>> for Params<'a> {
+impl<'a> Index<Ident<'a>> for ParamsBuf<'a> {
     type Output = Value<'a>;
 
     fn index(&self, name: Ident<'a>) -> &Value<'a> {
@@ -175,7 +175,7 @@ impl<'a> Index<Ident<'a>> for Params<'a> {
     }
 }
 
-impl<'a> Index<&'a str> for Params<'a> {
+impl<'a> Index<&'a str> for ParamsBuf<'a> {
     type Output = Value<'a>;
 
     fn index(&self, name: &'a str) -> &Value<'a> {
@@ -183,7 +183,7 @@ impl<'a> Index<&'a str> for Params<'a> {
     }
 }
 
-impl<'a> fmt::Display for Params<'a> {
+impl<'a> fmt::Display for ParamsBuf<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let n = self.len();
 
@@ -199,7 +199,7 @@ impl<'a> fmt::Display for Params<'a> {
     }
 }
 
-impl<'a> fmt::Debug for Params<'a> {
+impl<'a> fmt::Debug for ParamsBuf<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_map()
             .entries(
@@ -230,11 +230,11 @@ mod tests {
     use alloc::string::ToString;
     use core::convert::TryFrom;
 
-    use super::{FromIterator, Ident, Params, ParamsError};
+    use super::{FromIterator, Ident, ParamsBuf, ParamsError};
 
     #[test]
     fn add_chain() {
-        let params = Params::new()
+        let params = ParamsBuf::new()
             .add(Ident::new("a"), 1u32.into())
             .and_then(|p| p.add(Ident::new("b"), 2u32.into()))
             .and_then(|p| p.add(Ident::new("c"), 3u32.into()))
@@ -249,14 +249,14 @@ mod tests {
     #[test]
     fn duplicate_names() {
         let name = Ident::new("a");
-        let params = Params::new().add(name, 1u32.into()).unwrap();
+        let params = ParamsBuf::new().add(name, 1u32.into()).unwrap();
         let err = params.add(name, 2u32.into()).err().unwrap();
         assert_eq!(err, ParamsError::DuplicateName);
     }
 
     #[test]
     fn from_slice() {
-        let params = Params::from_slice(&[
+        let params = ParamsBuf::from_slice(&[
             (Ident::new("a"), 1u32.into()),
             (Ident::new("b"), 2u32.into()),
             (Ident::new("c"), 3u32.into()),
@@ -271,7 +271,7 @@ mod tests {
 
     #[test]
     fn from_iterator() {
-        let params = Params::from_iter(
+        let params = ParamsBuf::from_iter(
             [
                 (Ident::new("a"), 1u32.into()),
                 (Ident::new("b"), 2u32.into()),
@@ -289,7 +289,7 @@ mod tests {
 
     #[test]
     fn iter() {
-        let params = Params::from_slice(&[
+        let params = ParamsBuf::from_slice(&[
             (Ident::new("a"), 1u32.into()),
             (Ident::new("b"), 2u32.into()),
             (Ident::new("c"), 3u32.into()),
@@ -309,20 +309,20 @@ mod tests {
 
     #[test]
     fn parse_empty() {
-        let params = Params::try_from("").unwrap();
+        let params = ParamsBuf::try_from("").unwrap();
         assert!(params.is_empty());
     }
 
     #[test]
     fn parse_one() {
-        let params = Params::try_from("a=1").unwrap();
+        let params = ParamsBuf::try_from("a=1").unwrap();
         assert_eq!(params.len(), 1);
         assert_eq!(params["a"].decimal().unwrap(), 1);
     }
 
     #[test]
     fn parse_many() {
-        let params = Params::try_from("a=1,b=2,c=3").unwrap();
+        let params = ParamsBuf::try_from("a=1,b=2,c=3").unwrap();
         assert_eq!(params.len(), 3);
         assert_eq!(params["a"].decimal().unwrap(), 1);
         assert_eq!(params["b"].decimal().unwrap(), 2);
@@ -336,21 +336,21 @@ mod tests {
     #[test]
     #[cfg(feature = "alloc")]
     fn display_empty() {
-        let params = Params::new();
+        let params = ParamsBuf::new();
         assert_eq!(params.to_string(), "");
     }
 
     #[test]
     #[cfg(feature = "alloc")]
     fn display_one() {
-        let params = Params::from_slice(&[(Ident::new("a"), 1u32.into())]).unwrap();
+        let params = ParamsBuf::from_slice(&[(Ident::new("a"), 1u32.into())]).unwrap();
         assert_eq!(params.to_string(), "a=1");
     }
 
     #[test]
     #[cfg(feature = "alloc")]
     fn display_many() {
-        let params = Params::from_slice(&[
+        let params = ParamsBuf::from_slice(&[
             (Ident::new("a"), 1u32.into()),
             (Ident::new("b"), 2u32.into()),
             (Ident::new("c"), 3u32.into()),

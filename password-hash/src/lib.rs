@@ -41,22 +41,6 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-use core::{
-    convert::{TryFrom, TryInto},
-    fmt,
-};
-
-pub use crate::{
-    errors::{HashError, HasherError, VerifyError},
-    ident::Ident,
-    output::Output,
-    params::Params,
-    salt::Salt,
-    value::{Decimal, Value, ValueStr},
-};
-
-pub use b64ct as b64;
-
 pub mod errors;
 
 mod ident;
@@ -65,11 +49,33 @@ mod params;
 mod salt;
 mod value;
 
+pub use crate::{
+    errors::{HashError, HasherError, VerifyError},
+    ident::Ident,
+    output::Output,
+    params::ParamsBuf,
+    salt::Salt,
+    value::{Decimal, Value, ValueStr},
+};
+
+pub use b64ct as b64;
+
+use core::{
+    convert::{TryFrom, TryInto},
+    fmt::{self, Debug},
+};
+
 /// Separator character used in password hashes (e.g. `$6$...`).
 const PASSWORD_HASH_SEPARATOR: char = '$';
 
 /// Trait for password hashing functions.
 pub trait PasswordHasher {
+    /// Algorithm-specific parameters.
+    type Params: Clone
+        + Debug
+        + for<'a> TryFrom<&'a ParamsBuf<'a>, Error = HasherError>
+        + for<'a> TryInto<ParamsBuf<'a>, Error = HasherError>;
+
     /// Compute a [`PasswordHash`] with the given algorithm [`Ident`]
     /// (or `None` for the recommended default), password, salt, and optional
     /// [`Params`].
@@ -80,17 +86,34 @@ pub trait PasswordHasher {
         &self,
         password: &[u8],
         algorithm: Option<Ident<'a>>,
-        params: Params<'a>,
+        params: Self::Params,
         salt: Salt<'a>,
     ) -> Result<PasswordHash<'a>, HasherError>;
+}
 
+/// Trait for password verification.
+///
+/// Automatically impl'd for any type that impls [`PasswordHasher`].
+///
+/// This trait is object safe and can be used to implement abstractions over
+/// multiple password hashing algorithms. One such abstraction is provided by
+/// the [`PasswordHash::verify_password`] method.
+pub trait PasswordVerifier {
     /// Compute this password hashing function against the provided password
     /// using the parameters from the provided password hash and see if the
     /// computed output matches.
+    fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<(), VerifyError>;
+}
+
+impl<T: PasswordHasher> PasswordVerifier for T {
     fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<(), VerifyError> {
         if let (Some(salt), Some(expected_output)) = (&hash.salt, &hash.hash) {
-            let computed_hash =
-                self.hash_password(password, Some(hash.algorithm), hash.params.clone(), *salt)?;
+            let computed_hash = self.hash_password(
+                password,
+                Some(hash.algorithm),
+                T::Params::try_from(&hash.params)?,
+                *salt,
+            )?;
 
             if let Some(computed_output) = &computed_hash.hash {
                 // See notes on `Output` about the use of a constant-time comparison
@@ -122,10 +145,9 @@ pub trait McfHasher {
     /// Verify a password hash in MCF format against the provided password.
     fn verify_mcf_hash(&self, password: &[u8], mcf_hash: &str) -> Result<(), VerifyError>
     where
-        Self: PasswordHasher,
+        Self: PasswordVerifier,
     {
-        let phc_hash = self.upgrade_mcf_hash(mcf_hash)?;
-        self.verify_password(password, &phc_hash)
+        self.verify_password(password, &self.upgrade_mcf_hash(mcf_hash)?)
     }
 }
 
@@ -183,7 +205,7 @@ pub struct PasswordHash<'a> {
     ///
     /// This corresponds to the set of `$<param>=<value>(,<param>=<value>)*`
     /// name/value pairs in a PHC string.
-    pub params: Params<'a>,
+    pub params: ParamsBuf<'a>,
 
     /// [`Salt`] string for personalizing a password hash output.
     ///
@@ -218,7 +240,7 @@ impl<'a> PasswordHash<'a> {
             .and_then(Ident::try_from)?;
 
         let mut version = None;
-        let mut params = Params::new();
+        let mut params = ParamsBuf::new();
         let mut salt = None;
         let mut hash = None;
 
@@ -239,7 +261,7 @@ impl<'a> PasswordHash<'a> {
         if let Some(field) = next_field {
             // <param>=<value>
             if field.contains(params::PAIR_DELIMITER) {
-                params = Params::try_from(field)?;
+                params = ParamsBuf::try_from(field)?;
                 next_field = None;
             }
         }
@@ -274,16 +296,16 @@ impl<'a> PasswordHash<'a> {
         phf: impl PasswordHasher,
         password: impl AsRef<[u8]>,
         salt: Salt<'a>,
-        params: Params<'a>,
+        params: &ParamsBuf<'a>,
     ) -> Result<Self, HasherError> {
-        phf.hash_password(password.as_ref(), None, params, salt)
+        phf.hash_password(password.as_ref(), None, params.try_into()?, salt)
     }
 
     /// Verify this password hash using the specified set of supported
     /// [`PasswordHasher`] trait objects.
     pub fn verify_password(
         &self,
-        phfs: &[&dyn PasswordHasher],
+        phfs: &[&dyn PasswordVerifier],
         password: impl AsRef<[u8]>,
     ) -> Result<(), VerifyError> {
         for &phf in phfs {
