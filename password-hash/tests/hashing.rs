@@ -1,19 +1,23 @@
-/// Password hashing tests
+//! Password hashing tests
+
 pub use password_hash::{
-    HasherError, Ident, Output, Params, PasswordHash, PasswordHasher, Salt, VerifyError,
+    HasherError, Ident, Output, ParamsBuf, PasswordHash, PasswordHasher, Salt, VerifyError,
 };
+use std::convert::{TryFrom, TryInto};
 
 const ALG: Ident = Ident::new("example");
 
 /// Stub password hashing function for testing.
-pub struct StubFunction;
+pub struct StubPasswordHasher;
 
-impl PasswordHasher for StubFunction {
+impl PasswordHasher for StubPasswordHasher {
+    type Params = StubParams;
+
     fn hash_password<'a>(
         &self,
         password: &[u8],
         algorithm: Option<Ident<'a>>,
-        params: Params<'a>,
+        params: StubParams,
         salt: Salt<'a>,
     ) -> Result<PasswordHash<'a>, HasherError> {
         let mut output = Vec::new();
@@ -33,10 +37,30 @@ impl PasswordHasher for StubFunction {
         Ok(PasswordHash {
             algorithm: ALG,
             version: None,
-            params,
+            params: params.try_into()?,
             salt: Some(salt),
             hash: Some(hash),
         })
+    }
+}
+
+/// Stub parameters
+#[derive(Clone, Debug)]
+pub struct StubParams;
+
+impl<'a> TryFrom<&'a ParamsBuf<'a>> for StubParams {
+    type Error = HasherError;
+
+    fn try_from(_: &'a ParamsBuf<'a>) -> Result<Self, HasherError> {
+        Ok(Self)
+    }
+}
+
+impl<'a> TryFrom<StubParams> for ParamsBuf<'a> {
+    type Error = HasherError;
+
+    fn try_from(_: StubParams) -> Result<Self, HasherError> {
+        Ok(Self::default())
     }
 }
 
@@ -44,8 +68,8 @@ impl PasswordHasher for StubFunction {
 fn verify_password_hash() {
     let valid_password = "test password";
     let salt = Salt::new("test-salt").unwrap();
-    let params = Params::new();
-    let hash = PasswordHash::generate(StubFunction, valid_password, salt, params.clone()).unwrap();
+    let params = ParamsBuf::new();
+    let hash = PasswordHash::generate(StubPasswordHasher, valid_password, salt, &params).unwrap();
 
     // Sanity tests for StubFunction impl above
     assert_eq!(hash.algorithm, ALG);
@@ -54,12 +78,12 @@ fn verify_password_hash() {
 
     // Tests for generic password verification logic
     assert_eq!(
-        hash.verify_password(&[&StubFunction], valid_password),
+        hash.verify_password(&[&StubPasswordHasher], valid_password),
         Ok(())
     );
 
     assert_eq!(
-        hash.verify_password(&[&StubFunction], "wrong password"),
+        hash.verify_password(&[&StubPasswordHasher], "wrong password"),
         Err(VerifyError)
     );
 }
