@@ -53,9 +53,9 @@ pub use crate::{
     errors::{HashError, HasherError, VerifyError},
     ident::Ident,
     output::Output,
-    params::ParamsBuf,
+    params::ParamsString,
     salt::Salt,
-    value::{Decimal, Value, ValueStr},
+    value::{Decimal, Value},
 };
 
 pub use b64ct as b64;
@@ -73,15 +73,13 @@ pub trait PasswordHasher {
     /// Algorithm-specific parameters.
     type Params: Clone
         + Debug
-        + for<'a> TryFrom<&'a ParamsBuf<'a>, Error = HasherError>
-        + for<'a> TryInto<ParamsBuf<'a>, Error = HasherError>;
+        + Default
+        + for<'a> TryFrom<&'a ParamsString, Error = HasherError>
+        + for<'a> TryInto<ParamsString, Error = HasherError>;
 
     /// Compute a [`PasswordHash`] with the given algorithm [`Ident`]
-    /// (or `None` for the recommended default), password, salt, and optional
-    /// [`Params`].
-    ///
-    /// Use [`Params::new`] or [`Params::default`] to use the default
-    /// parameters for a given algorithm.
+    /// (or `None` for the recommended default), password, salt, and
+    /// parameters.
     fn hash_password<'a>(
         &self,
         password: &[u8],
@@ -201,11 +199,11 @@ pub struct PasswordHash<'a> {
     /// See: <https://github.com/P-H-C/phc-string-format/pull/4>
     pub version: Option<Decimal>,
 
-    /// Algorithm-specific [`Params`].
+    /// Algorithm-specific parameters.
     ///
     /// This corresponds to the set of `$<param>=<value>(,<param>=<value>)*`
     /// name/value pairs in a PHC string.
-    pub params: ParamsBuf<'a>,
+    pub params: ParamsString,
 
     /// [`Salt`] string for personalizing a password hash output.
     ///
@@ -240,7 +238,7 @@ impl<'a> PasswordHash<'a> {
             .and_then(Ident::try_from)?;
 
         let mut version = None;
-        let mut params = ParamsBuf::new();
+        let mut params = ParamsString::new();
         let mut salt = None;
         let mut hash = None;
 
@@ -249,7 +247,7 @@ impl<'a> PasswordHash<'a> {
         if let Some(field) = next_field {
             // v=<version>
             if field.starts_with("v=") && !field.contains(params::PARAMS_DELIMITER) {
-                version = Some(ValueStr::new(&field[2..]).and_then(|value| value.decimal())?);
+                version = Some(Value::new(&field[2..]).and_then(|value| value.decimal())?);
                 next_field = None;
             }
         }
@@ -261,7 +259,7 @@ impl<'a> PasswordHash<'a> {
         if let Some(field) = next_field {
             // <param>=<value>
             if field.contains(params::PAIR_DELIMITER) {
-                params = ParamsBuf::try_from(field)?;
+                params = field.parse()?;
                 next_field = None;
             }
         }
@@ -296,7 +294,7 @@ impl<'a> PasswordHash<'a> {
         phf: impl PasswordHasher,
         password: impl AsRef<[u8]>,
         salt: Salt<'a>,
-        params: &ParamsBuf<'a>,
+        params: &ParamsString,
     ) -> Result<Self, HasherError> {
         phf.hash_password(password.as_ref(), None, params.try_into()?, salt)
     }

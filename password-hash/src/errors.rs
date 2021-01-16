@@ -69,7 +69,7 @@ pub enum HasherError {
     Output(OutputError),
 
     /// Invalid parameter.
-    Param,
+    Params(ParamsError),
 
     /// Parse error.
     Parse(ParseError),
@@ -85,7 +85,7 @@ impl fmt::Display for HasherError {
             Self::B64(err) => write!(f, "{}", err),
             Self::Crypto => write!(f, "cryptographic error"),
             Self::Output(err) => write!(f, "PHF output error: {}", err),
-            Self::Param => write!(f, "invalid algorithm parameter"),
+            Self::Params(err) => write!(f, "{}", err),
             Self::Parse(err) => write!(f, "{}", err),
             Self::Password => write!(f, "invalid password"),
         }
@@ -104,6 +104,12 @@ impl From<OutputError> for HasherError {
     }
 }
 
+impl From<ParamsError> for HasherError {
+    fn from(err: ParamsError) -> HasherError {
+        HasherError::Params(err)
+    }
+}
+
 impl From<ParseError> for HasherError {
     fn from(err: ParseError) -> HasherError {
         HasherError::Parse(err)
@@ -119,6 +125,12 @@ pub enum ParamsError {
     /// Duplicate parameter name encountered.
     DuplicateName,
 
+    /// Invalid parameter name.
+    InvalidName,
+
+    /// Invalid parameter value.
+    InvalidValue,
+
     /// Maximum number of parameters exceeded.
     MaxExceeded,
 
@@ -130,6 +142,8 @@ impl fmt::Display for ParamsError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
             Self::DuplicateName => f.write_str("duplicate parameter"),
+            Self::InvalidName => f.write_str("invalid parameter name"),
+            Self::InvalidValue => f.write_str("invalid parameter value"),
             Self::MaxExceeded => f.write_str("maximum number of parameters reached"),
             Self::Parse(err) => write!(f, "{}", err),
         }

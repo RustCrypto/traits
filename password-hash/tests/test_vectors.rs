@@ -13,10 +13,10 @@ fn argon2id() {
     let ph = PasswordHash::new(ARGON2D_HASH).unwrap();
     assert_eq!(ph.algorithm, Ident::new("argon2d"));
     assert_eq!(ph.version, Some(19));
-    assert_eq!(ph.params.len(), 3);
-    assert_eq!(ph.params["m"].decimal().unwrap(), 512);
-    assert_eq!(ph.params["t"].decimal().unwrap(), 3);
-    assert_eq!(ph.params["p"].decimal().unwrap(), 2);
+    assert_eq!(ph.params.iter().count(), 3);
+    assert_eq!(ph.params.get_decimal("m").unwrap(), 512);
+    assert_eq!(ph.params.get_decimal("t").unwrap(), 3);
+    assert_eq!(ph.params.get_decimal("p").unwrap(), 2);
     assert_eq!(ph.salt.unwrap().as_ref(), "5VtWOO3cGWYQHEMaYGbsfQ");
     assert_eq!(ph.hash.unwrap().to_string(), "AcmqasQgW/wI6wAHAMk4aQ");
     assert_eq!(ph.to_string(), ARGON2D_HASH);

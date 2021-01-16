@@ -1,6 +1,6 @@
 //! Salt string support.
 
-use crate::{b64, errors::ParseError, ValueStr};
+use crate::{b64, errors::ParseError, Value};
 use core::{
     convert::{TryFrom, TryInto},
     fmt, str,
@@ -71,7 +71,7 @@ use core::{
 /// [2]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#function-duties
 /// [3]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub struct Salt<'a>(ValueStr<'a>);
+pub struct Salt<'a>(Value<'a>);
 
 impl<'a> Salt<'a> {
     /// Minimum length of a [`Salt`] string: 2-bytes.
@@ -86,7 +86,7 @@ impl<'a> Salt<'a> {
     ///
     /// See type-level documentation about [`Salt`] for more information.
     pub const fn max_len() -> usize {
-        ValueStr::max_len()
+        Value::max_len()
     }
 
     /// Recommended length of a salt: 16-bytes.

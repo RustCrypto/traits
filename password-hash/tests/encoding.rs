@@ -7,7 +7,7 @@
 #![cfg(feature = "registry")]
 
 use core::convert::TryInto;
-use password_hash::{algorithm::argon2, Algorithm, ParamsBuf, PasswordHash};
+use password_hash::{algorithm::argon2, Algorithm, ParamsString, PasswordHash};
 
 const EXAMPLE_ALGORITHM: Algorithm = Algorithm::Argon2(argon2::Variant::D);
 const EXAMPLE_SALT: &[u8] = &[
@@ -19,8 +19,8 @@ const EXAMPLE_HASH: &[u8] = &[
 ];
 
 /// Example parameters
-fn example_params() -> ParamsBuf {
-    ParamsBuf::from_slice(&[
+fn example_params() -> ParamsString {
+    ParamsString::from_pairs(&[
         ("a".parse().unwrap(), 1u32.into()),
         ("b".parse().unwrap(), 2u32.into()),
         ("c".parse().unwrap(), 3u32.into()),
@@ -59,7 +59,7 @@ fn params() {
 fn salt() {
     let ph = PasswordHash {
         algorithm: EXAMPLE_ALGORITHM,
-        params: ParamsBuf::new(),
+        params: ParamsString::new(),
         salt: Some(EXAMPLE_SALT.try_into().unwrap()),
         hash: None,
     };
@@ -73,7 +73,7 @@ fn salt() {
 
 #[test]
 fn one_param_and_salt() {
-    let params = ParamsBuf::from_slice(&[("a".parse().unwrap(), 1u32.into())]).unwrap();
+    let params = ParamsString::from_pairs(&[("a".parse().unwrap(), 1u32.into())]).unwrap();
 
     let ph = PasswordHash {
         algorithm: EXAMPLE_ALGORITHM,
@@ -109,7 +109,7 @@ fn params_and_salt() {
 fn salt_and_hash() {
     let ph = PasswordHash {
         algorithm: EXAMPLE_ALGORITHM,
-        params: ParamsBuf::default(),
+        params: ParamsString::default(),
         salt: Some(EXAMPLE_SALT.try_into().unwrap()),
         hash: Some(EXAMPLE_HASH.try_into().unwrap()),
     };

@@ -22,87 +22,6 @@ const MAX_LENGTH: usize = 48;
 /// Type used to represent decimal (i.e. integer) values.
 pub type Decimal = u32;
 
-/// Algorithm parameter value.
-///
-/// Provides an enum over [`Decimal`] and string (i.e. [`ValueStr`]) values
-/// to allow ergonomically using and parsing integer values, which is the
-/// main use case for this type.
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub enum Value<'a> {
-    /// Decimal value.
-    Decimal(Decimal),
-
-    /// String value.
-    Str(ValueStr<'a>),
-}
-
-impl<'a> Value<'a> {
-    /// Parse a [`Value`] from the provided `str`, validating it according to
-    /// the PHC string format's rules.
-    pub fn new(input: &'a str) -> Result<Self, ParseError> {
-        ValueStr::new(input).map(Value::Str)
-    }
-
-    /// Borrow the inner value as a `str`, if it is one.
-    ///
-    /// Returns `None` if the inner value is a [`Value::Decimal`].
-    pub fn as_str(&self) -> Option<&'a str> {
-        match self {
-            Self::Decimal(_) => None,
-            Self::Str(s) => Some(s.as_str()),
-        }
-    }
-
-    /// Parse a [`Decimal`] from this [`Value`].
-    ///
-    /// If this value is a [`Value::Decimal`], the decimal value is returned,
-    /// otherwise if it's a [`Value::Str`] the value is parsed using the
-    /// [`ValueStr::decimal`] method.
-    pub fn decimal(&self) -> Result<Decimal, ParseError> {
-        match self {
-            Self::Decimal(x) => Ok(*x),
-            Self::Str(s) => s.decimal(),
-        }
-    }
-
-    /// Does this value parse successfully as a decimal?
-    pub fn is_decimal(&self) -> bool {
-        self.decimal().is_ok()
-    }
-}
-
-impl<'a> From<Decimal> for Value<'a> {
-    fn from(decimal: Decimal) -> Value<'a> {
-        Value::Decimal(decimal)
-    }
-}
-
-impl<'a> TryFrom<&'a str> for Value<'a> {
-    type Error = ParseError;
-
-    fn try_from(input: &'a str) -> Result<Self, ParseError> {
-        Self::new(input)
-    }
-}
-
-impl<'a> fmt::Display for Value<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Decimal(x) => write!(f, "{}", x),
-            Self::Str(s) => f.write_str(s.as_str()),
-        }
-    }
-}
-
-impl<'a> fmt::Debug for Value<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Decimal(x) => f.debug_tuple("Value::Decimal").field(x).finish(),
-            Self::Str(s) => f.debug_tuple("Value::Str").field(s).finish(),
-        }
-    }
-}
-
 /// Algorithm parameter value string.
 ///
 /// Parameter values are defined in the [PHC string format specification][1].
@@ -116,15 +35,15 @@ impl<'a> fmt::Debug for Value<'a> {
 /// # Additional Notes
 /// The PHC spec allows for algorithm-defined maximum lengths for parameter
 /// values, however in the interest of interoperability this library defines a
-/// [`ValueStr::max_len`] of 48 ASCII characters.
+/// [`Value::max_len`] of 48 ASCII characters.
 ///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 /// [2]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
 #[derive(Copy, Clone, Debug, Eq, Hash, PartialEq, PartialOrd, Ord)]
-pub struct ValueStr<'a>(&'a str);
+pub struct Value<'a>(&'a str);
 
-impl<'a> ValueStr<'a> {
-    /// Maximum length of an [`ValueStr`] - 48 ASCII characters (i.e. 48-bytes).
+impl<'a> Value<'a> {
+    /// Maximum length of an [`Value`] - 48 ASCII characters (i.e. 48-bytes).
     ///
     /// This value is selected based on the maximum value size used in the
     /// [Argon2 Encoding][1] as described in the PHC string format specification.
@@ -138,7 +57,7 @@ impl<'a> ValueStr<'a> {
         MAX_LENGTH
     }
 
-    /// Parse a [`ValueStr`] from the provided `str`, validating it according to
+    /// Parse a [`Value`] from the provided `str`, validating it according to
     /// the PHC string format's rules.
     pub fn new(input: &'a str) -> Result<Self, ParseError> {
         if input.as_bytes().len() > MAX_LENGTH {
@@ -150,7 +69,7 @@ impl<'a> ValueStr<'a> {
         Ok(Self(input))
     }
 
-    /// Attempt to decode a [`b64`]-encoded [`ValueStr`], writing the decoded
+    /// Attempt to decode a [`b64`]-encoded [`Value`], writing the decoded
     /// result into the provided buffer, and returning a slice of the buffer
     /// containing the decoded result on success.
     ///
@@ -183,7 +102,7 @@ impl<'a> ValueStr<'a> {
         self.as_str().is_empty()
     }
 
-    /// Attempt to parse this [`ValueStr`] as a PHC-encoded decimal (i.e. integer).
+    /// Attempt to parse this [`Value`] as a PHC-encoded decimal (i.e. integer).
     ///
     /// Decimal values are integers which follow the rules given in the
     /// ["Decimal Encoding" section of the PHC string format specification][1].
@@ -245,13 +164,13 @@ impl<'a> ValueStr<'a> {
     }
 }
 
-impl<'a> AsRef<str> for ValueStr<'a> {
+impl<'a> AsRef<str> for Value<'a> {
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl<'a> TryFrom<&'a str> for ValueStr<'a> {
+impl<'a> TryFrom<&'a str> for Value<'a> {
     type Error = ParseError;
 
     fn try_from(input: &'a str) -> Result<Self, ParseError> {
@@ -259,23 +178,23 @@ impl<'a> TryFrom<&'a str> for ValueStr<'a> {
     }
 }
 
-impl<'a> TryFrom<ValueStr<'a>> for Decimal {
+impl<'a> TryFrom<Value<'a>> for Decimal {
     type Error = ParseError;
 
-    fn try_from(value: ValueStr<'a>) -> Result<Decimal, ParseError> {
+    fn try_from(value: Value<'a>) -> Result<Decimal, ParseError> {
         Decimal::try_from(&value)
     }
 }
 
-impl<'a> TryFrom<&ValueStr<'a>> for Decimal {
+impl<'a> TryFrom<&Value<'a>> for Decimal {
     type Error = ParseError;
 
-    fn try_from(value: &ValueStr<'a>) -> Result<Decimal, ParseError> {
+    fn try_from(value: &Value<'a>) -> Result<Decimal, ParseError> {
         value.decimal()
     }
 }
 
-impl<'a> fmt::Display for ValueStr<'a> {
+impl<'a> fmt::Display for Value<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
     }
@@ -299,7 +218,7 @@ fn is_char_valid(c: char) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{ParseError, ValueStr};
+    use super::{ParseError, Value};
     use core::convert::TryFrom;
 
     // Invalid value examples
@@ -316,7 +235,7 @@ mod tests {
         let valid_decimals = &[("0", 0u32), ("1", 1u32), ("4294967295", u32::MAX)];
 
         for &(s, i) in valid_decimals {
-            let value = ValueStr::new(s).unwrap();
+            let value = Value::new(s).unwrap();
             assert!(value.is_decimal());
             assert_eq!(value.decimal().unwrap(), i)
         }
@@ -324,21 +243,21 @@ mod tests {
 
     #[test]
     fn reject_decimal_with_leading_zero() {
-        let value = ValueStr::new("01").unwrap();
+        let value = Value::new("01").unwrap();
         let err = u32::try_from(value).err().unwrap();
         assert!(matches!(err, ParseError::InvalidChar('0')));
     }
 
     #[test]
     fn reject_overlong_decimal() {
-        let value = ValueStr::new("4294967296").unwrap();
+        let value = Value::new("4294967296").unwrap();
         let err = u32::try_from(value).err().unwrap();
         assert_eq!(err, ParseError::TooLong);
     }
 
     #[test]
     fn reject_negative() {
-        let value = ValueStr::new("-1").unwrap();
+        let value = Value::new("-1").unwrap();
         let err = u32::try_from(value).err().unwrap();
         assert!(matches!(err, ParseError::InvalidChar('-')));
     }
@@ -360,26 +279,26 @@ mod tests {
         ];
 
         for &example in &valid_examples {
-            let value = ValueStr::new(example).unwrap();
+            let value = Value::new(example).unwrap();
             assert_eq!(value.as_str(), example);
         }
     }
 
     #[test]
     fn reject_invalid_char() {
-        let err = ValueStr::new(INVALID_CHAR).err().unwrap();
+        let err = Value::new(INVALID_CHAR).err().unwrap();
         assert!(matches!(err, ParseError::InvalidChar(';')));
     }
 
     #[test]
     fn reject_too_long() {
-        let err = ValueStr::new(INVALID_TOO_LONG).err().unwrap();
+        let err = Value::new(INVALID_TOO_LONG).err().unwrap();
         assert_eq!(err, ParseError::TooLong);
     }
 
     #[test]
     fn reject_invalid_char_and_too_long() {
-        let err = ValueStr::new(INVALID_CHAR_AND_TOO_LONG).err().unwrap();
+        let err = Value::new(INVALID_CHAR_AND_TOO_LONG).err().unwrap();
         assert_eq!(err, ParseError::TooLong);
     }
 }

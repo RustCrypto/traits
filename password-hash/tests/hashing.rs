@@ -1,7 +1,7 @@
 //! Password hashing tests
 
 pub use password_hash::{
-    HasherError, Ident, Output, ParamsBuf, PasswordHash, PasswordHasher, Salt, VerifyError,
+    HasherError, Ident, Output, ParamsString, PasswordHash, PasswordHasher, Salt, VerifyError,
 };
 use std::convert::{TryFrom, TryInto};
 
@@ -45,18 +45,18 @@ impl PasswordHasher for StubPasswordHasher {
 }
 
 /// Stub parameters
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct StubParams;
 
-impl<'a> TryFrom<&'a ParamsBuf<'a>> for StubParams {
+impl<'a> TryFrom<&'a ParamsString> for StubParams {
     type Error = HasherError;
 
-    fn try_from(_: &'a ParamsBuf<'a>) -> Result<Self, HasherError> {
+    fn try_from(_: &'a ParamsString) -> Result<Self, HasherError> {
         Ok(Self)
     }
 }
 
-impl<'a> TryFrom<StubParams> for ParamsBuf<'a> {
+impl<'a> TryFrom<StubParams> for ParamsString {
     type Error = HasherError;
 
     fn try_from(_: StubParams) -> Result<Self, HasherError> {
@@ -68,7 +68,7 @@ impl<'a> TryFrom<StubParams> for ParamsBuf<'a> {
 fn verify_password_hash() {
     let valid_password = "test password";
     let salt = Salt::new("test-salt").unwrap();
-    let params = ParamsBuf::new();
+    let params = ParamsString::new();
     let hash = PasswordHash::generate(StubPasswordHasher, valid_password, salt, &params).unwrap();
 
     // Sanity tests for StubFunction impl above
