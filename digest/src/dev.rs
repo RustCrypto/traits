@@ -15,7 +15,8 @@ macro_rules! new_test {
             use digest::dev::blobby::Blob2Iterator;
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
 
-            for (i, [input, output]) in Blob2Iterator::new(data).unwrap().enumerate() {
+            for (i, row) in Blob2Iterator::new(data).unwrap().enumerate() {
+                let [input, output] = row?;
                 if let Some(desc) = $test_func::<$hasher>(input, output) {
                     panic!(
                         "\n\
