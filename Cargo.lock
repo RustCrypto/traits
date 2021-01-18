@@ -78,6 +78,16 @@ version = "0.10.0-pre"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a5ae77a4961d75e3e4505bbe155705bda23ff5948209c8face08f75c2cd52a0"
 dependencies = [
+ "block-padding",
+ "generic-array 0.14.4",
+]
+
+[[package]]
+name = "block-padding"
+version = "0.3.0-pre"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3992d179d1dd2fa87869057217d43cf88ad31d4e44738d159a5a6caafdf63ae6"
+dependencies = [
  "generic-array 0.14.4",
 ]
 
@@ -120,7 +130,7 @@ dependencies = [
  "aead",
  "cipher",
  "crypto-mac",
- "digest 0.10.0-pre",
+ "digest 0.10.0-pre.1",
  "elliptic-curve",
  "signature",
  "universal-hash",
@@ -156,7 +166,7 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.10.0-pre"
+version = "0.10.0-pre.1"
 dependencies = [
  "blobby",
  "block-buffer 0.10.0-pre",

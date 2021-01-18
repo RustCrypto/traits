@@ -1,7 +1,7 @@
 [package]
 name = "digest"
 description = "Traits for cryptographic hash functions"
-version = "0.10.0-pre"
+version = "0.10.0-pre.1"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -21,6 +21,7 @@ alloc = []
 std = ["alloc"]
 dev = ["blobby"]
 core-api = ["block-buffer"]
+block-padding = ["block-buffer/block-padding"]
 
 [package.metadata.docs.rs]
 all-features = true
