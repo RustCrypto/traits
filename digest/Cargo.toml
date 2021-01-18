@@ -17,7 +17,6 @@ blobby = { version = "0.3", optional = true }
 block-buffer = { version = "0.10.0-pre", optional = true }
 
 [features]
-default = ["core-api", "std", "blobby"]
 alloc = []
 std = ["alloc"]
 dev = ["blobby"]
