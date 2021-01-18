@@ -16,7 +16,7 @@ macro_rules! new_test {
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
 
             for (i, row) in Blob2Iterator::new(data).unwrap().enumerate() {
-                let [input, output] = row?;
+                let [input, output] = row.unwrap();
                 if let Some(desc) = $test_func::<$hasher>(input, output) {
                     panic!(
                         "\n\
