@@ -11,11 +11,11 @@
 //!   These traits atomically describe available functionality of hash function
 //!   implementations.
 //! - **Low-level traits**: [`UpdateCore`], [`FixedOutputCore`],
-//!   [`ExtendableOutputCore`]. These traits operate at a block-level and do not
-//!   contain any built-in buffering. They are intended to be implemented
-//!   by low-level algorithm providers only and simplify the amount of work
-//!   implementers need to do and therefore usually shouldn't be used in
-//!   application-level code.
+//!   [`ExtendableOutputCore`], [`AlgorithmName`]. These traits operate at
+//!   a block-level and do not contain any built-in buffering. They are intended
+//!   to be implemented by low-level algorithm providers only and simplify
+//!   the amount of work implementers need to do and therefore usually shouldn't
+//!   be used in application-level code.
 //!
 //! Additionally hash functions implement traits from the standard library:
 //! [`Default`], [`Clone`], [`Write`][std::io::Write]. The latter is
@@ -54,7 +54,10 @@ mod digest;
 mod dyn_digest;
 
 #[cfg(feature = "core-api")]
-pub use crate::core_api::{CoreWrapper, ExtendableOutputCore, FixedOutputCore, UpdateCore};
+pub use crate::core_api::{
+    AlgorithmName, ExtendableOutputCore, FixedOutputCore, UpdateCore, UpdateCoreWrapper,
+    XofReaderCoreWrapper,
+};
 pub use crate::digest::{Digest, Output};
 #[cfg(feature = "core-api")]
 pub use block_buffer;

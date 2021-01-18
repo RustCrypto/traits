@@ -1,6 +1,13 @@
 use crate::{ExtendableOutput, FixedOutput, Reset, Update, XofReader};
 use block_buffer::BlockBuffer;
+use core::fmt;
 use generic_array::{ArrayLength, GenericArray};
+
+/// Trait which stores algorithm name constant, used in `Debug` implementations.
+pub trait AlgorithmName {
+    /// Algorithm name.
+    const NAME: &'static str;
+}
 
 /// Trait for updating hasher state with input data divided into blocks.
 pub trait UpdateCore {
@@ -15,9 +22,9 @@ pub trait UpdateCore {
 /// hash output.
 ///
 /// Usage of this trait in user code is discouraged. Instead use core algorithm
-/// wrapped by [`crate::CoreWrapper`], which implements the [`FixedOutput`]
+/// wrapped by [`BlockBufferWrapper`], which implements the [`FixedOutput`]
 /// trait.
-pub trait FixedOutputCore: crate::UpdateCore {
+pub trait FixedOutputCore: UpdateCore {
     /// Digest output size in bytes.
     type OutputSize: ArrayLength<u8>;
 
@@ -38,9 +45,9 @@ pub trait FixedOutputCore: crate::UpdateCore {
 /// retrieve the hash output.
 ///
 /// Usage of this trait in user code is discouraged. Instead use core algorithm
-/// wrapped by [`crate::CoreWrapper`], which implements the
+/// wrapped by [`BlockBufferWrapper`], which implements the
 /// [`ExtendableOutput`] trait.
-pub trait ExtendableOutputCore: crate::UpdateCore {
+pub trait ExtendableOutputCore: UpdateCore {
     /// XOF reader core state.
     type ReaderCore: XofReaderCore;
 
@@ -65,16 +72,39 @@ pub trait XofReaderCore {
     fn read_block(&mut self) -> GenericArray<u8, Self::BlockSize>;
 }
 
-/// Wrapper around core trait implementations.
+/// Wrapper around [`UpdateCore`] implementations.
 ///
 /// It handles data buffering and implements the mid-level traits.
 #[derive(Clone, Default)]
-pub struct CoreWrapper<C, BlockSize: ArrayLength<u8>> {
-    core: C,
-    buffer: BlockBuffer<BlockSize>,
+pub struct UpdateCoreWrapper<T: UpdateCore> {
+    core: T,
+    buffer: BlockBuffer<T::BlockSize>,
 }
 
-impl<D: Reset + UpdateCore> Reset for CoreWrapper<D, D::BlockSize> {
+/// Wrapper around [`XofReaderCore`] implementations.
+///
+/// It handles data buffering and implements the mid-level traits.
+#[derive(Clone, Default)]
+pub struct XofReaderCoreWrapper<T: XofReaderCore> {
+    core: T,
+    buffer: BlockBuffer<T::BlockSize>,
+}
+
+impl<T: UpdateCore + AlgorithmName> fmt::Debug for UpdateCoreWrapper<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str(T::NAME)?;
+        f.write_str(" { .. }")
+    }
+}
+
+impl<T: XofReaderCore + AlgorithmName> fmt::Debug for XofReaderCoreWrapper<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str(T::NAME)?;
+        f.write_str(" { .. }")
+    }
+}
+
+impl<D: Reset + UpdateCore> Reset for UpdateCoreWrapper<D> {
     #[inline]
     fn reset(&mut self) {
         self.core.reset();
@@ -82,7 +112,7 @@ impl<D: Reset + UpdateCore> Reset for CoreWrapper<D, D::BlockSize> {
     }
 }
 
-impl<D: UpdateCore> Update for CoreWrapper<D, D::BlockSize> {
+impl<D: UpdateCore> Update for UpdateCoreWrapper<D> {
     #[inline]
     fn update(&mut self, input: &[u8]) {
         let Self { core, buffer } = self;
@@ -90,7 +120,7 @@ impl<D: UpdateCore> Update for CoreWrapper<D, D::BlockSize> {
     }
 }
 
-impl<D: FixedOutputCore + Reset> FixedOutput for CoreWrapper<D, D::BlockSize> {
+impl<D: FixedOutputCore + Reset> FixedOutput for UpdateCoreWrapper<D> {
     type OutputSize = D::OutputSize;
 
     #[inline]
@@ -107,7 +137,7 @@ impl<D: FixedOutputCore + Reset> FixedOutput for CoreWrapper<D, D::BlockSize> {
     }
 }
 
-impl<R: XofReaderCore> XofReader for CoreWrapper<R, R::BlockSize> {
+impl<R: XofReaderCore> XofReader for XofReaderCoreWrapper<R> {
     #[inline]
     fn read(&mut self, buffer: &mut [u8]) {
         let Self { core, buffer: buf } = self;
@@ -115,14 +145,14 @@ impl<R: XofReaderCore> XofReader for CoreWrapper<R, R::BlockSize> {
     }
 }
 
-impl<D: ExtendableOutputCore + Reset> ExtendableOutput for CoreWrapper<D, D::BlockSize> {
-    type Reader = CoreWrapper<D::ReaderCore, <D::ReaderCore as XofReaderCore>::BlockSize>;
+impl<D: ExtendableOutputCore + Reset> ExtendableOutput for UpdateCoreWrapper<D> {
+    type Reader = XofReaderCoreWrapper<D::ReaderCore>;
 
     #[inline]
     fn finalize_xof(mut self) -> Self::Reader {
         let Self { core, buffer } = &mut self;
         let reader_core = core.finalize_xof_core(buffer);
-        CoreWrapper {
+        XofReaderCoreWrapper {
             core: reader_core,
             buffer: Default::default(),
         }
@@ -133,7 +163,7 @@ impl<D: ExtendableOutputCore + Reset> ExtendableOutput for CoreWrapper<D, D::Blo
         let Self { core, buffer } = self;
         let reader_core = core.finalize_xof_core(buffer);
         self.reset();
-        CoreWrapper {
+        XofReaderCoreWrapper {
             core: reader_core,
             buffer: Default::default(),
         }
@@ -141,7 +171,7 @@ impl<D: ExtendableOutputCore + Reset> ExtendableOutput for CoreWrapper<D, D::Blo
 }
 
 #[cfg(feature = "std")]
-impl<D: UpdateCore> std::io::Write for CoreWrapper<D, D::BlockSize> {
+impl<D: UpdateCore> std::io::Write for UpdateCoreWrapper<D> {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         Update::update(self, buf);
@@ -155,7 +185,7 @@ impl<D: UpdateCore> std::io::Write for CoreWrapper<D, D::BlockSize> {
 }
 
 #[cfg(feature = "std")]
-impl<R: XofReaderCore> std::io::Read for CoreWrapper<R, R::BlockSize> {
+impl<R: XofReaderCore> std::io::Read for XofReaderCoreWrapper<R> {
     #[inline]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         XofReader::read(self, buf);
