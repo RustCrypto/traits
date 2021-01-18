@@ -51,6 +51,7 @@ jobs:
         toolchain: ${{ matrix.rust }}
     - run: cargo check --all-features
     - run: cargo test --release
+    - run: cargo test --features core-api --release
     - run: cargo test --features dev --release
     - run: cargo test --features alloc --release
     - run: cargo test --features std --release
