@@ -56,7 +56,7 @@ mod dyn_digest;
 #[cfg(feature = "core-api")]
 pub use crate::core_api::{
     AlgorithmName, ExtendableOutputCore, FixedOutputCore, UpdateCore, UpdateCoreWrapper,
-    XofReaderCoreWrapper,
+    XofReaderCore, XofReaderCoreWrapper,
 };
 pub use crate::digest::{Digest, Output};
 #[cfg(feature = "core-api")]
