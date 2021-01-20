@@ -30,10 +30,6 @@ pub trait FixedOutputCore: UpdateCore {
 
     /// Retrieve result into provided buffer using remaining data stored
     /// in the block buffer and leave hasher in a dirty state.
-    ///
-    /// This method is expected to only be called once unless [`Reset::reset`]
-    /// is called, after which point it can be called again and reset again
-    /// (and so on).
     fn finalize_fixed_core(
         &mut self,
         buffer: &mut block_buffer::BlockBuffer<Self::BlockSize>,
@@ -53,10 +49,6 @@ pub trait ExtendableOutputCore: UpdateCore {
 
     /// Retrieve XOF reader using remaining data stored in the block buffer
     /// and leave hasher in a dirty state.
-    ///
-    /// This method is expected to only be called once unless [`Reset::reset`]
-    /// is called, after which point it can be called again and reset again
-    /// (and so on).
     fn finalize_xof_core(
         &mut self,
         buffer: &mut block_buffer::BlockBuffer<Self::BlockSize>,
@@ -104,10 +96,10 @@ impl<T: XofReaderCore + AlgorithmName> fmt::Debug for XofReaderCoreWrapper<T> {
     }
 }
 
-impl<D: Reset + UpdateCore> Reset for UpdateCoreWrapper<D> {
+impl<D: Default + UpdateCore> Reset for UpdateCoreWrapper<D> {
     #[inline]
     fn reset(&mut self) {
-        self.core.reset();
+        self.core = Default::default();
         self.buffer.reset();
     }
 }
@@ -120,7 +112,7 @@ impl<D: UpdateCore> Update for UpdateCoreWrapper<D> {
     }
 }
 
-impl<D: FixedOutputCore + Reset> FixedOutput for UpdateCoreWrapper<D> {
+impl<D: FixedOutputCore + Default> FixedOutput for UpdateCoreWrapper<D> {
     type OutputSize = D::OutputSize;
 
     #[inline]
@@ -145,7 +137,7 @@ impl<R: XofReaderCore> XofReader for XofReaderCoreWrapper<R> {
     }
 }
 
-impl<D: ExtendableOutputCore + Reset> ExtendableOutput for UpdateCoreWrapper<D> {
+impl<D: ExtendableOutputCore + Default> ExtendableOutput for UpdateCoreWrapper<D> {
     type Reader = XofReaderCoreWrapper<D::ReaderCore>;
 
     #[inline]
