@@ -98,6 +98,12 @@ impl From<b64::Error> for HasherError {
     }
 }
 
+impl From<b64::InvalidLengthError> for HasherError {
+    fn from(_: b64::InvalidLengthError) -> HasherError {
+        HasherError::B64(b64::Error::InvalidLength)
+    }
+}
+
 impl From<OutputError> for HasherError {
     fn from(err: OutputError) -> HasherError {
         HasherError::Output(err)
@@ -215,6 +221,12 @@ impl fmt::Display for OutputError {
 impl From<b64::Error> for OutputError {
     fn from(err: b64::Error) -> OutputError {
         OutputError::B64(err)
+    }
+}
+
+impl From<b64::InvalidLengthError> for OutputError {
+    fn from(_: b64::InvalidLengthError) -> OutputError {
+        OutputError::B64(b64::Error::InvalidLength)
     }
 }
 

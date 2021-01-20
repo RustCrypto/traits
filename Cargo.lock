@@ -41,9 +41,9 @@ dependencies = [
 
 [[package]]
 name = "b64ct"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a293adc36d315fd3f03a3c4a5594b0a30be4678cbae95ce9b430e9b8d6e34032"
+checksum = "524df4b3f9e9925f37c0d9beec6fbc2dac691b188f3f331ab12c5587ebe6766e"
 
 [[package]]
 name = "bitvec"
