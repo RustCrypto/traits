@@ -21,6 +21,9 @@ use core::{
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
+#[cfg(feature = "jwk")]
+use crate::JwkParameters;
+
 /// Mock elliptic curve type useful for writing tests which require a concrete
 /// curve type.
 ///
@@ -42,6 +45,12 @@ impl ProjectiveArithmetic for MockCurve {
 impl AlgorithmParameters for MockCurve {
     /// OID for NIST P-256
     const OID: pkcs8::ObjectIdentifier = pkcs8::ObjectIdentifier::new(&[1, 2, 840, 10045, 3, 1, 7]);
+}
+
+#[cfg(feature = "jwk")]
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
+impl JwkParameters for MockCurve {
+    const CRV: &'static str = "P-256";
 }
 
 /// SEC1 encoded point.

@@ -1,4 +1,4 @@
-//! Scalar types
+//! Scalar types.
 
 use crate::{
     ops::Invert,

@@ -36,18 +36,21 @@ pub mod weierstrass;
 pub mod point;
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-pub mod public_key;
+mod public_key;
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub mod scalar;
 
-#[cfg(any(feature = "dev"))]
+#[cfg(feature = "dev")]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
 #[cfg(feature = "ecdh")]
 #[cfg_attr(docsrs, doc(cfg(feature = "ecdh")))]
 pub mod ecdh;
+
+#[cfg(feature = "jwk")]
+mod jwk;
 
 #[cfg(feature = "zeroize")]
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
@@ -72,6 +75,9 @@ pub use {
 
 #[cfg(feature = "digest")]
 pub use digest::{self, Digest};
+
+#[cfg(feature = "jwk")]
+pub use crate::jwk::{JwkEcKey, JwkParameters};
 
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;

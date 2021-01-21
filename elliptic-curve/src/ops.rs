@@ -1,4 +1,4 @@
-//! Traits for arithmetic operations on elliptic curve field elements
+//! Traits for arithmetic operations on elliptic curve field elements.
 
 pub use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 

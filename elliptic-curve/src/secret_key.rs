@@ -1,4 +1,4 @@
-//! Secret keys for elliptic curves (i.e. private scalars)
+//! Secret keys for elliptic curves (i.e. private scalars).
 //!
 //! The [`SecretKey`] type is a wrapper around a secret scalar value which is
 //! designed to prevent unintentional exposure (e.g. via `Debug` or other
@@ -25,6 +25,20 @@ use crate::{
     rand_core::{CryptoRng, RngCore},
     scalar::{NonZeroScalar, Scalar},
     weierstrass, AffinePoint, ProjectiveArithmetic, ProjectivePoint,
+};
+
+#[cfg(feature = "jwk")]
+use crate::{
+    generic_array::{typenum::U1, ArrayLength},
+    jwk::{JwkEcKey, JwkParameters},
+    ops::Add,
+    sec1::{UncompressedPointSize, UntaggedPointSize},
+};
+
+#[cfg(all(feature = "arithmetic", feature = "jwk"))]
+use {
+    crate::sec1::{FromEncodedPoint, ToEncodedPoint},
+    alloc::string::{String, ToString},
 };
 
 #[cfg(all(docsrs, feature = "pkcs8"))]
@@ -130,6 +144,62 @@ where
         ProjectivePoint<C>: From<AffinePoint<C>>,
     {
         PublicKey::from_secret_scalar(self.secret_scalar())
+    }
+
+    /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`SecretKey`].
+    #[cfg(feature = "jwk")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
+    pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self, Error>
+    where
+        C: JwkParameters,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        jwk.try_into()
+    }
+
+    /// Parse a string containing a JSON Web Key (JWK) into a [`SecretKey`].
+    #[cfg(feature = "jwk")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
+    pub fn from_jwk_str(jwk: &str) -> Result<Self, Error>
+    where
+        C: JwkParameters,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        jwk.parse::<JwkEcKey>().and_then(|jwk| Self::from_jwk(&jwk))
+    }
+
+    /// Serialize this secret key as [`JwkEcKey`] JSON Web Key (JWK).
+    #[cfg(all(feature = "arithmetic", feature = "jwk"))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
+    pub fn to_jwk(&self) -> JwkEcKey
+    where
+        C: JwkParameters + ProjectiveArithmetic,
+        AffinePoint<C>: Copy + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+        ProjectivePoint<C>: From<AffinePoint<C>>,
+        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        self.into()
+    }
+
+    /// Serialize this secret key as JSON Web Key (JWK) string.
+    #[cfg(all(feature = "arithmetic", feature = "jwk"))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
+    pub fn to_jwk_string(&self) -> String
+    where
+        C: JwkParameters + ProjectiveArithmetic,
+        AffinePoint<C>: Copy + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+        ProjectivePoint<C>: From<AffinePoint<C>>,
+        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        self.to_jwk().to_string()
     }
 }
 
