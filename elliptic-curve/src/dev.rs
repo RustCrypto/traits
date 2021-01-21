@@ -20,9 +20,14 @@ use core::{
     iter::Sum,
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
+use hex_literal::hex;
 
 #[cfg(feature = "jwk")]
 use crate::JwkParameters;
+
+/// Pseudo-coordinate for fixed-based scalar mult output
+pub const PSEUDO_COORDINATE_FIXED_BASE_MUL: [u8; 32] =
+    hex!("deadbeef00000000000000000000000000000000000000000000000000000001");
 
 /// Mock elliptic curve type useful for writing tests which require a concrete
 /// curve type.
@@ -379,10 +384,19 @@ impl Scalar {
 }
 
 /// Example affine point type
-#[derive(Clone, Copy, Debug)]
-pub struct AffinePoint {
-    /// Wrap [`EncodedPoint`] to allow certain conversions
-    inner: EncodedPoint,
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum AffinePoint {
+    /// Result of fixed-based scalar multiplication
+    FixedBaseOutput(Scalar),
+
+    /// Is this point the identity point?
+    Identity,
+
+    /// Is this point the generator point?
+    Generator,
+
+    /// Is this point a different point corresponding to a given [`EncodedPoint`]
+    Other(EncodedPoint),
 }
 
 impl ConditionallySelectable for AffinePoint {
@@ -393,24 +407,36 @@ impl ConditionallySelectable for AffinePoint {
 
 impl Default for AffinePoint {
     fn default() -> Self {
-        Self {
-            inner: EncodedPoint::identity(),
-        }
+        Self::Identity
     }
 }
 
 impl FromEncodedPoint<MockCurve> for AffinePoint {
     fn from_encoded_point(point: &EncodedPoint) -> Option<Self> {
-        Some(Self { inner: *point })
+        if point.is_identity() {
+            Some(Self::Identity)
+        } else {
+            Some(Self::Other(*point))
+        }
     }
 }
 
 impl ToEncodedPoint<MockCurve> for AffinePoint {
     fn to_encoded_point(&self, compress: bool) -> EncodedPoint {
-        if compress == self.inner.is_compressed() {
-            self.inner
-        } else {
-            unimplemented!();
+        match self {
+            Self::FixedBaseOutput(scalar) => EncodedPoint::from_affine_coordinates(
+                &scalar.to_repr(),
+                &PSEUDO_COORDINATE_FIXED_BASE_MUL.into(),
+                false,
+            ),
+            Self::Other(point) => {
+                if compress == point.is_compressed() {
+                    *point
+                } else {
+                    unimplemented!();
+                }
+            }
+            _ => unimplemented!(),
         }
     }
 }
@@ -425,22 +451,33 @@ impl Mul<NonZeroScalar> for AffinePoint {
 
 /// Example projective point type
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct ProjectivePoint {
-    /// Is this point supposed to be the additive identity?
-    /// (a.k.a. point at infinity)
-    identity: bool,
+pub enum ProjectivePoint {
+    /// Result of fixed-based scalar multiplication
+    FixedBaseOutput(Scalar),
+
+    /// Is this point the identity point?
+    Identity,
+
+    /// Is this point the generator point?
+    Generator,
+
+    /// Is this point a different point corresponding to a given [`AffinePoint`]
+    Other(AffinePoint),
 }
 
 impl Default for ProjectivePoint {
     fn default() -> Self {
-        Self { identity: true }
+        Self::Identity
     }
 }
 
 impl From<AffinePoint> for ProjectivePoint {
     fn from(point: AffinePoint) -> ProjectivePoint {
-        Self {
-            identity: point.inner.is_identity(),
+        match point {
+            AffinePoint::FixedBaseOutput(scalar) => ProjectivePoint::FixedBaseOutput(scalar),
+            AffinePoint::Identity => ProjectivePoint::Identity,
+            AffinePoint::Generator => ProjectivePoint::Generator,
+            other => ProjectivePoint::Other(other),
         }
     }
 }
@@ -465,15 +502,15 @@ impl group::Group for ProjectivePoint {
     }
 
     fn identity() -> Self {
-        unimplemented!();
+        Self::Identity
     }
 
     fn generator() -> Self {
-        unimplemented!();
+        Self::Generator
     }
 
     fn is_identity(&self) -> Choice {
-        Choice::from(self.identity as u8)
+        Choice::from((self == &Self::Identity) as u8)
     }
 
     #[must_use]
@@ -486,7 +523,11 @@ impl group::Curve for ProjectivePoint {
     type AffineRepr = AffinePoint;
 
     fn to_affine(&self) -> AffinePoint {
-        unimplemented!();
+        match self {
+            Self::FixedBaseOutput(scalar) => AffinePoint::FixedBaseOutput(*scalar),
+            Self::Other(affine) => *affine,
+            _ => unimplemented!(),
+        }
     }
 }
 
@@ -617,16 +658,19 @@ impl SubAssign<&AffinePoint> for ProjectivePoint {
 impl Mul<Scalar> for ProjectivePoint {
     type Output = ProjectivePoint;
 
-    fn mul(self, _other: Scalar) -> ProjectivePoint {
-        unimplemented!();
+    fn mul(self, scalar: Scalar) -> ProjectivePoint {
+        match self {
+            Self::Generator => Self::FixedBaseOutput(scalar),
+            _ => unimplemented!(),
+        }
     }
 }
 
 impl Mul<&Scalar> for ProjectivePoint {
     type Output = ProjectivePoint;
 
-    fn mul(self, _other: &Scalar) -> ProjectivePoint {
-        unimplemented!();
+    fn mul(self, scalar: &Scalar) -> ProjectivePoint {
+        self * *scalar
     }
 }
 

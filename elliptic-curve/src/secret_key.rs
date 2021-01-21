@@ -32,7 +32,7 @@ use crate::{
     generic_array::{typenum::U1, ArrayLength},
     jwk::{JwkEcKey, JwkParameters},
     ops::Add,
-    sec1::{UncompressedPointSize, UntaggedPointSize},
+    sec1::{UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
 };
 
 #[cfg(all(feature = "arithmetic", feature = "jwk"))]
@@ -139,9 +139,9 @@ where
     pub fn public_key(&self) -> PublicKey<C>
     where
         C: weierstrass::Curve + ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
         AffinePoint<C>: Copy + Clone + Debug + Default,
         ProjectivePoint<C>: From<AffinePoint<C>>,
+        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
         PublicKey::from_secret_scalar(self.secret_scalar())
     }
@@ -151,7 +151,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self, Error>
     where
-        C: JwkParameters,
+        C: JwkParameters + ValidatePublicKey,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -163,7 +163,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn from_jwk_str(jwk: &str) -> Result<Self, Error>
     where
-        C: JwkParameters,
+        C: JwkParameters + ValidatePublicKey,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -256,7 +256,7 @@ pub trait SecretValue: Curve {
     type Secret: Into<FieldBytes<Self>> + Zeroize;
 
     /// Parse the secret value from bytes
-    // TODO(tarcieri): make this constant time?
+    // TODO(tarcieri): make this a `CtOption`?
     fn from_secret_bytes(bytes: &FieldBytes<Self>) -> Option<Self::Secret>;
 }
 

@@ -2,7 +2,7 @@
 
 use super::{SecretKey, SecretValue};
 use crate::{
-    sec1::{self, UncompressedPointSize, UntaggedPointSize},
+    sec1::{self, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
     weierstrass, AlgorithmParameters, FieldBytes, ALGORITHM_OID,
 };
 use core::ops::Add;
@@ -43,7 +43,7 @@ const ENCODING_ERROR_MSG: &str = "DER encoding error";
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 impl<C> FromPrivateKey for SecretKey<C>
 where
-    C: weierstrass::Curve + AlgorithmParameters + SecretValue,
+    C: weierstrass::Curve + AlgorithmParameters + ValidatePublicKey + SecretValue,
     C::Secret: Clone + Zeroize,
     FieldBytes<C>: From<C::Secret>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -82,15 +82,16 @@ where
 
             let public_key_bytes = der::Decoder::new(public_key_field.as_bytes()).bit_string()?;
 
-            // TODO(tarcieri): validate public key matches secret key
-            if sec1::EncodedPoint::<C>::from_bytes(public_key_bytes.as_ref()).is_err() {
-                return Err(der::ErrorKind::Value {
-                    tag: der::Tag::BitString,
+            if let Ok(pk) = sec1::EncodedPoint::<C>::from_bytes(public_key_bytes.as_ref()) {
+                if C::validate_public_key(&secret_key, &pk).is_ok() {
+                    return Ok(secret_key);
                 }
-                .into());
             }
 
-            Ok(secret_key)
+            Err(der::ErrorKind::Value {
+                tag: der::Tag::BitString,
+            }
+            .into())
         })?;
 
         Ok(decoder.finish(result)?)
@@ -156,7 +157,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for SecretKey<C>
 where
-    C: weierstrass::Curve + AlgorithmParameters + SecretValue,
+    C: weierstrass::Curve + AlgorithmParameters + ValidatePublicKey + SecretValue,
     C::Secret: Clone + Zeroize,
     FieldBytes<C>: From<C::Secret>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
