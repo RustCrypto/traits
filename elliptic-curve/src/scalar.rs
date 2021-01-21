@@ -5,9 +5,8 @@ use crate::{
     rand_core::{CryptoRng, RngCore},
     Curve, Error, FieldBytes, ProjectiveArithmetic,
 };
-use bitvec::{array::BitArray, order::Lsb0};
 use core::{convert::TryFrom, ops::Deref};
-use ff::{Field, PrimeField};
+use ff::{Field, FieldBits, PrimeField};
 use generic_array::{typenum::Unsigned, GenericArray};
 use group::Group;
 use subtle::{Choice, ConditionallySelectable, CtOption};
@@ -19,7 +18,7 @@ use zeroize::Zeroize;
 pub type Scalar<C> = <<C as ProjectiveArithmetic>::ProjectivePoint as Group>::Scalar;
 
 /// Bit representation of a scalar field element of a given curve.
-pub type ScalarBits<C> = BitArray<Lsb0, <Scalar<C> as PrimeField>::ReprBits>;
+pub type ScalarBits<C> = FieldBits<<Scalar<C> as PrimeField>::ReprBits>;
 
 /// Non-zero scalar type.
 ///
