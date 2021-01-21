@@ -3,7 +3,7 @@
 use core::fmt::{self, Display};
 
 /// Elliptic curve errors
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Error;
 
 impl Display for Error {

@@ -15,6 +15,7 @@ categories = ["cryptography", "no-std"]
 keywords   = ["crypto", "ecc", "elliptic", "weierstrass"]
 
 [dependencies]
+b64ct = { version = "0.2", optional = true, default-features = false }
 bitvec = { version = "0.20", optional = true, default-features = false }
 digest = { version = "0.9", optional = true }
 ff = { version = "0.9", optional = true, default-features = false }
@@ -22,6 +23,8 @@ group = { version = "0.9", optional = true, default-features = false }
 generic-array = { version = "0.14", default-features = false }
 pkcs8 = { version = "0.4.0-pre", optional = true }
 rand_core = { version = "0.6", default-features = false }
+serde = { version = "1", optional = true, default-features = false }
+serde_json = { version = "1", optional = true, default-features = false, features = ["alloc"] }
 subtle = { version = "2.4", default-features = false }
 zeroize = { version = "1", optional = true,  default-features = false }
 
@@ -34,6 +37,7 @@ alloc = []
 arithmetic = ["bitvec", "ff", "group"]
 dev = ["arithmetic", "digest", "pem", "zeroize"]
 ecdh = ["arithmetic", "zeroize"]
+jwk = ["alloc", "b64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
 pem = ["alloc", "pkcs8/pem"]
 std = ["alloc"]
 

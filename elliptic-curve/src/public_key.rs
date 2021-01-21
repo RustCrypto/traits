@@ -18,6 +18,9 @@ use ff::PrimeField;
 use generic_array::ArrayLength;
 use group::{Curve as _, Group};
 
+#[cfg(feature = "jwk")]
+use crate::{JwkEcKey, JwkParameters};
+
 #[cfg(feature = "pkcs8")]
 use {
     crate::{AlgorithmParameters, ALGORITHM_OID},
@@ -25,11 +28,10 @@ use {
 };
 
 #[cfg(feature = "pem")]
-use {
-    alloc::string::{String, ToString},
-    core::str::FromStr,
-    pkcs8::ToPublicKey,
-};
+use {core::str::FromStr, pkcs8::ToPublicKey};
+
+#[cfg(any(feature = "jwk", feature = "pem"))]
+use alloc::string::{String, ToString};
 
 /// Elliptic curve public keys.
 ///
@@ -61,8 +63,8 @@ use {
 pub struct PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     point: AffinePoint<C>,
 }
@@ -70,9 +72,9 @@ where
 impl<C> PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug,
     ProjectivePoint<C>: From<AffinePoint<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     /// Convert an [`AffinePoint`] into a [`PublicKey`]
     pub fn from_affine(point: AffinePoint<C>) -> Result<Self, Error> {
@@ -119,6 +121,58 @@ where
     /// Convert this [`PublicKey`] to a [`ProjectivePoint`] for the given curve
     pub fn to_projective(&self) -> ProjectivePoint<C> {
         self.point.clone().into()
+    }
+
+    /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`PublicKey`].
+    #[cfg(feature = "jwk")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
+    pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self, Error>
+    where
+        C: JwkParameters,
+        AffinePoint<C>: Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        jwk.try_into()
+    }
+
+    /// Parse a string containing a JSON Web Key (JWK) into a [`PublicKey`].
+    #[cfg(feature = "jwk")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
+    pub fn from_jwk_str(jwk: &str) -> Result<Self, Error>
+    where
+        C: JwkParameters,
+        AffinePoint<C>: Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        jwk.parse::<JwkEcKey>().and_then(|jwk| Self::from_jwk(&jwk))
+    }
+
+    /// Serialize this public key as [`JwkEcKey`] JSON Web Key (JWK).
+    #[cfg(feature = "jwk")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
+    pub fn to_jwk(&self) -> JwkEcKey
+    where
+        C: JwkParameters,
+        AffinePoint<C>: Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        self.into()
+    }
+
+    /// Serialize this public key as JSON Web Key (JWK) string.
+    #[cfg(feature = "jwk")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
+    pub fn to_jwk_string(&self) -> String
+    where
+        C: JwkParameters,
+        AffinePoint<C>: Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        self.to_jwk().to_string()
     }
 }
 
