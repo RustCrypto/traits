@@ -4,7 +4,9 @@
 //! <https://tools.ietf.org/html/rfc7518#section-6>
 
 use crate::{
-    sec1::{Coordinates, EncodedPoint, UncompressedPointSize, UntaggedPointSize},
+    sec1::{
+        Coordinates, EncodedPoint, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey,
+    },
     secret_key::{SecretKey, SecretValue},
     weierstrass::Curve,
     Error, FieldBytes,
@@ -128,7 +130,7 @@ impl JwkEcKey {
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn to_secret_key<C>(&self) -> Result<SecretKey<C>, Error>
     where
-        C: Curve + JwkParameters + SecretValue,
+        C: Curve + JwkParameters + ValidatePublicKey + SecretValue,
         C::Secret: Clone + Zeroize,
         FieldBytes<C>: From<C::Secret>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -220,7 +222,7 @@ where
 
 impl<C> TryFrom<JwkEcKey> for SecretKey<C>
 where
-    C: Curve + JwkParameters + SecretValue,
+    C: Curve + JwkParameters + ValidatePublicKey + SecretValue,
     C::Secret: Clone + Zeroize,
     FieldBytes<C>: From<C::Secret>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -235,7 +237,7 @@ where
 
 impl<C> TryFrom<&JwkEcKey> for SecretKey<C>
 where
-    C: Curve + JwkParameters + SecretValue,
+    C: Curve + JwkParameters + ValidatePublicKey + SecretValue,
     C::Secret: Clone + Zeroize,
     FieldBytes<C>: From<C::Secret>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -245,13 +247,15 @@ where
 
     fn try_from(jwk: &JwkEcKey) -> Result<SecretKey<C>, Error> {
         if let Some(d_base64) = &jwk.d {
-            // TODO(tarcieri): validate public key matches private key
-            let _pk = EncodedPoint::<C>::try_from(jwk)?;
-
+            let pk = EncodedPoint::<C>::try_from(jwk)?;
             let mut d_bytes = decode_base64url_fe::<C>(d_base64)?;
             let result = SecretKey::from_bytes(&d_bytes);
             d_bytes.zeroize();
-            result
+
+            result.and_then(|secret_key| {
+                C::validate_public_key(&secret_key, &pk)?;
+                Ok(secret_key)
+            })
         } else {
             Err(Error)
         }

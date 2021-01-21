@@ -7,27 +7,30 @@ use elliptic_curve::{
     sec1::ToEncodedPoint,
 };
 use hex_literal::hex;
-use pkcs8::{FromPrivateKey, FromPublicKey};
-
-/// DER-encoded PKCS#8 private key
-const PKCS8_PRIVATE_KEY_DER: &[u8; 138] = include_bytes!("examples/pkcs8-private-key.der");
+use pkcs8::{FromPrivateKey, FromPublicKey, PrivateKeyDocument, ToPrivateKey};
 
 /// DER-encoded PKCS#8 public key
 const PKCS8_PUBLIC_KEY_DER: &[u8; 91] = include_bytes!("examples/pkcs8-public-key.der");
-
-/// PEM-encoded PKCS#8 private key
-#[cfg(feature = "pem")]
-const PKCS8_PRIVATE_KEY_PEM: &str = include_str!("examples/pkcs8-private-key.pem");
 
 /// PEM-encoded PKCS#8 public key
 #[cfg(feature = "pem")]
 const PKCS8_PUBLIC_KEY_PEM: &str = include_str!("examples/pkcs8-public-key.pem");
 
+/// Example encoded scalar value
+const EXAMPLE_SCALAR: [u8; 32] =
+    hex!("AABBCCDDEEFF0000000000000000000000000000000000000000000000000001");
+
+/// Example PKCS#8 private key
+fn example_private_key() -> PrivateKeyDocument {
+    SecretKey::from_bytes(&EXAMPLE_SCALAR)
+        .unwrap()
+        .to_pkcs8_der()
+}
+
 #[test]
 fn decode_pkcs8_private_key_from_der() {
-    let secret_key = SecretKey::from_pkcs8_der(&PKCS8_PRIVATE_KEY_DER[..]).unwrap();
-    let expected_scalar = hex!("69624171561A63340DE0E7D869F2A05492558E1A04868B6A9F854A866788188D");
-    assert_eq!(secret_key.to_bytes().as_slice(), &expected_scalar[..]);
+    let secret_key = SecretKey::from_pkcs8_der(example_private_key().as_ref()).unwrap();
+    assert_eq!(secret_key.to_bytes().as_slice(), &EXAMPLE_SCALAR);
 }
 
 #[test]
@@ -38,16 +41,6 @@ fn decode_pkcs8_public_key_from_der() {
         public_key.to_encoded_point(false).as_bytes(),
         &expected_sec1_point[..]
     );
-}
-
-#[test]
-#[cfg(feature = "pem")]
-fn decode_pkcs8_private_key_from_pem() {
-    let secret_key = PKCS8_PRIVATE_KEY_PEM.parse::<SecretKey>().unwrap();
-
-    // Ensure key parses equivalently to DER
-    let der_key = SecretKey::from_pkcs8_der(&PKCS8_PRIVATE_KEY_DER[..]).unwrap();
-    assert_eq!(secret_key.to_bytes(), der_key.to_bytes());
 }
 
 #[test]

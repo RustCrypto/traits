@@ -27,11 +27,14 @@ use crate::{
 #[cfg(all(feature = "arithmetic", feature = "zeroize"))]
 use crate::{
     group::{Curve as _, Group},
-    secret_key::SecretKey,
+    ProjectivePoint,
 };
 
 #[cfg(feature = "zeroize")]
-use zeroize::Zeroize;
+use crate::{
+    secret_key::{SecretKey, SecretValue},
+    zeroize::Zeroize,
+};
 
 /// Size of a compressed point for the given elliptic curve when encoded
 /// using the SEC1 `Elliptic-Curve-Point-to-Octet-String` algorithm
@@ -488,6 +491,63 @@ where
     /// Serialize this value as a SEC1 [`EncodedPoint`], optionally applying
     /// point compression.
     fn to_encoded_point(&self, compress: bool) -> EncodedPoint<C>;
+}
+
+/// Validate that the given [`EncodedPoint`] represents the encoded public key
+/// value of the given secret.
+///
+/// Curve implementations which also impl [`ProjectiveArithmetic`] will receive
+/// a blanket default impl of this trait.
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+pub trait ValidatePublicKey
+where
+    Self: Curve + SecretValue,
+    UntaggedPointSize<Self>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<Self>: ArrayLength<u8>,
+{
+    /// Validate that the given [`EncodedPoint`] is a valid public key for the
+    /// provided secret value.
+    #[allow(unused_variables)]
+    fn validate_public_key(
+        secret_key: &SecretKey<Self>,
+        public_key: &EncodedPoint<Self>,
+    ) -> Result<(), Error> {
+        // Provide a default "always succeeds" implementation.
+        // This is the intended default for curve implementations which
+        // do not provide an arithmetic implementation, since they have no
+        // way to verify this.
+        //
+        // Implementations with an arithmetic impl will receive a blanket impl
+        // of this trait.
+        Ok(())
+    }
+}
+
+#[cfg(all(feature = "arithmetic", feature = "zeroize"))]
+impl<C> ValidatePublicKey for C
+where
+    C: Curve + ProjectiveArithmetic,
+    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+    fn validate_public_key(
+        secret_key: &SecretKey<C>,
+        public_key: &EncodedPoint<C>,
+    ) -> Result<(), Error> {
+        let pk = secret_key
+            .public_key()
+            .to_encoded_point(public_key.is_compressed());
+
+        if public_key == &pk {
+            Ok(())
+        } else {
+            Err(Error)
+        }
+    }
 }
 
 #[cfg(test)]
