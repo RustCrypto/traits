@@ -41,15 +41,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "b64ct"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "524df4b3f9e9925f37c0d9beec6fbc2dac691b188f3f331ab12c5587ebe6766e"
-
-[[package]]
-name = "b64ct"
-version = "0.2.0"
-source = "git+https://github.com/RustCrypto/utils.git#b2b5fb554fad25071f4268bc6e8fb3d6def4bc7e"
+name = "base64ct"
+version = "0.0.0"
+source = "git+https://github.com/RustCrypto/utils.git#0fe3e15b868778c92959f3fa03b62b47b6842f60"
 
 [[package]]
 name = "bitvec"
@@ -120,7 +114,7 @@ dependencies = [
 [[package]]
 name = "const-oid"
 version = "0.4.1"
-source = "git+https://github.com/RustCrypto/utils.git#b2b5fb554fad25071f4268bc6e8fb3d6def4bc7e"
+source = "git+https://github.com/RustCrypto/utils.git#0fe3e15b868778c92959f3fa03b62b47b6842f60"
 
 [[package]]
 name = "cpuid-bool"
@@ -153,8 +147,8 @@ dependencies = [
 
 [[package]]
 name = "der"
-version = "0.2.0-pre"
-source = "git+https://github.com/RustCrypto/utils.git#b2b5fb554fad25071f4268bc6e8fb3d6def4bc7e"
+version = "0.2.0"
+source = "git+https://github.com/RustCrypto/utils.git#0fe3e15b868778c92959f3fa03b62b47b6842f60"
 dependencies = [
  "const-oid",
 ]
@@ -181,7 +175,7 @@ dependencies = [
 name = "elliptic-curve"
 version = "0.9.0-pre"
 dependencies = [
- "b64ct 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "base64ct",
  "digest 0.9.0",
  "ff",
  "generic-array 0.14.4",
@@ -313,15 +307,15 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 name = "password-hash"
 version = "0.0.0"
 dependencies = [
- "b64ct 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "base64ct",
 ]
 
 [[package]]
 name = "pkcs8"
 version = "0.4.0-pre"
-source = "git+https://github.com/RustCrypto/utils.git#b2b5fb554fad25071f4268bc6e8fb3d6def4bc7e"
+source = "git+https://github.com/RustCrypto/utils.git#0fe3e15b868778c92959f3fa03b62b47b6842f60"
 dependencies = [
- "b64ct 0.2.0 (git+https://github.com/RustCrypto/utils.git)",
+ "base64ct",
  "der",
  "zeroize",
 ]

@@ -13,4 +13,5 @@ members = [
 ]
 
 [patch.crates-io]
+base64ct = { git = "https://github.com/RustCrypto/utils.git" }
 pkcs8 = { git = "https://github.com/RustCrypto/utils.git" }
