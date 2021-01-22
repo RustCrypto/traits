@@ -47,6 +47,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "524df4b3f9e9925f37c0d9beec6fbc2dac691b188f3f331ab12c5587ebe6766e"
 
 [[package]]
+name = "b64ct"
+version = "0.2.0"
+source = "git+https://github.com/RustCrypto/utils.git#b2b5fb554fad25071f4268bc6e8fb3d6def4bc7e"
+
+[[package]]
 name = "bitvec"
 version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -115,8 +120,7 @@ dependencies = [
 [[package]]
 name = "const-oid"
 version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5d82796b70971fbb603900a5edc797a4d9be0f9ec1257f83a1dba0aa374e3e9"
+source = "git+https://github.com/RustCrypto/utils.git#b2b5fb554fad25071f4268bc6e8fb3d6def4bc7e"
 
 [[package]]
 name = "cpuid-bool"
@@ -150,8 +154,7 @@ dependencies = [
 [[package]]
 name = "der"
 version = "0.2.0-pre"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce3c2453c3322800962d0630f6e4e64a398ffea370e43a4ceb24d02f724441f4"
+source = "git+https://github.com/RustCrypto/utils.git#b2b5fb554fad25071f4268bc6e8fb3d6def4bc7e"
 dependencies = [
  "const-oid",
 ]
@@ -178,7 +181,7 @@ dependencies = [
 name = "elliptic-curve"
 version = "0.9.0-pre"
 dependencies = [
- "b64ct",
+ "b64ct 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "digest 0.9.0",
  "ff",
  "generic-array 0.14.4",
@@ -310,17 +313,16 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 name = "password-hash"
 version = "0.0.0"
 dependencies = [
- "b64ct",
+ "b64ct 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "pkcs8"
 version = "0.4.0-pre"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9df125c6bec8ba2195e9ef3064e610c9aa00362b38f502ca348e4383eaeef102"
+source = "git+https://github.com/RustCrypto/utils.git#b2b5fb554fad25071f4268bc6e8fb3d6def4bc7e"
 dependencies = [
+ "b64ct 0.2.0 (git+https://github.com/RustCrypto/utils.git)",
  "der",
- "subtle-encoding",
  "zeroize",
 ]
 
@@ -428,15 +430,6 @@ name = "subtle"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e81da0851ada1f3e9d4312c704aa4f8806f0f9d69faaf8df2f3464b4a9437c2"
-
-[[package]]
-name = "subtle-encoding"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dcb1ed7b8330c5eed5441052651dd7a12c75e2ed88f2ec024ae1fa3a5e59945"
-dependencies = [
- "zeroize",
-]
 
 [[package]]
 name = "syn"

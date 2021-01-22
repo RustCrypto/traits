@@ -7,10 +7,7 @@ use crate::{
 };
 use core::ops::Add;
 use generic_array::{typenum::U1, ArrayLength};
-use pkcs8::{
-    der::{self, Decodable},
-    FromPrivateKey,
-};
+use pkcs8::{der, FromPrivateKey};
 use zeroize::Zeroize;
 
 // Imports for the `ToPrivateKey` impl
@@ -34,7 +31,7 @@ use {
 use {crate::error::Error, core::str::FromStr};
 
 /// Version
-const VERSION: i8 = 1;
+const VERSION: u8 = 1;
 
 /// Encoding error message
 #[cfg(all(feature = "arithmetic", feature = "pem"))]
@@ -61,7 +58,7 @@ where
         let mut decoder = der::Decoder::new(private_key_info.private_key);
 
         let result = decoder.sequence(|decoder| {
-            if i8::decode(decoder)? != VERSION {
+            if decoder.uint8()? != VERSION {
                 return Err(der::ErrorKind::Value {
                     tag: der::Tag::Integer,
                 }
@@ -107,9 +104,9 @@ where
 impl<C> ToPrivateKey for SecretKey<C>
 where
     C: weierstrass::Curve + AlgorithmParameters + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
