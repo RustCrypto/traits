@@ -637,7 +637,7 @@ fn decode_base64url_fe<C: Curve>(s: &str) -> Result<FieldBytes<C>, Error> {
     let mut bytes = Zeroizing::new(s.as_bytes().to_vec());
 
     // Translate Base64url to traditional Base64
-    // TODO(tarcieri): constant time implementation (in `b64ct` crate?)
+    // TODO(tarcieri): constant time implementation (in `base64ct` crate?)
     for byte in bytes.iter_mut() {
         match *byte {
             b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' => (),
@@ -649,22 +649,22 @@ fn decode_base64url_fe<C: Curve>(s: &str) -> Result<FieldBytes<C>, Error> {
 
     let s = str::from_utf8(&bytes).map_err(|_| Error)?;
     let mut result = FieldBytes::<C>::default();
-    b64ct::decode(s, &mut result).map_err(|_| Error)?;
+    base64ct::decode(s, &mut result).map_err(|_| Error)?;
     Ok(result)
 }
 
 /// Encode a field element as Base64url
 fn encode_base64url(bytes: &[u8]) -> String {
-    let mut b64 = b64ct::encode_string(&bytes).into_bytes();
+    let mut b64 = base64ct::encode_string(&bytes).into_bytes();
 
     // Translate traditional Base64 to Base64url
-    // TODO(tarcieri): constant time implementation (in `b64ct` crate?)
+    // TODO(tarcieri): constant time implementation (in `base64ct` crate?)
     for byte in b64.iter_mut() {
         match *byte {
             b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' => (),
             b'+' => *byte = b'-',
             b'/' => *byte = b'_',
-            _ => unreachable!(), // would be a bug in `b64ct`
+            _ => unreachable!(), // would be a bug in `base64ct`
         }
     }
 
