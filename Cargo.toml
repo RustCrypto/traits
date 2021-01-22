@@ -11,3 +11,6 @@ members = [
     "signature/async",
     "universal-hash",
 ]
+
+[patch.crates-io]
+pkcs8 = { git = "https://github.com/RustCrypto/utils.git" }

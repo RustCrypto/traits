@@ -618,7 +618,7 @@ impl Serialize for JwkEcKey {
     {
         use ser::SerializeStruct;
 
-        let mut state = ser::Serializer::serialize_struct(serializer, JWK_TYPE_NAME, 5)?;
+        let mut state = serializer.serialize_struct(JWK_TYPE_NAME, 5)?;
 
         for (i, field) in [EC_KTY, &self.crv, &self.x, &self.y].iter().enumerate() {
             state.serialize_field(FIELDS[i], field)?;
