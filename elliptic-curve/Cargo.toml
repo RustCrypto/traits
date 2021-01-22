@@ -37,10 +37,11 @@ alloc = []
 arithmetic = ["ff", "group"]
 dev = ["arithmetic", "digest", "hex-literal", "pem", "zeroize"]
 ecdh = ["arithmetic", "zeroize"]
+hazmat = []
 jwk = ["alloc", "b64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
 pem = ["alloc", "pkcs8/pem"]
 std = ["alloc"]
 
 [package.metadata.docs.rs]
-all-features = true
+features = ["arithmetic", "ecdh", "jwk", "pem", "std"]
 rustdoc-args = ["--cfg", "docsrs"]

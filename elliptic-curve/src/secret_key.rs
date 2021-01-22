@@ -70,6 +70,7 @@ use {crate::pkcs8::FromPrivateKey, core::str::FromStr};
 ///
 /// When the `pem` feature of this crate (or a specific RustCrypto elliptic
 /// curve crate) is enabled, a [`FromStr`] impl is also available.
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 #[derive(Clone)]
 pub struct SecretKey<C: Curve + SecretValue> {
     /// Secret value (i.e. secret scalar)
@@ -236,6 +237,8 @@ where
 }
 
 /// Inner value stored by a [`SecretKey`].
+#[cfg_attr(docsrs, doc(cfg(feature = "hazmat")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 pub trait SecretValue: Curve {
     /// Inner secret value.
     ///
@@ -261,6 +264,7 @@ pub trait SecretValue: Curve {
 }
 
 #[cfg(feature = "arithmetic")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 impl<C> SecretValue for C
 where
     C: Curve + ProjectiveArithmetic,
@@ -276,6 +280,8 @@ where
 /// Newtype wrapper for [`FieldBytes`] which impls [`Zeroize`].
 ///
 /// This allows it to fulfill the [`Zeroize`] bound on [`SecretValue::Secret`].
+#[cfg_attr(docsrs, doc(cfg(feature = "hazmat")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 #[derive(Clone)]
 pub struct SecretBytes<C: Curve>(FieldBytes<C>);
 
