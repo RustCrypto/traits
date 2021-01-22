@@ -39,11 +39,12 @@ jobs:
       - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features arithmetic
       - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features dev
       - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features ecdh
+      - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features hazmat
       - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features jwk
       - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features pem
       - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features pkcs8
       - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features zeroize
-      - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features pem,zeroize
+      - run: cargo build --no-default-features --release --target ${{ matrix.target }} --features ecdh,hazmat,jwk,pem
   test:
     runs-on: ubuntu-latest
     strategy:

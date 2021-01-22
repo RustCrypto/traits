@@ -59,6 +59,7 @@ use alloc::string::{String, ToString};
 ///
 /// When the `pem` feature of this crate (or a specific RustCrypto elliptic
 /// curve crate) is enabled, a [`FromStr`] impl is also available.
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 #[derive(Clone, Debug)]
 pub struct PublicKey<C>
 where

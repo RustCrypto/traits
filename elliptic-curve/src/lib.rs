@@ -25,21 +25,18 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-pub mod error;
+mod error;
 pub mod ops;
 pub mod sec1;
 pub mod util;
 pub mod weierstrass;
 
 #[cfg(feature = "arithmetic")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-pub mod point;
+mod point;
 #[cfg(feature = "arithmetic")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 mod public_key;
 #[cfg(feature = "arithmetic")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-pub mod scalar;
+mod scalar;
 
 #[cfg(feature = "dev")]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
@@ -53,8 +50,7 @@ pub mod ecdh;
 mod jwk;
 
 #[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-pub mod secret_key;
+mod secret_key;
 
 pub use self::error::Error;
 
@@ -67,7 +63,7 @@ pub use {
     crate::{
         point::{AffinePoint, ProjectiveArithmetic, ProjectivePoint},
         public_key::PublicKey,
-        scalar::Scalar,
+        scalar::{NonZeroScalar, Scalar, ScalarBits},
     },
     ff::{self, BitView, Field},
     group::{self, Group},
@@ -75,6 +71,9 @@ pub use {
 
 #[cfg(feature = "digest")]
 pub use digest::{self, Digest};
+
+#[cfg(all(feature = "hazmat", feature = "zeroize"))]
+pub use secret_key::{SecretBytes, SecretValue};
 
 #[cfg(feature = "jwk")]
 pub use crate::jwk::{JwkEcKey, JwkParameters};

@@ -62,9 +62,9 @@ pub fn diffie_hellman<C>(
 ) -> SharedSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
     AffinePoint<C>: Copy + Clone + Debug + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
     SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     let public_point = ProjectivePoint::<C>::from(*public_key.borrow());
@@ -106,9 +106,9 @@ where
 impl<C> EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
     AffinePoint<C>: Copy + Clone + Debug + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
     SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     /// Generate a cryptographically random [`EphemeralSecret`].
@@ -135,9 +135,9 @@ where
 impl<C> From<&EphemeralSecret<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
     AffinePoint<C>: Copy + Clone + Debug + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
     SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     fn from(ephemeral_secret: &EphemeralSecret<C>) -> Self {

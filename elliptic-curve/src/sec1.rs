@@ -173,8 +173,8 @@ where
     pub fn to_untagged_bytes(&self) -> Option<GenericArray<u8, UntaggedPointSize<C>>>
     where
         C: Curve + ProjectiveArithmetic,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
         AffinePoint<C>: ConditionallySelectable + Default + Decompress<C> + ToEncodedPoint<C>,
+        Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     {
         self.decompress().map(|point| {
             let mut bytes = GenericArray::<u8, UntaggedPointSize<C>>::default();
@@ -466,10 +466,10 @@ impl From<Tag> for u8 {
 /// This is intended for use with the `AffinePoint` type for a given elliptic curve.
 pub trait FromEncodedPoint<C>
 where
+    Self: Sized,
     C: Curve,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
-    Self: Sized,
 {
     /// Deserialize the type this trait is impl'd on from an [`EncodedPoint`].
     ///

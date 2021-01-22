@@ -15,9 +15,11 @@ use subtle::{Choice, ConditionallySelectable, CtOption};
 use zeroize::Zeroize;
 
 /// Scalar field element for a particular elliptic curve.
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub type Scalar<C> = <<C as ProjectiveArithmetic>::ProjectivePoint as Group>::Scalar;
 
 /// Bit representation of a scalar field element of a given curve.
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub type ScalarBits<C> = FieldBits<<Scalar<C> as PrimeField>::ReprBits>;
 
 /// Non-zero scalar type.
@@ -28,6 +30,7 @@ pub type ScalarBits<C> = FieldBits<<Scalar<C> as PrimeField>::ReprBits>;
 ///
 /// In the context of ECC, it's useful for ensuring that scalar multiplication
 /// cannot result in the point at infinity.
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 #[derive(Clone)]
 pub struct NonZeroScalar<C>
 where
