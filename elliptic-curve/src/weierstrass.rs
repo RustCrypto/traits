@@ -12,9 +12,21 @@ pub trait PointCompression {
     const COMPRESS_POINTS: bool;
 }
 
+/// Point compaction settings
+pub trait PointCompaction {
+    /// Should point compaction be applied by default?
+    const COMPACT_POINTS: bool;
+}
+
 /// Attempt to decompress an elliptic curve point from its x-coordinate and
 /// a boolean flag indicating whether or not the y-coordinate is odd.
 pub trait DecompressPoint<C: Curve>: Sized {
     /// Attempt to decompress an elliptic curve point.
     fn decompress(x: &FieldBytes<C>, y_is_odd: Choice) -> CtOption<Self>;
+}
+
+/// Attempt to decompact an elliptic curve point from an x-coordinate
+pub trait DecompactPoint<C: Curve>: Sized {
+    /// Attempt to decompact an elliptic curve point
+    fn decompact(x: &FieldBytes<C>) -> CtOption<Self>;
 }
