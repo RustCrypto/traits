@@ -1,6 +1,9 @@
 //! Salt string support.
 
-use crate::{b64, errors::ParseError, Value};
+use crate::{
+    errors::{B64Error, ParseError},
+    Value,
+};
 use core::{
     convert::{TryFrom, TryInto},
     fmt, str,
@@ -114,7 +117,7 @@ impl<'a> Salt<'a> {
     /// buffer containing the decoded result on success.
     ///
     /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
-    pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8], b64::Error> {
+    pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8], B64Error> {
         self.0.b64_decode(buf)
     }
 

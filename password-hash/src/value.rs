@@ -13,7 +13,10 @@
 //!
 //! [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 
-use crate::{b64, errors::ParseError};
+use crate::{
+    b64,
+    errors::{B64Error, ParseError},
+};
 use core::{convert::TryFrom, fmt, str};
 
 /// Maximum size of a parameter value in ASCII characters.
@@ -78,7 +81,7 @@ impl<'a> Value<'a> {
     /// PHC string format specification.
     ///
     /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
-    pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8], b64::Error> {
+    pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8], B64Error> {
         b64::decode(self.as_str(), buf)
     }
 

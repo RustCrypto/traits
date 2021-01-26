@@ -16,7 +16,7 @@ categories = ["cryptography", "no-std"]
 keywords = ["crypt", "mcf", "password", "pbkdf", "phc"]
 
 [dependencies]
-base64ct = "0"
+base64ct = "0.1"
 
 [features]
 alloc = ["base64ct/alloc"]

@@ -46,6 +46,12 @@ version = "0.0.0"
 source = "git+https://github.com/RustCrypto/utils.git#0fe3e15b868778c92959f3fa03b62b47b6842f60"
 
 [[package]]
+name = "base64ct"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c502cbac2e4ffc38047434d0c88b54da5e7c76829ff16f0a479f90116336d9f3"
+
+[[package]]
 name = "bitvec"
 version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -175,7 +181,7 @@ dependencies = [
 name = "elliptic-curve"
 version = "0.9.0-pre"
 dependencies = [
- "base64ct",
+ "base64ct 0.1.0",
  "digest 0.9.0",
  "ff",
  "generic-array 0.14.4",
@@ -307,7 +313,7 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 name = "password-hash"
 version = "0.0.0"
 dependencies = [
- "base64ct",
+ "base64ct 0.1.0",
 ]
 
 [[package]]
@@ -315,7 +321,7 @@ name = "pkcs8"
 version = "0.4.0-pre"
 source = "git+https://github.com/RustCrypto/utils.git#0fe3e15b868778c92959f3fa03b62b47b6842f60"
 dependencies = [
- "base64ct",
+ "base64ct 0.0.0",
  "der",
  "zeroize",
 ]
