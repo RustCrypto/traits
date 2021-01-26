@@ -193,10 +193,17 @@ where
         self.tag().is_compressed()
     }
 
+    /// Is this [`EncodedPoint`] compact?
+    pub fn is_compact(&self) -> bool {
+        self.tag().is_compact()
+    }
+
     /// Compress this [`EncodedPoint`], returning a new [`EncodedPoint`].
     pub fn compress(&self) -> Self {
         match self.coordinates() {
-            Coordinates::Identity | Coordinates::Compressed { .. } => self.clone(),
+            Coordinates::Identity
+            | Coordinates::Compressed { .. }
+            | Coordinates::Compact { .. } => self.clone(),
             Coordinates::Uncompressed { x, y } => Self::from_affine_coordinates(x, y, true),
         }
     }
@@ -218,6 +225,7 @@ where
                     .into()
             }
             Coordinates::Uncompressed { .. } => Some(self.clone()),
+            Coordinates::Compact { .. } => Some(self.clone()),
         }
     }
 
@@ -257,6 +265,8 @@ where
                 x: x.into(),
                 y_is_odd: self.tag() as u8 & 1 == 1,
             }
+        } else if self.is_compact() {
+            Coordinates::Compact { x: x.into() }
         } else {
             Coordinates::Uncompressed {
                 x: x.into(),
@@ -273,6 +283,7 @@ where
             Coordinates::Identity => None,
             Coordinates::Compressed { x, .. } => Some(x),
             Coordinates::Uncompressed { x, .. } => Some(x),
+            Coordinates::Compact { x } => Some(x),
         }
     }
 
@@ -283,6 +294,7 @@ where
         match self.coordinates() {
             Coordinates::Compressed { .. } | Coordinates::Identity => None,
             Coordinates::Uncompressed { y, .. } => Some(y),
+            Coordinates::Compact { .. } => None,
         }
     }
 }
@@ -373,12 +385,19 @@ pub enum Coordinates<'a, C: Curve> {
         /// y-coordinate
         y: &'a FieldBytes<C>,
     },
+
+    /// Compact curve point
+    Compact {
+        /// x-coordinate
+        x: &'a FieldBytes<C>,
+    },
 }
 
 impl<'a, C: Curve> Coordinates<'a, C> {
     /// Get the tag value needed to encode this set of [`Coordinates`]
     pub fn tag(&self) -> Tag {
         match self {
+            Coordinates::Compact { .. } => Tag::Compact,
             Coordinates::Identity => Tag::Identity,
             Coordinates::Compressed { y_is_odd, .. } => {
                 if *y_is_odd {
@@ -407,6 +426,9 @@ pub enum Tag {
 
     /// Uncompressed point (`0x04`)
     Uncompressed = 4,
+
+    /// Compact point (`0x05`)
+    Compact = 5,
 }
 
 impl Tag {
@@ -417,6 +439,7 @@ impl Tag {
             2 => Ok(Tag::CompressedEvenY),
             3 => Ok(Tag::CompressedOddY),
             4 => Ok(Tag::Uncompressed),
+            5 => Ok(Tag::Compact),
             _ => Err(Error),
         }
     }
@@ -431,6 +454,11 @@ impl Tag {
         matches!(self, Tag::CompressedEvenY | Tag::CompressedOddY)
     }
 
+    /// Is this point compact?
+    pub fn is_compact(self) -> bool {
+        matches!(self, Tag::Compact)
+    }
+
     /// Compute the expected total message length for a message prefixed
     /// with this tag (including the tag byte), given the field element size
     /// (in bytes) for a particular elliptic curve.
@@ -439,6 +467,7 @@ impl Tag {
             Tag::Identity => 0,
             Tag::CompressedEvenY | Tag::CompressedOddY => field_element_size,
             Tag::Uncompressed => field_element_size * 2,
+            Tag::Compact => field_element_size,
         }
     }
 
@@ -489,6 +518,20 @@ where
     /// Serialize this value as a SEC1 [`EncodedPoint`], optionally applying
     /// point compression.
     fn to_encoded_point(&self, compress: bool) -> EncodedPoint<C>;
+}
+
+/// Trait for serializing a value to a SEC1 encoded curve point with compaction.
+///
+/// This is intended for use with the `AffinePoint` type for a given elliptic curve.
+pub trait ToCompactEncodedPoint<C>
+where
+    C: Curve,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+    /// Serialize this value as a SEC1 [`EncodedPoint`], optionally applying
+    /// point compression.
+    fn to_compact_encoded_point(&self) -> Option<EncodedPoint<C>>;
 }
 
 /// Validate that the given [`EncodedPoint`] represents the encoded public key
@@ -674,7 +717,7 @@ mod tests {
         for bytes in &mut [&mut compressed_bytes[..], &mut uncompressed_bytes[..]] {
             for tag in 0..=0xFF {
                 // valid tags
-                if tag == 2 || tag == 3 || tag == 4 {
+                if tag == 2 || tag == 3 || tag == 4 || tag == 5 {
                     continue;
                 }
 
