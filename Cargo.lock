@@ -42,11 +42,6 @@ dependencies = [
 
 [[package]]
 name = "base64ct"
-version = "0.0.0"
-source = "git+https://github.com/RustCrypto/utils.git#0fe3e15b868778c92959f3fa03b62b47b6842f60"
-
-[[package]]
-name = "base64ct"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c502cbac2e4ffc38047434d0c88b54da5e7c76829ff16f0a479f90116336d9f3"
@@ -120,7 +115,8 @@ dependencies = [
 [[package]]
 name = "const-oid"
 version = "0.4.1"
-source = "git+https://github.com/RustCrypto/utils.git#0fe3e15b868778c92959f3fa03b62b47b6842f60"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c5d82796b70971fbb603900a5edc797a4d9be0f9ec1257f83a1dba0aa374e3e9"
 
 [[package]]
 name = "cpuid-bool"
@@ -154,7 +150,8 @@ dependencies = [
 [[package]]
 name = "der"
 version = "0.2.0"
-source = "git+https://github.com/RustCrypto/utils.git#0fe3e15b868778c92959f3fa03b62b47b6842f60"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "65ade418c7a9e4edd2dab3b4749ef6c56ee4b137bc1600215c158cff8e5d39b2"
 dependencies = [
  "const-oid",
 ]
@@ -181,7 +178,7 @@ dependencies = [
 name = "elliptic-curve"
 version = "0.9.0-pre"
 dependencies = [
- "base64ct 0.1.0",
+ "base64ct",
  "digest 0.9.0",
  "ff",
  "generic-array 0.14.4",
@@ -313,15 +310,16 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 name = "password-hash"
 version = "0.0.0"
 dependencies = [
- "base64ct 0.1.0",
+ "base64ct",
 ]
 
 [[package]]
 name = "pkcs8"
-version = "0.4.0-pre"
-source = "git+https://github.com/RustCrypto/utils.git#0fe3e15b868778c92959f3fa03b62b47b6842f60"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8f486f758a686804c80ab239829095260ecbe46e5226e00c0b1339e76a9babc"
 dependencies = [
- "base64ct 0.0.0",
+ "base64ct",
  "der",
  "zeroize",
 ]
