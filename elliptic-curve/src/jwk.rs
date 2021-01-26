@@ -16,6 +16,7 @@ use alloc::{
     format,
     string::{String, ToString},
 };
+use base64ct::url::unpadded as base64url;
 use core::{
     convert::{TryFrom, TryInto},
     fmt::{self, Debug},
@@ -25,7 +26,7 @@ use core::{
 };
 use generic_array::{typenum::U1, ArrayLength};
 use serde::{de, ser, Deserialize, Serialize};
-use zeroize::{Zeroize, Zeroizing};
+use zeroize::Zeroize;
 
 #[cfg(feature = "arithmetic")]
 use crate::{
@@ -211,8 +212,8 @@ where
         match point.coordinates() {
             Coordinates::Uncompressed { x, y } => Ok(JwkEcKey {
                 crv: C::CRV.to_owned(),
-                x: encode_base64url(x),
-                y: encode_base64url(y),
+                x: base64url::encode_string(x),
+                y: base64url::encode_string(y),
                 d: None,
             }),
             _ => Err(Error),
@@ -292,7 +293,7 @@ where
     fn from(sk: &SecretKey<C>) -> JwkEcKey {
         let mut jwk = sk.public_key().to_jwk();
         let mut d = sk.to_bytes();
-        jwk.d = Some(encode_base64url(&d));
+        jwk.d = Some(base64url::encode_string(&d));
         d.zeroize();
         jwk
     }
@@ -634,41 +635,9 @@ impl Serialize for JwkEcKey {
 
 /// Decode a Base64url-encoded field element
 fn decode_base64url_fe<C: Curve>(s: &str) -> Result<FieldBytes<C>, Error> {
-    let mut bytes = Zeroizing::new(s.as_bytes().to_vec());
-
-    // Translate Base64url to traditional Base64
-    // TODO(tarcieri): constant time implementation (in `base64ct` crate?)
-    for byte in bytes.iter_mut() {
-        match *byte {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' => (),
-            b'-' => *byte = b'+',
-            b'_' => *byte = b'/',
-            _ => return Err(Error),
-        }
-    }
-
-    let s = str::from_utf8(&bytes).map_err(|_| Error)?;
     let mut result = FieldBytes::<C>::default();
-    base64ct::decode(s, &mut result).map_err(|_| Error)?;
+    base64url::decode(s, &mut result).map_err(|_| Error)?;
     Ok(result)
-}
-
-/// Encode a field element as Base64url
-fn encode_base64url(bytes: &[u8]) -> String {
-    let mut b64 = base64ct::encode_string(&bytes).into_bytes();
-
-    // Translate traditional Base64 to Base64url
-    // TODO(tarcieri): constant time implementation (in `base64ct` crate?)
-    for byte in b64.iter_mut() {
-        match *byte {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' => (),
-            b'+' => *byte = b'-',
-            b'/' => *byte = b'_',
-            _ => unreachable!(), // would be a bug in `base64ct`
-        }
-    }
-
-    String::from_utf8(b64).unwrap()
 }
 
 #[cfg(test)]

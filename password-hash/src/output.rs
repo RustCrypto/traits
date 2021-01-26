@@ -137,10 +137,6 @@ impl Output {
     /// Parse [`b64`]-encoded [`Output`], i.e. using the PHC string
     /// specification's restricted interpretation of Base64.
     pub fn b64_decode(input: &str) -> Result<Self, OutputError> {
-        if b64::decoded_len(input) > MAX_LENGTH {
-            return Err(OutputError::TooLong);
-        }
-
         let mut bytes = [0u8; MAX_LENGTH];
         b64::decode(input, &mut bytes)
             .map_err(Into::into)

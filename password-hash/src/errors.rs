@@ -1,6 +1,7 @@
 //! Error types.
 
-use crate::b64;
+pub use base64ct::Error as B64Error;
+
 use core::fmt;
 
 #[cfg(docsrs)]
@@ -60,7 +61,7 @@ pub enum HasherError {
     Algorithm,
 
     /// "B64" encoding error.
-    B64(b64::Error),
+    B64(B64Error),
 
     /// Cryptographic error.
     Crypto,
@@ -92,15 +93,15 @@ impl fmt::Display for HasherError {
     }
 }
 
-impl From<b64::Error> for HasherError {
-    fn from(err: b64::Error) -> HasherError {
+impl From<B64Error> for HasherError {
+    fn from(err: B64Error) -> HasherError {
         HasherError::B64(err)
     }
 }
 
-impl From<b64::InvalidLengthError> for HasherError {
-    fn from(_: b64::InvalidLengthError) -> HasherError {
-        HasherError::B64(b64::Error::InvalidLength)
+impl From<base64ct::InvalidLengthError> for HasherError {
+    fn from(_: base64ct::InvalidLengthError) -> HasherError {
+        HasherError::B64(B64Error::InvalidLength)
     }
 }
 
@@ -199,7 +200,7 @@ impl std::error::Error for ParseError {}
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum OutputError {
     /// "B64" encoding error.
-    B64(b64::Error),
+    B64(B64Error),
 
     /// Output too short (min 10-bytes).
     TooShort,
@@ -218,15 +219,15 @@ impl fmt::Display for OutputError {
     }
 }
 
-impl From<b64::Error> for OutputError {
-    fn from(err: b64::Error) -> OutputError {
+impl From<B64Error> for OutputError {
+    fn from(err: B64Error) -> OutputError {
         OutputError::B64(err)
     }
 }
 
-impl From<b64::InvalidLengthError> for OutputError {
-    fn from(_: b64::InvalidLengthError) -> OutputError {
-        OutputError::B64(b64::Error::InvalidLength)
+impl From<base64ct::InvalidLengthError> for OutputError {
+    fn from(_: base64ct::InvalidLengthError) -> OutputError {
+        OutputError::B64(B64Error::InvalidLength)
     }
 }
 
