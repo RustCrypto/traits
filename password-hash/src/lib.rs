@@ -77,6 +77,24 @@ pub trait PasswordHasher {
         + for<'a> TryFrom<&'a ParamsString, Error = HasherError>
         + for<'a> TryInto<ParamsString, Error = HasherError>;
 
+    /// Simple API for computing a [`PasswordHash`] from a password and
+    /// [`Salt`] value.
+    ///
+    /// Uses the default recommended parameters for a given algorithm.
+    fn hash_password_simple<'a>(
+        &self,
+        password: &[u8],
+        salt: &'a str,
+    ) -> Result<PasswordHash<'a>, HasherError> {
+        self.hash_password(
+            password,
+            None,
+            None,
+            Self::Params::default(),
+            salt.try_into()?,
+        )
+    }
+
     /// Compute a [`PasswordHash`] with the given algorithm [`Ident`]
     /// (or `None` for the recommended default), password, salt, and
     /// parameters.
@@ -84,6 +102,7 @@ pub trait PasswordHasher {
         &self,
         password: &[u8],
         algorithm: Option<Ident<'a>>,
+        version: Option<Decimal>,
         params: Self::Params,
         salt: Salt<'a>,
     ) -> Result<PasswordHash<'a>, HasherError>;
@@ -109,6 +128,7 @@ impl<T: PasswordHasher> PasswordVerifier for T {
             let computed_hash = self.hash_password(
                 password,
                 Some(hash.algorithm),
+                hash.version,
                 T::Params::try_from(&hash.params)?,
                 *salt,
             )?;
@@ -293,10 +313,9 @@ impl<'a> PasswordHash<'a> {
     pub fn generate(
         phf: impl PasswordHasher,
         password: impl AsRef<[u8]>,
-        salt: Salt<'a>,
-        params: &ParamsString,
+        salt: &'a str,
     ) -> Result<Self, HasherError> {
-        phf.hash_password(password.as_ref(), None, params.try_into()?, salt)
+        phf.hash_password_simple(password.as_ref(), salt)
     }
 
     /// Verify this password hash using the specified set of supported

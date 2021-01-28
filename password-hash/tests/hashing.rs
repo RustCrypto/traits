@@ -1,7 +1,8 @@
 //! Password hashing tests
 
 pub use password_hash::{
-    HasherError, Ident, Output, ParamsString, PasswordHash, PasswordHasher, Salt, VerifyError,
+    Decimal, HasherError, Ident, Output, ParamsString, PasswordHash, PasswordHasher, Salt,
+    VerifyError,
 };
 use std::convert::{TryFrom, TryInto};
 
@@ -17,6 +18,7 @@ impl PasswordHasher for StubPasswordHasher {
         &self,
         password: &[u8],
         algorithm: Option<Ident<'a>>,
+        _version: Option<Decimal>,
         params: StubParams,
         salt: Salt<'a>,
     ) -> Result<PasswordHash<'a>, HasherError> {
@@ -67,14 +69,12 @@ impl<'a> TryFrom<StubParams> for ParamsString {
 #[test]
 fn verify_password_hash() {
     let valid_password = "test password";
-    let salt = Salt::new("test-salt").unwrap();
-    let params = ParamsString::new();
-    let hash = PasswordHash::generate(StubPasswordHasher, valid_password, salt, &params).unwrap();
+    let salt = "test-salt";
+    let hash = PasswordHash::generate(StubPasswordHasher, valid_password, salt).unwrap();
 
     // Sanity tests for StubFunction impl above
     assert_eq!(hash.algorithm, ALG);
-    assert_eq!(hash.salt.unwrap(), salt);
-    assert_eq!(hash.params, params);
+    assert_eq!(hash.salt.unwrap().as_str(), salt);
 
     // Tests for generic password verification logic
     assert_eq!(
