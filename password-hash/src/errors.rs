@@ -77,6 +77,9 @@ pub enum HasherError {
 
     /// Invalid password.
     Password,
+
+    /// Invalid algorithm version.
+    Version,
 }
 
 impl fmt::Display for HasherError {
@@ -89,6 +92,7 @@ impl fmt::Display for HasherError {
             Self::Params(err) => write!(f, "{}", err),
             Self::Parse(err) => write!(f, "{}", err),
             Self::Password => write!(f, "invalid password"),
+            Self::Version => write!(f, "invalid algorithm version"),
         }
     }
 }
