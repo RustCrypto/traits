@@ -7,7 +7,7 @@ use generic_array::{ArrayLength, GenericArray};
 /// Wrapper around [`VariableOutputCore`] which selects output size
 /// at compile time.
 #[derive(Clone)]
-pub struct CtVariableWrapper<T, OutSize>
+pub struct CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
@@ -16,7 +16,7 @@ where
     _out: PhantomData<OutSize>,
 }
 
-impl<T, OutSize> UpdateCore for CtVariableWrapper<T, OutSize>
+impl<T, OutSize> UpdateCore for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
@@ -29,7 +29,7 @@ where
     }
 }
 
-impl<T, OutSize> FixedOutputCore for CtVariableWrapper<T, OutSize>
+impl<T, OutSize> FixedOutputCore for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
@@ -47,7 +47,7 @@ where
     }
 }
 
-impl<T, OutSize> Default for CtVariableWrapper<T, OutSize>
+impl<T, OutSize> Default for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
@@ -61,7 +61,7 @@ where
     }
 }
 
-impl<T, OutSize> AlgorithmName for CtVariableWrapper<T, OutSize>
+impl<T, OutSize> AlgorithmName for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore + AlgorithmName,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,

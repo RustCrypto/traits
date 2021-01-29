@@ -6,13 +6,13 @@ use core::fmt;
 /// Wrapper around [`VariableOutputCore`] which selects output size
 /// at run time.
 #[derive(Clone)]
-pub struct VariableCoreWrapper<T: VariableOutputCore> {
+pub struct RtVariableCoreWrapper<T: VariableOutputCore> {
     core: T,
     buffer: BlockBuffer<T::BlockSize>,
     output_size: usize,
 }
 
-impl<T: VariableOutputCore> VariableOutput for VariableCoreWrapper<T> {
+impl<T: VariableOutputCore> VariableOutput for RtVariableCoreWrapper<T> {
     fn new(output_size: usize) -> Result<Self, InvalidOutputSize> {
         let buffer = Default::default();
         T::new(output_size).map(|core| Self {
@@ -53,7 +53,7 @@ impl<T: VariableOutputCore> VariableOutput for VariableCoreWrapper<T> {
     }
 }
 
-impl<T: VariableOutputCore + AlgorithmName> fmt::Debug for VariableCoreWrapper<T> {
+impl<T: VariableOutputCore + AlgorithmName> fmt::Debug for RtVariableCoreWrapper<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         T::write_alg_name(f)?;
         f.write_str(" { .. }")

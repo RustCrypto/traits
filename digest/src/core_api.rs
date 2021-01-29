@@ -12,8 +12,8 @@ mod rt_variable;
 mod update;
 mod xof_reader;
 
-pub use ct_variable::CtVariableWrapper;
-pub use rt_variable::VariableCoreWrapper;
+pub use ct_variable::CtVariableCoreWrapper;
+pub use rt_variable::RtVariableCoreWrapper;
 pub use update::UpdateCoreWrapper;
 pub use xof_reader::XofReaderCoreWrapper;
 
