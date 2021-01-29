@@ -41,8 +41,7 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-pub mod errors;
-
+mod errors;
 mod ident;
 mod output;
 mod params;
@@ -50,11 +49,11 @@ mod salt;
 mod value;
 
 pub use crate::{
-    errors::{HashError, HasherError, VerifyError},
+    errors::{B64Error, HashError, HasherError, OutputError, ParamsError, ParseError, VerifyError},
     ident::Ident,
     output::Output,
     params::ParamsString,
-    salt::Salt,
+    salt::{Salt, SaltString},
     value::{Decimal, Value},
 };
 
@@ -239,8 +238,6 @@ pub struct PasswordHash<'a> {
 impl<'a> PasswordHash<'a> {
     /// Parse a password hash from a string in the PHC string format.
     pub fn new(s: &'a str) -> Result<Self, HashError> {
-        use errors::ParseError;
-
         if s.is_empty() {
             return Err(ParseError::Empty.into());
         }

@@ -1,6 +1,7 @@
 //! Salt string support.
 
 use crate::{
+    b64,
     errors::{B64Error, ParseError},
     Value,
 };
@@ -8,6 +9,13 @@ use core::{
     convert::{TryFrom, TryInto},
     fmt, str,
 };
+
+#[cfg(feature = "rand_core")]
+use rand_core::{CryptoRng, RngCore};
+
+/// Error message used with `expect` for when internal invariants are violated
+/// (i.e. the contents of a [`Salt`] should always be valid)
+const INVARIANT_VIOLATED_MSG: &str = "salt string invariant violated";
 
 /// Salt string.
 ///
@@ -48,14 +56,14 @@ use core::{
 /// guidelines from the spec:
 ///
 /// - Minimum length: **4**-bytes
-/// - Maximum length: **48**-bytes
+/// - Maximum length: **64**-bytes
 ///
 /// A maximum length is enforced based on the above recommendation for
 /// supporting stack-allocated buffers (which this library uses), and the
-/// specific determination of 48-bytes is taken as a best practice from the
+/// specific determination of 64-bytes is taken as a best practice from the
 /// [Argon2 Encoding][3] specification in the same document:
 ///
-/// > The length in bytes of the salt is between 8 and 48 bytes<sup>†</sup>, thus
+/// > The length in bytes of the salt is between 8 and 64 bytes<sup>†</sup>, thus
 /// > yielding a length in characters between 11 and 64 characters (and that
 /// > length is never equal to 1 modulo 4). The default byte length of the salt
 /// > is 16 bytes (22 characters in B64 encoding). An encoded UUID, or a
@@ -67,7 +75,7 @@ use core::{
 /// > Specifying a relatively small maximum length allows for parsing with a
 /// > stack allocated buffer.)
 ///
-/// Based on this guidance, this type enforces an upper bound of 48-bytes
+/// Based on this guidance, this type enforces an upper bound of 64-bytes
 /// as a reasonable maximum, and recommends using 16-bytes.
 ///
 /// [1]: https://en.wikipedia.org/wiki/Rainbow_table
@@ -85,11 +93,11 @@ impl<'a> Salt<'a> {
         4
     }
 
-    /// Maximum length of a [`Salt`] string: 48-bytes.
+    /// Maximum length of a [`Salt`] string: 64-bytes.
     ///
     /// See type-level documentation about [`Salt`] for more information.
     pub const fn max_len() -> usize {
-        Value::max_len()
+        64
     }
 
     /// Recommended length of a salt: 16-bytes.
@@ -160,6 +168,98 @@ impl<'a> fmt::Display for Salt<'a> {
 impl<'a> fmt::Debug for Salt<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Salt({:?})", self.as_ref())
+    }
+}
+
+/// Owned stack-allocated equivalent of [`Salt`].
+#[derive(Clone, Debug, Eq)]
+pub struct SaltString {
+    /// Byte array containing an ASCiI-encoded string.
+    bytes: [u8; Salt::max_len()],
+
+    /// Length of the string in ASCII characters (i.e. bytes).
+    length: u8,
+}
+
+impl SaltString {
+    /// Generate a random B64-encoded [`SaltString`].
+    #[cfg(feature = "rand_core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    pub fn generate(mut rng: impl CryptoRng + RngCore) -> Self {
+        let mut bytes = [0u8; Salt::recommended_len()];
+        rng.fill_bytes(&mut bytes);
+        Self::b64_encode(&bytes).expect(INVARIANT_VIOLATED_MSG)
+    }
+
+    /// Create a new [`SaltString`].
+    pub fn new(s: &str) -> Result<Self, ParseError> {
+        // Assert `s` parses successifully as a `Salt`
+        Salt::new(s)?;
+
+        let length = s.as_bytes().len();
+
+        if length < Salt::max_len() {
+            let mut bytes = [0u8; Salt::max_len()];
+            bytes[..length].copy_from_slice(s.as_bytes());
+            Ok(SaltString {
+                bytes,
+                length: length as u8,
+            })
+        } else {
+            Err(ParseError::TooLong)
+        }
+    }
+
+    /// Encode the given byte slice as B64 into a new [`SaltString`].
+    ///
+    /// Returns `None` if the slice is too long.
+    pub fn b64_encode(input: &[u8]) -> Result<Self, B64Error> {
+        let mut bytes = [0u8; Salt::max_len()];
+        let length = b64::encode(input, &mut bytes)?.len() as u8;
+        Ok(Self { bytes, length })
+    }
+
+    /// Decode this [`SaltString`] from B64 into the provided output buffer.
+    pub fn b64_decode<'a>(&self, buf: &'a mut [u8]) -> Result<&'a [u8], B64Error> {
+        self.as_salt().b64_decode(buf)
+    }
+
+    /// Borrow the contents of a [`SaltString`] as a `str`.
+    pub fn as_str(&self) -> &str {
+        str::from_utf8(&self.bytes[..(self.length as usize)]).expect(INVARIANT_VIOLATED_MSG)
+    }
+
+    /// Borrow the contents of a [`SaltString`] as a [`Salt`].
+    pub fn as_salt(&self) -> Salt<'_> {
+        Salt::new(self.as_str()).expect(INVARIANT_VIOLATED_MSG)
+    }
+}
+
+impl AsRef<str> for SaltString {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl Default for SaltString {
+    fn default() -> SaltString {
+        SaltString {
+            bytes: [0u8; Salt::max_len()],
+            length: 0,
+        }
+    }
+}
+
+impl PartialEq for SaltString {
+    fn eq(&self, other: &Self) -> bool {
+        // Ensure comparisons always honor the initialized portion of the buffer
+        self.as_ref().eq(other.as_ref())
+    }
+}
+
+impl<'a> From<&'a SaltString> for Salt<'a> {
+    fn from(salt_string: &'a SaltString) -> Salt<'a> {
+        salt_string.as_salt()
     }
 }
 
