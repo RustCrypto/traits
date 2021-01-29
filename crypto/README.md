@@ -1,4 +1,4 @@
-# RustCrypto: `cryptography` crate
+# RustCrypto: `crypto` crate
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -41,16 +41,16 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/cryptography.svg
-[crate-link]: https://crates.io/crates/cryptography
-[docs-image]: https://docs.rs/cryptography/badge.svg
-[docs-link]: https://docs.rs/cryptography/
+[crate-image]: https://img.shields.io/crates/v/crypto.svg
+[crate-link]: https://crates.io/crates/crypto
+[docs-image]: https://docs.rs/crypto/badge.svg
+[docs-link]: https://docs.rs/crypto/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.44+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260050-Traits
-[build-image]: https://github.com/RustCrypto/traits/workflows/cryptography/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/traits/actions?query=workflow%3Acryptography
+[build-image]: https://github.com/RustCrypto/traits/workflows/crypto/badge.svg?branch=master&event=push
+[build-link]: https://github.com/RustCrypto/traits/actions?query=workflow:crypto
 
 [//]: # (footnotes)
 
