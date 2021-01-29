@@ -28,6 +28,7 @@
 //! | [`digest`](https://docs.rs/digest) | `digest` | Cryptographic hash functions |
 //! | [`elliptic_curve`](https://docs.rs/elliptic-curve) | `elliptic-curve` | Elliptic curve cryptography |
 //! | [`mac`](https://docs.rs/crypto-mac) | `mac` | Message Authentication Codes (i.e. symmetric message authentication) |
+//! | [`password-hash`](https://docs.rs/password-hash) | `password-hash` | Password hashing functions |
 //! | [`signature`](https://docs.rs/signature) | `signature` | Digital signatures (i.e. public key-based message authentication) |
 //! | [`universal_hash`](https://docs.rs/universal-hash) | `universal‑hash` | Universal Hash Functions (used to build MACs) |
 //!
@@ -56,6 +57,9 @@ pub use elliptic_curve;
 
 #[cfg(feature = "mac")]
 pub use mac;
+
+#[cfg(feature = "password-hash")]
+pub use password_hash;
 
 #[cfg(feature = "signature")]
 pub use signature;

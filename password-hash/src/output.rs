@@ -68,6 +68,7 @@ pub struct Output {
     length: u8,
 }
 
+#[allow(clippy::len_without_is_empty)]
 impl Output {
     /// Minimum length of [`Output`] string: 10-bytes.
     ///
