@@ -1,8 +1,8 @@
 use super::{AlgorithmName, VariableOutputCore};
 use crate::{InvalidOutputSize, VariableOutput};
 use block_buffer::BlockBuffer;
-use generic_array::typenum::Unsigned;
 use core::fmt;
+use generic_array::typenum::Unsigned;
 
 /// Wrapper around [`VariableOutputCore`] which selects output size
 /// at run time.

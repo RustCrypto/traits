@@ -174,6 +174,7 @@ pub trait ExtendableOutput {
 
 /// Trait for variable output size hash functions.
 pub trait VariableOutput: Sized {
+    /// Maximum size of output hash.
     const MAX_OUTPUT_SIZE: usize;
 
     /// Create new hasher instance with the given output size.
