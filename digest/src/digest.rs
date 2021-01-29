@@ -13,30 +13,23 @@ pub trait Digest {
     /// Create new hasher instance
     fn new() -> Self;
 
-    /// Digest data, updating the internal state.
-    ///
-    /// This method can be called repeatedly for use with streaming messages.
+    /// Process data, updating the internal state.
     fn update(&mut self, data: impl AsRef<[u8]>);
 
-    /// Digest input data in a chained manner.
-    fn chain(self, data: impl AsRef<[u8]>) -> Self
-    where
-        Self: Sized;
+    /// Process input data in a chained manner.
+    fn chain_update(self, data: impl AsRef<[u8]>) -> Self;
 
     /// Retrieve result and consume hasher instance.
     fn finalize(self) -> Output<Self>;
 
     /// Retrieve result and reset hasher instance.
-    ///
-    /// This method sometimes can be more efficient compared to hasher
-    /// re-creation.
     fn finalize_reset(&mut self) -> Output<Self>;
 
     /// Write result into provided array and consume the hasher instance.
-    fn finalize_into(self, out: &mut GenericArray<u8, Self::OutputSize>);
+    fn finalize_into(self, out: &mut Output<Self>);
 
     /// Write result into provided array and reset the hasher instance.
-    fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>);
+    fn finalize_into_reset(&mut self, out: &mut Output<Self>);
 
     /// Reset hasher instance to its initial state.
     fn reset(&mut self);
@@ -45,16 +38,10 @@ pub trait Digest {
     fn output_size() -> usize;
 
     /// Compute hash of `data`.
-    ///
-    /// Example:
-    ///
-    /// ```rust,ignore
-    /// println!("{:x}", sha2::Sha256::digest(b"Hello world"));
-    /// ```
     fn digest(data: impl AsRef<[u8]>) -> Output<Self>;
 }
 
-impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
+impl<D: FixedOutput> Digest for D {
     type OutputSize = <Self as FixedOutput>::OutputSize;
 
     #[inline]
@@ -68,32 +55,29 @@ impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
     }
 
     #[inline]
-    fn chain(mut self, data: impl AsRef<[u8]>) -> Self
-    where
-        Self: Sized,
-    {
+    fn chain_update(mut self, data: impl AsRef<[u8]>) -> Self {
         Update::update(&mut self, data.as_ref());
         self
     }
 
     #[inline]
     fn finalize(self) -> Output<Self> {
-        self.finalize_fixed()
+        FixedOutput::finalize_fixed(self)
     }
 
     #[inline]
     fn finalize_reset(&mut self) -> Output<Self> {
-        self.finalize_fixed_reset()
+        FixedOutput::finalize_fixed_reset(self)
     }
 
     #[inline]
     fn finalize_into(self, out: &mut Output<Self>) {
-        self.finalize_into(out);
+        FixedOutput::finalize_into(self, out);
     }
 
     #[inline]
     fn finalize_into_reset(&mut self, out: &mut Output<Self>) {
-        self.finalize_into_reset(out);
+        FixedOutput::finalize_into_reset(self, out);
     }
 
     #[inline]
@@ -108,9 +92,7 @@ impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
 
     #[inline]
     fn digest(data: impl AsRef<[u8]>) -> Output<Self> {
-        let mut hasher = Self::default();
-        Update::update(&mut hasher, data.as_ref());
-        hasher.finalize_fixed()
+        Self::digest_fixed(data)
     }
 }
 

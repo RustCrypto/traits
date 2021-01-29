@@ -76,24 +76,19 @@ pub trait Reset {
 }
 
 /// Trait for returning digest result with the fixed size
-pub trait FixedOutput {
+pub trait FixedOutput: Sized + Update + Default + Reset {
     /// Output size for fixed output digest
     type OutputSize: ArrayLength<u8>;
 
     /// Write result into provided array and consume the hasher instance.
-    fn finalize_into(self, out: &mut GenericArray<u8, Self::OutputSize>)
-    where
-        Self: Sized;
+    fn finalize_into(self, out: &mut GenericArray<u8, Self::OutputSize>);
 
     /// Write result into provided array and reset the hasher instance.
     fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>);
 
     /// Retrieve result and consume the hasher instance.
     #[inline]
-    fn finalize_fixed(self) -> GenericArray<u8, Self::OutputSize>
-    where
-        Self: Sized,
-    {
+    fn finalize_fixed(self) -> GenericArray<u8, Self::OutputSize> {
         let mut out = Default::default();
         self.finalize_into(&mut out);
         out
@@ -105,6 +100,14 @@ pub trait FixedOutput {
         let mut out = Default::default();
         self.finalize_into_reset(&mut out);
         out
+    }
+
+    /// Compute hash of `data`.
+    #[inline]
+    fn digest_fixed(data: impl AsRef<[u8]>) -> GenericArray<u8, Self::OutputSize> {
+        let mut hasher = Self::default();
+        hasher.update(data.as_ref());
+        hasher.finalize_fixed()
     }
 }
 
@@ -130,17 +133,22 @@ pub trait XofReader {
 }
 
 /// Trait which describes extendable-output functions (XOF).
-pub trait ExtendableOutput {
+pub trait ExtendableOutput: Sized + Update + Default + Reset {
     /// Reader
     type Reader: XofReader;
 
     /// Retrieve XOF reader and consume hasher instance.
-    fn finalize_xof(self) -> Self::Reader
-    where
-        Self: Sized;
+    fn finalize_xof(self) -> Self::Reader;
 
     /// Retrieve XOF reader and reset hasher instance state.
     fn finalize_xof_reset(&mut self) -> Self::Reader;
+
+    /// Compute hash of `data` and write it to `output`.
+    fn digest_xof(input: impl AsRef<[u8]>, output: &mut [u8]) {
+        let mut hasher = Self::default();
+        hasher.update(input.as_ref());
+        hasher.finalize_xof().read(output);
+    }
 
     /// Retrieve result into a boxed slice of the specified size and consume
     /// the hasher.
@@ -149,11 +157,8 @@ pub trait ExtendableOutput {
     /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    fn finalize_boxed(self, n: usize) -> Box<[u8]>
-    where
-        Self: Sized,
-    {
-        let mut buf = vec![0u8; n].into_boxed_slice();
+    fn finalize_boxed(self, output_size: usize) -> Box<[u8]> {
+        let mut buf = vec![0u8; output_size].into_boxed_slice();
         self.finalize_xof().read(&mut buf);
         buf
     }
@@ -165,15 +170,15 @@ pub trait ExtendableOutput {
     /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    fn finalize_boxed_reset(&mut self, n: usize) -> Box<[u8]> {
-        let mut buf = vec![0u8; n].into_boxed_slice();
+    fn finalize_boxed_reset(&mut self, output_size: usize) -> Box<[u8]> {
+        let mut buf = vec![0u8; output_size].into_boxed_slice();
         self.finalize_xof_reset().read(&mut buf);
         buf
     }
 }
 
 /// Trait for variable output size hash functions.
-pub trait VariableOutput: Sized {
+pub trait VariableOutput: Sized + Update + Reset {
     /// Maximum size of output hash.
     const MAX_OUTPUT_SIZE: usize;
 
@@ -203,10 +208,10 @@ pub trait VariableOutput: Sized {
     /// Length of the output hash is determined by `output`. If `output` is
     /// bigger than `Self::MAX_OUTPUT_SIZE`, this method returns
     /// `InvalidOutputSize`.
-    fn digest_variable(input: impl AsRef<[u8]>, output: &mut [u8]) -> Result<(), InvalidOutputSize>
-    where
-        Self: Update,
-    {
+    fn digest_variable(
+        input: impl AsRef<[u8]>,
+        output: &mut [u8],
+    ) -> Result<(), InvalidOutputSize> {
         let mut hasher = Self::new(output.len())?;
         hasher.update(input.as_ref());
         hasher.finalize_variable(|out| output.copy_from_slice(out));
