@@ -84,6 +84,7 @@ const INVARIANT_VIOLATED_MSG: &str = "salt string invariant violated";
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct Salt<'a>(Value<'a>);
 
+#[allow(clippy::len_without_is_empty)]
 impl<'a> Salt<'a> {
     /// Minimum length of a [`Salt`] string: 2-bytes.
     ///
@@ -181,6 +182,7 @@ pub struct SaltString {
     length: u8,
 }
 
+#[allow(clippy::len_without_is_empty)]
 impl SaltString {
     /// Generate a random B64-encoded [`SaltString`].
     #[cfg(feature = "rand_core")]
@@ -224,14 +226,24 @@ impl SaltString {
         self.as_salt().b64_decode(buf)
     }
 
+    /// Borrow the contents of a [`SaltString`] as a [`Salt`].
+    pub fn as_salt(&self) -> Salt<'_> {
+        Salt::new(self.as_str()).expect(INVARIANT_VIOLATED_MSG)
+    }
+
     /// Borrow the contents of a [`SaltString`] as a `str`.
     pub fn as_str(&self) -> &str {
         str::from_utf8(&self.bytes[..(self.length as usize)]).expect(INVARIANT_VIOLATED_MSG)
     }
 
-    /// Borrow the contents of a [`SaltString`] as a [`Salt`].
-    pub fn as_salt(&self) -> Salt<'_> {
-        Salt::new(self.as_str()).expect(INVARIANT_VIOLATED_MSG)
+    /// Borrow this value as bytes.
+    pub fn as_bytes(&self) -> &[u8] {
+        self.as_str().as_bytes()
+    }
+
+    /// Get the length of this value in ASCII characters.
+    pub fn len(&self) -> usize {
+        self.as_str().len()
     }
 }
 
