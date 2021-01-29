@@ -1,6 +1,7 @@
 use super::{AlgorithmName, VariableOutputCore};
 use crate::{InvalidOutputSize, VariableOutput};
 use block_buffer::BlockBuffer;
+use generic_array::typenum::Unsigned;
 use core::fmt;
 
 /// Wrapper around [`VariableOutputCore`] which selects output size
@@ -13,6 +14,8 @@ pub struct RtVariableCoreWrapper<T: VariableOutputCore> {
 }
 
 impl<T: VariableOutputCore> VariableOutput for RtVariableCoreWrapper<T> {
+    const MAX_OUTPUT_SIZE: usize = T::MaxOutputSize::USIZE;
+
     fn new(output_size: usize) -> Result<Self, InvalidOutputSize> {
         let buffer = Default::default();
         T::new(output_size).map(|core| Self {

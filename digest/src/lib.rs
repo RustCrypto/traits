@@ -174,6 +174,8 @@ pub trait ExtendableOutput {
 
 /// Trait for variable output size hash functions.
 pub trait VariableOutput: Sized {
+    const MAX_OUTPUT_SIZE: usize;
+
     /// Create new hasher instance with the given output size.
     ///
     /// It will return `Err(InvalidOutputSize)` in case if hasher can not return
@@ -194,6 +196,21 @@ pub trait VariableOutput: Sized {
     /// Closure is guaranteed to be called, length of the buffer passed to it
     /// will be equal to `output_size`.
     fn finalize_variable_reset(&mut self, f: impl FnOnce(&[u8]));
+
+    /// Compute hash of `data` and write it to `output`.
+    ///
+    /// Length of the output hash is determined by `output`. If `output` is
+    /// bigger than `Self::MAX_OUTPUT_SIZE`, this method returns
+    /// `InvalidOutputSize`.
+    fn digest_variable(input: impl AsRef<[u8]>, output: &mut [u8]) -> Result<(), InvalidOutputSize>
+    where
+        Self: Update,
+    {
+        let mut hasher = Self::new(output.len())?;
+        hasher.update(input.as_ref());
+        hasher.finalize_variable(|out| output.copy_from_slice(out));
+        Ok(())
+    }
 
     /// Retrieve result into a boxed slice and consume hasher.
     ///

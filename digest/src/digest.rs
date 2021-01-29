@@ -44,15 +44,14 @@ pub trait Digest {
     /// Get output size of the hasher
     fn output_size() -> usize;
 
-    /// Convenience function to compute hash of the `data`. It will handle
-    /// hasher creation, data feeding and finalization.
+    /// Compute hash of `data`.
     ///
     /// Example:
     ///
     /// ```rust,ignore
     /// println!("{:x}", sha2::Sha256::digest(b"Hello world"));
     /// ```
-    fn digest(data: &[u8]) -> Output<Self>;
+    fn digest(data: impl AsRef<[u8]>) -> Output<Self>;
 }
 
 impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
@@ -108,9 +107,9 @@ impl<D: Update + FixedOutput + Reset + Clone + Default> Digest for D {
     }
 
     #[inline]
-    fn digest(data: &[u8]) -> Output<Self> {
+    fn digest(data: impl AsRef<[u8]>) -> Output<Self> {
         let mut hasher = Self::default();
-        Update::update(&mut hasher, data);
+        Update::update(&mut hasher, data.as_ref());
         hasher.finalize_fixed()
     }
 }
