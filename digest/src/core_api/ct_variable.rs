@@ -1,8 +1,10 @@
 use super::{AlgorithmName, FixedOutputCore, UpdateCore, VariableOutputCore};
 use block_buffer::BlockBuffer;
 use core::{fmt, marker::PhantomData};
-use generic_array::typenum::type_operators::IsLessOrEqual;
-use generic_array::{ArrayLength, GenericArray};
+use generic_array::{
+    typenum::{IsLessOrEqual, LeEq, NonZero},
+    ArrayLength, GenericArray,
+};
 
 /// Wrapper around [`VariableOutputCore`] which selects output size
 /// at compile time.
@@ -11,6 +13,7 @@ pub struct CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
+    LeEq<OutSize, T::MaxOutputSize>: NonZero,
 {
     inner: T,
     _out: PhantomData<OutSize>,
@@ -20,6 +23,7 @@ impl<T, OutSize> UpdateCore for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
+    LeEq<OutSize, T::MaxOutputSize>: NonZero,
 {
     type BlockSize = T::BlockSize;
 
@@ -33,6 +37,7 @@ impl<T, OutSize> FixedOutputCore for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
+    LeEq<OutSize, T::MaxOutputSize>: NonZero,
 {
     type OutputSize = OutSize;
 
@@ -51,6 +56,7 @@ impl<T, OutSize> Default for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
+    LeEq<OutSize, T::MaxOutputSize>: NonZero,
 {
     #[inline]
     fn default() -> Self {
@@ -65,6 +71,7 @@ impl<T, OutSize> AlgorithmName for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore + AlgorithmName,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
+    LeEq<OutSize, T::MaxOutputSize>: NonZero,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         T::write_alg_name(f)?;
