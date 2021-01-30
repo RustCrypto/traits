@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.0 (UNRELEASED)
+### Added
+- `stream` module ([#436])
+
+### Changed
+- Extract `AeadCore` trait ([#508])
+
+[#436]: https://github.com/RustCrypto/traits/pull/436
+[#508]: https://github.com/RustCrypto/traits/pull/508
+
 ## 0.3.2 (2020-07-01)
 ### Added
 - `dev` module ([#194])
