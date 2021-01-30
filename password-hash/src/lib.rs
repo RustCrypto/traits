@@ -6,8 +6,14 @@
 //! (a well-defined subset of the [Modular Crypt Format a.k.a. MCF][MCF]) which
 //! works in conjunction with the traits this crate defines.
 //!
+//! # Supported Crates
+//!
 //! See [RustCrypto/password-hashes] for algorithm implementations which use
-//! this crate for interoperability.
+//! this crate for interoperability:
+//!
+//! - [`argon2`] - Argon2 memory hard key derivation function
+//! - [`pbkdf2`] - Password-Based Key Derivation Function v2
+//! - [`scrypt`] - scrypt key derivation function
 //!
 //! # Usage
 //!
@@ -24,6 +30,9 @@
 //! [PHC]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 //! [MCF]: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
 //! [RustCrypto/password-hashes]: https://github.com/RustCrypto/password-hashes
+//! [`argon2`]: https://docs.rs/argon2
+//! [`pbkdf2`]: https://docs.rs/pbkdf2
+//! [`scrypt`]: https://docs.rs/scrypt
 
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg))]
