@@ -17,7 +17,7 @@
 //!
 //! [1]: https://eprint.iacr.org/2015/189.pdf
 
-use crate::{AeadInPlace, Buffer, Error, Key, NewAead};
+use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, NewAead};
 use core::ops::{AddAssign, Sub};
 use generic_array::{
     typenum::{Unsigned, U4, U5},
@@ -33,7 +33,7 @@ pub type Nonce<A, S> = GenericArray<u8, NonceSize<A, S>>;
 /// Size of a nonce as used by a STREAM construction, sans the overhead of
 /// the STREAM protocol itself.
 pub type NonceSize<A, S> =
-    <<A as AeadInPlace>::NonceSize as Sub<<S as StreamPrimitive<A>>::NonceOverhead>>::Output;
+    <<A as AeadCore>::NonceSize as Sub<<S as StreamPrimitive<A>>::NonceOverhead>>::Output;
 
 /// STREAM encryptor instantiated with [`StreamBE32`] as the underlying
 /// STREAM primitive.
@@ -352,7 +352,7 @@ pub struct StreamBE32<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U5>,
-    <<A as AeadInPlace>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
 {
     /// Underlying AEAD cipher
     aead: A,
@@ -365,7 +365,7 @@ impl<A> NewStream<A> for StreamBE32<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U5>,
-    <<A as AeadInPlace>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
 {
     fn from_aead(aead: A, nonce: &Nonce<A, Self>) -> Self {
         Self {
@@ -379,7 +379,7 @@ impl<A> StreamPrimitive<A> for StreamBE32<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U5>,
-    <<A as AeadInPlace>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
 {
     type NonceOverhead = U5;
     type Counter = u32;
@@ -413,11 +413,11 @@ impl<A> StreamBE32<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U5>,
-    <<A as AeadInPlace>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
 {
     /// Compute the full AEAD nonce including the STREAM counter and last
     /// block flag.
-    fn aead_nonce(&self, position: u32, last_block: bool) -> crate::Nonce<A::NonceSize> {
+    fn aead_nonce(&self, position: u32, last_block: bool) -> crate::Nonce<A> {
         let mut result = GenericArray::default();
 
         // TODO(tarcieri): use `generic_array::sequence::Concat` (or const generics)
@@ -441,7 +441,7 @@ pub struct StreamLE31<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U4>,
-    <<A as AeadInPlace>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
 {
     /// Underlying AEAD cipher
     aead: A,
@@ -454,7 +454,7 @@ impl<A> NewStream<A> for StreamLE31<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U4>,
-    <<A as AeadInPlace>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
 {
     fn from_aead(aead: A, nonce: &Nonce<A, Self>) -> Self {
         Self {
@@ -468,7 +468,7 @@ impl<A> StreamPrimitive<A> for StreamLE31<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U4>,
-    <<A as AeadInPlace>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
 {
     type NonceOverhead = U4;
     type Counter = u32;
@@ -502,15 +502,11 @@ impl<A> StreamLE31<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U4>,
-    <<A as AeadInPlace>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
 {
     /// Compute the full AEAD nonce including the STREAM counter and last
     /// block flag.
-    fn aead_nonce(
-        &self,
-        position: u32,
-        last_block: bool,
-    ) -> Result<crate::Nonce<A::NonceSize>, Error> {
+    fn aead_nonce(&self, position: u32, last_block: bool) -> Result<crate::Nonce<A>, Error> {
         if position > Self::COUNTER_MAX {
             return Err(Error);
         }
