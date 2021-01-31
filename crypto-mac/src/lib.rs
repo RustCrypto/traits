@@ -30,6 +30,9 @@ use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
 use subtle::{Choice, ConstantTimeEq};
 
+#[cfg(feature = "rand_core")]
+use rand_core::{CryptoRng, RngCore};
+
 /// Key for an algorithm that implements [`NewMac`].
 pub type Key<M> = GenericArray<u8, <M as NewMac>::KeySize>;
 
@@ -51,6 +54,15 @@ pub trait NewMac: Sized {
         } else {
             Ok(Self::new(GenericArray::from_slice(key)))
         }
+    }
+
+    /// Generate a random key for this MAC using the provided [`CryptoRng`].
+    #[cfg(feature = "rand_core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    fn generate_key(mut rng: impl CryptoRng + RngCore) -> Key<Self> {
+        let mut key = Key::<Self>::default();
+        rng.fill_bytes(&mut key);
+        key
     }
 }
 
