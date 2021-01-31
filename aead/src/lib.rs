@@ -82,10 +82,10 @@ pub trait NewAead {
     /// Create a new AEAD instance with the given key.
     fn new(key: &Key<Self>) -> Self;
 
-    /// Create new AEAD instance from key with variable size.
+    /// Create new AEAD instance from key given as a byte slice..
     ///
     /// Default implementation will accept only keys with length equal to `KeySize`.
-    fn new_varkey(key: &[u8]) -> Result<Self, Error>
+    fn new_from_slice(key: &[u8]) -> Result<Self, Error>
     where
         Self: Sized,
     {
