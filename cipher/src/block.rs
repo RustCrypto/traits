@@ -13,6 +13,9 @@ use crate::errors::InvalidLength;
 use core::convert::TryInto;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
+#[cfg(feature = "rand_core")]
+use rand_core::{CryptoRng, RngCore};
+
 /// Key for an algorithm that implements [`NewBlockCipher`].
 pub type BlockCipherKey<B> = GenericArray<u8, <B as NewBlockCipher>::KeySize>;
 
@@ -40,6 +43,15 @@ pub trait NewBlockCipher: Sized {
         } else {
             Ok(Self::new(GenericArray::from_slice(key)))
         }
+    }
+
+    /// Generate a random key for this block cipher using the provided [`CryptoRng`].
+    #[cfg(feature = "rand_core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    fn generate_key(mut rng: impl CryptoRng + RngCore) -> BlockCipherKey<Self> {
+        let mut key = BlockCipherKey::<Self>::default();
+        rng.fill_bytes(&mut key);
+        key
     }
 }
 

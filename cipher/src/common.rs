@@ -1,5 +1,10 @@
+//! Functionality common to block ciphers and stream ciphers
+
 use crate::{errors::InvalidLength, BlockCipher, NewBlockCipher};
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+
+#[cfg(feature = "rand_core")]
+use rand_core::{CryptoRng, RngCore};
 
 /// Key for an algorithm that implements [`NewCipher`].
 pub type CipherKey<C> = GenericArray<u8, <C as NewCipher>::KeySize>;
@@ -33,6 +38,15 @@ pub trait NewCipher: Sized {
             let nonce = GenericArray::from_slice(nonce);
             Ok(Self::new(key, nonce))
         }
+    }
+
+    /// Generate a random key for this cipher using the provided [`CryptoRng`].
+    #[cfg(feature = "rand_core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    fn generate_key(mut rng: impl CryptoRng + RngCore) -> CipherKey<Self> {
+        let mut key = CipherKey::<Self>::default();
+        rng.fill_bytes(&mut key);
+        key
     }
 }
 

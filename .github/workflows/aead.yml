@@ -37,6 +37,7 @@ jobs:
           override: true
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features rand_core
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features stream
 
   test:

@@ -42,6 +42,9 @@ pub use generic_array::{self, typenum::consts};
 #[cfg(feature = "heapless")]
 pub use heapless;
 
+#[cfg(feature = "rand_core")]
+use rand_core::{CryptoRng, RngCore};
+
 use core::fmt;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
@@ -94,6 +97,15 @@ pub trait NewAead {
         } else {
             Ok(Self::new(GenericArray::from_slice(key)))
         }
+    }
+
+    /// Generate a random key for this AEAD using the provided [`CryptoRng`].
+    #[cfg(feature = "rand_core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    fn generate_key(mut rng: impl CryptoRng + RngCore) -> Key<Self> {
+        let mut key = Key::<Self>::default();
+        rng.fill_bytes(&mut key);
+        key
     }
 }
 

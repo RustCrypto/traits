@@ -7,6 +7,7 @@ dependencies = [
  "blobby",
  "generic-array 0.14.4",
  "heapless",
+ "rand_core",
 ]
 
 [[package]]
@@ -110,6 +111,7 @@ version = "0.3.0-pre.4"
 dependencies = [
  "blobby",
  "generic-array 0.14.4",
+ "rand_core",
 ]
 
 [[package]]
@@ -145,6 +147,7 @@ dependencies = [
  "blobby",
  "cipher",
  "generic-array 0.14.4",
+ "rand_core",
  "subtle",
 ]
 
