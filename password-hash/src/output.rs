@@ -1,6 +1,6 @@
 //! Outputs from password hashing functions.
 
-use crate::{b64, Encoding, OutputError};
+use crate::{Encoding, OutputError};
 use core::{cmp::PartialEq, convert::TryFrom, fmt, str::FromStr};
 
 /// Maximum length of password hash function outputs.
@@ -164,7 +164,7 @@ impl Output {
     ///
     /// Returns an error if the buffer is too short to contain the output.
     pub fn b64_encode<'a>(&self, out: &'a mut [u8]) -> Result<&'a str, OutputError> {
-        Ok(b64::encode(self.as_ref(), out)?)
+        self.encode(out, Encoding::B64)
     }
 
     /// Decode the given input string using the specified [`Encoding`].
@@ -187,7 +187,7 @@ impl Output {
 
     /// Get the length of this [`Output`] when encoded as [`b64`].
     pub fn b64_len(&self) -> usize {
-        b64::encoded_len(self.as_ref())
+        Encoding::B64.encoded_len(self.as_ref())
     }
 }
 

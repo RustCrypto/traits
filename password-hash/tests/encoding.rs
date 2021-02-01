@@ -1,147 +1,38 @@
-//! Tests for `PasswordHash` encoding/decoding.
+//! Base64 encoding tests.
 //!
-//! Each test implements a different permutation of the possible combinations
-//! of the string encoding, and ensures password hashes round trip under each
-//! of the conditions.
+//! # B64 Notes
+//!
+//! "B64" is a ubset of the standard Base64 encoding (RFC 4648, section 4) which
+//! omits padding (`=`) as well as extra whitespace, as described in the PHC
+//! string format specification:
+//!
+//! <https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#b64>
 
-use core::convert::{TryFrom, TryInto};
-use password_hash::{Ident, ParamsString, PasswordHash, Salt};
+use password_hash::{Output, Salt};
 
-const EXAMPLE_ALGORITHM: Ident = Ident::new("argon2d");
-const EXAMPLE_SALT: &str = "saltsaltsaltsaltsalt";
-const EXAMPLE_HASH: &[u8] = &[
-    0x85, 0xab, 0x21, 0x85, 0xab, 0x21, 0x85, 0xab, 0x21, 0x85, 0xab, 0x21, 0x85, 0xab, 0x21, 0x85,
-    0xab, 0x21, 0x85, 0xab, 0x21, 0x85, 0xab, 0x21, 0x85, 0xab, 0x21, 0x85, 0xab, 0x21, 0x85, 0xab,
-];
+// Example salt encoded as a B64 string.
+const EXAMPLE_SALT_B64: &str = "REVBREJFRUZERUFEQkVFRg";
+const EXAMPLE_SALT_RAW: &[u8] = b"DEADBEEFDEADBEEF";
 
-/// Example parameters
-fn example_params() -> ParamsString {
-    let mut params = ParamsString::new();
-    params.add_decimal("a", 1).unwrap();
-    params.add_decimal("b", 2).unwrap();
-    params.add_decimal("c", 3).unwrap();
-    params
+// Example PHF output encoded as a B64 string.
+const EXAMPLE_OUTPUT_B64: &str =
+    "REVBREJFRUZERUFEQkVFRkRFQURCRUVGREVBREJFRUZERUFEQkVFRkRFQURCRUVGREVBREJFRUZERUFEQkVFRg";
+const EXAMPLE_OUTPUT_RAW: &[u8] =
+    b"DEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEF";
+
+#[test]
+fn salt_roundtrip() {
+    let mut buffer = [0u8; 64];
+    let salt = Salt::new(EXAMPLE_SALT_B64).unwrap();
+    assert_eq!(salt.as_ref(), EXAMPLE_SALT_B64);
+
+    let salt_decoded = salt.b64_decode(&mut buffer).unwrap();
+    assert_eq!(salt_decoded, EXAMPLE_SALT_RAW);
 }
 
 #[test]
-fn algorithm_alone() {
-    let ph = PasswordHash::new("$argon2d").unwrap();
-    assert_eq!(ph.algorithm, EXAMPLE_ALGORITHM);
-
-    let s = ph.to_string();
-    assert_eq!(s, "$argon2d");
-
-    let ph2 = PasswordHash::try_from(s.as_str()).unwrap();
-    assert_eq!(ph, ph2);
-}
-
-#[test]
-fn params() {
-    let ph = PasswordHash {
-        algorithm: EXAMPLE_ALGORITHM,
-        version: None,
-        params: example_params(),
-        salt: None,
-        hash: None,
-    };
-
-    let s = ph.to_string();
-    assert_eq!(s, "$argon2d$a=1,b=2,c=3");
-
-    let ph2 = PasswordHash::try_from(s.as_str()).unwrap();
-    assert_eq!(ph, ph2);
-}
-
-#[test]
-fn salt() {
-    let ph = PasswordHash {
-        algorithm: EXAMPLE_ALGORITHM,
-        version: None,
-        params: ParamsString::new(),
-        salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
-        hash: None,
-    };
-
-    let s = ph.to_string();
-    assert_eq!(s, "$argon2d$saltsaltsaltsaltsalt");
-
-    let ph2 = PasswordHash::try_from(s.as_str()).unwrap();
-    assert_eq!(ph, ph2);
-}
-
-#[test]
-fn one_param_and_salt() {
-    let mut params = ParamsString::new();
-    params.add_decimal("a", 1).unwrap();
-
-    let ph = PasswordHash {
-        algorithm: EXAMPLE_ALGORITHM,
-        version: None,
-        params,
-        salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
-        hash: None,
-    };
-
-    let s = ph.to_string();
-    assert_eq!(s, "$argon2d$a=1$saltsaltsaltsaltsalt");
-
-    let ph2 = PasswordHash::try_from(s.as_str()).unwrap();
-    assert_eq!(ph, ph2);
-}
-
-#[test]
-fn params_and_salt() {
-    let ph = PasswordHash {
-        algorithm: EXAMPLE_ALGORITHM,
-        version: None,
-        params: example_params(),
-        salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
-        hash: None,
-    };
-
-    let s = ph.to_string();
-    assert_eq!(s, "$argon2d$a=1,b=2,c=3$saltsaltsaltsaltsalt");
-
-    let ph2 = PasswordHash::try_from(s.as_str()).unwrap();
-    assert_eq!(ph, ph2);
-}
-
-#[test]
-fn salt_and_hash() {
-    let ph = PasswordHash {
-        algorithm: EXAMPLE_ALGORITHM,
-        version: None,
-        params: ParamsString::default(),
-        salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
-        hash: Some(EXAMPLE_HASH.try_into().unwrap()),
-    };
-
-    let s = ph.to_string();
-    assert_eq!(
-        s,
-        "$argon2d$saltsaltsaltsaltsalt$hashhashhashhashhashhashhashhashhashhashhas"
-    );
-
-    let ph2 = PasswordHash::try_from(s.as_str()).unwrap();
-    assert_eq!(ph, ph2);
-}
-
-#[test]
-fn all_fields() {
-    let ph = PasswordHash {
-        algorithm: EXAMPLE_ALGORITHM,
-        version: None,
-        params: example_params(),
-        salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
-        hash: Some(EXAMPLE_HASH.try_into().unwrap()),
-    };
-
-    let s = ph.to_string();
-    assert_eq!(
-        s,
-        "$argon2d$a=1,b=2,c=3$saltsaltsaltsaltsalt$hashhashhashhashhashhashhashhashhashhashhas"
-    );
-
-    let ph2 = PasswordHash::try_from(s.as_str()).unwrap();
-    assert_eq!(ph, ph2);
+fn output_roundtrip() {
+    let out = EXAMPLE_OUTPUT_B64.parse::<Output>().unwrap();
+    assert_eq!(out.as_ref(), EXAMPLE_OUTPUT_RAW);
+    assert_eq!(out.to_string(), EXAMPLE_OUTPUT_B64);
 }

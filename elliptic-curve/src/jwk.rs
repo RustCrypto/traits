@@ -16,7 +16,7 @@ use alloc::{
     format,
     string::{String, ToString},
 };
-use base64ct::url::unpadded as base64url;
+use base64ct::{Base64UrlUnpadded as Base64Url, Encoding};
 use core::{
     convert::{TryFrom, TryInto},
     fmt::{self, Debug},
@@ -212,8 +212,8 @@ where
         match point.coordinates() {
             Coordinates::Uncompressed { x, y } => Ok(JwkEcKey {
                 crv: C::CRV.to_owned(),
-                x: base64url::encode_string(x),
-                y: base64url::encode_string(y),
+                x: Base64Url::encode_string(x),
+                y: Base64Url::encode_string(y),
                 d: None,
             }),
             _ => Err(Error),
@@ -293,7 +293,7 @@ where
     fn from(sk: &SecretKey<C>) -> JwkEcKey {
         let mut jwk = sk.public_key().to_jwk();
         let mut d = sk.to_bytes();
-        jwk.d = Some(base64url::encode_string(&d));
+        jwk.d = Some(Base64Url::encode_string(&d));
         d.zeroize();
         jwk
     }
@@ -636,7 +636,7 @@ impl Serialize for JwkEcKey {
 /// Decode a Base64url-encoded field element
 fn decode_base64url_fe<C: Curve>(s: &str) -> Result<FieldBytes<C>, Error> {
     let mut result = FieldBytes::<C>::default();
-    base64url::decode(s, &mut result).map_err(|_| Error)?;
+    Base64Url::decode(s, &mut result).map_err(|_| Error)?;
     Ok(result)
 }
 

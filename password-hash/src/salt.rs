@@ -1,10 +1,6 @@
 //! Salt string support.
 
-use crate::{
-    b64,
-    errors::{B64Error, ParseError},
-    Value,
-};
+use crate::{B64Error, Encoding, ParseError, Value};
 use core::{
     convert::{TryFrom, TryInto},
     fmt, str,
@@ -217,7 +213,7 @@ impl SaltString {
     /// Returns `None` if the slice is too long.
     pub fn b64_encode(input: &[u8]) -> Result<Self, B64Error> {
         let mut bytes = [0u8; Salt::max_len()];
-        let length = b64::encode(input, &mut bytes)?.len() as u8;
+        let length = Encoding::B64.encode(input, &mut bytes)?.len() as u8;
         Ok(Self { bytes, length })
     }
 
