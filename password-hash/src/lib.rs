@@ -50,6 +50,7 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
+mod encoding;
 mod errors;
 mod ident;
 mod output;
@@ -58,6 +59,7 @@ mod salt;
 mod value;
 
 pub use crate::{
+    encoding::Encoding,
     errors::{B64Error, HashError, HasherError, OutputError, ParamsError, ParseError, VerifyError},
     ident::Ident,
     output::Output,
