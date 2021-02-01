@@ -1,7 +1,7 @@
 //! Base64 encoding variants.
 
 use crate::B64Error;
-use base64ct as base64;
+use base64ct::{Base64Bcrypt, Base64Crypt, Base64Unpadded as B64, Encoding as _};
 
 /// Base64 encoding variants.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -42,9 +42,9 @@ impl Encoding {
     /// Decode a Base64 string into the provided destination buffer.
     pub fn decode(self, src: impl AsRef<[u8]>, dst: &mut [u8]) -> Result<&[u8], B64Error> {
         match self {
-            Self::B64 => base64::unpadded::decode(src, dst),
-            Self::Bcrypt => base64::bcrypt::decode(src, dst),
-            Self::Crypt => base64::crypt::decode(src, dst),
+            Self::B64 => B64::decode(src, dst),
+            Self::Bcrypt => Base64Bcrypt::decode(src, dst),
+            Self::Crypt => Base64Crypt::decode(src, dst),
         }
     }
 
@@ -54,9 +54,9 @@ impl Encoding {
     /// ASCII-encoded Base64 string value.
     pub fn encode<'a>(self, src: &[u8], dst: &'a mut [u8]) -> Result<&'a str, B64Error> {
         match self {
-            Self::B64 => base64::unpadded::encode(src, dst),
-            Self::Bcrypt => base64::bcrypt::encode(src, dst),
-            Self::Crypt => base64::crypt::encode(src, dst),
+            Self::B64 => B64::encode(src, dst),
+            Self::Bcrypt => Base64Bcrypt::encode(src, dst),
+            Self::Crypt => Base64Crypt::encode(src, dst),
         }
         .map_err(Into::into)
     }
@@ -64,9 +64,9 @@ impl Encoding {
     /// Get the length of Base64 produced by encoding the given bytes.
     pub fn encoded_len(self, bytes: &[u8]) -> usize {
         match self {
-            Self::B64 => base64::unpadded::encoded_len(bytes),
-            Self::Bcrypt => base64::bcrypt::encoded_len(bytes),
-            Self::Crypt => base64::crypt::encoded_len(bytes),
+            Self::B64 => B64::encoded_len(bytes),
+            Self::Bcrypt => Base64Bcrypt::encoded_len(bytes),
+            Self::Crypt => Base64Crypt::encoded_len(bytes),
         }
     }
 }

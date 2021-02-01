@@ -68,8 +68,6 @@ pub use crate::{
     value::{Decimal, Value},
 };
 
-pub use base64ct::unpadded as b64;
-
 use core::{
     convert::{TryFrom, TryInto},
     fmt::{self, Debug},
