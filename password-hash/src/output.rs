@@ -143,7 +143,7 @@ impl Output {
         &self.bytes[..self.len()]
     }
 
-    /// Get the encoding that this [`Output`] will be serialized with.
+    /// Get the [`Encoding`] that this [`Output`] is serialized with.
     pub fn encoding(&self) -> Encoding {
         self.encoding
     }
