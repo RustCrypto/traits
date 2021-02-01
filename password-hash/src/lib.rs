@@ -249,6 +249,11 @@ pub struct PasswordHash<'a> {
 impl<'a> PasswordHash<'a> {
     /// Parse a password hash from a string in the PHC string format.
     pub fn new(s: &'a str) -> Result<Self, HashError> {
+        Self::parse(s, Encoding::B64)
+    }
+
+    /// Parse a password hash from the given [`Encoding`].
+    pub fn parse(s: &'a str, encoding: Encoding) -> Result<Self, HashError> {
         if s.is_empty() {
             return Err(ParseError::Empty.into());
         }
@@ -301,7 +306,7 @@ impl<'a> PasswordHash<'a> {
         }
 
         if let Some(field) = fields.next() {
-            hash = Some(field.parse()?);
+            hash = Some(Output::decode(field, encoding)?);
         }
 
         if fields.next().is_some() {
@@ -340,6 +345,11 @@ impl<'a> PasswordHash<'a> {
         }
 
         Err(VerifyError)
+    }
+
+    /// Get the [`Encoding`] that this [`PasswordHash`] is serialized with.
+    pub fn encoding(&self) -> Encoding {
+        self.hash.map(|h| h.encoding()).unwrap_or_default()
     }
 }
 
