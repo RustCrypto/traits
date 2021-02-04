@@ -15,6 +15,19 @@
 //! to meet the security definition of "nonce-based online authenticated
 //! encryption" (nOAE) as given in the aforementioned paper.
 //!
+//! ## Diagram
+//!
+//! ![STREAM Diagram](https://raw.githubusercontent.com/RustCrypto/traits/d5c853c/.img/rogaway-stream.svg)
+//!
+//! Legend:
+//!
+//! - 𝐄k: AEAD encryption under key `k`
+//! - 𝐌: message
+//! - 𝐍: nonce
+//! - 𝐀: additional associated data
+//! - 𝐂: ciphertext
+//! - 𝜏: MAC tag
+//!
 //! [1]: https://eprint.iacr.org/2015/189.pdf
 
 use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, NewAead};
