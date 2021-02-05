@@ -1,6 +1,9 @@
 //! Functionality common to block ciphers and stream ciphers
 
-use crate::{errors::InvalidLength, BlockCipher, NewBlockCipher};
+use crate::{
+    errors::{BufferError, InvalidLength},
+    BlockCipher, NewBlockCipher,
+};
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
 #[cfg(feature = "rand_core")]
@@ -91,4 +94,22 @@ where
                 })
         }
     }
+}
+
+/// Perform an encryption operation using a specific buffer type.
+///
+/// This gives finer-grained control over the buffer type, which is useful
+/// in cases which have special requirements, e.g. alignment, SIMD.
+pub trait BufferEncrypt<B> {
+    /// Encrypt the provided buffer type in-place
+    fn encrypt_buffer(&self, buffer: &mut B) -> Result<(), BufferError>;
+}
+
+/// Perform an encryption operation on a mutable cipher instance.
+///
+/// This gives finer-grained control over the buffer type, which is useful
+/// in cases which have special requirements, e.g. alignment, SIMD.
+pub trait BufferEncryptMut<B> {
+    /// Encrypt the provided buffer type in-place
+    fn encrypt_buffer_mut(&mut self, buffer: &mut B) -> Result<(), BufferError>;
 }
