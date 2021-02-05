@@ -12,7 +12,7 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
-aead = { version = "=0.4.0-pre", optional = true, path = "../aead" }
+aead = { version = "0.4", optional = true, path = "../aead" }
 cipher = { version = "=0.3.0-pre.4", optional = true, path = "../cipher" }
 digest = { version = "0.10.0-pre", optional = true, path = "../digest" }
 elliptic-curve = { version = "=0.9.0-pre", optional = true, path = "../elliptic-curve" }
