@@ -22,7 +22,7 @@ pub struct InvalidLength;
 
 impl fmt::Display for InvalidLength {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        f.write_str("Loop Error")
+        f.write_str("Invalid Length")
     }
 }
 
