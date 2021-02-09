@@ -133,7 +133,7 @@ dependencies = [
  "aead",
  "cipher",
  "crypto-mac",
- "digest 0.10.0-pre.2",
+ "digest 0.10.0-pre.3",
  "elliptic-curve",
  "password-hash",
  "signature",
@@ -171,7 +171,7 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.10.0-pre.2"
+version = "0.10.0-pre.3"
 dependencies = [
  "blobby",
  "block-buffer 0.10.0-pre.1",
