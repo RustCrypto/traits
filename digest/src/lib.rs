@@ -10,12 +10,11 @@
 //! - **Mid-level traits**: [`Update`], [`FixedOutput`], [`ExtendableOutput`], [`Reset`].
 //!   These traits atomically describe available functionality of hash function
 //!   implementations.
-//! - **Low-level traits**: [`UpdateCore`], [`FixedOutputCore`],
-//!   [`ExtendableOutputCore`], [`AlgorithmName`]. These traits operate at
-//!   a block-level and do not contain any built-in buffering. They are intended
-//!   to be implemented by low-level algorithm providers only and simplify
-//!   the amount of work implementers need to do and therefore usually shouldn't
-//!   be used in application-level code.
+//! - **Low-level traits** defined in the [`core_api`] module. These traits
+//!   operate at a block-level and do not contain any built-in buffering.
+//!   They are intended to be implemented by low-level algorithm providers only
+//!   and simplify the amount of work implementers need to do and therefore
+//!   usually shouldn't be used in application-level code.
 //!
 //! Additionally hash functions implement traits from the standard library:
 //! [`Default`], [`Clone`], [`Write`][std::io::Write]. The latter is
@@ -48,22 +47,21 @@ use alloc::boxed::Box;
 pub mod dev;
 
 #[cfg(feature = "core-api")]
-mod core_api;
+#[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
+pub mod core_api;
 mod digest;
 #[cfg(feature = "alloc")]
 mod dyn_digest;
 
-#[cfg(feature = "core-api")]
-pub use crate::core_api::{
-    AlgorithmName, ExtendableOutputCore, FixedOutputCore, UpdateCore, UpdateCoreWrapper,
-    XofReaderCore, XofReaderCoreWrapper,
-};
 pub use crate::digest::{Digest, Output};
 #[cfg(feature = "core-api")]
+#[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub use block_buffer;
+use core::fmt;
 #[cfg(feature = "alloc")]
 pub use dyn_digest::{DynDigest, InvalidBufferLength};
-pub use generic_array::{self, typenum::consts, ArrayLength, GenericArray};
+use generic_array::ArrayLength;
+pub use generic_array::{self, typenum::consts, GenericArray};
 
 /// Trait for updating hasher state with input data.
 pub trait Update {
@@ -78,24 +76,19 @@ pub trait Reset {
 }
 
 /// Trait for returning digest result with the fixed size
-pub trait FixedOutput {
+pub trait FixedOutput: Sized + Update + Default + Reset {
     /// Output size for fixed output digest
     type OutputSize: ArrayLength<u8>;
 
     /// Write result into provided array and consume the hasher instance.
-    fn finalize_into(self, out: &mut GenericArray<u8, Self::OutputSize>)
-    where
-        Self: Sized;
+    fn finalize_into(self, out: &mut GenericArray<u8, Self::OutputSize>);
 
     /// Write result into provided array and reset the hasher instance.
     fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>);
 
     /// Retrieve result and consume the hasher instance.
     #[inline]
-    fn finalize_fixed(self) -> GenericArray<u8, Self::OutputSize>
-    where
-        Self: Sized,
-    {
+    fn finalize_fixed(self) -> GenericArray<u8, Self::OutputSize> {
         let mut out = Default::default();
         self.finalize_into(&mut out);
         out
@@ -107,6 +100,14 @@ pub trait FixedOutput {
         let mut out = Default::default();
         self.finalize_into_reset(&mut out);
         out
+    }
+
+    /// Compute hash of `data`.
+    #[inline]
+    fn digest_fixed(data: impl AsRef<[u8]>) -> GenericArray<u8, Self::OutputSize> {
+        let mut hasher = Self::default();
+        hasher.update(data.as_ref());
+        hasher.finalize_fixed()
     }
 }
 
@@ -132,17 +133,22 @@ pub trait XofReader {
 }
 
 /// Trait which describes extendable-output functions (XOF).
-pub trait ExtendableOutput {
+pub trait ExtendableOutput: Sized + Update + Default + Reset {
     /// Reader
     type Reader: XofReader;
 
     /// Retrieve XOF reader and consume hasher instance.
-    fn finalize_xof(self) -> Self::Reader
-    where
-        Self: Sized;
+    fn finalize_xof(self) -> Self::Reader;
 
     /// Retrieve XOF reader and reset hasher instance state.
     fn finalize_xof_reset(&mut self) -> Self::Reader;
+
+    /// Compute hash of `data` and write it to `output`.
+    fn digest_xof(input: impl AsRef<[u8]>, output: &mut [u8]) {
+        let mut hasher = Self::default();
+        hasher.update(input.as_ref());
+        hasher.finalize_xof().read(output);
+    }
 
     /// Retrieve result into a boxed slice of the specified size and consume
     /// the hasher.
@@ -151,11 +157,8 @@ pub trait ExtendableOutput {
     /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    fn finalize_boxed(self, n: usize) -> Box<[u8]>
-    where
-        Self: Sized,
-    {
-        let mut buf = vec![0u8; n].into_boxed_slice();
+    fn finalize_boxed(self, output_size: usize) -> Box<[u8]> {
+        let mut buf = vec![0u8; output_size].into_boxed_slice();
         self.finalize_xof().read(&mut buf);
         buf
     }
@@ -167,9 +170,91 @@ pub trait ExtendableOutput {
     /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    fn finalize_boxed_reset(&mut self, n: usize) -> Box<[u8]> {
-        let mut buf = vec![0u8; n].into_boxed_slice();
+    fn finalize_boxed_reset(&mut self, output_size: usize) -> Box<[u8]> {
+        let mut buf = vec![0u8; output_size].into_boxed_slice();
         self.finalize_xof_reset().read(&mut buf);
         buf
     }
 }
+
+/// Trait for variable output size hash functions.
+pub trait VariableOutput: Sized + Update + Reset {
+    /// Maximum size of output hash.
+    const MAX_OUTPUT_SIZE: usize;
+
+    /// Create new hasher instance with the given output size.
+    ///
+    /// It will return `Err(InvalidOutputSize)` in case if hasher can not return
+    /// hash of the specified output size.
+    fn new(output_size: usize) -> Result<Self, InvalidOutputSize>;
+
+    /// Get output size of the hasher instance provided to the `new` method
+    fn output_size(&self) -> usize;
+
+    /// Retrieve result via closure and consume hasher.
+    ///
+    /// Closure is guaranteed to be called, length of the buffer passed to it
+    /// will be equal to `output_size`.
+    fn finalize_variable(self, f: impl FnOnce(&[u8]));
+
+    /// Retrieve result via closure and reset the hasher state.
+    ///
+    /// Closure is guaranteed to be called, length of the buffer passed to it
+    /// will be equal to `output_size`.
+    fn finalize_variable_reset(&mut self, f: impl FnOnce(&[u8]));
+
+    /// Compute hash of `data` and write it to `output`.
+    ///
+    /// Length of the output hash is determined by `output`. If `output` is
+    /// bigger than `Self::MAX_OUTPUT_SIZE`, this method returns
+    /// `InvalidOutputSize`.
+    fn digest_variable(
+        input: impl AsRef<[u8]>,
+        output: &mut [u8],
+    ) -> Result<(), InvalidOutputSize> {
+        let mut hasher = Self::new(output.len())?;
+        hasher.update(input.as_ref());
+        hasher.finalize_variable(|out| output.copy_from_slice(out));
+        Ok(())
+    }
+
+    /// Retrieve result into a boxed slice and consume hasher.
+    ///
+    /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
+    /// they have size of 2 and 3 words respectively.
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    fn finalize_boxed(self) -> Box<[u8]> {
+        let n = self.output_size();
+        let mut buf = vec![0u8; n].into_boxed_slice();
+        self.finalize_variable(|res| buf.copy_from_slice(res));
+        buf
+    }
+
+    /// Retrieve result into a boxed slice and reset hasher state.
+    ///
+    /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
+    /// they have size of 2 and 3 words respectively.
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    fn finalize_boxed_reset(&mut self) -> Box<[u8]> {
+        let n = self.output_size();
+        let mut buf = vec![0u8; n].into_boxed_slice();
+        self.finalize_variable_reset(|res| buf.copy_from_slice(res));
+        buf
+    }
+}
+
+/// The error type for variable hasher initialization.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct InvalidOutputSize;
+
+impl fmt::Display for InvalidOutputSize {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("invalid output size")
+    }
+}
+
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+impl std::error::Error for InvalidOutputSize {}

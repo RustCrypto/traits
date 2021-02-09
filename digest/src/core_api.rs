@@ -1,13 +1,21 @@
-use crate::{ExtendableOutput, FixedOutput, Reset, Update, XofReader};
-use block_buffer::BlockBuffer;
+//! Low-level core API traits.
+//!
+//! Usage of traits in this module in user code is discouraged. Instead use
+//! core algorithm wrapped by the wrapper types, which implement the
+//! higher-level traits.
+use crate::InvalidOutputSize;
 use core::fmt;
 use generic_array::{ArrayLength, GenericArray};
 
-/// Trait which stores algorithm name constant, used in `Debug` implementations.
-pub trait AlgorithmName {
-    /// Algorithm name.
-    const NAME: &'static str;
-}
+mod ct_variable;
+mod rt_variable;
+mod update;
+mod xof_reader;
+
+pub use ct_variable::CtVariableCoreWrapper;
+pub use rt_variable::RtVariableCoreWrapper;
+pub use update::UpdateCoreWrapper;
+pub use xof_reader::XofReaderCoreWrapper;
 
 /// Trait for updating hasher state with input data divided into blocks.
 pub trait UpdateCore {
@@ -18,12 +26,7 @@ pub trait UpdateCore {
     fn update_blocks(&mut self, blocks: &[GenericArray<u8, Self::BlockSize>]);
 }
 
-/// Trait for fixed-output digest implementations to use to retrieve the
-/// hash output.
-///
-/// Usage of this trait in user code is discouraged. Instead use core algorithm
-/// wrapped by [`BlockBufferWrapper`], which implements the [`FixedOutput`]
-/// trait.
+/// Core trait for hash functions with fixed output size.
 pub trait FixedOutputCore: UpdateCore {
     /// Digest output size in bytes.
     type OutputSize: ArrayLength<u8>;
@@ -37,12 +40,7 @@ pub trait FixedOutputCore: UpdateCore {
     );
 }
 
-/// Trait for extendable-output function (XOF) core implementations to use to
-/// retrieve the hash output.
-///
-/// Usage of this trait in user code is discouraged. Instead use core algorithm
-/// wrapped by [`BlockBufferWrapper`], which implements the
-/// [`ExtendableOutput`] trait.
+/// Core trait for hash functions with extendable (XOF) output size.
 pub trait ExtendableOutputCore: UpdateCore {
     /// XOF reader core state.
     type ReaderCore: XofReaderCore;
@@ -64,123 +62,30 @@ pub trait XofReaderCore {
     fn read_block(&mut self) -> GenericArray<u8, Self::BlockSize>;
 }
 
-/// Wrapper around [`UpdateCore`] implementations.
-///
-/// It handles data buffering and implements the mid-level traits.
-#[derive(Clone, Default)]
-pub struct UpdateCoreWrapper<T: UpdateCore> {
-    core: T,
-    buffer: BlockBuffer<T::BlockSize>,
+/// Core trait for hash functions with variable output size.
+pub trait VariableOutputCore: UpdateCore + Sized {
+    /// Maximum output size.
+    type MaxOutputSize: ArrayLength<u8>;
+
+    /// Initialize hasher state for given output size.
+    ///
+    /// Returns [`InvalidOutputSize`] if `output_size` is equal to zero or
+    /// bigger than `Self::MaxOutputSize`.
+    fn new(output_size: usize) -> Result<Self, InvalidOutputSize>;
+
+    /// Finalize hasher and return result of lenght `output_size` via closure `f`.
+    ///
+    /// `output_size` must be equal to `output_size` used during construction.
+    fn finalize_variable_core(
+        &mut self,
+        buffer: &mut block_buffer::BlockBuffer<Self::BlockSize>,
+        output_size: usize,
+        f: impl FnOnce(&[u8]),
+    );
 }
 
-/// Wrapper around [`XofReaderCore`] implementations.
-///
-/// It handles data buffering and implements the mid-level traits.
-#[derive(Clone, Default)]
-pub struct XofReaderCoreWrapper<T: XofReaderCore> {
-    core: T,
-    buffer: BlockBuffer<T::BlockSize>,
-}
-
-impl<T: UpdateCore + AlgorithmName> fmt::Debug for UpdateCoreWrapper<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        f.write_str(T::NAME)?;
-        f.write_str(" { .. }")
-    }
-}
-
-impl<T: XofReaderCore + AlgorithmName> fmt::Debug for XofReaderCoreWrapper<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        f.write_str(T::NAME)?;
-        f.write_str(" { .. }")
-    }
-}
-
-impl<D: Default + UpdateCore> Reset for UpdateCoreWrapper<D> {
-    #[inline]
-    fn reset(&mut self) {
-        self.core = Default::default();
-        self.buffer.reset();
-    }
-}
-
-impl<D: UpdateCore> Update for UpdateCoreWrapper<D> {
-    #[inline]
-    fn update(&mut self, input: &[u8]) {
-        let Self { core, buffer } = self;
-        buffer.digest_blocks(input, |blocks| core.update_blocks(blocks));
-    }
-}
-
-impl<D: FixedOutputCore + Default> FixedOutput for UpdateCoreWrapper<D> {
-    type OutputSize = D::OutputSize;
-
-    #[inline]
-    fn finalize_into(mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
-        let Self { core, buffer } = &mut self;
-        core.finalize_fixed_core(buffer, out);
-    }
-
-    #[inline]
-    fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
-        let Self { core, buffer } = self;
-        core.finalize_fixed_core(buffer, out);
-        self.reset();
-    }
-}
-
-impl<R: XofReaderCore> XofReader for XofReaderCoreWrapper<R> {
-    #[inline]
-    fn read(&mut self, buffer: &mut [u8]) {
-        let Self { core, buffer: buf } = self;
-        buf.set_data(buffer, || core.read_block());
-    }
-}
-
-impl<D: ExtendableOutputCore + Default> ExtendableOutput for UpdateCoreWrapper<D> {
-    type Reader = XofReaderCoreWrapper<D::ReaderCore>;
-
-    #[inline]
-    fn finalize_xof(mut self) -> Self::Reader {
-        let Self { core, buffer } = &mut self;
-        let reader_core = core.finalize_xof_core(buffer);
-        XofReaderCoreWrapper {
-            core: reader_core,
-            buffer: Default::default(),
-        }
-    }
-
-    #[inline]
-    fn finalize_xof_reset(&mut self) -> Self::Reader {
-        let Self { core, buffer } = self;
-        let reader_core = core.finalize_xof_core(buffer);
-        self.reset();
-        XofReaderCoreWrapper {
-            core: reader_core,
-            buffer: Default::default(),
-        }
-    }
-}
-
-#[cfg(feature = "std")]
-impl<D: UpdateCore> std::io::Write for UpdateCoreWrapper<D> {
-    #[inline]
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        Update::update(self, buf);
-        Ok(buf.len())
-    }
-
-    #[inline]
-    fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
-    }
-}
-
-#[cfg(feature = "std")]
-impl<R: XofReaderCore> std::io::Read for XofReaderCoreWrapper<R> {
-    #[inline]
-    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        XofReader::read(self, buf);
-        Ok(buf.len())
-    }
+/// Trait which stores algorithm name constant, used in `Debug` implementations.
+pub trait AlgorithmName {
+    /// Write algorithm name into `f`.
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result;
 }
