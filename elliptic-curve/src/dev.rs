@@ -3,6 +3,7 @@
 
 use crate::{
     consts::U32,
+    error::Error,
     ff::{Field, PrimeField},
     group,
     rand_core::RngCore,
@@ -15,7 +16,7 @@ use crate::{
     AlgorithmParameters, Curve, ProjectiveArithmetic,
 };
 use core::{
-    convert::TryInto,
+    convert::{TryFrom, TryInto},
     iter::Sum,
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
@@ -76,8 +77,8 @@ const LIMBS: usize = 4;
 
 type U256 = [u64; LIMBS];
 
-// Note: P-256 modulus
-const MODULUS: U256 = [
+/// P-256 modulus
+pub const MODULUS: U256 = [
     0xf3b9_cac2_fc63_2551,
     0xbce6_faad_a717_9e84,
     0xffff_ffff_ffff_ffff,
@@ -187,6 +188,15 @@ impl PrimeField for Scalar {
 
     fn root_of_unity() -> Self {
         unimplemented!();
+    }
+}
+
+impl TryFrom<[u64; 4]> for Scalar {
+    type Error = Error;
+
+    fn try_from(limbs: [u64; 4]) -> Result<Self, Error> {
+        // TODO(tarcieri): reject values that overflow the order
+        Ok(Scalar(limbs))
     }
 }
 
