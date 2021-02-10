@@ -69,9 +69,6 @@ pub use {
     group::{self, Group},
 };
 
-#[cfg(feature = "digest")]
-pub use digest::{self, Digest};
-
 #[cfg(all(feature = "hazmat", feature = "zeroize"))]
 pub use secret_key::{SecretBytes, SecretValue};
 
@@ -117,19 +114,6 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
 
 /// Byte representation of a base/scalar field element of a given curve.
 pub type FieldBytes<C> = GenericArray<u8, <C as Curve>::FieldSize>;
-
-/// Instantiate this type from the output of a digest.
-///
-/// This can be used for implementing hash-to-scalar (e.g. as in ECDSA) or
-/// hash-to-curve algorithms.
-#[cfg(feature = "digest")]
-#[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
-pub trait FromDigest<C: Curve> {
-    /// Instantiate this type from a [`Digest`] instance
-    fn from_digest<D>(digest: D) -> Self
-    where
-        D: Digest<OutputSize = C::FieldSize>;
-}
 
 /// Associate an [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] (OID) with an
 /// elliptic curve algorithm implementation.
