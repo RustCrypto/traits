@@ -5,7 +5,7 @@
 //!
 //! <https://www.secg.org/sec1-v2.pdf>
 
-use crate::{weierstrass::Curve, Error, FieldBytes};
+use crate::{weierstrass::Curve, Error, FieldBytes, Result};
 use core::{
     fmt::{self, Debug},
     ops::Add,
@@ -77,7 +77,7 @@ where
     /// 2.3.3 (page 10).
     ///
     /// <http://www.secg.org/sec1-v2.pdf>
-    pub fn from_bytes(input: impl AsRef<[u8]>) -> Result<Self, Error> {
+    pub fn from_bytes(input: impl AsRef<[u8]>) -> Result<Self> {
         let input = input.as_ref();
 
         // Validate tag
@@ -230,7 +230,7 @@ where
     }
 
     /// Decode this [`EncodedPoint`] into the desired type
-    pub fn decode<T>(&self) -> Result<T, Error>
+    pub fn decode<T>(&self) -> Result<T>
     where
         T: FromEncodedPoint<C>,
     {
@@ -411,7 +411,7 @@ pub enum Tag {
 
 impl Tag {
     /// Parse a tag value from a byte
-    pub fn from_u8(byte: u8) -> Result<Self, Error> {
+    pub fn from_u8(byte: u8) -> Result<Self> {
         match byte {
             0 => Ok(Tag::Identity),
             2 => Ok(Tag::CompressedEvenY),
@@ -512,7 +512,7 @@ where
     fn validate_public_key(
         secret_key: &SecretKey<Self>,
         public_key: &EncodedPoint<Self>,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         // Provide a default "always succeeds" implementation.
         // This is the intended default for curve implementations which
         // do not provide an arithmetic implementation, since they have no
@@ -534,10 +534,7 @@ where
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
-    fn validate_public_key(
-        secret_key: &SecretKey<C>,
-        public_key: &EncodedPoint<C>,
-    ) -> Result<(), Error> {
+    fn validate_public_key(secret_key: &SecretKey<C>, public_key: &EncodedPoint<C>) -> Result<()> {
         let pk = secret_key
             .public_key()
             .to_encoded_point(public_key.is_compressed());

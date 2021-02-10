@@ -7,7 +7,7 @@ use crate::{
         EncodedPoint, FromEncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize,
     },
     weierstrass::{point, Curve},
-    AffinePoint, Error, FieldBytes, ProjectiveArithmetic, ProjectivePoint, Scalar,
+    AffinePoint, Error, FieldBytes, ProjectiveArithmetic, ProjectivePoint, Result, Scalar,
 };
 use core::{
     convert::{TryFrom, TryInto},
@@ -78,7 +78,7 @@ where
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     /// Convert an [`AffinePoint`] into a [`PublicKey`]
-    pub fn from_affine(point: AffinePoint<C>) -> Result<Self, Error> {
+    pub fn from_affine(point: AffinePoint<C>) -> Result<Self> {
         if ProjectivePoint::<C>::from(point).is_identity().into() {
             Err(Error)
         } else {
@@ -101,7 +101,7 @@ where
     /// 2.3.3 (page 10).
     ///
     /// <http://www.secg.org/sec1-v2.pdf>
-    pub fn from_sec1_bytes(bytes: &[u8]) -> Result<Self, Error>
+    pub fn from_sec1_bytes(bytes: &[u8]) -> Result<Self>
     where
         Self: TryFrom<EncodedPoint<C>, Error = Error>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -127,7 +127,7 @@ where
     /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`PublicKey`].
     #[cfg(feature = "jwk")]
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
-    pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self, Error>
+    pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
     where
         C: JwkParameters,
         AffinePoint<C>: Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
@@ -140,7 +140,7 @@ where
     /// Parse a string containing a JSON Web Key (JWK) into a [`PublicKey`].
     #[cfg(feature = "jwk")]
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
-    pub fn from_jwk_str(jwk: &str) -> Result<Self, Error>
+    pub fn from_jwk_str(jwk: &str) -> Result<Self>
     where
         C: JwkParameters,
         AffinePoint<C>: Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
@@ -200,7 +200,7 @@ where
 {
     type Error = Error;
 
-    fn try_from(encoded_point: EncodedPoint<C>) -> Result<Self, Error> {
+    fn try_from(encoded_point: EncodedPoint<C>) -> Result<Self> {
         encoded_point.decode()
     }
 }
@@ -216,7 +216,7 @@ where
 {
     type Error = Error;
 
-    fn try_from(encoded_point: &EncodedPoint<C>) -> Result<Self, Error> {
+    fn try_from(encoded_point: &EncodedPoint<C>) -> Result<Self> {
         encoded_point.decode()
     }
 }
@@ -373,7 +373,7 @@ where
 {
     type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self, Error> {
+    fn from_str(s: &str) -> Result<Self> {
         Self::from_public_key_pem(s).map_err(|_| Error)
     }
 }
