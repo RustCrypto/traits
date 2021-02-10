@@ -183,7 +183,6 @@ name = "elliptic-curve"
 version = "0.9.0-pre"
 dependencies = [
  "base64ct",
- "digest 0.9.0",
  "ff",
  "generic-array 0.14.4",
  "group",
