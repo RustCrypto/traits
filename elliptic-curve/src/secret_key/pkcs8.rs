@@ -3,7 +3,7 @@
 use super::{SecretKey, SecretValue};
 use crate::{
     sec1::{self, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
-    weierstrass, AlgorithmParameters, FieldBytes, ALGORITHM_OID,
+    weierstrass, AlgorithmParameters, FieldBytes, Result, ALGORITHM_OID,
 };
 use core::ops::Add;
 use generic_array::{typenum::U1, ArrayLength};
@@ -162,7 +162,7 @@ where
 {
     type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self, Error> {
+    fn from_str(s: &str) -> Result<Self> {
         Self::from_pkcs8_pem(s).map_err(|_| Error)
     }
 }

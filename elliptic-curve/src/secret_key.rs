@@ -10,7 +10,7 @@
 #[cfg(feature = "pkcs8")]
 mod pkcs8;
 
-use crate::{error::Error, Curve, FieldBytes};
+use crate::{Curve, Error, FieldBytes, Result};
 use core::{
     convert::{TryFrom, TryInto},
     fmt::{self, Debug},
@@ -102,7 +102,7 @@ where
     }
 
     /// Deserialize raw private scalar as a big endian integer
-    pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self, Error> {
+    pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self> {
         bytes
             .as_ref()
             .try_into()
@@ -150,7 +150,7 @@ where
     /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`SecretKey`].
     #[cfg(feature = "jwk")]
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
-    pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self, Error>
+    pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
     where
         C: JwkParameters + ValidatePublicKey,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -162,7 +162,7 @@ where
     /// Parse a string containing a JSON Web Key (JWK) into a [`SecretKey`].
     #[cfg(feature = "jwk")]
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
-    pub fn from_jwk_str(jwk: &str) -> Result<Self, Error>
+    pub fn from_jwk_str(jwk: &str) -> Result<Self>
     where
         C: JwkParameters + ValidatePublicKey,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -212,7 +212,7 @@ where
 {
     type Error = Error;
 
-    fn try_from(slice: &[u8]) -> Result<Self, Error> {
+    fn try_from(slice: &[u8]) -> Result<Self> {
         Self::from_bytes(slice)
     }
 }

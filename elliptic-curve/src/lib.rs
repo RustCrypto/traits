@@ -52,7 +52,7 @@ mod jwk;
 #[cfg(feature = "zeroize")]
 mod secret_key;
 
-pub use self::error::Error;
+pub use self::error::{Error, Result};
 
 pub use generic_array::{self, typenum::consts};
 pub use rand_core;

@@ -3,7 +3,7 @@
 
 use crate::{
     consts::U32,
-    error::Error,
+    error::{Error, Result},
     ff::{Field, PrimeField},
     group,
     rand_core::RngCore,
@@ -194,7 +194,7 @@ impl PrimeField for Scalar {
 impl TryFrom<[u64; 4]> for Scalar {
     type Error = Error;
 
-    fn try_from(limbs: [u64; 4]) -> Result<Self, Error> {
+    fn try_from(limbs: [u64; 4]) -> Result<Self> {
         // TODO(tarcieri): reject values that overflow the order
         Ok(Scalar(limbs))
     }

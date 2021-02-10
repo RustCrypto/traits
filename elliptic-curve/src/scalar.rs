@@ -3,7 +3,7 @@
 use crate::{
     ops::Invert,
     rand_core::{CryptoRng, RngCore},
-    Curve, Error, FieldBytes, ProjectiveArithmetic,
+    Curve, Error, FieldBytes, ProjectiveArithmetic, Result,
 };
 use core::{convert::TryFrom, ops::Deref};
 use ff::{Field, FieldBits, PrimeField};
@@ -142,7 +142,7 @@ where
 {
     type Error = Error;
 
-    fn try_from(bytes: &[u8]) -> Result<Self, Error> {
+    fn try_from(bytes: &[u8]) -> Result<Self> {
         if bytes.len() == C::FieldSize::to_usize() {
             NonZeroScalar::from_repr(GenericArray::clone_from_slice(bytes)).ok_or(Error)
         } else {
