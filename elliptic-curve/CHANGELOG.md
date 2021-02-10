@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.9.0 (2021-02-10)
+### Added
+- JWK support ([#483])
+- `sec1::ValidatePublicKey` trait ([#485])
+- `hazmat` crate feature ([#487])
+- `Result` alias ([#534])
+
+### Changed
+- Bump `ff` and `group` crates to v0.9 ([#452])
+- Simplify ECDH trait bounds ([#475])
+- Flatten API ([#487])
+- Bump `pkcs8` crate dependency to v0.4 ([#493])
+
+### Removed
+- Direct `bitvec` dependency ([#484])
+- `FromDigest` trait ([#532])
+
+[#452]: https://github.com/RustCrypto/traits/pull/452
+[#475]: https://github.com/RustCrypto/traits/pull/475
+[#483]: https://github.com/RustCrypto/traits/pull/483
+[#484]: https://github.com/RustCrypto/traits/pull/484
+[#485]: https://github.com/RustCrypto/traits/pull/485
+[#487]: https://github.com/RustCrypto/traits/pull/487
+[#493]: https://github.com/RustCrypto/traits/pull/493
+[#432]: https://github.com/RustCrypto/traits/pull/432
+[#532]: https://github.com/RustCrypto/traits/pull/532
+[#534]: https://github.com/RustCrypto/traits/pull/534
+
 ## 0.8.4 (2020-12-23)
 ### Fixed
 - Rust `nightly` regression ([#432])
