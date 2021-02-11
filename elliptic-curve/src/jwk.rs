@@ -159,6 +159,7 @@ impl ToString for JwkEcKey {
     }
 }
 
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<JwkEcKey> for EncodedPoint<C>
 where
     C: Curve + JwkParameters,
@@ -172,6 +173,7 @@ where
     }
 }
 
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<&JwkEcKey> for EncodedPoint<C>
 where
     C: Curve + JwkParameters,
@@ -191,6 +193,7 @@ where
     }
 }
 
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<EncodedPoint<C>> for JwkEcKey
 where
     C: Curve + JwkParameters,
@@ -204,6 +207,7 @@ where
     }
 }
 
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<&EncodedPoint<C>> for JwkEcKey
 where
     C: Curve + JwkParameters,
@@ -225,6 +229,7 @@ where
     }
 }
 
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<JwkEcKey> for SecretKey<C>
 where
     C: Curve + JwkParameters + ValidatePublicKey + SecretValue,
@@ -240,6 +245,7 @@ where
     }
 }
 
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<&JwkEcKey> for SecretKey<C>
 where
     C: Curve + JwkParameters + ValidatePublicKey + SecretValue,
@@ -269,6 +275,7 @@ where
 
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> From<SecretKey<C>> for JwkEcKey
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
@@ -285,6 +292,7 @@ where
 
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> From<&SecretKey<C>> for JwkEcKey
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
@@ -305,6 +313,7 @@ where
 
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<JwkEcKey> for PublicKey<C>
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
@@ -323,6 +332,7 @@ where
 
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<&JwkEcKey> for PublicKey<C>
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
@@ -341,6 +351,7 @@ where
 
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> From<PublicKey<C>> for JwkEcKey
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
@@ -357,6 +368,7 @@ where
 
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> From<&PublicKey<C>> for JwkEcKey
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
