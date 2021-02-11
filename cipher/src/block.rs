@@ -195,26 +195,31 @@ pub trait FromBlockCipherNonce {
 #[macro_export]
 macro_rules! impl_from_key_nonce {
     ($name:ty) => {
-        impl<C: FromKey> cipher::FromKeyNonce for $name {
-            type KeySize = C::KeySize;
+        impl<C: BlockCipher> crate::FromKeyNonce for $name
+        where
+            Self: FromBlockCipherNonce,
+            <Self as FromBlockCipherNonce>::BlockCipher: FromKey,
+        {
+            type KeySize = <<Self as FromBlockCipherNonce>::BlockCipher as FromKey>::KeySize;
             type NonceSize = <Self as FromBlockCipherNonce>::NonceSize;
 
             fn new(
                 key: &GenericArray<u8, Self::KeySize>,
                 nonce: &GenericArray<u8, Self::NonceSize>,
             ) -> Self {
-                Self::from_block_cipher_nonce(C::new(key), nonce)
+                let cipher = <Self as FromBlockCipherNonce>::BlockCipher::new(key);
+                Self::from_block_cipher_nonce(cipher, nonce)
             }
 
             fn new_from_slices(
                 key: &[u8],
                 nonce: &[u8],
-            ) -> Result<Self, cipher::errors::InvalidLength> {
-                use cipher::errors::InvalidLength;
+            ) -> Result<Self, crate::errors::InvalidLength> {
+                use crate::errors::InvalidLength;
                 if nonce.len() != Self::NonceSize::USIZE {
                     Err(InvalidLength)
                 } else {
-                    C::new_from_slice(key)
+                    <Self as FromBlockCipherNonce>::BlockCipher::new_from_slice(key)
                         .map_err(|_| InvalidLength)
                         .map(|cipher| {
                             let nonce = GenericArray::from_slice(nonce);
