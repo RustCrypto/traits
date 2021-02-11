@@ -21,72 +21,34 @@ use cipher::{BlockCipher, NewBlockCipher};
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
-mod errors;
-
-pub use crate::errors::{InvalidKeyLength, MacError};
+pub use crypto_common::{FixedOutput, FixedOutputReset, FromKey, InvalidLength, Reset, Update};
 pub use generic_array::{self, typenum::consts};
 
-use generic_array::typenum::Unsigned;
-use generic_array::{ArrayLength, GenericArray};
+use core::fmt;
+use generic_array::GenericArray;
 use subtle::{Choice, ConstantTimeEq};
 
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, RngCore};
 
-/// Key for an algorithm that implements [`NewMac`].
-pub type Key<M> = GenericArray<u8, <M as NewMac>::KeySize>;
+/// Key for an algorithm that implements [`FromKey`].
+pub type Key<M> = GenericArray<u8, <M as FromKey>::KeySize>;
 
-/// Instantiate a [`Mac`] algorithm.
-pub trait NewMac: Sized {
-    /// Key size in bytes with which cipher guaranteed to be initialized.
-    type KeySize: ArrayLength<u8>;
-
-    /// Initialize new MAC instance from key with fixed size.
-    fn new(key: &Key<Self>) -> Self;
-
-    /// Initialize new MAC instance from key with variable size.
-    ///
-    /// Default implementation will accept only keys with length equal to
-    /// `KeySize`, but some MACs can accept range of key lengths.
-    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidKeyLength> {
-        if key.len() != Self::KeySize::to_usize() {
-            Err(InvalidKeyLength)
-        } else {
-            Ok(Self::new(GenericArray::from_slice(key)))
-        }
-    }
-
-    /// Generate a random key for this MAC using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-    fn generate_key(mut rng: impl CryptoRng + RngCore) -> Key<Self> {
-        let mut key = Key::<Self>::default();
-        rng.fill_bytes(&mut key);
-        key
-    }
-}
-
-/// The [`Mac`] trait defines methods for a Message Authentication algorithm.
-pub trait Mac: Clone {
-    /// Output size of the [[`Mac`]]
-    type OutputSize: ArrayLength<u8>;
-
-    /// Update MAC state with the given data.
-    fn update(&mut self, data: &[u8]);
-
-    /// Reset [`Mac`] instance.
-    fn reset(&mut self);
-
+/// Convinience super-trait covering functionality of Message Authentication algorithms.
+pub trait Mac: FromKey + Update + FixedOutput {
     /// Obtain the result of a [`Mac`] computation as a [`Output`] and consume
     /// [`Mac`] instance.
-    fn finalize(self) -> Output<Self>;
+    fn finalize(self) -> Output<Self> {
+        Output::new(self.finalize_fixed())
+    }
 
     /// Obtain the result of a [`Mac`] computation as a [`Output`] and reset
     /// [`Mac`] instance.
-    fn finalize_reset(&mut self) -> Output<Self> {
-        let res = self.clone().finalize();
-        self.reset();
-        res
+    fn finalize_reset(&mut self) -> Output<Self>
+    where
+        Self: FixedOutputReset,
+    {
+        Output::new(self.finalize_fixed_reset())
     }
 
     /// Check if tag/code value is correct for the processed input.
@@ -100,6 +62,8 @@ pub trait Mac: Clone {
         }
     }
 }
+
+impl<T: FromKey + Update + FixedOutput> Mac for T {}
 
 /// [`Output`] is a thin wrapper around bytes array which provides a safe `Eq`
 /// implementation that runs in a fixed time.
@@ -138,34 +102,15 @@ impl<M: Mac> PartialEq for Output<M> {
 
 impl<M: Mac> Eq for Output<M> {}
 
-#[cfg(feature = "cipher")]
-#[cfg_attr(docsrs, doc(cfg(feature = "cipher")))]
-/// Trait for MAC functions which can be created from block cipher.
-pub trait FromBlockCipher {
-    /// Block cipher type
-    type Cipher: BlockCipher;
+/// Error type for signaling failed MAC verification
+#[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
+pub struct MacError;
 
-    /// Create new MAC isntance from provided block cipher.
-    fn from_cipher(cipher: Self::Cipher) -> Self;
-}
-
-#[cfg(feature = "cipher")]
-#[cfg_attr(docsrs, doc(cfg(feature = "cipher")))]
-impl<T> NewMac for T
-where
-    T: FromBlockCipher,
-    T::Cipher: NewBlockCipher,
-{
-    type KeySize = <<Self as FromBlockCipher>::Cipher as NewBlockCipher>::KeySize;
-
-    fn new(key: &Key<Self>) -> Self {
-        let cipher = <Self as FromBlockCipher>::Cipher::new(key);
-        Self::from_cipher(cipher)
-    }
-
-    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidKeyLength> {
-        <Self as FromBlockCipher>::Cipher::new_from_slice(key)
-            .map_err(|_| InvalidKeyLength)
-            .map(Self::from_cipher)
+impl fmt::Display for MacError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("failed MAC verification")
     }
 }
+
+#[cfg(feature = "std")]
+impl std::error::Error for MacError {}
