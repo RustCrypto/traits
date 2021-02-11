@@ -20,6 +20,7 @@ blobby = { version = "0.3", optional = true }
 rand_core = { version = "0.6", optional = true }
 
 [features]
+default = ["core-api"]
 dev = ["blobby"]
 core-api = ["crypto-common/core-api"]
 std = ["crypto-common/std"]

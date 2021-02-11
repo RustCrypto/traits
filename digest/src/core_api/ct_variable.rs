@@ -1,6 +1,5 @@
 use super::{AlgorithmName, FixedOutputCore, Reset, UpdateCore, VariableOutputCore};
 use core::{fmt, marker::PhantomData};
-use crypto_common::block_buffer::BlockBuffer;
 use generic_array::{
     typenum::{IsLessOrEqual, LeEq, NonZero},
     ArrayLength, GenericArray,
@@ -26,6 +25,7 @@ where
     LeEq<OutSize, T::MaxOutputSize>: NonZero,
 {
     type BlockSize = T::BlockSize;
+    type Buffer = T::Buffer;
 
     #[inline]
     fn update_blocks(&mut self, blocks: &[GenericArray<u8, Self::BlockSize>]) {
@@ -44,7 +44,7 @@ where
     #[inline]
     fn finalize_fixed_core(
         &mut self,
-        buffer: &mut BlockBuffer<Self::BlockSize>,
+        buffer: &mut Self::Buffer,
         out: &mut GenericArray<u8, Self::OutputSize>,
     ) {
         self.inner

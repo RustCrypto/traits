@@ -1,6 +1,6 @@
 //! Low-level core API traits.
 use super::{FixedOutput, FixedOutputReset, Reset, Update};
-use block_buffer::BlockBuffer;
+use block_buffer::DigestBuffer;
 use core::fmt;
 use generic_array::{ArrayLength, GenericArray};
 
@@ -10,6 +10,8 @@ use generic_array::{ArrayLength, GenericArray};
 pub trait UpdateCore {
     /// Block size in bytes.
     type BlockSize: ArrayLength<u8>;
+    /// Block buffer type over which value operates.
+    type Buffer: DigestBuffer<Self::BlockSize>;
 
     /// Update state using the provided data blocks.
     fn update_blocks(&mut self, blocks: &[GenericArray<u8, Self::BlockSize>]);
@@ -26,7 +28,7 @@ pub trait FixedOutputCore: UpdateCore {
     /// write result into provided array using and leave value in a dirty state.
     fn finalize_fixed_core(
         &mut self,
-        buffer: &mut block_buffer::BlockBuffer<Self::BlockSize>,
+        buffer: &mut Self::Buffer,
         out: &mut GenericArray<u8, Self::OutputSize>,
     );
 }
@@ -43,7 +45,7 @@ pub trait AlgorithmName {
 #[derive(Clone, Default)]
 pub struct CoreWrapper<T: UpdateCore> {
     core: T,
-    buffer: BlockBuffer<T::BlockSize>,
+    buffer: T::Buffer,
 }
 
 impl<T: UpdateCore> CoreWrapper<T> {
@@ -56,17 +58,18 @@ impl<T: UpdateCore> CoreWrapper<T> {
 
     /// Decompose wrapper into inner parts.
     #[inline]
-    pub fn decompose(self) -> (T, BlockBuffer<T::BlockSize>) {
+    pub fn decompose(self) -> (T, T::Buffer) {
         let Self { core, buffer } = self;
         (core, buffer)
     }
 }
 
 impl<T: UpdateCore + Reset> CoreWrapper<T> {
-    /// Apply function to core and buffer, return its result, and reset core and buffer.
+    /// Apply function to core and buffer, return its result,
+    /// and reset core and buffer.
     pub fn apply_reset<V>(
         &mut self,
-        mut f: impl FnMut(&mut T, &mut BlockBuffer<T::BlockSize>) -> V,
+        mut f: impl FnMut(&mut T, &mut T::Buffer) -> V,
     ) -> V {
         let Self { core, buffer } = self;
         let res = f(core, buffer);

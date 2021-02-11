@@ -77,8 +77,7 @@ dependencies = [
 [[package]]
 name = "block-buffer"
 version = "0.10.0-pre.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9bda843099271fe07dc9638389268bf732e981d8a71d7a1472f79eb54cc5a827"
+source = "git+https://github.com/RustCrypto/utils?branch=lazy#5730141d1970a047242cfb1e5b65d06db1486d90"
 dependencies = [
  "block-padding",
  "generic-array 0.14.4",
@@ -87,8 +86,7 @@ dependencies = [
 [[package]]
 name = "block-padding"
 version = "0.3.0-pre"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3992d179d1dd2fa87869057217d43cf88ad31d4e44738d159a5a6caafdf63ae6"
+source = "git+https://github.com/RustCrypto/utils?branch=lazy#5730141d1970a047242cfb1e5b65d06db1486d90"
 dependencies = [
  "generic-array 0.14.4",
 ]

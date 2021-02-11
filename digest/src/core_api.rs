@@ -5,7 +5,6 @@
 //! higher-level traits.
 use crate::InvalidOutputSize;
 use crate::{ExtendableOutput, Reset};
-use crypto_common::block_buffer::BlockBuffer;
 use generic_array::{ArrayLength, GenericArray};
 
 pub use crypto_common::core_api::{AlgorithmName, CoreWrapper, FixedOutputCore, UpdateCore};
@@ -25,7 +24,7 @@ pub trait ExtendableOutputCore: UpdateCore {
 
     /// Retrieve XOF reader using remaining data stored in the block buffer
     /// and leave hasher in a dirty state.
-    fn finalize_xof_core(&mut self, buffer: &mut BlockBuffer<Self::BlockSize>) -> Self::ReaderCore;
+    fn finalize_xof_core(&mut self, buffer: &mut Self::Buffer) -> Self::ReaderCore;
 }
 
 /// Core reader trait for extendable-output function (XOF) result.
@@ -53,7 +52,7 @@ pub trait VariableOutputCore: UpdateCore + Sized {
     /// `output_size` must be equal to `output_size` used during construction.
     fn finalize_variable_core(
         &mut self,
-        buffer: &mut BlockBuffer<Self::BlockSize>,
+        buffer: &mut Self::Buffer,
         output_size: usize,
         f: impl FnOnce(&[u8]),
     );
