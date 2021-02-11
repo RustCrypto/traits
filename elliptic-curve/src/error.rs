@@ -2,10 +2,10 @@
 
 use core::fmt::{self, Display};
 
-/// Result type
+/// Result type.
 pub type Result<T> = core::result::Result<T, Error>;
 
-/// Elliptic curve errors
+/// Elliptic curve errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Error;
 

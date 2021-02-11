@@ -61,10 +61,14 @@ pub trait JwkParameters: Curve {
     const CRV: &'static str;
 }
 
-/// JWK elliptic curve keys with a `kty` of `"EC"`.
+/// JSON Web Key (JWK) with a `kty` of `"EC"` (elliptic curve).
 ///
-/// They can represent either a public/private keypair, or just a public key,
-/// depending on whether or not the `d` parameter is present.
+/// Specified in [RFC 7518 Section 6: Cryptographic Algorithms for Keys][1].
+///
+/// This type can represent either a public/private keypair, or just a
+/// public key, depending on whether or not the `d` parameter is present.
+///
+/// [1]: https://tools.ietf.org/html/rfc7518#section-6
 // TODO(tarcieri): eagerly decode or validate `x`, `y`, and `d` as Base64
 #[derive(Clone)]
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
