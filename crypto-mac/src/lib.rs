@@ -21,6 +21,10 @@ use cipher::{BlockCipher, NewBlockCipher};
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
+#[cfg(feature = "core-api")]
+#[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
+pub mod core_api;
+
 pub use crypto_common::{FixedOutput, FixedOutputReset, FromKey, InvalidLength, Reset, Update};
 pub use generic_array::{self, typenum::consts};
 
