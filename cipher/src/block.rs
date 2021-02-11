@@ -204,10 +204,7 @@ pub trait FromBlockCipherNonce {
 #[macro_export]
 macro_rules! impl_from_key_nonce {
     ($name:ty) => {
-        impl<C> cipher::FromKeyNonce for $name
-        where
-            C: FromKey + BlockCipher,
-        {
+        impl<C: FromKey + BlockCipher> cipher::FromKeyNonce for $name {
             type KeySize = C::KeySize;
             type NonceSize = <Self as FromBlockCipherNonce>::NonceSize;
 
@@ -233,6 +230,26 @@ macro_rules! impl_from_key_nonce {
                             Self::from_block_cipher_nonce(cipher, nonce)
                         })
                 }
+            }
+        }
+    };
+}
+
+/// Implement [`FromKey`] for a type which implements [`FromBlockCipher`].
+#[macro_export]
+macro_rules! impl_from_key {
+    ($name:ty) => {
+        impl<C: FromKey + BlockCipher> cipher::FromKey for $name {
+            type KeySize = C::KeySize;
+
+            fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
+                Self::from_block_cipher(C::new(key))
+            }
+
+            fn new_from_slices(key: &[u8]) -> Result<Self, cipher::errors::InvalidLength> {
+                C::new_from_slice(key)
+                    .map_err(|_| cipher::errors::InvalidLength)
+                    .map(|cipher| Self::from_block_cipher(cipher, nonce))
             }
         }
     };
