@@ -1,4 +1,4 @@
-use super::{AlgorithmName, FixedOutputCore, UpdateCore, VariableOutputCore, Reset};
+use super::{AlgorithmName, FixedOutputCore, Reset, UpdateCore, VariableOutputCore};
 use core::{fmt, marker::PhantomData};
 use crypto_common::block_buffer::BlockBuffer;
 use generic_array::{
