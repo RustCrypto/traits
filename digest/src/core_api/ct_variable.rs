@@ -1,4 +1,4 @@
-use super::{AlgorithmName, FixedOutputCore, UpdateCore, VariableOutputCore};
+use super::{AlgorithmName, FixedOutputCore, UpdateCore, VariableOutputCore, Reset};
 use core::{fmt, marker::PhantomData};
 use crypto_common::block_buffer::BlockBuffer;
 use generic_array::{
@@ -67,7 +67,7 @@ where
     }
 }
 
-impl<T, OutSize> Default for CtVariableCoreWrapper<T, OutSize>
+impl<T, OutSize> Reset for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
