@@ -28,9 +28,6 @@ use core::fmt;
 use generic_array::GenericArray;
 use subtle::{Choice, ConstantTimeEq};
 
-#[cfg(feature = "rand_core")]
-use rand_core::{CryptoRng, RngCore};
-
 /// Key for an algorithm that implements [`FromKey`].
 pub type Key<M> = GenericArray<u8, <M as FromKey>::KeySize>;
 
