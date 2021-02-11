@@ -232,7 +232,8 @@ macro_rules! impl_from_key_nonce {
 macro_rules! impl_from_key {
     ($name:ty) => {
         impl<C: FromKey> cipher::FromKey for $name
-        where Self: From<C>,
+        where
+            Self: From<C>,
         {
             type KeySize = C::KeySize;
 
