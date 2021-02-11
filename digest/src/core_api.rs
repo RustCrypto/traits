@@ -4,41 +4,19 @@
 //! core algorithm wrapped by the wrapper types, which implement the
 //! higher-level traits.
 use crate::InvalidOutputSize;
-use core::fmt;
+use crate::{ExtendableOutput, Reset};
+use crypto_common::block_buffer::BlockBuffer;
 use generic_array::{ArrayLength, GenericArray};
+
+pub use crypto_common::core_api::{AlgorithmName, CoreWrapper, FixedOutputCore, UpdateCore};
 
 mod ct_variable;
 mod rt_variable;
-mod update;
 mod xof_reader;
 
 pub use ct_variable::CtVariableCoreWrapper;
 pub use rt_variable::RtVariableCoreWrapper;
-pub use update::UpdateCoreWrapper;
 pub use xof_reader::XofReaderCoreWrapper;
-
-/// Trait for updating hasher state with input data divided into blocks.
-pub trait UpdateCore {
-    /// Block size in bytes.
-    type BlockSize: ArrayLength<u8>;
-
-    /// Update the hasher state using the provided data.
-    fn update_blocks(&mut self, blocks: &[GenericArray<u8, Self::BlockSize>]);
-}
-
-/// Core trait for hash functions with fixed output size.
-pub trait FixedOutputCore: UpdateCore {
-    /// Digest output size in bytes.
-    type OutputSize: ArrayLength<u8>;
-
-    /// Retrieve result into provided buffer using remaining data stored
-    /// in the block buffer and leave hasher in a dirty state.
-    fn finalize_fixed_core(
-        &mut self,
-        buffer: &mut block_buffer::BlockBuffer<Self::BlockSize>,
-        out: &mut GenericArray<u8, Self::OutputSize>,
-    );
-}
 
 /// Core trait for hash functions with extendable (XOF) output size.
 pub trait ExtendableOutputCore: UpdateCore {
@@ -47,10 +25,7 @@ pub trait ExtendableOutputCore: UpdateCore {
 
     /// Retrieve XOF reader using remaining data stored in the block buffer
     /// and leave hasher in a dirty state.
-    fn finalize_xof_core(
-        &mut self,
-        buffer: &mut block_buffer::BlockBuffer<Self::BlockSize>,
-    ) -> Self::ReaderCore;
+    fn finalize_xof_core(&mut self, buffer: &mut BlockBuffer<Self::BlockSize>) -> Self::ReaderCore;
 }
 
 /// Core reader trait for extendable-output function (XOF) result.
@@ -78,14 +53,29 @@ pub trait VariableOutputCore: UpdateCore + Sized {
     /// `output_size` must be equal to `output_size` used during construction.
     fn finalize_variable_core(
         &mut self,
-        buffer: &mut block_buffer::BlockBuffer<Self::BlockSize>,
+        buffer: &mut BlockBuffer<Self::BlockSize>,
         output_size: usize,
         f: impl FnOnce(&[u8]),
     );
 }
 
-/// Trait which stores algorithm name constant, used in `Debug` implementations.
-pub trait AlgorithmName {
-    /// Write algorithm name into `f`.
-    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result;
+impl<D: ExtendableOutputCore + Default + Reset> ExtendableOutput for CoreWrapper<D> {
+    type Reader = XofReaderCoreWrapper<D::ReaderCore>;
+
+    #[inline]
+    fn finalize_xof(self) -> Self::Reader {
+        let (core, mut buffer) = self.decompose();
+        let core = core.finalize_xof_core(&mut buffer);
+        buffer.reset();
+        Self::Reader { core, buffer }
+    }
+
+    #[inline]
+    fn finalize_xof_reset(&mut self) -> Self::Reader {
+        self.apply_reset(|core, buffer| {
+            let core = core.finalize_xof_core(buffer);
+            let buffer = BlockBuffer::<D::BlockSize>::default();
+            Self::Reader { core, buffer }
+        })
+    }
 }

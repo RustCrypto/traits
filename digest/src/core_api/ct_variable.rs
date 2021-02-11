@@ -1,6 +1,6 @@
 use super::{AlgorithmName, FixedOutputCore, UpdateCore, VariableOutputCore};
-use block_buffer::BlockBuffer;
 use core::{fmt, marker::PhantomData};
+use crypto_common::block_buffer::BlockBuffer;
 use generic_array::{
     typenum::{IsLessOrEqual, LeEq, NonZero},
     ArrayLength, GenericArray,

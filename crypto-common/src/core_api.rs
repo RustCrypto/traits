@@ -1,5 +1,5 @@
 //! Low-level core API traits.
-use super::{FinalizeFixed, FinalizeFixedReset, Reset, Update};
+use super::{FixedOutput, FixedOutputReset, Reset, Update};
 use block_buffer::BlockBuffer;
 use core::fmt;
 use generic_array::{ArrayLength, GenericArray};
@@ -18,7 +18,7 @@ pub trait UpdateCore {
 /// Core trait for hash functions with fixed output size.
 #[cfg(feature = "core-api")]
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
-pub trait FinalizeFixedCore: UpdateCore {
+pub trait FixedOutputCore: UpdateCore {
     /// Size of result in bytes.
     type OutputSize: ArrayLength<u8>;
 
@@ -99,7 +99,7 @@ impl<D: UpdateCore> Update for CoreWrapper<D> {
     }
 }
 
-impl<D: FinalizeFixedCore> FinalizeFixed for CoreWrapper<D> {
+impl<D: FixedOutputCore> FixedOutput for CoreWrapper<D> {
     type OutputSize = D::OutputSize;
 
     #[inline]
@@ -109,9 +109,24 @@ impl<D: FinalizeFixedCore> FinalizeFixed for CoreWrapper<D> {
     }
 }
 
-impl<D: FinalizeFixedCore + Reset> FinalizeFixedReset for CoreWrapper<D> {
+impl<D: FixedOutputCore + Reset> FixedOutputReset for CoreWrapper<D> {
     #[inline]
     fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
         self.apply_reset(|core, buffer| core.finalize_fixed_core(buffer, out));
+    }
+}
+
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+impl<D: UpdateCore> std::io::Write for CoreWrapper<D> {
+    #[inline]
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        Update::update(self, buf);
+        Ok(buf.len())
+    }
+
+    #[inline]
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
     }
 }

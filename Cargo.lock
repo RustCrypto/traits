@@ -183,7 +183,7 @@ name = "digest"
 version = "0.10.0-pre.3"
 dependencies = [
  "blobby",
- "block-buffer 0.10.0-pre.1",
+ "crypto-common",
  "generic-array 0.14.4",
 ]
 

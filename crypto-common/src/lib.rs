@@ -9,12 +9,17 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
+#[cfg(feature = "std")]
+extern crate std;
+
 use core::fmt;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, RngCore};
-#[cfg(feature = "std")]
-extern crate std;
+
+#[cfg(feature = "core-api")]
+#[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
+pub use block_buffer;
 
 #[cfg(feature = "core-api")]
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
@@ -117,7 +122,7 @@ pub trait Update {
 }
 
 /// Trait for types which return fixed-sized result after finalization.
-pub trait FinalizeFixed: Sized {
+pub trait FixedOutput: Sized {
     /// Size of result in bytes.
     type OutputSize: ArrayLength<u8>;
 
@@ -135,7 +140,7 @@ pub trait FinalizeFixed: Sized {
 
 /// Trait for types which return fixed-sized result after finalization and reset
 /// values into its initial state.
-pub trait FinalizeFixedReset: FinalizeFixed + Reset {
+pub trait FixedOutputReset: FixedOutput + Reset {
     /// Write result into provided array and reset value to its initial state.
     fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>);
 

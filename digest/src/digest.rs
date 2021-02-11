@@ -1,4 +1,4 @@
-use super::{FixedOutput, Reset, Update};
+use super::{FixedOutput, FixedOutputReset, Reset, Update};
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
 
@@ -22,17 +22,23 @@ pub trait Digest {
     /// Retrieve result and consume hasher instance.
     fn finalize(self) -> Output<Self>;
 
-    /// Retrieve result and reset hasher instance.
-    fn finalize_reset(&mut self) -> Output<Self>;
-
     /// Write result into provided array and consume the hasher instance.
     fn finalize_into(self, out: &mut Output<Self>);
 
+    /// Retrieve result and reset hasher instance.
+    fn finalize_reset(&mut self) -> Output<Self>
+    where
+        Self: FixedOutputReset;
+
     /// Write result into provided array and reset the hasher instance.
-    fn finalize_into_reset(&mut self, out: &mut Output<Self>);
+    fn finalize_into_reset(&mut self, out: &mut Output<Self>)
+    where
+        Self: FixedOutputReset;
 
     /// Reset hasher instance to its initial state.
-    fn reset(&mut self);
+    fn reset(&mut self)
+    where
+        Self: Reset;
 
     /// Get output size of the hasher
     fn output_size() -> usize;
@@ -41,7 +47,7 @@ pub trait Digest {
     fn digest(data: impl AsRef<[u8]>) -> Output<Self>;
 }
 
-impl<D: FixedOutput> Digest for D {
+impl<D: FixedOutput + Default + Update> Digest for D {
     type OutputSize = <Self as FixedOutput>::OutputSize;
 
     #[inline]
@@ -66,22 +72,31 @@ impl<D: FixedOutput> Digest for D {
     }
 
     #[inline]
-    fn finalize_reset(&mut self) -> Output<Self> {
-        FixedOutput::finalize_fixed_reset(self)
-    }
-
-    #[inline]
     fn finalize_into(self, out: &mut Output<Self>) {
         FixedOutput::finalize_into(self, out);
     }
 
     #[inline]
-    fn finalize_into_reset(&mut self, out: &mut Output<Self>) {
-        FixedOutput::finalize_into_reset(self, out);
+    fn finalize_reset(&mut self) -> Output<Self>
+    where
+        Self: FixedOutputReset,
+    {
+        FixedOutputReset::finalize_fixed_reset(self)
     }
 
     #[inline]
-    fn reset(&mut self) {
+    fn finalize_into_reset(&mut self, out: &mut Output<Self>)
+    where
+        Self: FixedOutputReset,
+    {
+        FixedOutputReset::finalize_into_reset(self, out);
+    }
+
+    #[inline]
+    fn reset(&mut self)
+    where
+        Self: Reset,
+    {
         Reset::reset(self)
     }
 
@@ -92,7 +107,9 @@ impl<D: FixedOutput> Digest for D {
 
     #[inline]
     fn digest(data: impl AsRef<[u8]>) -> Output<Self> {
-        Self::digest_fixed(data)
+        let mut hasher = Self::default();
+        hasher.update(data.as_ref());
+        hasher.finalize()
     }
 }
 
