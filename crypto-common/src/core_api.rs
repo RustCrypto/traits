@@ -67,10 +67,7 @@ impl<T: UpdateCore> CoreWrapper<T> {
 impl<T: UpdateCore + Reset> CoreWrapper<T> {
     /// Apply function to core and buffer, return its result,
     /// and reset core and buffer.
-    pub fn apply_reset<V>(
-        &mut self,
-        mut f: impl FnMut(&mut T, &mut T::Buffer) -> V,
-    ) -> V {
+    pub fn apply_reset<V>(&mut self, mut f: impl FnMut(&mut T, &mut T::Buffer) -> V) -> V {
         let Self { core, buffer } = self;
         let res = f(core, buffer);
         core.reset();
