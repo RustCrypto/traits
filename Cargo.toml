@@ -2,6 +2,7 @@
 members = [
     "aead",
     "cipher",
+    "crypto-common",
     "crypto-mac",
     "crypto",
     "digest",
