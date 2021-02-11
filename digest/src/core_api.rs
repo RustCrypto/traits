@@ -64,9 +64,9 @@ impl<D: ExtendableOutputCore + Default + Reset> ExtendableOutput for CoreWrapper
 
     #[inline]
     fn finalize_xof(self) -> Self::Reader {
-        let (core, mut buffer) = self.decompose();
+        let (mut core, mut buffer) = self.decompose();
         let core = core.finalize_xof_core(&mut buffer);
-        buffer.reset();
+        let buffer = Default::default();
         Self::Reader { core, buffer }
     }
 
@@ -74,7 +74,7 @@ impl<D: ExtendableOutputCore + Default + Reset> ExtendableOutput for CoreWrapper
     fn finalize_xof_reset(&mut self) -> Self::Reader {
         self.apply_reset(|core, buffer| {
             let core = core.finalize_xof_core(buffer);
-            let buffer = BlockBuffer::<D::BlockSize>::default();
+            let buffer = Default::default();
             Self::Reader { core, buffer }
         })
     }

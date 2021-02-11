@@ -33,13 +33,13 @@ macro_rules! new_test {
 
 /// Module to separate Digest from other traits
 mod foo {
-    use super::super::Digest;
+    use super::super::{Digest, Reset};
     use core::fmt::Debug;
 
     /// Digest test
     pub fn digest_test<D>(input: &[u8], output: &[u8]) -> Option<&'static str>
     where
-        D: Digest + Debug + Clone,
+        D: Digest + Reset + Debug + Clone,
     {
         let mut hasher = D::new();
         // Test that it works when accepting the message all at once

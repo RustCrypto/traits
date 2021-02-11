@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 use core::fmt;
 
-use super::{FixedOutput, Reset, Update};
+use super::{FixedOutput, FixedOutputReset, Reset, Update};
 use generic_array::{typenum::Unsigned, GenericArray};
 
 /// The `DynDigest` trait is a modification of `Digest` trait suitable
@@ -39,7 +39,7 @@ pub trait DynDigest {
     fn box_clone(&self) -> Box<dyn DynDigest>;
 }
 
-impl<D: Update + FixedOutput + Reset + Clone + 'static> DynDigest for D {
+impl<D: Update + FixedOutputReset + Clone + 'static> DynDigest for D {
     fn update(&mut self, data: &[u8]) {
         Update::update(self, data);
     }

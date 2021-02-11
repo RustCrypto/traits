@@ -1,4 +1,4 @@
-use super::{FixedOutput, FixedOutputReset, Reset, Update};
+use super::{FixedOutput, FixedOutputReset, Update};
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
 
@@ -34,11 +34,6 @@ pub trait Digest {
     fn finalize_into_reset(&mut self, out: &mut Output<Self>)
     where
         Self: FixedOutputReset;
-
-    /// Reset hasher instance to its initial state.
-    fn reset(&mut self)
-    where
-        Self: Reset;
 
     /// Get output size of the hasher
     fn output_size() -> usize;
@@ -90,14 +85,6 @@ impl<D: FixedOutput + Default + Update> Digest for D {
         Self: FixedOutputReset,
     {
         FixedOutputReset::finalize_into_reset(self, out);
-    }
-
-    #[inline]
-    fn reset(&mut self)
-    where
-        Self: Reset,
-    {
-        Reset::reset(self)
     }
 
     #[inline]
