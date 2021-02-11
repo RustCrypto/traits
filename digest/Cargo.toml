@@ -14,7 +14,7 @@ categories = ["cryptography", "no-std"]
 [dependencies]
 generic-array = "0.14"
 blobby = { version = "0.3", optional = true }
-block-buffer = { version = "0.10.0-pre.1", optional = true }
+block-buffer = { version = "0.10.0-pre.2", optional = true }
 
 [features]
 alloc = []
