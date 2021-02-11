@@ -65,7 +65,7 @@ pub use {
         public_key::PublicKey,
         scalar::{NonZeroScalar, Scalar, ScalarBits},
     },
-    ff::{self, BitView, Field},
+    ff::{self, Field},
     group::{self, Group},
 };
 
