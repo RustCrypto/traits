@@ -6,7 +6,7 @@ use crate::{
     sec1::{
         EncodedPoint, FromEncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize,
     },
-    weierstrass::{point, Curve},
+    weierstrass::{Curve, PointCompression},
     AffinePoint, Error, FieldBytes, ProjectiveArithmetic, ProjectivePoint, Result, Scalar,
 };
 use core::{
@@ -223,7 +223,7 @@ where
 
 impl<C> From<PublicKey<C>> for EncodedPoint<C>
 where
-    C: Curve + ProjectiveArithmetic + point::Compression,
+    C: Curve + ProjectiveArithmetic + PointCompression,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
@@ -237,7 +237,7 @@ where
 
 impl<C> From<&PublicKey<C>> for EncodedPoint<C>
 where
-    C: Curve + ProjectiveArithmetic + point::Compression,
+    C: Curve + ProjectiveArithmetic + PointCompression,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
