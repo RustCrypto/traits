@@ -20,11 +20,11 @@ extern crate std;
 pub use blobby;
 
 mod block;
-mod common;
 #[cfg(feature = "dev")]
 mod dev;
 pub mod errors;
 mod stream;
 
-pub use crate::{block::*, common::*, stream::*};
+pub use crate::{block::*, stream::*};
+pub use crypto_common::{FromKey, FromKeyNonce};
 pub use generic_array::{self, typenum::consts};

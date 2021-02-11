@@ -9,51 +9,18 @@
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher
 //! [2]: https://en.wikipedia.org/wiki/Symmetric-key_algorithm
 
-use crate::errors::InvalidLength;
 use core::convert::TryInto;
+use crypto_common::FromKey;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
-#[cfg(feature = "rand_core")]
-use rand_core::{CryptoRng, RngCore};
-
-/// Key for an algorithm that implements [`NewBlockCipher`].
-pub type BlockCipherKey<B> = GenericArray<u8, <B as NewBlockCipher>::KeySize>;
+/// Key for an algorithm that implements [`FromKey`].
+pub type BlockCipherKey<B> = GenericArray<u8, <B as FromKey>::KeySize>;
 
 /// Block on which a [`BlockCipher`] operates.
 pub type Block<B> = GenericArray<u8, <B as BlockCipher>::BlockSize>;
 
 /// Block on which a [`BlockCipher`] operates in parallel.
 pub type ParBlocks<B> = GenericArray<Block<B>, <B as BlockCipher>::ParBlocks>;
-
-/// Instantiate a [`BlockCipher`] algorithm.
-pub trait NewBlockCipher: Sized {
-    /// Key size in bytes with which cipher guaranteed to be initialized.
-    type KeySize: ArrayLength<u8>;
-
-    /// Create new block cipher instance from key with fixed size.
-    fn new(key: &BlockCipherKey<Self>) -> Self;
-
-    /// Create new block cipher instance from key with variable size.
-    ///
-    /// Default implementation will accept only keys with length equal to
-    /// `KeySize`, but some ciphers can accept range of key lengths.
-    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
-        if key.len() != Self::KeySize::to_usize() {
-            Err(InvalidLength)
-        } else {
-            Ok(Self::new(GenericArray::from_slice(key)))
-        }
-    }
-
-    /// Generate a random key for this block cipher using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-    fn generate_key(mut rng: impl CryptoRng + RngCore) -> BlockCipherKey<Self> {
-        let mut key = BlockCipherKey::<Self>::default();
-        rng.fill_bytes(&mut key);
-        key
-    }
-}
 
 /// Trait which marks a type as being a block cipher.
 pub trait BlockCipher {
@@ -208,4 +175,65 @@ impl<Alg: BlockDecrypt> BlockDecrypt for &Alg {
     fn decrypt_blocks(&self, blocks: &mut [Block<Self>]) {
         Alg::decrypt_blocks(self, blocks);
     }
+}
+
+/// Trait for types which can be initialized from a block cipher.
+pub trait FromBlockCipher {
+    /// Block cipher
+    type BlockCipher: BlockCipher;
+
+    /// Instantiate a stream cipher from a block cipher
+    fn from_block_cipher(cipher: Self::BlockCipher) -> Self;
+}
+
+/// Trait for types which can be initialized from a block cipher and nonce.
+pub trait FromBlockCipherNonce {
+    /// Block cipher
+    type BlockCipher: BlockCipher;
+    /// Nonce size in bytes
+    type NonceSize: ArrayLength<u8>;
+
+    /// Instantiate a stream cipher from a block cipher
+    fn from_block_cipher_nonce(
+        cipher: Self::BlockCipher,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+    ) -> Self;
+}
+
+/// Implement [`FromKeyNonce`][crate::FromKeyNonce] for a type which implements [`FromBlockCipherNonce`].
+#[macro_export]
+macro_rules! impl_from_key_nonce {
+    ($name:ty) => {
+        impl<C> cipher::FromKeyNonce for $name
+        where
+            C: FromKey + BlockCipher,
+        {
+            type KeySize = C::KeySize;
+            type NonceSize = <Self as FromBlockCipherNonce>::NonceSize;
+
+            fn new(
+                key: &GenericArray<u8, Self::KeySize>,
+                nonce: &GenericArray<u8, Self::NonceSize>,
+            ) -> Self {
+                Self::from_block_cipher_nonce(C::new(key), nonce)
+            }
+
+            fn new_from_slices(
+                key: &[u8],
+                nonce: &[u8],
+            ) -> Result<Self, cipher::errors::InvalidLength> {
+                use cipher::errors::InvalidLength;
+                if nonce.len() != Self::NonceSize::USIZE {
+                    Err(InvalidLength)
+                } else {
+                    C::new_from_slice(key)
+                        .map_err(|_| InvalidLength)
+                        .map(|cipher| {
+                            let nonce = GenericArray::from_slice(nonce);
+                            Self::from_block_cipher_nonce(cipher, nonce)
+                        })
+                }
+            }
+        }
+    };
 }

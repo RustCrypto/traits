@@ -110,6 +110,7 @@ name = "cipher"
 version = "0.3.0-pre.4"
 dependencies = [
  "blobby",
+ "crypto-common",
  "generic-array 0.14.4",
  "rand_core",
 ]

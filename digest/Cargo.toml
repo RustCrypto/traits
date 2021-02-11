@@ -13,8 +13,9 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = "0.14"
-blobby = { version = "0.3", optional = true }
 crypto-common = { version = "0.1", path = "../crypto-common/" }
+
+blobby = { version = "0.3", optional = true }
 
 [features]
 alloc = []
