@@ -67,6 +67,18 @@ where
     }
 }
 
+impl<T, OutSize> Default for CtVariableCoreWrapper<T, OutSize>
+where
+    T: VariableOutputCore,
+    OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
+    LeEq<OutSize, T::MaxOutputSize>: NonZero,
+{
+    #[inline]
+    fn reset(&mut self) {
+        *self = Default::default();
+    }
+}
+
 impl<T, OutSize> AlgorithmName for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore + AlgorithmName,
