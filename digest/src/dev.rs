@@ -2,7 +2,7 @@
 
 pub use blobby;
 
-use super::{ExtendableOutput, Reset, Update, XofReader};
+use super::{ExtendableOutput, Reset, Update, VariableOutput, XofReader};
 use core::fmt::Debug;
 
 /// Define test
@@ -160,6 +160,56 @@ where
 
     if out != output {
         return Some("message in pieces");
+    }
+    None
+}
+
+/// Variable-output digest test
+pub fn variable_test<D>(input: &[u8], output: &[u8]) -> Option<&'static str>
+where
+    D: Update + VariableOutput + Reset + Debug + Clone,
+{
+    let mut hasher = D::new(output.len()).unwrap();
+    let mut buf = [0u8; 128];
+    let buf = &mut buf[..output.len()];
+    // Test that it works when accepting the message all at once
+    hasher.update(input);
+    let mut hasher2 = hasher.clone();
+    hasher.finalize_variable(|res| buf.copy_from_slice(res));
+    if buf != output {
+        return Some("whole message");
+    }
+
+    // Test if reset works correctly
+    hasher2.reset();
+    hasher2.update(input);
+    hasher2.finalize_variable(|res| buf.copy_from_slice(res));
+    if buf != output {
+        return Some("whole message after reset");
+    }
+
+    // Test that it works when accepting the message in pieces
+    let mut hasher = D::new(output.len()).unwrap();
+    let len = input.len();
+    let mut left = len;
+    while left > 0 {
+        let take = (left + 1) / 2;
+        hasher.update(&input[len - left..take + len - left]);
+        left -= take;
+    }
+    hasher.finalize_variable(|res| buf.copy_from_slice(res));
+    if buf != output {
+        return Some("message in pieces");
+    }
+
+    // Test processing byte-by-byte
+    let mut hasher = D::new(output.len()).unwrap();
+    for chunk in input.chunks(1) {
+        hasher.update(chunk)
+    }
+    hasher.finalize_variable(|res| buf.copy_from_slice(res));
+    if buf != output {
+        return Some("message byte-by-byte");
     }
     None
 }
