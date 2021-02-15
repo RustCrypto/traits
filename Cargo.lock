@@ -360,9 +360,9 @@ checksum = "e9e006811e1fdd12672b0820a7f44c18dde429f367d50cec003d22aa9b3c8ddc"
 
 [[package]]
 name = "rand_core"
-version = "0.6.1"
+version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c026d7df8b298d90ccbbc5190bd04d85e159eaf5576caeacf8741da93ccbd2e5"
+checksum = "34cf66eb183df1c5876e2dcf6b13d57340741e8dc255b48e40a26de954d06ae7"
 
 [[package]]
 name = "ryu"
