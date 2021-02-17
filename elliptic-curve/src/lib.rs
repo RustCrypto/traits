@@ -128,7 +128,7 @@ pub trait AlgorithmParameters: Curve {
     const OID: pkcs8::ObjectIdentifier;
 
     /// Get the [`pkcs8::AlgorithmIdentifier`] for this curve
-    fn algorithm_identifier() -> pkcs8::AlgorithmIdentifier {
+    fn algorithm_identifier() -> pkcs8::AlgorithmIdentifier<'static> {
         pkcs8::AlgorithmIdentifier {
             oid: ALGORITHM_OID,
             parameters: Some(Self::OID.into()),

@@ -20,7 +20,7 @@ ff = { version = "0.9", optional = true, default-features = false }
 group = { version = "0.9", optional = true, default-features = false }
 hex-literal = { version = "0.3", optional = true }
 generic-array = { version = "0.14", default-features = false }
-pkcs8 = { version = "0.4", optional = true }
+pkcs8 = { version = "0.5", optional = true }
 rand_core = { version = "0.6", default-features = false }
 serde = { version = "1", optional = true, default-features = false }
 serde_json = { version = "1", optional = true, default-features = false, features = ["alloc"] }
