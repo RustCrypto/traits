@@ -355,7 +355,7 @@ where
             algorithm: C::algorithm_identifier(),
             subject_public_key: public_key_bytes.as_ref(),
         }
-        .to_der()
+        .into()
     }
 }
 
