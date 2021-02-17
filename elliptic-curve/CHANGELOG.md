@@ -54,6 +54,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#532]: https://github.com/RustCrypto/traits/pull/532
 [#534]: https://github.com/RustCrypto/traits/pull/534
 
+## 0.8.5 (2021-02-17)
+### Fixed
+- Workaround for bitvecto-rs/bitvec#105 ([#553])
+
+[#553]: https://github.com/RustCrypto/traits/pull/553
+
 ## 0.8.4 (2020-12-23)
 ### Fixed
 - Rust `nightly` regression ([#432])
