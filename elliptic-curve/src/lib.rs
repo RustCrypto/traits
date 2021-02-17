@@ -16,7 +16,7 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_root_url = "https://docs.rs/elliptic-curve/0.8.4"
+    html_root_url = "https://docs.rs/elliptic-curve/0.8.5"
 )]
 
 #[cfg(feature = "alloc")]
