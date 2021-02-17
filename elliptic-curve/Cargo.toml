@@ -17,6 +17,7 @@ keywords   = ["crypto", "ecc", "elliptic", "weierstrass"]
 [dependencies]
 base64ct = { version = "0.2", optional = true, default-features = false }
 ff = { version = "0.9", optional = true, default-features = false }
+funty = { version = "=1.1.0", default-features = false }  # see https://github.com/bitvecto-rs/bitvec/issues/105
 group = { version = "0.9", optional = true, default-features = false }
 hex-literal = { version = "0.3", optional = true }
 generic-array = { version = "0.14", default-features = false }
