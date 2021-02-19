@@ -50,7 +50,7 @@ where
         private_key_info: pkcs8::PrivateKeyInfo<'_>,
     ) -> pkcs8::Result<Self> {
         if private_key_info.algorithm.oid != ALGORITHM_OID
-            || private_key_info.algorithm.parameters_oid() != Some(C::OID)
+            || private_key_info.algorithm.parameters_oid()? != C::OID
         {
             return Err(pkcs8::Error::Decode);
         }
