@@ -329,7 +329,7 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn from_spki(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> pkcs8::Result<Self> {
-        if spki.algorithm.oid != ALGORITHM_OID || spki.algorithm.parameters_oid() != Some(C::OID) {
+        if spki.algorithm.oid != ALGORITHM_OID || spki.algorithm.parameters_oid()? != C::OID {
             return Err(pkcs8::Error::Decode);
         }
 
