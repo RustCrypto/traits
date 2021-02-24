@@ -319,24 +319,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "pkcs5"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "321f456f11e455766fc424a5a1b86e6d2478a9ba40f12a06c6afc8cef33ec1d1"
-dependencies = [
- "der",
- "spki",
-]
-
-[[package]]
 name = "pkcs8"
-version = "0.5.2"
+version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbe017f30ae5cc01d2d0e24d8d3bcfdd63bc719c6cdc2b97e974fd933d8c7e15"
+checksum = "6f5c4e8bd205d0d87542f13cab77a091f5cfb221592b885dfa0b2b915031a4b4"
 dependencies = [
  "base64ct",
  "der",
- "pkcs5",
  "spki",
  "zeroize",
 ]
