@@ -93,7 +93,7 @@ use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 #[cfg(feature = "pkcs8")]
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
-    pkcs8::ObjectIdentifier::new(&[1, 2, 840, 10045, 2, 1]);
+    pkcs8::ObjectIdentifier::parse("1.2.840.10045.2.1");
 
 /// Elliptic curve.
 ///
