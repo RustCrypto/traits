@@ -320,9 +320,9 @@ dependencies = [
 
 [[package]]
 name = "pkcs8"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f5c4e8bd205d0d87542f13cab77a091f5cfb221592b885dfa0b2b915031a4b4"
+checksum = "8ecfab38c6d0f60db6a80b1ee75f1fc980193f9963c43ee2d6f0ac6698e71d96"
 dependencies = [
  "base64ct",
  "der",
