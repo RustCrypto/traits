@@ -14,9 +14,9 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms, unused_qualifications)]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_root_url = "https://docs.rs/elliptic-curve/0.9.0"
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
+    html_root_url = "https://docs.rs/elliptic-curve/0.9.4"
 )]
 
 #[cfg(feature = "alloc")]
@@ -65,7 +65,7 @@ pub use {
         public_key::PublicKey,
         scalar::{NonZeroScalar, Scalar, ScalarBits},
     },
-    ff::{self, BitView, Field},
+    ff::{self, Field},
     group::{self, Group},
 };
 
@@ -93,7 +93,7 @@ use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 #[cfg(feature = "pkcs8")]
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
-    pkcs8::ObjectIdentifier::new(&[1, 2, 840, 10045, 2, 1]);
+    pkcs8::ObjectIdentifier::parse("1.2.840.10045.2.1");
 
 /// Elliptic curve.
 ///
@@ -128,7 +128,7 @@ pub trait AlgorithmParameters: Curve {
     const OID: pkcs8::ObjectIdentifier;
 
     /// Get the [`pkcs8::AlgorithmIdentifier`] for this curve
-    fn algorithm_identifier() -> pkcs8::AlgorithmIdentifier {
+    fn algorithm_identifier() -> pkcs8::AlgorithmIdentifier<'static> {
         pkcs8::AlgorithmIdentifier {
             oid: ALGORITHM_OID,
             parameters: Some(Self::OID.into()),

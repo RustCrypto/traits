@@ -16,10 +16,12 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions-rs/toolchain@v1
       with:
-        profile: minimal
-        toolchain: 1.44.0 # Highest MSRV in repo
+        toolchain: 1.47.0 # Highest MSRV in repo
         components: clippy
+        override: true
+        profile: minimal
     - run: cargo clippy --all --all-features -- -D warnings
+
   rustfmt:
     runs-on: ubuntu-latest
     steps:
@@ -29,9 +31,10 @@ jobs:
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: stable
           components: rustfmt
+          override: true
+          profile: minimal
 
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1

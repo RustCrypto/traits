@@ -21,7 +21,7 @@ use alloc::boxed::Box;
 
 #[cfg(feature = "arithmetic")]
 use crate::{
-    ff::PrimeField, weierstrass::point::Decompress, AffinePoint, ProjectiveArithmetic, Scalar,
+    ff::PrimeField, weierstrass::DecompressPoint, AffinePoint, ProjectiveArithmetic, Scalar,
 };
 
 #[cfg(all(feature = "arithmetic", feature = "zeroize"))]
@@ -173,7 +173,7 @@ where
     pub fn to_untagged_bytes(&self) -> Option<GenericArray<u8, UntaggedPointSize<C>>>
     where
         C: Curve + ProjectiveArithmetic,
-        AffinePoint<C>: ConditionallySelectable + Default + Decompress<C> + ToEncodedPoint<C>,
+        AffinePoint<C>: ConditionallySelectable + Default + DecompressPoint<C> + ToEncodedPoint<C>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     {
         self.decompress().map(|point| {
@@ -208,7 +208,7 @@ where
     where
         C: Curve + ProjectiveArithmetic,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
-        AffinePoint<C>: ConditionallySelectable + Default + Decompress<C> + ToEncodedPoint<C>,
+        AffinePoint<C>: ConditionallySelectable + Default + DecompressPoint<C> + ToEncodedPoint<C>,
     {
         match self.coordinates() {
             Coordinates::Identity => None,

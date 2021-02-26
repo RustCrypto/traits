@@ -6,7 +6,7 @@ use crate::{
     sec1::{
         EncodedPoint, FromEncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize,
     },
-    weierstrass::{point, Curve},
+    weierstrass::{Curve, PointCompression},
     AffinePoint, Error, FieldBytes, ProjectiveArithmetic, ProjectivePoint, Result, Scalar,
 };
 use core::{
@@ -223,7 +223,7 @@ where
 
 impl<C> From<PublicKey<C>> for EncodedPoint<C>
 where
-    C: Curve + ProjectiveArithmetic + point::Compression,
+    C: Curve + ProjectiveArithmetic + PointCompression,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
@@ -237,7 +237,7 @@ where
 
 impl<C> From<&PublicKey<C>> for EncodedPoint<C>
 where
-    C: Curve + ProjectiveArithmetic + point::Compression,
+    C: Curve + ProjectiveArithmetic + PointCompression,
     Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
@@ -329,7 +329,7 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn from_spki(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> pkcs8::Result<Self> {
-        if spki.algorithm.oid != ALGORITHM_OID || spki.algorithm.parameters_oid() != Some(C::OID) {
+        if spki.algorithm.oid != ALGORITHM_OID || spki.algorithm.parameters_oid()? != C::OID {
             return Err(pkcs8::Error::Decode);
         }
 
@@ -355,7 +355,7 @@ where
             algorithm: C::algorithm_identifier(),
             subject_public_key: public_key_bytes.as_ref(),
         }
-        .to_der()
+        .into()
     }
 }
 

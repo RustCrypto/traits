@@ -4,7 +4,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.9.0 (2021-02-10)
+## 0.9.4 (2021-02-18)
+### Fixed
+- Breakage related to the `pkcs8` v0.5.1 crate ([#556]) 
+
+[#556]: https://github.com/RustCrypto/traits/pull/556
+
+## 0.9.3 (2021-02-16) [YANKED]
+### Changed
+- Bump `pkcs8` dependency to v0.5.0 ([#549])
+
+### Fixed
+- Workaround for bitvecto-rs/bitvec#105 ([#550])
+
+[#549]: https://github.com/RustCrypto/traits/pull/549
+[#550]: https://github.com/RustCrypto/traits/pull/550
+
+## 0.9.2 (2021-02-12) [YANKED]
+### Changed
+- Flatten `weierstrass` module ([#542])
+
+[#542]: https://github.com/RustCrypto/traits/pull/542
+
+## 0.9.1 (2021-02-11) [YANKED]
+### Removed
+- `BitView` re-export ([#540])
+
+[#540]: https://github.com/RustCrypto/traits/pull/540
+
+## 0.9.0 (2021-02-10) [YANKED]
 ### Added
 - JWK support ([#483])
 - `sec1::ValidatePublicKey` trait ([#485])
@@ -31,6 +59,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#432]: https://github.com/RustCrypto/traits/pull/432
 [#532]: https://github.com/RustCrypto/traits/pull/532
 [#534]: https://github.com/RustCrypto/traits/pull/534
+
+## 0.8.5 (2021-02-17)
+### Fixed
+- Workaround for bitvecto-rs/bitvec#105 ([#553])
+
+[#553]: https://github.com/RustCrypto/traits/pull/553
 
 ## 0.8.4 (2020-12-23)
 ### Fixed
