@@ -2,6 +2,7 @@
 members = [
     "aead",
     "cipher",
+    "crypto-common",
     "crypto-mac",
     "crypto",
     "digest",
@@ -11,3 +12,6 @@ members = [
     "signature/async",
     "universal-hash",
 ]
+
+[patch.crates-io]
+block-buffer = { git = "https://github.com/RustCrypto/utils", branch = "master" }

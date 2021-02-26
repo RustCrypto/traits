@@ -1,16 +1,16 @@
-name: crypto-mac
+name: crypto-common
 
 on:
   pull_request:
-    paths:
-      - "crypto-mac/**"
-      - "Cargo.*"
+      paths:
+        - "crypto-common/**"
+        - "Cargo.*"
   push:
     branches: master
 
 defaults:
   run:
-    working-directory: crypto-mac
+    working-directory: crypto-common
 
 env:
   CARGO_INCREMENTAL: 0
@@ -35,9 +35,7 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features rand_core
-
+      - run: cargo build --no-default-features --release --target ${{ matrix.target }}
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -54,6 +52,6 @@ jobs:
     - run: cargo check --all-features
     - run: cargo test
     - run: cargo test --features core-api
-    - run: cargo test --features dev
+    - run: cargo test --features rand_core
     - run: cargo test --features std
     - run: cargo test --all-features

@@ -2,6 +2,8 @@
 
 use core::fmt;
 
+pub use crypto_common::InvalidLength;
+
 /// The error type returned when stream cipher has reached the end of a keystream.
 #[derive(Copy, Clone, Debug)]
 pub struct LoopError;
@@ -14,20 +16,6 @@ impl fmt::Display for LoopError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for LoopError {}
-
-/// The error type returned when key and/or nonce used in stream cipher
-/// initialization had an invalid length.
-#[derive(Copy, Clone, Debug)]
-pub struct InvalidLength;
-
-impl fmt::Display for InvalidLength {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        f.write_str("Invalid Length")
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for InvalidLength {}
 
 /// The error type returned when a cipher position can not be represented
 /// by the requested type.

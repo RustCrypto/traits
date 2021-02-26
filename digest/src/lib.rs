@@ -54,62 +54,15 @@ mod digest;
 mod dyn_digest;
 
 pub use crate::digest::{Digest, Output};
+use core::fmt;
 #[cfg(feature = "core-api")]
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
-pub use block_buffer;
-use core::fmt;
+pub use crypto_common::block_buffer;
 #[cfg(feature = "alloc")]
 pub use dyn_digest::{DynDigest, InvalidBufferLength};
-use generic_array::ArrayLength;
 pub use generic_array::{self, typenum::consts, GenericArray};
 
-/// Trait for updating hasher state with input data.
-pub trait Update {
-    /// Update the hasher state using the provided data.
-    fn update(&mut self, data: &[u8]);
-}
-
-/// Trait for resetting hasher instances
-pub trait Reset {
-    /// Reset hasher instance to its initial state.
-    fn reset(&mut self);
-}
-
-/// Trait for returning digest result with the fixed size
-pub trait FixedOutput: Sized + Update + Default + Reset {
-    /// Output size for fixed output digest
-    type OutputSize: ArrayLength<u8>;
-
-    /// Write result into provided array and consume the hasher instance.
-    fn finalize_into(self, out: &mut GenericArray<u8, Self::OutputSize>);
-
-    /// Write result into provided array and reset the hasher instance.
-    fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>);
-
-    /// Retrieve result and consume the hasher instance.
-    #[inline]
-    fn finalize_fixed(self) -> GenericArray<u8, Self::OutputSize> {
-        let mut out = Default::default();
-        self.finalize_into(&mut out);
-        out
-    }
-
-    /// Retrieve result and reset the hasher instance.
-    #[inline]
-    fn finalize_fixed_reset(&mut self) -> GenericArray<u8, Self::OutputSize> {
-        let mut out = Default::default();
-        self.finalize_into_reset(&mut out);
-        out
-    }
-
-    /// Compute hash of `data`.
-    #[inline]
-    fn digest_fixed(data: impl AsRef<[u8]>) -> GenericArray<u8, Self::OutputSize> {
-        let mut hasher = Self::default();
-        hasher.update(data.as_ref());
-        hasher.finalize_fixed()
-    }
-}
+pub use crypto_common::{FixedOutput, FixedOutputReset, Reset, Update};
 
 /// Trait for describing readers which are used to extract extendable output
 /// from XOF (extendable-output function) result.

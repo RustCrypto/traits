@@ -1,5 +1,4 @@
-use super::{AlgorithmName, FixedOutputCore, UpdateCore, VariableOutputCore};
-use block_buffer::BlockBuffer;
+use super::{AlgorithmName, FixedOutputCore, Reset, UpdateCore, VariableOutputCore};
 use core::{fmt, marker::PhantomData};
 use generic_array::{
     typenum::{IsLessOrEqual, LeEq, NonZero},
@@ -26,6 +25,7 @@ where
     LeEq<OutSize, T::MaxOutputSize>: NonZero,
 {
     type BlockSize = T::BlockSize;
+    type Buffer = T::Buffer;
 
     #[inline]
     fn update_blocks(&mut self, blocks: &[GenericArray<u8, Self::BlockSize>]) {
@@ -44,7 +44,7 @@ where
     #[inline]
     fn finalize_fixed_core(
         &mut self,
-        buffer: &mut BlockBuffer<Self::BlockSize>,
+        buffer: &mut Self::Buffer,
         out: &mut GenericArray<u8, Self::OutputSize>,
     ) {
         self.inner
@@ -64,6 +64,18 @@ where
             inner: T::new(OutSize::USIZE).unwrap(),
             _out: Default::default(),
         }
+    }
+}
+
+impl<T, OutSize> Reset for CtVariableCoreWrapper<T, OutSize>
+where
+    T: VariableOutputCore,
+    OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
+    LeEq<OutSize, T::MaxOutputSize>: NonZero,
+{
+    #[inline]
+    fn reset(&mut self) {
+        *self = Default::default();
     }
 }
 

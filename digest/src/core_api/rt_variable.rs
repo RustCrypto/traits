@@ -1,7 +1,7 @@
 use super::{AlgorithmName, UpdateCore, VariableOutputCore};
 use crate::{InvalidOutputSize, Reset, Update, VariableOutput};
-use block_buffer::BlockBuffer;
 use core::fmt;
+use crypto_common::block_buffer::DigestBuffer;
 use generic_array::typenum::Unsigned;
 
 /// Wrapper around [`VariableOutputCore`] which selects output size
@@ -12,7 +12,7 @@ where
     T: VariableOutputCore + UpdateCore,
 {
     core: T,
-    buffer: BlockBuffer<T::BlockSize>,
+    buffer: T::Buffer,
     output_size: usize,
 }
 

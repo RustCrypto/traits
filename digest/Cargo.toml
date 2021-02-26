@@ -13,15 +13,16 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = "0.14"
+crypto-common = { version = "0.1", path = "../crypto-common/" }
+
 blobby = { version = "0.3", optional = true }
-block-buffer = { version = "0.10.0-pre.1", optional = true }
 
 [features]
 alloc = []
-std = ["alloc"]
+std = ["alloc", "crypto-common/std"]
 dev = ["blobby"]
-core-api = ["block-buffer"]
-block-padding = ["block-buffer/block-padding"]
+core-api = ["crypto-common/core-api"]
+block-padding = ["crypto-common/block-padding"]
 
 [package.metadata.docs.rs]
 all-features = true
