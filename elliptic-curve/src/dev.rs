@@ -125,6 +125,25 @@ impl Field for Scalar {
     }
 }
 
+#[cfg(target_pointer_width = "64")]
+fn pack_bits(native: U256) -> ScalarBits<MockCurve> {
+    native.into()
+}
+
+#[cfg(target_pointer_width = "32")]
+fn pack_bits(native: U256) -> ScalarBits<MockCurve> {
+    [
+        (native[0] & 0xffff_ffff) as u32,
+        (native[0] >> 32) as u32,
+        (native[1] & 0xffff_ffff) as u32,
+        (native[1] >> 32) as u32,
+        (native[2] & 0xffff_ffff) as u32,
+        (native[2] >> 32) as u32,
+        (native[3] & 0xffff_ffff) as u32,
+        (native[3] >> 32) as u32,
+    ].into()
+}
+
 impl PrimeField for Scalar {
     type Repr = FieldBytes;
 
@@ -171,7 +190,7 @@ impl PrimeField for Scalar {
     }
 
     fn to_le_bits(&self) -> ScalarBits<MockCurve> {
-        unimplemented!();
+        pack_bits(self.0)
     }
 
     fn is_odd(&self) -> bool {
@@ -179,7 +198,7 @@ impl PrimeField for Scalar {
     }
 
     fn char_le_bits() -> ScalarBits<MockCurve> {
-        unimplemented!();
+        pack_bits(MODULUS)
     }
 
     fn multiplicative_generator() -> Self {
