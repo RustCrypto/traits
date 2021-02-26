@@ -14,4 +14,4 @@ members = [
 ]
 
 [patch.crates-io]
-block-buffer = { git = "https://github.com/RustCrypto/utils", branch = "lazy" }
+block-buffer = { git = "https://github.com/RustCrypto/utils", branch = "master" }
