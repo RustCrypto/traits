@@ -99,7 +99,7 @@ impl Field for Scalar {
     }
 
     fn one() -> Self {
-        unimplemented!();
+        Self([1, 0, 0, 0])
     }
 
     fn is_zero(&self) -> bool {
