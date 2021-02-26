@@ -141,7 +141,8 @@ fn pack_bits(native: U256) -> ScalarBits<MockCurve> {
         (native[2] >> 32) as u32,
         (native[3] & 0xffff_ffff) as u32,
         (native[3] >> 32) as u32,
-    ].into()
+    ]
+    .into()
 }
 
 impl PrimeField for Scalar {
