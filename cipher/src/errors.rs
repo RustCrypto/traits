@@ -2,6 +2,19 @@
 
 use core::fmt;
 
+/// Buffer errors.
+#[derive(Copy, Clone, Debug)]
+pub struct BufferError;
+
+impl fmt::Display for BufferError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("Buffer Error")
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for BufferError {}
+
 /// The error type returned when stream cipher has reached the end of a keystream.
 #[derive(Copy, Clone, Debug)]
 pub struct LoopError;

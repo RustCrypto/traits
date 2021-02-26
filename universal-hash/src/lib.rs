@@ -106,6 +106,15 @@ pub trait UniversalHash: Clone {
     }
 }
 
+/// Update a universal hash using a specific buffer type.
+///
+/// This gives finer-grained control over the buffer type, which is useful
+/// in cases which have special requirements, e.g. alignment, SIMD.
+pub trait BufferUpdate<B> {
+    /// Encrypt the provided buffer type in-place
+    fn encrypt_buffer(&self, buffer: &mut B) -> Result<(), Error>;
+}
+
 /// Outputs of universal hash functions which are a thin wrapper around a
 /// byte array. Provides a safe [`Eq`] implementation that runs in constant time,
 /// which is useful for implementing Message Authentication Codes (MACs) based
