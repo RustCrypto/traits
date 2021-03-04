@@ -4,8 +4,10 @@ use generic_array::{ArrayLength, GenericArray};
 
 /// The `Digest` trait specifies an interface common for digest functions.
 ///
-/// It's a convenience wrapper around [`Update`], [`FixedOutput`], [`Reset`],
-/// [`Clone`], and [`Default`] traits. It also provides additional convenience methods.
+/// It's a convenience wrapper around [`Update`], [`FixedOutput`],
+/// [`Reset`][`crate::Reset`], [`Clone`], and [`Default`] traits.
+///
+/// It also provides additional convenience methods.
 pub trait Digest {
     /// Output size for `Digest`
     type OutputSize: ArrayLength<u8>;

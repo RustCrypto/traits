@@ -1,12 +1,12 @@
-use alloc::boxed::Box;
-use core::fmt;
-
 use super::{FixedOutput, FixedOutputReset, Reset, Update};
+use core::fmt;
 use generic_array::{typenum::Unsigned, GenericArray};
+
+#[cfg(feature = "alloc")]
+use alloc::boxed::Box;
 
 /// The `DynDigest` trait is a modification of `Digest` trait suitable
 /// for trait objects.
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub trait DynDigest {
     /// Digest input data.
     ///
@@ -14,10 +14,23 @@ pub trait DynDigest {
     fn update(&mut self, data: &[u8]);
 
     /// Retrieve result and reset hasher instance
-    fn finalize_reset(&mut self) -> Box<[u8]>;
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    fn finalize_reset(&mut self) -> Box<[u8]> {
+        let mut result = vec![0; self.output_size()];
+        self.finalize_into_reset(&mut result).unwrap();
+        result.into_boxed_slice()
+    }
 
     /// Retrieve result and consume boxed hasher instance
-    fn finalize(self: Box<Self>) -> Box<[u8]>;
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    #[allow(clippy::boxed_local)]
+    fn finalize(mut self: Box<Self>) -> Box<[u8]> {
+        let mut result = vec![0; self.output_size()];
+        self.finalize_into_reset(&mut result).unwrap();
+        result.into_boxed_slice()
+    }
 
     /// Write result into provided array and consume the hasher instance.
     ///
@@ -36,6 +49,8 @@ pub trait DynDigest {
     fn output_size(&self) -> usize;
 
     /// Clone hasher state into a boxed trait object
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn box_clone(&self) -> Box<dyn DynDigest>;
 }
 
@@ -44,10 +59,12 @@ impl<D: Update + FixedOutputReset + Clone + 'static> DynDigest for D {
         Update::update(self, data);
     }
 
+    #[cfg(feature = "alloc")]
     fn finalize_reset(&mut self) -> Box<[u8]> {
         self.finalize_fixed_reset().to_vec().into_boxed_slice()
     }
 
+    #[cfg(feature = "alloc")]
     fn finalize(self: Box<Self>) -> Box<[u8]> {
         self.finalize_fixed().to_vec().into_boxed_slice()
     }
@@ -78,11 +95,14 @@ impl<D: Update + FixedOutputReset + Clone + 'static> DynDigest for D {
         <Self as FixedOutput>::OutputSize::to_usize()
     }
 
+    #[cfg(feature = "alloc")]
     fn box_clone(&self) -> Box<dyn DynDigest> {
         Box::new(self.clone())
     }
 }
 
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 impl Clone for Box<dyn DynDigest> {
     fn clone(&self) -> Self {
         self.box_clone()
