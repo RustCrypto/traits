@@ -25,7 +25,8 @@ pub mod dev;
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub mod core_api;
 
-pub use crypto_common::{FixedOutput, FixedOutputReset, FromKey, InvalidLength, Reset, Update};
+pub use cipher::{errors::InvalidLength, FromKey};
+pub use crypto_common::{FixedOutput, FixedOutputReset, Reset, Update};
 pub use generic_array::{self, typenum::consts};
 
 use core::fmt;

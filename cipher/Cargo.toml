@@ -15,11 +15,14 @@ categories = ["cryptography", "no-std"]
 generic-array = "0.14"
 crypto-common = { version = "0.1", path = "../crypto-common/" }
 
+block-buffer = { version = "0.10.0-pre.2", features = ["block-padding"], optional = true }
 blobby = { version = "0.3", optional = true }
 rand_core = { version = "0.6", optional = true }
 
 [features]
+default = ["mode_wrapper"]
 std = ["crypto-common/std"]
+mode_wrapper = ["block-buffer"]
 dev = ["blobby"]
 
 [package.metadata.docs.rs]

@@ -1,16 +1,18 @@
-//! Traits used to define functionality of [block ciphers][1].
+//! Traits used to define functionality of [block ciphers][1] and [modes of operation][2].
 //!
 //! # About block ciphers
 //!
 //! Block ciphers are keyed, deterministic permutations of a fixed-sized input
 //! "block" providing a reversible transformation to/from an encrypted output.
-//! They are one of the fundamental structural components of [symmetric cryptography][2].
+//! They are one of the fundamental structural components of [symmetric cryptography][3].
 //!
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher
-//! [2]: https://en.wikipedia.org/wiki/Symmetric-key_algorithm
+//! [2]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
+//! [3]: https://en.wikipedia.org/wiki/Symmetric-key_algorithm
 
+use crate::errors::InvalidLength;
+use crate::{FromKey, FromKeyNonce};
 use core::convert::TryInto;
-use crypto_common::FromKey;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
 /// Key for an algorithm that implements [`FromKey`].
@@ -177,80 +179,59 @@ impl<Alg: BlockDecrypt> BlockDecrypt for &Alg {
     }
 }
 
+/// Trait for types which can be initialized from a block cipher.
+pub trait FromBlockCipher {
+    /// Block cipher used for initialization.
+    type BlockCipher: BlockCipher;
+
+    /// Initialize instance from block cipher.
+    fn from_block_cipher(cipher: Self::BlockCipher) -> Self;
+}
+
 /// Trait for types which can be initialized from a block cipher and nonce.
 pub trait FromBlockCipherNonce {
-    /// Block cipher
+    /// Block cipher used for initialization.
     type BlockCipher: BlockCipher;
-    /// Nonce size in bytes
+    /// Nonce size in bytes.
     type NonceSize: ArrayLength<u8>;
 
-    /// Instantiate a stream cipher from a block cipher
+    /// Initialize instance from block cipher and nonce.
     fn from_block_cipher_nonce(
         cipher: Self::BlockCipher,
         nonce: &GenericArray<u8, Self::NonceSize>,
     ) -> Self;
 }
 
-/// Implement [`FromKeyNonce`][crate::FromKeyNonce] for a type which implements [`FromBlockCipherNonce`].
-#[macro_export]
-macro_rules! impl_from_key_nonce {
-    ($name:ty) => {
-        impl<C: BlockCipher> crate::FromKeyNonce for $name
-        where
-            Self: FromBlockCipherNonce,
-            <Self as FromBlockCipherNonce>::BlockCipher: FromKey,
-        {
-            type KeySize = <<Self as FromBlockCipherNonce>::BlockCipher as FromKey>::KeySize;
-            type NonceSize = <Self as FromBlockCipherNonce>::NonceSize;
+impl<T> FromKeyNonce for T
+where
+    T: FromBlockCipherNonce,
+    T::BlockCipher: FromKey,
+{
+    type KeySize = <T::BlockCipher as FromKey>::KeySize;
+    type NonceSize = T::NonceSize;
 
-            fn new(
-                key: &GenericArray<u8, Self::KeySize>,
-                nonce: &GenericArray<u8, Self::NonceSize>,
-            ) -> Self {
-                let cipher = <Self as FromBlockCipherNonce>::BlockCipher::new(key);
-                Self::from_block_cipher_nonce(cipher, nonce)
-            }
-
-            fn new_from_slices(
-                key: &[u8],
-                nonce: &[u8],
-            ) -> Result<Self, crate::errors::InvalidLength> {
-                use crate::errors::InvalidLength;
-                if nonce.len() != Self::NonceSize::USIZE {
-                    Err(InvalidLength)
-                } else {
-                    <Self as FromBlockCipherNonce>::BlockCipher::new_from_slice(key)
-                        .map_err(|_| InvalidLength)
-                        .map(|cipher| {
-                            let nonce = GenericArray::from_slice(nonce);
-                            Self::from_block_cipher_nonce(cipher, nonce)
-                        })
-                }
-            }
-        }
-    };
+    fn new(
+        key: &GenericArray<u8, Self::KeySize>,
+        nonce: &GenericArray<u8, Self::NonceSize>,
+    ) -> Self {
+        Self::from_block_cipher_nonce(T::BlockCipher::new(key), nonce)
+    }
 }
 
-/// Implement [`FromKey`] for a type which implements [`From<C>`][From],
-/// where `C` implements [`FromKey`].
-#[macro_export]
-macro_rules! impl_from_key {
-    ($name:ty) => {
-        impl<C: FromKey> cipher::FromKey for $name
-        where
-            Self: From<C>,
-        {
-            type KeySize = C::KeySize;
+impl<T> FromKey for T
+where
+    T: FromBlockCipher,
+    T::BlockCipher: FromKey,
+{
+    type KeySize = <T::BlockCipher as FromKey>::KeySize;
 
-            fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
-                C::new(key).into()
-            }
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
+        Self::from_block_cipher(T::BlockCipher::new(key))
+    }
 
-            fn new_from_slice(key: &[u8]) -> Result<Self, cipher::errors::InvalidLength> {
-                C::new_from_slice(key)
-                    .map_err(|_| cipher::errors::InvalidLength)
-                    .map(|cipher| cipher.into())
-            }
-        }
-    };
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
+        T::BlockCipher::new_from_slice(key)
+            .map_err(|_| InvalidLength)
+            .map(Self::from_block_cipher)
+    }
 }

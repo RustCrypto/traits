@@ -13,7 +13,6 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = "0.14"
-rand_core = { version = "0.6", optional = true }
 block-buffer = { version = "0.10.0-pre.2", optional = true }
 
 [features]
