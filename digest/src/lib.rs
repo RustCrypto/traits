@@ -50,7 +50,6 @@ pub mod dev;
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub mod core_api;
 mod digest;
-#[cfg(feature = "alloc")]
 mod dyn_digest;
 
 pub use crate::digest::{Digest, Output};
@@ -58,7 +57,6 @@ use core::fmt;
 #[cfg(feature = "core-api")]
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub use crypto_common::block_buffer;
-#[cfg(feature = "alloc")]
 pub use dyn_digest::{DynDigest, InvalidBufferLength};
 pub use generic_array::{self, typenum::consts, GenericArray};
 
