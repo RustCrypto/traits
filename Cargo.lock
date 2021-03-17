@@ -199,7 +199,7 @@ dependencies = [
 name = "elliptic-curve"
 version = "0.9.4"
 dependencies = [
- "base64ct 0.2.1",
+ "base64ct 1.0.0",
  "ff",
  "funty",
  "generic-array 0.14.4",
