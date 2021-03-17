@@ -4,7 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.9.4 (2021-02-18)
+## 0.9.5 (2021-03-17)
+### Added
+- Implement `{to,char}_le_bits` for `MockCurve` ([#565])
+- Implement `one()` for mock `Scalar` ([#566])
+
+### Changed
+- Use string-based OID constants ([#561])
+- Bump `base64ct` dependency to v1.0 ([#581])
+
+[#561]: https://github.com/RustCrypto/traits/pull/561
+[#565]: https://github.com/RustCrypto/traits/pull/565
+[#566]: https://github.com/RustCrypto/traits/pull/566
+[#581]: https://github.com/RustCrypto/traits/pull/581
+
+## 0.9.4 (2021-02-18) [YANKED]
 ### Fixed
 - Breakage related to the `pkcs8` v0.5.1 crate ([#556]) 
 
