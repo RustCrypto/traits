@@ -118,9 +118,9 @@ dependencies = [
 
 [[package]]
 name = "const-oid"
-version = "0.4.3"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb27bc55bac783b7cfd5eafba8a3e94ff6d420fc4e04970a207980683145af83"
+checksum = "75b8aaf972a93eb4ce235ecea7825c68756361f7657407f4826cc2335ae9766d"
 
 [[package]]
 name = "cpuid-bool"
@@ -164,9 +164,9 @@ dependencies = [
 
 [[package]]
 name = "der"
-version = "0.2.8"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff87fc4cc42439753d09185278bb1fdee4710b5b295159cdc0789563528e776f"
+checksum = "7516ff8d4f25ddd138caba1b7836ceb3ddd07660213b50e83ae3165320257ba2"
 dependencies = [
  "const-oid",
 ]
@@ -331,9 +331,9 @@ dependencies = [
 
 [[package]]
 name = "pkcs8"
-version = "0.5.5"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9c455331e3393451bdf8d49f022442a6f45870b0442820548e921de155e18a7"
+checksum = "b813f58dc6e5d1820868a3c3df3a7ae7852aa2d3d18e98f0d6b20ddd01fe25d7"
 dependencies = [
  "base64ct",
  "der",
@@ -436,9 +436,9 @@ dependencies = [
 
 [[package]]
 name = "spki"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8b07e839e486ce2c6120ace6660ed71e4891eb8c88d52eecdf141e1b70effea"
+checksum = "9dae7e047abc519c96350e9484a96c6bf1492348af912fd3446dd2dc323f6268"
 dependencies = [
  "der",
 ]
