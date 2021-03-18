@@ -126,7 +126,7 @@ where
         let der_message_fields: &[&dyn Encodable] =
             &[&VERSION, &secret_key_field, &public_key_field];
 
-        let encoded_len = der::sequence::encoded_len(der_message_fields)
+        let encoded_len = der::message::encoded_len(der_message_fields)
             .expect(ENCODING_ERROR_MSG)
             .to_usize();
 
@@ -136,7 +136,7 @@ where
 
         let mut encoder = der::Encoder::new(&mut der_message);
         encoder
-            .sequence(der_message_fields)
+            .message(der_message_fields)
             .expect(ENCODING_ERROR_MSG);
 
         encoder.finish().expect(ENCODING_ERROR_MSG);
