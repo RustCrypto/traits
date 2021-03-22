@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.9.5 (2021-03-17)
+## 0.9.6 (2021-03-22)
+### Changed
+- Bump `pkcs8` dependency to v0.6 ([#585])
+
+[#585]: https://github.com/RustCrypto/traits/pull/585
+
+## 0.9.5 (2021-03-17) [YANKED]
 ### Added
 - Implement `{to,char}_le_bits` for `MockCurve` ([#565])
 - Implement `one()` for mock `Scalar` ([#566])
