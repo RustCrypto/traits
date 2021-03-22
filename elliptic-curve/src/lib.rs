@@ -93,7 +93,7 @@ use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 #[cfg(feature = "pkcs8")]
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
-    pkcs8::ObjectIdentifier::parse("1.2.840.10045.2.1");
+    pkcs8::ObjectIdentifier::new("1.2.840.10045.2.1");
 
 /// Elliptic curve.
 ///
@@ -131,7 +131,7 @@ pub trait AlgorithmParameters: Curve {
     fn algorithm_identifier() -> pkcs8::AlgorithmIdentifier<'static> {
         pkcs8::AlgorithmIdentifier {
             oid: ALGORITHM_OID,
-            parameters: Some(Self::OID.into()),
+            parameters: Some((&Self::OID).into()),
         }
     }
 }

@@ -5,7 +5,7 @@ use crate::{
     sec1::{self, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
     weierstrass, AlgorithmParameters, FieldBytes, Result, ALGORITHM_OID,
 };
-use core::ops::Add;
+use core::{convert::TryInto, ops::Add};
 use generic_array::{typenum::U1, ArrayLength};
 use pkcs8::{der, FromPrivateKey};
 use zeroize::Zeroize;
@@ -126,9 +126,9 @@ where
         let der_message_fields: &[&dyn Encodable] =
             &[&VERSION, &secret_key_field, &public_key_field];
 
-        let encoded_len = der::sequence::encoded_len(der_message_fields)
-            .expect(ENCODING_ERROR_MSG)
-            .to_usize();
+        let encoded_len = der::message::encoded_len(der_message_fields)
+            .and_then(TryInto::try_into)
+            .expect(ENCODING_ERROR_MSG);
 
         let mut der_message = Zeroizing::new(Vec::new());
         der_message.reserve(encoded_len);
@@ -136,7 +136,7 @@ where
 
         let mut encoder = der::Encoder::new(&mut der_message);
         encoder
-            .sequence(der_message_fields)
+            .message(der_message_fields)
             .expect(ENCODING_ERROR_MSG);
 
         encoder.finish().expect(ENCODING_ERROR_MSG);

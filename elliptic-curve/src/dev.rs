@@ -49,7 +49,7 @@ impl ProjectiveArithmetic for MockCurve {
 
 impl AlgorithmParameters for MockCurve {
     /// OID for NIST P-256
-    const OID: pkcs8::ObjectIdentifier = pkcs8::ObjectIdentifier::parse("1.2.840.10045.3.1.7");
+    const OID: pkcs8::ObjectIdentifier = pkcs8::ObjectIdentifier::new("1.2.840.10045.3.1.7");
 }
 
 #[cfg(feature = "jwk")]
