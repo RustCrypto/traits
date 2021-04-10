@@ -18,11 +18,27 @@ use generic_array::{ArrayLength, GenericArray};
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub use block_buffer;
 
+mod init;
+pub use init::{KeyIvInit, KeyInit, InnerInit, InnerIvInit};
+
 #[cfg(feature = "core-api")]
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub mod core_api;
 
-/// Trait for types which consume data.
+/// Types which process data in blocks.
+pub trait BlockProcessing {
+    /// Size of the block in bytes.
+    type BlockSize: ArrayLength<u8> + 'static;
+}
+
+/// Block on which a [`BlockProcessing`] operates.
+pub type Block<B> = GenericArray<u8, <B as BlockProcessing>::BlockSize>;
+
+impl<Alg: BlockProcessing> BlockProcessing for &Alg {
+    type BlockSize = Alg::BlockSize;
+}
+
+/// Types which consume data.
 pub trait Update {
     /// Update state using the provided data.
     fn update(&mut self, data: &[u8]);

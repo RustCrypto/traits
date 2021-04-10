@@ -5,6 +5,43 @@
 
 use crate::errors::{LoopError, OverflowError};
 use core::convert::{TryFrom, TryInto};
+use generic_array::typenum::U1;
+use crate::inout::{InOutBuf, InResOutBuf};
+use crypto_common::{BlockProcessing, Block};
+
+/// Synchronous stream ciphers.
+pub trait StreamCipherCore: BlockProcessing {
+    /// Generate next keystream block.
+    fn gen_keystream_block(&mut self) -> Result<Block<Self>, LoopError>;
+
+    /// Generate keystream blocks in parallel for provided data blocks.
+    fn gen_keystream_blocks(
+        &mut self,
+        mut blocks: InOutBuf<'_, '_, Block<Self>>,
+        proc: impl FnMut(InResOutBuf<'_, '_, '_, Block<Self>>),
+    ) -> Result<(), LoopError> {
+        blocks.try_chunks::<U1, LoopError, _, _, _, _>(
+            self,
+            |state, _, res| state.gen_keystream_block().map(|b| res[0] = b),
+            |state, _, res| state.gen_keystream_block().map(|b| res[0] = b),
+            proc,
+        )
+    }
+}
+
+/// Counter-based synchronous stream ciphers.
+///
+/// Such ciphers allow random access to an underlying keystream and can return
+/// current position in it.
+pub trait CounterStreamCipherCore: StreamCipherCore {
+    type Counter;
+
+    /// Get current block position.
+    fn get_block_pos(&self) -> Self::Counter;
+
+    /// Set current block position.
+    fn set_block_pos(&mut self, pos: Self::Counter);
+}
 
 /// Synchronous stream cipher core trait.
 pub trait StreamCipher {

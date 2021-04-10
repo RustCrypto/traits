@@ -1,20 +1,18 @@
 //! Low-level core API traits.
-use super::{FixedOutput, FixedOutputReset, Reset, Update};
+use super::{FixedOutput, FixedOutputReset, Reset, Update, BlockProcessing, Block};
 use block_buffer::DigestBuffer;
 use core::fmt;
 use generic_array::{ArrayLength, GenericArray};
 
-/// Trait for types which consume data in blocks.
+/// Types which consume data in blocks.
 #[cfg(feature = "core-api")]
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
-pub trait UpdateCore {
-    /// Block size in bytes.
-    type BlockSize: ArrayLength<u8>;
+pub trait UpdateCore: BlockProcessing {
     /// Block buffer type over which value operates.
     type Buffer: DigestBuffer<Self::BlockSize>;
 
     /// Update state using the provided data blocks.
-    fn update_blocks(&mut self, blocks: &[GenericArray<u8, Self::BlockSize>]);
+    fn update_blocks(&mut self, blocks: &[Block<Self>]);
 }
 
 /// Core trait for hash functions with fixed output size.

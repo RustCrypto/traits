@@ -20,9 +20,9 @@ blobby = { version = "0.3", optional = true }
 rand_core = { version = "0.6", optional = true }
 
 [features]
-default = ["mode_wrapper"]
+#default = ["mode_wrapper"]
 std = ["crypto-common/std"]
-mode_wrapper = ["block-buffer"]
+wrappers = ["block-buffer"]
 dev = ["blobby"]
 
 [package.metadata.docs.rs]
