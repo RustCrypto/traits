@@ -5,8 +5,9 @@
 //! higher-level traits.
 use crate::InvalidOutputSize;
 use crate::{ExtendableOutput, Reset};
-use generic_array::{ArrayLength, GenericArray};
+use generic_array::ArrayLength;
 
+pub use crypto_common::{BlockProcessing, Block};
 pub use crypto_common::core_api::{AlgorithmName, CoreWrapper, FixedOutputCore, UpdateCore};
 
 mod ct_variable;
@@ -28,12 +29,9 @@ pub trait ExtendableOutputCore: UpdateCore {
 }
 
 /// Core reader trait for extendable-output function (XOF) result.
-pub trait XofReaderCore {
-    /// Block size in bytes.
-    type BlockSize: ArrayLength<u8>;
-
+pub trait XofReaderCore: BlockProcessing {
     /// Read next XOF block.
-    fn read_block(&mut self) -> GenericArray<u8, Self::BlockSize>;
+    fn read_block(&mut self) -> Block<Self>;
 }
 
 /// Core trait for hash functions with variable output size.
