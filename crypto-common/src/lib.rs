@@ -20,6 +20,8 @@ pub use block_buffer;
 
 mod init;
 pub use init::{InnerInit, InnerIvInit, KeyInit, KeyIvInit};
+mod errors;
+pub use errors::InvalidLength;
 
 #[cfg(feature = "core-api")]
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]

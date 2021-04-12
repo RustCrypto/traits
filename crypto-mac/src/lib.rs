@@ -25,8 +25,7 @@ pub mod dev;
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub mod core_api;
 
-pub use cipher::{errors::InvalidLength, FromKey};
-pub use crypto_common::{FixedOutput, FixedOutputReset, Reset, Update};
+pub use crypto_common::{InvalidLength, KeyInit, FixedOutput, FixedOutputReset, Reset, Update};
 pub use generic_array::{self, typenum::consts};
 
 use core::fmt;
@@ -34,10 +33,10 @@ use generic_array::GenericArray;
 use subtle::{Choice, ConstantTimeEq};
 
 /// Key for an algorithm that implements [`FromKey`].
-pub type Key<M> = GenericArray<u8, <M as FromKey>::KeySize>;
+pub type Key<M> = GenericArray<u8, <M as KeyInit>::KeySize>;
 
 /// Convinience super-trait covering functionality of Message Authentication algorithms.
-pub trait Mac: FromKey + Update + FixedOutput {
+pub trait Mac: KeyInit + Update + FixedOutput {
     /// Obtain the result of a [`Mac`] computation as a [`Output`] and consume
     /// [`Mac`] instance.
     fn finalize(self) -> Output<Self> {
@@ -65,7 +64,7 @@ pub trait Mac: FromKey + Update + FixedOutput {
     }
 }
 
-impl<T: FromKey + Update + FixedOutput> Mac for T {}
+impl<T: KeyInit + Update + FixedOutput> Mac for T {}
 
 /// [`Output`] is a thin wrapper around bytes array which provides a safe `Eq`
 /// implementation that runs in a fixed time.
