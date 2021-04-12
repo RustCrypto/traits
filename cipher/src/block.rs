@@ -9,9 +9,9 @@
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher
 //! [2]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
 //! [3]: https://en.wikipedia.org/wiki/Symmetric-key_algorithm
-pub use crypto_common::{BlockProcessing, Block, InnerIvInit};
-use crate::inout::{InOutVal, InOutBuf, InResOutBuf};
-use generic_array::{GenericArray, typenum::U1};
+use crate::inout::{InOutBuf, InOutVal, InResOutBuf};
+pub use crypto_common::{Block, BlockProcessing, InnerIvInit};
+use generic_array::{typenum::U1, GenericArray};
 
 /// Marker trait for types which represent block ciphers.
 ///
@@ -52,7 +52,7 @@ pub trait BlockDecrypt: BlockProcessing {
     /// Decrypt the provided block.
     ///
     /// Usually `block` is either `&mut Block`, or `(&Block, &mut Block)`.
-    fn decrypt_block(&self, block: impl InOutVal<Block<Self>>,);
+    fn decrypt_block(&self, block: impl InOutVal<Block<Self>>);
 
     /// Decrypt provided blocks in parallel.
     fn decrypt_blocks(
@@ -128,9 +128,7 @@ pub trait IvState: InnerIvInit {
     fn iv_state(&self) -> GenericArray<u8, Self::IvSize>;
 }
 
-
 // =========================== BLANKET IMPLS ===========================
-
 
 impl<T: BlockCipher> BlockCipher for &T {}
 

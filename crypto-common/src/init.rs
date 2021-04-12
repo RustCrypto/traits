@@ -1,7 +1,7 @@
 //! Traits related to types initialization.
 
 use core::fmt;
-use generic_array::{ArrayLength, GenericArray, typenum::Unsigned};
+use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
 /// Types which can be initialized from a key.
 pub trait KeyInit: Sized {
@@ -31,7 +31,6 @@ pub trait KeyInit: Sized {
     }
 }
 
-
 /// Types which can be initialized from key and initialization vector/nonce.
 pub trait KeyIvInit: Sized {
     /// Key size in bytes.
@@ -41,10 +40,7 @@ pub trait KeyIvInit: Sized {
     type IvSize: ArrayLength<u8>;
 
     /// Create new value from fixed length key and nonce.
-    fn new(
-        key: &GenericArray<u8, Self::KeySize>,
-        iv: &GenericArray<u8, Self::IvSize>,
-    ) -> Self;
+    fn new(key: &GenericArray<u8, Self::KeySize>, iv: &GenericArray<u8, Self::IvSize>) -> Self;
 
     /// Create new value from variable length key and nonce.
     #[inline]
@@ -116,16 +112,10 @@ pub trait InnerIvInit: Sized {
     type IvSize: ArrayLength<u8>;
 
     /// Initialize value using `inner` and `iv` array.
-    fn inner_iv_init(
-        inner: Self::Inner,
-        iv: &GenericArray<u8, Self::IvSize>,
-    ) -> Self;
+    fn inner_iv_init(inner: Self::Inner, iv: &GenericArray<u8, Self::IvSize>) -> Self;
 
     /// Initialize value using `inner` and `iv` slice.
-    fn inner_iv_slice_init(
-        inner: Self::Inner,
-        iv: &[u8],
-    ) -> Result<Self, InvalidLength> {
+    fn inner_iv_slice_init(inner: Self::Inner, iv: &[u8]) -> Result<Self, InvalidLength> {
         if iv.len() != Self::IvSize::to_usize() {
             Err(InvalidLength)
         } else {
@@ -143,10 +133,7 @@ where
     type IvSize = T::IvSize;
 
     #[inline]
-    fn new(
-        key: &GenericArray<u8, Self::KeySize>,
-        iv: &GenericArray<u8, Self::IvSize>,
-    ) -> Self {
+    fn new(key: &GenericArray<u8, Self::KeySize>, iv: &GenericArray<u8, Self::IvSize>) -> Self {
         Self::inner_iv_init(T::Inner::new(key), iv)
     }
 
@@ -189,4 +176,3 @@ impl fmt::Display for InvalidLength {
 
 #[cfg(feature = "std")]
 impl std::error::Error for InvalidLength {}
-

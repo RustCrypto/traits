@@ -1,6 +1,7 @@
-use generic_array::{GenericArray, ArrayLength};
+use crate::errors::NotEqualError;
 use core::marker::PhantomData;
 use core::slice;
+use generic_array::{ArrayLength, GenericArray};
 
 // TODO: rename to InOutRef
 pub trait InOutVal<T> {
@@ -62,14 +63,15 @@ impl<'in_buf, 'out_buf, T> InOutBuf<'in_buf, 'out_buf, T> {
     ///
     /// Panics if `mid > len`.
     #[inline]
-    pub fn split_at(self, mid: usize) -> (
+    pub fn split_at(
+        self,
+        mid: usize,
+    ) -> (
         InOutBuf<'in_buf, 'out_buf, T>,
         InOutBuf<'in_buf, 'out_buf, T>,
     ) {
         assert!(mid <= self.len);
-        let (tail_in_ptr, tail_out_ptr) = unsafe {
-            (self.in_ptr.add(mid), self.out_ptr.add(mid))
-        };
+        let (tail_in_ptr, tail_out_ptr) = unsafe { (self.in_ptr.add(mid), self.out_ptr.add(mid)) };
         (
             InOutBuf {
                 in_ptr: self.in_ptr,
@@ -82,21 +84,22 @@ impl<'in_buf, 'out_buf, T> InOutBuf<'in_buf, 'out_buf, T> {
                 out_ptr: tail_out_ptr,
                 len: self.len() - mid,
                 _pd: PhantomData,
-            }
+            },
         )
     }
 
     /// Partitions buffer into 2 parts: body of arrays and tail.
     #[inline]
-    pub fn to_blocks<N: ArrayLength<T>>(self) -> (
+    pub fn into_blocks<N: ArrayLength<T>>(
+        self,
+    ) -> (
         InOutBuf<'in_buf, 'out_buf, GenericArray<T, N>>,
         InOutBuf<'in_buf, 'out_buf, T>,
     ) {
         let nb = self.len() / N::USIZE;
         let body_len = nb * N::USIZE;
-        let (tail_in_ptr, tail_out_ptr) = unsafe {
-            (self.in_ptr.add(body_len), self.out_ptr.add(body_len))
-        };
+        let (tail_in_ptr, tail_out_ptr) =
+            unsafe { (self.in_ptr.add(body_len), self.out_ptr.add(body_len)) };
         (
             InOutBuf {
                 in_ptr: self.in_ptr as *const GenericArray<T, N>,
@@ -109,7 +112,7 @@ impl<'in_buf, 'out_buf, T> InOutBuf<'in_buf, 'out_buf, T> {
                 out_ptr: tail_out_ptr,
                 len: self.len() - body_len,
                 _pd: PhantomData,
-            }
+            },
         )
     }
 
@@ -136,7 +139,6 @@ impl<'in_buf, 'out_buf, T> InOutBuf<'in_buf, 'out_buf, T> {
             len: 1,
             _pd: PhantomData,
         }
-
     }
 
     /// Create a new value from slices.
@@ -144,9 +146,9 @@ impl<'in_buf, 'out_buf, T> InOutBuf<'in_buf, 'out_buf, T> {
     /// Returns an error if length of slices is not equal to each other.
     // TODO: add error type
     #[inline]
-    pub fn new(in_buf: &'in_buf [T], out_buf: &'out_buf mut [T]) -> Result<Self, ()> {
+    pub fn new(in_buf: &'in_buf [T], out_buf: &'out_buf mut [T]) -> Result<Self, NotEqualError> {
         if in_buf.len() != out_buf.len() {
-            Err(())
+            Err(NotEqualError)
         } else {
             Ok(Self {
                 in_ptr: in_buf.as_ptr(),
@@ -155,7 +157,6 @@ impl<'in_buf, 'out_buf, T> InOutBuf<'in_buf, 'out_buf, T> {
                 _pd: Default::default(),
             })
         }
-
     }
 
     pub fn chunks<N, S, PC, PT, PR>(
@@ -164,8 +165,7 @@ impl<'in_buf, 'out_buf, T> InOutBuf<'in_buf, 'out_buf, T> {
         mut proc_chunk: PC,
         mut proc_tail: PT,
         proc_res: PR,
-    )
-    where
+    ) where
         T: Clone + Default,
         N: ArrayLength<T> + 'static,
         PC: FnMut(&mut S, &GenericArray<T, N>, &mut GenericArray<T, N>),
@@ -183,7 +183,8 @@ impl<'in_buf, 'out_buf, T> InOutBuf<'in_buf, 'out_buf, T> {
                 Ok(())
             },
             proc_res,
-        ).expect("closures always return Ok");
+        )
+        .expect("closures always return Ok");
     }
 
     pub fn try_chunks<N, E, S, PC, PT, PR>(
@@ -242,7 +243,7 @@ impl<'in_buf, 'out_buf, T> InOutBuf<'in_buf, 'out_buf, T> {
             // SAFETY: constructors guarantee that `in_ptr` and `out_ptr`
             // point to slices of length `len`
             unsafe {
-                f(& *(self.in_ptr.add(i)), &mut *(self.out_ptr.add(i)));
+                f(&*(self.in_ptr.add(i)), &mut *(self.out_ptr.add(i)));
             }
         }
     }
@@ -253,16 +254,18 @@ impl<'in_buf, 'out_buf, T> InOutBuf<'in_buf, 'out_buf, T> {
         self.len
     }
 
+    /// Returns `true` if `self` has a length of zero elements.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
     pub fn get_in(&self) -> &'in_buf [T] {
-        unsafe {
-            slice::from_raw_parts(self.in_ptr, self.len)
-        }
+        unsafe { slice::from_raw_parts(self.in_ptr, self.len) }
     }
 
     pub fn get_out(&mut self) -> &mut [T] {
-        unsafe {
-            slice::from_raw_parts_mut(self.out_ptr, self.len)
-        }
+        unsafe { slice::from_raw_parts_mut(self.out_ptr, self.len) }
     }
 }
 
@@ -276,24 +279,25 @@ pub struct InResOutBuf<'in_buf, 'res_buf, 'out_buf, T> {
 
 impl<'in_buf, 'res_buf, 'out_buf, T: Clone> InResOutBuf<'in_buf, 'res_buf, 'out_buf, T> {
     #[inline]
-    pub unsafe fn from_raw(
-        in_ptr: *const T,
-        res_ptr: *mut T,
-        out_ptr: *mut T,
-        len: usize,
-    ) -> Self {
-        Self { in_ptr, res_ptr, out_ptr, len, _pd: PhantomData }
+    unsafe fn from_raw(in_ptr: *const T, res_ptr: *mut T, out_ptr: *mut T, len: usize) -> Self {
+        Self {
+            in_ptr,
+            res_ptr,
+            out_ptr,
+            len,
+            _pd: PhantomData,
+        }
     }
 
     #[inline]
     pub fn from_slices(
         in_buf: &'in_buf [T],
         res_buf: &'res_buf mut [T],
-        out_buf: &'out_buf mut [T]
-    ) -> Result<Self, ()> {
+        out_buf: &'out_buf mut [T],
+    ) -> Result<Self, NotEqualError> {
         let len = in_buf.len();
         if len != res_buf.len() || len != out_buf.len() {
-            Err(())
+            Err(NotEqualError)
         } else {
             Ok(Self {
                 in_ptr: in_buf.as_ptr(),
@@ -303,7 +307,6 @@ impl<'in_buf, 'res_buf, 'out_buf, T: Clone> InResOutBuf<'in_buf, 'res_buf, 'out_
                 _pd: PhantomData,
             })
         }
-
     }
 
     #[inline]
@@ -348,8 +351,13 @@ impl<'in_buf, 'res_buf, 'out_buf, T: Clone> InResOutBuf<'in_buf, 'res_buf, 'out_
     pub fn len(&self) -> usize {
         self.len
     }
-}
 
+    /// Returns `true` if `self` has a length of zero elements.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+}
 
 #[inline(always)]
 pub fn copy_res2out<T: Copy>(mut buf: InResOutBuf<'_, '_, '_, T>) {

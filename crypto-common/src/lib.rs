@@ -19,7 +19,7 @@ use generic_array::{ArrayLength, GenericArray};
 pub use block_buffer;
 
 mod init;
-pub use init::{KeyIvInit, KeyInit, InnerInit, InnerIvInit};
+pub use init::{InnerInit, InnerIvInit, KeyInit, KeyIvInit};
 
 #[cfg(feature = "core-api")]
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]

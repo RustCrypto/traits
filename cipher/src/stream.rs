@@ -4,10 +4,10 @@
 //! for ciphers implementation.
 
 use crate::errors::{LoopError, OverflowError};
-use core::convert::{TryFrom, TryInto};
-use generic_array::typenum::U1;
 use crate::inout::{InOutBuf, InResOutBuf};
-use crypto_common::{BlockProcessing, Block};
+use core::convert::{TryFrom, TryInto};
+use crypto_common::{Block, BlockProcessing};
+use generic_array::typenum::U1;
 
 /// Synchronous stream ciphers.
 pub trait StreamCipherCore: BlockProcessing {
@@ -33,7 +33,7 @@ pub trait StreamCipherCore: BlockProcessing {
 ///
 /// Such ciphers allow random access to an underlying keystream and can return
 /// current position in it.
-pub trait CounterStreamCipherCore: StreamCipherCore {
+pub trait CtrBasedStreamCipherCore: StreamCipherCore {
     type Counter;
 
     /// Get current block position.
@@ -142,7 +142,7 @@ pub trait SeekNum:
     fn from_block_byte<T: SeekNum>(block: T, byte: u8, bs: u8) -> Result<Self, OverflowError>;
 
     /// Try to get block number and bytes position for given block size `bs`.
-    fn to_block_byte<T: SeekNum>(self, bs: u8) -> Result<(T, u8), OverflowError>;
+    fn to_block_byte<T: SeekNum>(&self, bs: u8) -> Result<(T, u8), OverflowError>;
 }
 
 macro_rules! impl_seek_num {
@@ -156,7 +156,7 @@ macro_rules! impl_seek_num {
                     Ok(pos)
                 }
 
-                fn to_block_byte<T: TryFrom<Self>>(self, bs: u8) -> Result<(T, u8), OverflowError> {
+                fn to_block_byte<T: TryFrom<Self>>(&self, bs: u8) -> Result<(T, u8), OverflowError> {
                     let bs = bs as Self;
                     let byte = self % bs;
                     let block = T::try_from(self/bs).map_err(|_| OverflowError)?;

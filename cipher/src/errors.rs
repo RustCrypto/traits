@@ -51,3 +51,16 @@ impl fmt::Display for BlockModeError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for BlockModeError {}
+
+/// The error type for methods which require slices of equal length.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct NotEqualError;
+
+impl fmt::Display for NotEqualError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("Length of slices is not equal")
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for NotEqualError {}

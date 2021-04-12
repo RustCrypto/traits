@@ -1,5 +1,5 @@
 //! Low-level core API traits.
-use super::{FixedOutput, FixedOutputReset, Reset, Update, BlockProcessing, Block};
+use super::{Block, BlockProcessing, FixedOutput, FixedOutputReset, Reset, Update};
 use block_buffer::DigestBuffer;
 use core::fmt;
 use generic_array::{ArrayLength, GenericArray};

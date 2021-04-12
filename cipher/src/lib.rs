@@ -23,20 +23,20 @@ mod block;
 #[cfg(feature = "dev")]
 mod dev;
 pub mod errors;
-mod stream;
 mod inout;
+mod stream;
 
 #[cfg(feature = "mode_wrapper")]
 mod mode_wrapper;
 
 pub use block::{
-    AsyncStreamCipher, BlockCipher, BlockEncrypt, BlockDecrypt,
-    BlockEncryptMut, BlockDecryptMut, IvState,
+    AsyncStreamCipher, BlockCipher, BlockDecrypt, BlockDecryptMut, BlockEncrypt, BlockEncryptMut,
+    IvState,
 };
-pub use inout::{InOutVal, InOutBuf, InResOutBuf};
+pub use inout::{InOutBuf, InOutVal, InResOutBuf};
 //StreamCipherCore,
-pub use crate::{stream::*, inout::*};
-pub use crypto_common::{InnerIvInit, InnerInit, KeyInit, KeyIvInit, BlockProcessing, Block};
+pub use crate::{inout::*, stream::*};
+pub use crypto_common::{Block, BlockProcessing, InnerInit, InnerIvInit, KeyInit, KeyIvInit};
 pub use generic_array::{self, typenum::consts};
 #[cfg(feature = "mode_wrapper")]
 pub use mode_wrapper::{BlockModeDecryptWrapper, BlockModeEncryptWrapper};

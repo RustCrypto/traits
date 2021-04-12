@@ -10,9 +10,7 @@ macro_rules! block_cipher_test {
         #[test]
         fn $name() {
             use cipher::generic_array::{typenum::Unsigned, GenericArray};
-            use cipher::{
-                blobby::Blob3Iterator, BlockDecrypt, BlockEncrypt, KeyInit,
-            };
+            use cipher::{blobby::Blob3Iterator, BlockDecrypt, BlockEncrypt, KeyInit};
 
             fn run_single_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
                 let state = <$cipher as KeyInit>::new_from_slice(key).unwrap();
