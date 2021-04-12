@@ -1,7 +1,7 @@
 //! Traits related to types initialization.
 
-use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 use crate::InvalidLength;
+use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
 /// Types which can be initialized from a key.
 pub trait KeyInit: Sized {

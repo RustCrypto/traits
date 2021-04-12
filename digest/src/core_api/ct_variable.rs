@@ -1,4 +1,6 @@
-use super::{AlgorithmName, FixedOutputCore, Reset, UpdateCore, VariableOutputCore, BlockProcessing, Block};
+use super::{
+    AlgorithmName, Block, BlockProcessing, FixedOutputCore, Reset, UpdateCore, VariableOutputCore,
+};
 use core::{fmt, marker::PhantomData};
 use generic_array::{
     typenum::{IsLessOrEqual, LeEq, NonZero},

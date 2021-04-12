@@ -7,8 +7,8 @@ use crate::InvalidOutputSize;
 use crate::{ExtendableOutput, Reset};
 use generic_array::ArrayLength;
 
-pub use crypto_common::{BlockProcessing, Block};
 pub use crypto_common::core_api::{AlgorithmName, CoreWrapper, FixedOutputCore, UpdateCore};
+pub use crypto_common::{Block, BlockProcessing};
 
 mod ct_variable;
 mod rt_variable;
