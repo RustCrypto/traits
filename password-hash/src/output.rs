@@ -87,7 +87,7 @@ impl Output {
         MAX_LENGTH
     }
 
-    /// Maximum length of [`Output`] when encoded as [`b64`] string: 86-bytes
+    /// Maximum length of [`Output`] when encoded as B64 string: 86-bytes
     /// (i.e. 86 ASCII characters)
     pub const fn b64_max_len() -> usize {
         ((MAX_LENGTH * 4) / 3) + 1
@@ -153,13 +153,13 @@ impl Output {
         usize::from(self.length)
     }
 
-    /// Parse [`b64`]-encoded [`Output`], i.e. using the PHC string
+    /// Parse B64-encoded [`Output`], i.e. using the PHC string
     /// specification's restricted interpretation of Base64.
     pub fn b64_decode(input: &str) -> Result<Self, OutputError> {
         Self::decode(input, Encoding::B64)
     }
 
-    /// Write [`b64`]-encoded [`Output`] to the provided buffer, returning
+    /// Write B64-encoded [`Output`] to the provided buffer, returning
     /// a sub-slice containing the encoded data.
     ///
     /// Returns an error if the buffer is too short to contain the output.
@@ -185,7 +185,7 @@ impl Output {
         Ok(encoding.encode(self.as_ref(), out)?)
     }
 
-    /// Get the length of this [`Output`] when encoded as [`b64`].
+    /// Get the length of this [`Output`] when encoded as B64.
     pub fn b64_len(&self) -> usize {
         Encoding::B64.encoded_len(self.as_ref())
     }
