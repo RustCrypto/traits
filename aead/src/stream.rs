@@ -226,7 +226,7 @@ macro_rules! impl_stream_object {
             pub fn new(key: &Key<A>, nonce: &Nonce<A, S>) -> Self
             where
                 A: NewAead,
-                S: NewStream<A>
+                S: NewStream<A>,
             {
                 Self::from_stream_primitive(S::new(key, nonce))
             }
@@ -237,7 +237,7 @@ macro_rules! impl_stream_object {
             pub fn from_aead(aead: A, nonce: &Nonce<A, S>) -> Self
             where
                 A: NewAead,
-                S: NewStream<A>
+                S: NewStream<A>,
             {
                 Self::from_stream_primitive(S::from_aead(aead, nonce))
             }
@@ -291,7 +291,8 @@ macro_rules! impl_stream_object {
                     return Err(Error);
                 }
 
-                self.stream.$in_place_op(self.position, false, associated_data, buffer)?;
+                self.stream
+                    .$in_place_op(self.position, false, associated_data, buffer)?;
 
                 // Note: overflow checked above
                 self.position += S::COUNTER_INCR;
@@ -322,12 +323,13 @@ macro_rules! impl_stream_object {
             pub fn $last_in_place_method(
                 self,
                 associated_data: &[u8],
-                buffer: &mut dyn Buffer
+                buffer: &mut dyn Buffer,
             ) -> Result<(), Error> {
-                self.stream.$in_place_op(self.position, true, associated_data, buffer)
+                self.stream
+                    .$in_place_op(self.position, true, associated_data, buffer)
             }
         }
-    }
+    };
 }
 
 impl_stream_object!(
