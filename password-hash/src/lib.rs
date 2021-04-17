@@ -21,7 +21,7 @@
 //! represents a parsed "PHC string" with the following format:
 //!
 //! ```text
-//! $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
+//! $<id>[$v=<version>][$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
 //! ```
 //!
 //! For more information, please see the documentation for [`PasswordHash`].
@@ -185,12 +185,13 @@ pub trait McfHasher {
 /// PHC strings have the following format:
 ///
 /// ```text
-/// $<id>[$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
+/// $<id>[$v=<version>][$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
 /// ```
 ///
 /// where:
 ///
 /// - `<id>` is the symbolic name for the function
+/// - `<version>` is the algorithm version
 /// - `<param>` is a parameter name
 /// - `<value>` is a parameter value
 /// - `<salt>` is an encoding of the salt
@@ -200,6 +201,7 @@ pub trait McfHasher {
 ///
 /// - a `$` sign;
 /// - the function symbolic name;
+/// - optionally, a `$` sign followed by the algorithm version with a `v=version` format;
 /// - optionally, a `$` sign followed by one or several parameters, each with a `name=value` format;
 ///   the parameters are separated by commas;
 /// - optionally, a `$` sign followed by the (encoded) salt value;
@@ -217,14 +219,7 @@ pub struct PasswordHash<'a> {
 
     /// Optional version field.
     ///
-    /// An augmented form of the PHC string format used by Argon2 includes
-    /// an additional version field out-of-band from other parameters:
-    ///
-    /// ```text
-    /// $<id>[$v=<version>][$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
-    /// ```
-    ///
-    /// See: <https://github.com/P-H-C/phc-string-format/pull/4>
+    /// This corresponds to the `<version>` field in a PHC string.
     pub version: Option<Decimal>,
 
     /// Algorithm-specific parameters.
