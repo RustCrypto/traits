@@ -12,10 +12,11 @@ mod pkcs8;
 
 use crate::{Curve, Error, FieldBytes, Result};
 use core::{
-    convert::{TryFrom, TryInto},
+    convert::TryFrom,
     fmt::{self, Debug},
     ops::Deref,
 };
+use generic_array::typenum::Unsigned;
 use zeroize::Zeroize;
 
 #[cfg(feature = "arithmetic")]
@@ -103,11 +104,13 @@ where
 
     /// Deserialize raw private scalar as a big endian integer
     pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self> {
-        bytes
-            .as_ref()
-            .try_into()
-            .ok()
-            .and_then(C::from_secret_bytes)
+        let bytes = bytes.as_ref();
+
+        if bytes.len() != C::FieldSize::to_usize() {
+            return Err(Error);
+        }
+
+        C::from_secret_bytes(bytes.into())
             .map(|secret_value| SecretKey { secret_value })
             .ok_or(Error)
     }
@@ -156,7 +159,7 @@ where
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
-        jwk.try_into()
+        Self::try_from(jwk)
     }
 
     /// Parse a string containing a JSON Web Key (JWK) into a [`SecretKey`].
