@@ -69,7 +69,7 @@ impl<'a> Value<'a> {
         Ok(Self(input))
     }
 
-    /// Attempt to decode a [`b64`]-encoded [`Value`], writing the decoded
+    /// Attempt to decode a B64-encoded [`Value`], writing the decoded
     /// result into the provided buffer, and returning a slice of the buffer
     /// containing the decoded result on success.
     ///

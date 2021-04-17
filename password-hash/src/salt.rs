@@ -117,9 +117,9 @@ impl<'a> Salt<'a> {
         Ok(Self(input.try_into()?))
     }
 
-    /// Attempt to decode a [`b64`][`crate::b64`]-encoded [`Salt`], writing the
-    /// decoded result into the provided buffer, and returning a slice of the
-    /// buffer containing the decoded result on success.
+    /// Attempt to decode a B64-encoded [`Salt`], writing the decoded result
+    /// into the provided buffer, and returning a slice of the buffer
+    /// containing the decoded result on success.
     ///
     /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
     pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8], B64Error> {
