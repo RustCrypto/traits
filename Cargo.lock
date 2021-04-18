@@ -51,9 +51,9 @@ checksum = "d0d27fb6b6f1e43147af148af49d49329413ba781aa0d5e10979831c210173b5"
 
 [[package]]
 name = "bitvec"
-version = "0.20.1"
+version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5011ffc90248764d7005b0e10c7294f5aa1bd87d9dd7248f4ad475b347c294d"
+checksum = "1f682656975d3a682daff957be4ddeb65d6ad656737cd821f2d00685ae466af1"
 dependencies = [
  "funty",
  "radium",
@@ -194,8 +194,8 @@ name = "elliptic-curve"
 version = "0.9.6"
 dependencies = [
  "base64ct",
+ "bitvec",
  "ff",
- "funty",
  "generic-array 0.14.4",
  "group",
  "hex-literal 0.3.1",
