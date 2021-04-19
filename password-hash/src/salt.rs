@@ -82,35 +82,43 @@ pub struct Salt<'a>(Value<'a>);
 
 #[allow(clippy::len_without_is_empty)]
 impl<'a> Salt<'a> {
-    /// Minimum length of a [`Salt`] string: 2-bytes.
-    ///
-    /// NOTE: this is below the recommended
-    // TODO(tarcieri): support shorter salts for MCF?
-    pub const fn min_len() -> usize {
-        4
-    }
+    /// Minimum length of a [`Salt`] string: 4-bytes.
+    pub const MIN_LENGTH: usize = 4;
 
     /// Maximum length of a [`Salt`] string: 64-bytes.
     ///
     /// See type-level documentation about [`Salt`] for more information.
+    pub const MAX_LENGTH: usize = 64;
+
+    /// Recommended length of a salt: 16-bytes.
+    pub const RECOMMENDED_LENGTH: usize = 16;
+
+    /// Minimum length of a [`Salt`] string: 4-bytes.
+    #[deprecated(since = "0.1.4", note = "use Salt::MIN_LENGTH instead")]
+    pub const fn min_len() -> usize {
+        Self::MIN_LENGTH
+    }
+
+    /// Maximum length of a [`Salt`] string: 64-bytes.
+    #[deprecated(since = "0.1.4", note = "use Salt::MAX_LENGTH instead")]
     pub const fn max_len() -> usize {
-        64
+        Self::MAX_LENGTH
     }
 
     /// Recommended length of a salt: 16-bytes.
+    #[deprecated(since = "0.1.4", note = "use Salt::RECOMMENDED_LENGTH instead")]
     pub const fn recommended_len() -> usize {
-        16
+        Self::RECOMMENDED_LENGTH
     }
 
     /// Create a [`Salt`] from the given `str`, validating it according to
     /// [`Salt::min_len`] and [`Salt::max_len`] length restrictions.
     pub fn new(input: &'a str) -> Result<Self, ParseError> {
-        // TODO(tarcieri): support shorter salts for MCF?
-        if input.len() < Self::min_len() {
+        if input.len() < Self::MIN_LENGTH {
             return Err(ParseError::TooShort);
         }
 
-        if input.len() > Self::max_len() {
+        if input.len() > Self::MAX_LENGTH {
             return Err(ParseError::TooLong);
         }
 
@@ -172,7 +180,7 @@ impl<'a> fmt::Debug for Salt<'a> {
 #[derive(Clone, Debug, Eq)]
 pub struct SaltString {
     /// Byte array containing an ASCiI-encoded string.
-    bytes: [u8; Salt::max_len()],
+    bytes: [u8; Salt::MAX_LENGTH],
 
     /// Length of the string in ASCII characters (i.e. bytes).
     length: u8,
@@ -184,7 +192,7 @@ impl SaltString {
     #[cfg(feature = "rand_core")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     pub fn generate(mut rng: impl CryptoRng + RngCore) -> Self {
-        let mut bytes = [0u8; Salt::recommended_len()];
+        let mut bytes = [0u8; Salt::RECOMMENDED_LENGTH];
         rng.fill_bytes(&mut bytes);
         Self::b64_encode(&bytes).expect(INVARIANT_VIOLATED_MSG)
     }
@@ -196,8 +204,8 @@ impl SaltString {
 
         let length = s.as_bytes().len();
 
-        if length < Salt::max_len() {
-            let mut bytes = [0u8; Salt::max_len()];
+        if length < Salt::MAX_LENGTH {
+            let mut bytes = [0u8; Salt::MAX_LENGTH];
             bytes[..length].copy_from_slice(s.as_bytes());
             Ok(SaltString {
                 bytes,
@@ -212,7 +220,7 @@ impl SaltString {
     ///
     /// Returns `None` if the slice is too long.
     pub fn b64_encode(input: &[u8]) -> Result<Self, B64Error> {
-        let mut bytes = [0u8; Salt::max_len()];
+        let mut bytes = [0u8; Salt::MAX_LENGTH];
         let length = Encoding::B64.encode(input, &mut bytes)?.len() as u8;
         Ok(Self { bytes, length })
     }
@@ -246,15 +254,6 @@ impl SaltString {
 impl AsRef<str> for SaltString {
     fn as_ref(&self) -> &str {
         self.as_str()
-    }
-}
-
-impl Default for SaltString {
-    fn default() -> SaltString {
-        SaltString {
-            bytes: [0u8; Salt::max_len()],
-            length: 0,
-        }
     }
 }
 

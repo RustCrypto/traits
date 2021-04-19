@@ -19,9 +19,6 @@
 use crate::errors::ParseError;
 use core::{convert::TryFrom, fmt, ops::Deref, str};
 
-/// Maximum size of an identifier.
-const MAX_LENGTH: usize = 32;
-
 /// Algorithm or parameter identifier.
 ///
 /// This type encompasses both the "function symbolic name" and "parameter name"
@@ -42,8 +39,16 @@ impl<'a> Ident<'a> {
     ///
     /// This value corresponds to the maximum size of a function symbolic names
     /// and parameter names according to the PHC string format.
+    /// Maximum length of an [`Ident`] - 32 ASCII characters (i.e. 32-bytes).
+    ///
+    /// This value corresponds to the maximum size of a function symbolic names
+    /// and parameter names according to the PHC string format.
+    const MAX_LENGTH: usize = 32;
+
+    /// Maximum length of an [`Ident`] - 32 ASCII characters (i.e. 32-bytes).
+    #[deprecated(since = "0.1.4", note = "use Ident::MAX_LENGTH instead")]
     pub const fn max_len() -> usize {
-        MAX_LENGTH
+        Self::MAX_LENGTH
     }
 
     /// Parse an [`Ident`] from a string.
@@ -71,7 +76,7 @@ impl<'a> Ident<'a> {
         }
 
         const_assert!(!input.is_empty(), "PHC ident string can't be empty");
-        const_assert!(input.len() <= MAX_LENGTH, "PHC ident string too long");
+        const_assert!(input.len() <= Self::MAX_LENGTH, "PHC ident string too long");
 
         macro_rules! validate_chars {
             ($($pos:expr),+) => {
@@ -125,7 +130,7 @@ impl<'a> TryFrom<&'a str> for Ident<'a> {
         }
 
         let bytes = s.as_bytes();
-        let too_long = bytes.len() > MAX_LENGTH;
+        let too_long = bytes.len() > Self::MAX_LENGTH;
 
         for &c in bytes {
             if !is_char_valid(c) {
