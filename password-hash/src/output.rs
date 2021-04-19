@@ -3,9 +3,6 @@
 use crate::{Encoding, OutputError};
 use core::{cmp::PartialEq, convert::TryFrom, fmt, str::FromStr};
 
-/// Maximum length of password hash function outputs.
-const MAX_LENGTH: usize = 64;
-
 /// Output from password hashing functions, i.e. the "hash" or "digest"
 /// as raw bytes.
 ///
@@ -62,7 +59,7 @@ const MAX_LENGTH: usize = 64;
 #[derive(Copy, Clone, Eq)]
 pub struct Output {
     /// Byte array containing a password hashing function output.
-    bytes: [u8; MAX_LENGTH],
+    bytes: [u8; Self::MAX_LENGTH],
 
     /// Length of the password hashing function output in bytes.
     length: u8,
@@ -73,24 +70,35 @@ pub struct Output {
 
 #[allow(clippy::len_without_is_empty)]
 impl Output {
-    /// Minimum length of [`Output`] string: 10-bytes.
-    ///
-    /// See type-level documentation about [`Output`] for more information.
-    pub const fn min_len() -> usize {
-        10
-    }
+    /// Minimum length of a [`Output`] string: 10-bytes.
+    pub const MIN_LENGTH: usize = 10;
 
     /// Maximum length of [`Output`] string: 64-bytes.
     ///
     /// See type-level documentation about [`Output`] for more information.
+    pub const MAX_LENGTH: usize = 64;
+
+    /// Maximum length of [`Output`] when encoded as B64 string: 86-bytes
+    /// (i.e. 86 ASCII characters)
+    pub const B64_MAX_LENGTH: usize = ((Self::MAX_LENGTH * 4) / 3) + 1;
+
+    /// Minimum length of a [`Output`] string: 10-bytes.
+    #[deprecated(since = "0.1.4", note = "use Output::MIN_LENGTH instead")]
+    pub const fn min_len() -> usize {
+        Self::MIN_LENGTH
+    }
+
+    /// Maximum length of [`Output`] string: 64-bytes.
+    #[deprecated(since = "0.1.4", note = "use Output::MAX_LENGTH instead")]
     pub const fn max_len() -> usize {
-        MAX_LENGTH
+        Self::MAX_LENGTH
     }
 
     /// Maximum length of [`Output`] when encoded as B64 string: 86-bytes
     /// (i.e. 86 ASCII characters)
+    #[deprecated(since = "0.1.4", note = "use Output::B64_MAX_LENGTH instead")]
     pub const fn b64_max_len() -> usize {
-        ((MAX_LENGTH * 4) / 3) + 1
+        Self::B64_MAX_LENGTH
     }
 
     /// Create a [`Output`] from the given byte slice, validating it according
@@ -120,15 +128,15 @@ impl Output {
     where
         F: FnOnce(&mut [u8]) -> Result<(), OutputError>,
     {
-        if output_size < Self::min_len() {
+        if output_size < Self::MIN_LENGTH {
             return Err(OutputError::TooShort);
         }
 
-        if output_size > Self::max_len() {
+        if output_size > Self::MAX_LENGTH {
             return Err(OutputError::TooLong);
         }
 
-        let mut bytes = [0u8; MAX_LENGTH];
+        let mut bytes = [0u8; Self::MAX_LENGTH];
         f(&mut bytes[..output_size])?;
 
         Ok(Self {
@@ -169,7 +177,7 @@ impl Output {
 
     /// Decode the given input string using the specified [`Encoding`].
     pub fn decode(input: &str, encoding: Encoding) -> Result<Self, OutputError> {
-        let mut bytes = [0u8; MAX_LENGTH];
+        let mut bytes = [0u8; Self::MAX_LENGTH];
         encoding
             .decode(input, &mut bytes)
             .map_err(Into::into)
@@ -231,7 +239,7 @@ impl TryFrom<&[u8]> for Output {
 
 impl fmt::Display for Output {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut buffer = [0u8; Self::b64_max_len()];
+        let mut buffer = [0u8; Self::B64_MAX_LENGTH];
         self.encode(&mut buffer, self.encoding)
             .map_err(|_| fmt::Error)
             .and_then(|encoded| f.write_str(encoded))

@@ -16,9 +16,6 @@
 use crate::{B64Error, Encoding, ParseError};
 use core::{convert::TryFrom, fmt, str};
 
-/// Maximum size of a parameter value in ASCII characters.
-const MAX_LENGTH: usize = 48;
-
 /// Type used to represent decimal (i.e. integer) values.
 pub type Decimal = u32;
 
@@ -53,14 +50,18 @@ impl<'a> Value<'a> {
     /// This implementation rounds that up to 48 as a safe maximum limit.
     ///
     /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
+    pub const MAX_LENGTH: usize = 48;
+
+    /// Maximum length of an [`Value`] - 48 ASCII characters (i.e. 48-bytes).
+    #[deprecated(since = "0.1.4", note = "use Value::MAX_LENGTH instead")]
     pub const fn max_len() -> usize {
-        MAX_LENGTH
+        Self::MAX_LENGTH
     }
 
     /// Parse a [`Value`] from the provided `str`, validating it according to
     /// the PHC string format's rules.
     pub fn new(input: &'a str) -> Result<Self, ParseError> {
-        if input.as_bytes().len() > MAX_LENGTH {
+        if input.as_bytes().len() > Self::MAX_LENGTH {
             return Err(ParseError::TooLong);
         }
 
