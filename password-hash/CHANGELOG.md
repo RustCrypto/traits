@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.1.4 (2021-04-19)
+### Added
+- Length constants ([#600])
+
+### Changed
+- Deprecate functions for obtaining length constants ([#600])
+
+[#600]: https://github.com/RustCrypto/traits/pull/600
+
 ## 0.1.3 (2021-04-17)
 ### Changed
 - Update docs for PHC string <version> field ([#593])
