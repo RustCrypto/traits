@@ -62,6 +62,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "bitvec"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35a2e31dce162f8f238c3c35a6600f1df4cb30f8929a6c464b0a8118d17c2502"
+dependencies = [
+ "funty",
+ "radium",
+ "tap",
+ "wyz",
+]
+
+[[package]]
 name = "blobby"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -194,7 +206,7 @@ name = "elliptic-curve"
 version = "0.9.6"
 dependencies = [
  "base64ct",
- "bitvec",
+ "bitvec 0.21.0",
  "ff",
  "generic-array 0.14.4",
  "group",
@@ -213,7 +225,7 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72a4d941a5b7c2a75222e2d44fcdf634a67133d9db31e177ae5ff6ecda852bfe"
 dependencies = [
- "bitvec",
+ "bitvec 0.20.2",
  "rand_core",
  "subtle",
 ]
