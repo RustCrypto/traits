@@ -2,12 +2,12 @@
 
 use crate::{
     consts::U1,
-    scalar::NonZeroScalar,
     sec1::{
         EncodedPoint, FromEncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize,
     },
     weierstrass::{Curve, PointCompression},
-    AffinePoint, Error, FieldBytes, ProjectiveArithmetic, ProjectivePoint, Result, Scalar,
+    AffinePoint, Error, FieldBytes, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, Result,
+    Scalar,
 };
 use core::{
     convert::{TryFrom, TryInto},

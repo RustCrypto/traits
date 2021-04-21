@@ -27,8 +27,8 @@
 //! [SIGMA]: https://webee.technion.ac.il/~hugo/sigma-pdf.pdf
 
 use crate::{
-    public_key::PublicKey, scalar::NonZeroScalar, weierstrass::Curve, AffinePoint, FieldBytes,
-    ProjectiveArithmetic, ProjectivePoint, Scalar,
+    weierstrass::Curve, AffinePoint, FieldBytes, NonZeroScalar, ProjectiveArithmetic,
+    ProjectivePoint, PublicKey, Scalar,
 };
 use core::{borrow::Borrow, fmt::Debug};
 use ff::PrimeField;
