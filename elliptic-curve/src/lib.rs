@@ -32,13 +32,12 @@ pub mod weierstrass;
 
 mod error;
 mod order;
+mod scalar;
 
 #[cfg(feature = "arithmetic")]
 mod point;
 #[cfg(feature = "arithmetic")]
 mod public_key;
-#[cfg(feature = "arithmetic")]
-mod scalar;
 
 #[cfg(feature = "dev")]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
@@ -68,7 +67,7 @@ pub use {
     crate::{
         point::{AffinePoint, ProjectiveArithmetic, ProjectivePoint},
         public_key::PublicKey,
-        scalar::{NonZeroScalar, Scalar, ScalarBits},
+        scalar::{bytes::ScalarBytes, non_zero::NonZeroScalar, Scalar, ScalarBits},
     },
     ff::{self, Field},
     group::{self, Group},

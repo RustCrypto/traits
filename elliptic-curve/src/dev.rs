@@ -7,13 +7,12 @@ use crate::{
     ff::{Field, PrimeField},
     group,
     rand_core::RngCore,
-    scalar::ScalarBits,
     sec1::{FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     util::sbb64,
     weierstrass,
     zeroize::Zeroize,
-    AlgorithmParameters, Curve, Order, ProjectiveArithmetic,
+    AlgorithmParameters, Curve, Order, ProjectiveArithmetic, ScalarBits,
 };
 use core::{
     convert::{TryFrom, TryInto},
@@ -93,7 +92,7 @@ pub type EncodedPoint = crate::sec1::EncodedPoint<MockCurve>;
 pub type FieldBytes = crate::FieldBytes<MockCurve>;
 
 /// Non-zero scalar value.
-pub type NonZeroScalar = crate::scalar::NonZeroScalar<MockCurve>;
+pub type NonZeroScalar = crate::NonZeroScalar<MockCurve>;
 
 /// Public key.
 pub type PublicKey = crate::PublicKey<MockCurve>;

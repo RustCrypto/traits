@@ -22,10 +22,9 @@ use zeroize::Zeroize;
 #[cfg(feature = "arithmetic")]
 use crate::{
     ff::PrimeField,
-    public_key::PublicKey,
     rand_core::{CryptoRng, RngCore},
-    scalar::{NonZeroScalar, Scalar},
-    weierstrass, AffinePoint, ProjectiveArithmetic, ProjectivePoint,
+    weierstrass, AffinePoint, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, PublicKey,
+    Scalar,
 };
 
 #[cfg(feature = "jwk")]
