@@ -25,11 +25,13 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-mod error;
 pub mod ops;
 pub mod sec1;
 pub mod util;
 pub mod weierstrass;
+
+mod error;
+mod order;
 
 #[cfg(feature = "arithmetic")]
 mod point;
@@ -52,7 +54,10 @@ mod jwk;
 #[cfg(feature = "zeroize")]
 mod secret_key;
 
-pub use self::error::{Error, Result};
+pub use self::{
+    error::{Error, Result},
+    order::Order,
+};
 
 pub use generic_array::{self, typenum::consts};
 pub use rand_core;
