@@ -3,9 +3,9 @@
 use super::{SecretKey, SecretValue};
 use crate::{
     sec1::{self, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
-    weierstrass, AlgorithmParameters, FieldBytes, Result, ALGORITHM_OID,
+    weierstrass, AlgorithmParameters, FieldBytes, ALGORITHM_OID,
 };
-use core::{convert::TryInto, ops::Add};
+use core::ops::Add;
 use generic_array::{typenum::U1, ArrayLength};
 use pkcs8::{der, FromPrivateKey};
 use zeroize::Zeroize;
@@ -21,14 +21,17 @@ use {
         AffinePoint, ProjectiveArithmetic, ProjectivePoint,
     },
     alloc::vec::Vec,
-    core::{fmt::Debug, iter},
+    core::{convert::TryInto, fmt::Debug, iter},
     pkcs8::{der::Encodable, ToPrivateKey},
     zeroize::Zeroizing,
 };
 
 // Imports for actual PEM support
 #[cfg(feature = "pem")]
-use {crate::error::Error, core::str::FromStr};
+use {
+    crate::{error::Error, Result},
+    core::str::FromStr,
+};
 
 /// Version
 const VERSION: u8 = 1;
