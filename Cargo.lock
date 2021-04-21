@@ -191,7 +191,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.9.9"
+version = "0.9.10"
 dependencies = [
  "base64ct",
  "bitvec",
