@@ -6,7 +6,7 @@ use core::{
     mem,
 };
 use generic_array::{typenum::Unsigned, GenericArray};
-use subtle::{Choice, CtOption};
+use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "arithmetic")]
 use crate::{ff::PrimeField, ProjectiveArithmetic, Scalar};
@@ -21,7 +21,7 @@ use crate::util::sbb64;
 /// inner byte value is within range of the curve's [`Order`].
 ///
 /// Does not require an arithmetic implementation.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq)]
 pub struct ScalarBytes<C: Curve + Order> {
     /// Inner byte value; guaranteed to be in range of the curve's order.
     inner: FieldBytes<C>,
@@ -117,6 +117,18 @@ where
     pub fn into_bytes(self) -> FieldBytes<C> {
         self.inner
     }
+
+    /// Create [`ScalarBytes`] representing a value of zero.
+    pub fn zero() -> Self {
+        Self {
+            inner: Default::default(),
+        }
+    }
+
+    /// Is this [`ScalarBytes`] value all zeroes?
+    pub fn is_zero(&self) -> Choice {
+        self.ct_eq(&Self::zero())
+    }
 }
 
 impl<C> AsRef<FieldBytes<C>> for ScalarBytes<C>
@@ -137,11 +149,48 @@ where
     }
 }
 
+impl<C> ConditionallySelectable for ScalarBytes<C>
+where
+    Self: Copy,
+    C: Curve + Order,
+{
+    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
+        let mut inner = FieldBytes::<C>::default();
+
+        for (i, (byte_a, byte_b)) in a.inner.iter().zip(b.inner.iter()).enumerate() {
+            inner[i] = u8::conditional_select(byte_a, byte_b, choice)
+        }
+
+        Self { inner }
+    }
+}
+
+impl<C> ConstantTimeEq for ScalarBytes<C>
+where
+    C: Curve + Order,
+{
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.inner
+            .iter()
+            .zip(other.inner.iter())
+            .fold(Choice::from(0u8), |acc, (a, b)| acc & a.ct_eq(b))
+    }
+}
+
 impl<C> Copy for ScalarBytes<C>
 where
     C: Curve + Order,
     FieldBytes<C>: Copy,
 {
+}
+
+impl<C> Default for ScalarBytes<C>
+where
+    C: Curve + Order,
+{
+    fn default() -> Self {
+        Self::zero()
+    }
 }
 
 impl<C> From<ScalarBytes<C>> for FieldBytes<C>
@@ -150,6 +199,15 @@ where
 {
     fn from(scalar_bytes: ScalarBytes<C>) -> FieldBytes<C> {
         scalar_bytes.inner
+    }
+}
+
+impl<C> PartialEq for ScalarBytes<C>
+where
+    C: Curve + Order,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.ct_eq(other).into()
     }
 }
 
