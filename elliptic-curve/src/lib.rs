@@ -56,6 +56,7 @@ mod secret_key;
 pub use self::{
     error::{Error, Result},
     order::Order,
+    scalar::bytes::ScalarBytes,
 };
 
 pub use generic_array::{self, typenum::consts};
@@ -67,7 +68,7 @@ pub use {
     crate::{
         point::{AffinePoint, ProjectiveArithmetic, ProjectivePoint},
         public_key::PublicKey,
-        scalar::{bytes::ScalarBytes, non_zero::NonZeroScalar, Scalar, ScalarBits},
+        scalar::{non_zero::NonZeroScalar, Scalar, ScalarBits},
     },
     ff::{self, Field},
     group::{self, Group},
