@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.9.11 (2021-04-21)
+### Added
+- Impl `subtle` traits on `ScalarBytes<C>` ([#612])
+
+### Fixed
+- Always re-export ScalarBytes ([#613])
+
+[#612]: https://github.com/RustCrypto/traits/pull/612
+[#613]: https://github.com/RustCrypto/traits/pull/613
+
 ## 0.9.10 (2021-04-21)
 ### Added
 - `ScalarBytes` type ([#610])
