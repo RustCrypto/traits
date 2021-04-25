@@ -1,13 +1,12 @@
 //! Algorithm parameters.
 
 use crate::{
-    errors::{ParamsError, ParseError},
     value::{Decimal, Value},
-    Ident,
+    Error, Ident, Result,
 };
 use core::{
     convert::{TryFrom, TryInto},
-    fmt::{self, Write},
+    fmt::{self, Debug, Write},
     iter::FromIterator,
     str::{self, FromStr},
 };
@@ -55,19 +54,15 @@ impl ParamsString {
         &mut self,
         name: impl TryInto<Ident<'a>>,
         value: impl TryInto<Value<'a>>,
-    ) -> Result<(), ParamsError> {
-        let name = name.try_into().map_err(|_| ParamsError::InvalidName)?;
-        let value = value.try_into().map_err(|_| ParamsError::InvalidValue)?;
+    ) -> Result<()> {
+        let name = name.try_into().map_err(|_| Error::ParamNameInvalid)?;
+        let value = value.try_into().map_err(|_| Error::ParamValueInvalid)?;
         self.add(name, value)
     }
 
     /// Add a key/value pair with a decimal value to the [`ParamsString`].
-    pub fn add_decimal<'a>(
-        &mut self,
-        name: impl TryInto<Ident<'a>>,
-        value: Decimal,
-    ) -> Result<(), ParamsError> {
-        let name = name.try_into().map_err(|_| ParamsError::InvalidName)?;
+    pub fn add_decimal<'a>(&mut self, name: impl TryInto<Ident<'a>>, value: Decimal) -> Result<()> {
+        let name = name.try_into().map_err(|_| Error::ParamNameInvalid)?;
         self.add(name, value)
     }
 
@@ -122,9 +117,9 @@ impl ParamsString {
     }
 
     /// Add a value to this [`ParamsString`] using the provided callback.
-    fn add(&mut self, name: Ident<'_>, value: impl fmt::Display) -> Result<(), ParamsError> {
+    fn add(&mut self, name: Ident<'_>, value: impl fmt::Display) -> Result<()> {
         if self.get(name).is_some() {
-            return Err(ParamsError::DuplicateName);
+            return Err(Error::ParamNameDuplicated);
         }
 
         let orig_len = self.0.length;
@@ -132,12 +127,12 @@ impl ParamsString {
         if !self.is_empty() {
             self.0
                 .write_char(PARAMS_DELIMITER)
-                .map_err(|_| ParamsError::MaxExceeded)?
+                .map_err(|_| Error::ParamsMaxExceeded)?
         }
 
         if write!(self.0, "{}={}", name, value).is_err() {
             self.0.length = orig_len;
-            return Err(ParamsError::MaxExceeded);
+            return Err(Error::ParamsMaxExceeded);
         }
 
         Ok(())
@@ -145,11 +140,11 @@ impl ParamsString {
 }
 
 impl FromStr for ParamsString {
-    type Err = ParamsError;
+    type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self, ParamsError> {
+    fn from_str(s: &str) -> Result<Self> {
         if s.as_bytes().len() > MAX_LENGTH {
-            return Err(ParamsError::MaxExceeded);
+            return Err(Error::ParamsMaxExceeded);
         }
 
         if s.is_empty() {
@@ -161,17 +156,17 @@ impl FromStr for ParamsString {
             // Validate name
             param
                 .next()
-                .ok_or(ParseError::InvalidChar(PAIR_DELIMITER))
+                .ok_or(Error::ParamNameInvalid)
                 .and_then(Ident::try_from)?;
 
             // Validate value
             param
                 .next()
-                .ok_or(ParseError::InvalidChar(PAIR_DELIMITER))
+                .ok_or(Error::ParamValueInvalid)
                 .and_then(Value::try_from)?;
 
             if param.next().is_some() {
-                return Err(ParseError::TooLong.into());
+                return Err(Error::ParamValueInvalid);
             }
         }
 
@@ -294,7 +289,7 @@ impl Write for Buffer {
 
 #[cfg(test)]
 mod tests {
-    use super::{FromIterator, Ident, ParamsError, ParamsString, Value};
+    use super::{Error, FromIterator, Ident, ParamsString, Value};
 
     #[cfg(feature = "alloc")]
     use alloc::string::ToString;
@@ -320,7 +315,7 @@ mod tests {
         params.add_decimal(name, 1).unwrap();
 
         let err = params.add_decimal(name, 2u32.into()).err().unwrap();
-        assert_eq!(err, ParamsError::DuplicateName);
+        assert_eq!(err, Error::ParamNameDuplicated);
     }
 
     #[test]

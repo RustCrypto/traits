@@ -13,7 +13,7 @@
 //!
 //! [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 
-use crate::{B64Error, Encoding, ParseError};
+use crate::{Encoding, Error, Result};
 use core::{convert::TryFrom, fmt, str};
 
 /// Type used to represent decimal (i.e. integer) values.
@@ -52,17 +52,11 @@ impl<'a> Value<'a> {
     /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
     pub const MAX_LENGTH: usize = 48;
 
-    /// Maximum length of an [`Value`] - 48 ASCII characters (i.e. 48-bytes).
-    #[deprecated(since = "0.1.4", note = "use Value::MAX_LENGTH instead")]
-    pub const fn max_len() -> usize {
-        Self::MAX_LENGTH
-    }
-
     /// Parse a [`Value`] from the provided `str`, validating it according to
     /// the PHC string format's rules.
-    pub fn new(input: &'a str) -> Result<Self, ParseError> {
+    pub fn new(input: &'a str) -> Result<Self> {
         if input.as_bytes().len() > Self::MAX_LENGTH {
-            return Err(ParseError::TooLong);
+            return Err(Error::ParamValueInvalid);
         }
 
         // Check that the characters are permitted in a PHC parameter value.
@@ -79,8 +73,8 @@ impl<'a> Value<'a> {
     /// PHC string format specification.
     ///
     /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
-    pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8], B64Error> {
-        Encoding::B64.decode(self.as_str(), buf)
+    pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8]> {
+        Ok(Encoding::B64.decode(self.as_str(), buf)?)
     }
 
     /// Borrow this value as a `str`.
@@ -131,31 +125,31 @@ impl<'a> Value<'a> {
     /// `value.as_str().parse::<i32>()`
     ///
     /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#decimal-encoding
-    pub fn decimal(&self) -> Result<Decimal, ParseError> {
+    pub fn decimal(&self) -> Result<Decimal> {
         let value = self.as_str();
 
         // Empty strings aren't decimals
         if value.is_empty() {
-            return Err(ParseError::Empty);
+            return Err(Error::ParamValueInvalid);
         }
 
         // Ensure all characters are digits
         for c in value.chars() {
             if !matches!(c, '0'..='9') {
-                return Err(ParseError::InvalidChar(c));
+                return Err(Error::ParamValueInvalid);
             }
         }
 
         // Disallow leading zeroes
         if value.starts_with('0') && value.len() > 1 {
-            return Err(ParseError::InvalidChar('0'));
+            return Err(Error::ParamValueInvalid);
         }
 
         value.parse().map_err(|_| {
             // In theory a value overflow should be the only potential error here.
             // When `ParseIntError::kind` is stable it might be good to double check:
             // <https://github.com/rust-lang/rust/issues/22639>
-            ParseError::TooLong
+            Error::ParamValueInvalid
         })
     }
 
@@ -172,25 +166,25 @@ impl<'a> AsRef<str> for Value<'a> {
 }
 
 impl<'a> TryFrom<&'a str> for Value<'a> {
-    type Error = ParseError;
+    type Error = Error;
 
-    fn try_from(input: &'a str) -> Result<Self, ParseError> {
+    fn try_from(input: &'a str) -> Result<Self> {
         Self::new(input)
     }
 }
 
 impl<'a> TryFrom<Value<'a>> for Decimal {
-    type Error = ParseError;
+    type Error = Error;
 
-    fn try_from(value: Value<'a>) -> Result<Decimal, ParseError> {
+    fn try_from(value: Value<'a>) -> Result<Decimal> {
         Decimal::try_from(&value)
     }
 }
 
 impl<'a> TryFrom<&Value<'a>> for Decimal {
-    type Error = ParseError;
+    type Error = Error;
 
-    fn try_from(value: &Value<'a>) -> Result<Decimal, ParseError> {
+    fn try_from(value: &Value<'a>) -> Result<Decimal> {
         value.decimal()
     }
 }
@@ -202,10 +196,10 @@ impl<'a> fmt::Display for Value<'a> {
 }
 
 /// Are all of the given bytes allowed in a [`Value`]?
-fn assert_valid_value(input: &str) -> Result<(), ParseError> {
+fn assert_valid_value(input: &str) -> Result<()> {
     for c in input.chars() {
         if !is_char_valid(c) {
-            return Err(ParseError::InvalidChar(c));
+            return Err(Error::ParamValueInvalid);
         }
     }
 
@@ -219,7 +213,7 @@ fn is_char_valid(c: char) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{ParseError, Value};
+    use super::{Error, Value};
     use core::convert::TryFrom;
 
     // Invalid value examples
@@ -246,21 +240,21 @@ mod tests {
     fn reject_decimal_with_leading_zero() {
         let value = Value::new("01").unwrap();
         let err = u32::try_from(value).err().unwrap();
-        assert!(matches!(err, ParseError::InvalidChar('0')));
+        assert!(matches!(err, Error::ParamValueInvalid));
     }
 
     #[test]
     fn reject_overlong_decimal() {
         let value = Value::new("4294967296").unwrap();
         let err = u32::try_from(value).err().unwrap();
-        assert_eq!(err, ParseError::TooLong);
+        assert_eq!(err, Error::ParamValueInvalid);
     }
 
     #[test]
     fn reject_negative() {
         let value = Value::new("-1").unwrap();
         let err = u32::try_from(value).err().unwrap();
-        assert!(matches!(err, ParseError::InvalidChar('-')));
+        assert!(matches!(err, Error::ParamValueInvalid));
     }
 
     //
@@ -288,18 +282,18 @@ mod tests {
     #[test]
     fn reject_invalid_char() {
         let err = Value::new(INVALID_CHAR).err().unwrap();
-        assert!(matches!(err, ParseError::InvalidChar(';')));
+        assert!(matches!(err, Error::ParamValueInvalid));
     }
 
     #[test]
     fn reject_too_long() {
         let err = Value::new(INVALID_TOO_LONG).err().unwrap();
-        assert_eq!(err, ParseError::TooLong);
+        assert_eq!(err, Error::ParamValueInvalid);
     }
 
     #[test]
     fn reject_invalid_char_and_too_long() {
         let err = Value::new(INVALID_CHAR_AND_TOO_LONG).err().unwrap();
-        assert_eq!(err, ParseError::TooLong);
+        assert_eq!(err, Error::ParamValueInvalid);
     }
 }

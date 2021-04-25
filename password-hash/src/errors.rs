@@ -4,59 +4,12 @@ pub use base64ct::Error as B64Error;
 
 use core::fmt;
 
-#[cfg(docsrs)]
-use crate::PasswordHasher;
+/// Result type.
+pub type Result<T> = core::result::Result<T, Error>;
 
-/// Password hash errors.
+/// Password hashing errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum HashError {
-    /// Hash output error.
-    Hash(OutputError),
-
-    /// Params error.
-    Params(ParamsError),
-
-    /// Parse error.
-    Parse(ParseError),
-}
-
-impl fmt::Display for HashError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match self {
-            Self::Hash(err) => write!(f, "invalid password hash: {}", err),
-            Self::Params(err) => write!(f, "invalid params: {}", err),
-            Self::Parse(err) => write!(f, "parse error: {}", err),
-        }
-    }
-}
-
-impl From<OutputError> for HashError {
-    fn from(err: OutputError) -> HashError {
-        HashError::Hash(err)
-    }
-}
-
-impl From<ParamsError> for HashError {
-    fn from(err: ParamsError) -> HashError {
-        match err {
-            ParamsError::Parse(e) => e.into(),
-            _ => HashError::Params(err),
-        }
-    }
-}
-
-impl From<ParseError> for HashError {
-    fn from(err: ParseError) -> HashError {
-        HashError::Parse(err)
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for HashError {}
-
-/// Errors generating password hashes using a [`PasswordHasher`].
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum HasherError {
+pub enum Error {
     /// Unsupported algorithm.
     Algorithm,
 
@@ -66,193 +19,80 @@ pub enum HasherError {
     /// Cryptographic error.
     Crypto,
 
-    /// Error generating output.
-    Output(OutputError),
+    /// Output too short (min 10-bytes).
+    OutputTooShort,
 
-    /// Invalid parameter.
-    Params(ParamsError),
+    /// Output too long (max 64-bytes).
+    OutputTooLong,
 
-    /// Parse error.
-    Parse(ParseError),
+    /// Duplicate parameter name encountered.
+    ParamNameDuplicated,
+
+    /// Invalid parameter name.
+    ParamNameInvalid,
+
+    /// Invalid parameter value.
+    ParamValueInvalid,
+
+    /// Maximum number of parameters exceeded.
+    ParamsMaxExceeded,
 
     /// Invalid password.
     Password,
+
+    /// Password hash string contains invalid characters.
+    PhcStringInvalid,
+
+    /// Password hash string too short.
+    PhcStringTooShort,
+
+    /// Password hash string too long.
+    PhcStringTooLong,
+
+    /// Salt too short.
+    SaltTooShort,
+
+    /// Salt too long.
+    SaltTooLong,
 
     /// Invalid algorithm version.
     Version,
 }
 
-impl fmt::Display for HasherError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> core::result::Result<(), fmt::Error> {
         match self {
             Self::Algorithm => write!(f, "unsupported algorithm"),
             Self::B64(err) => write!(f, "{}", err),
             Self::Crypto => write!(f, "cryptographic error"),
-            Self::Output(err) => write!(f, "PHF output error: {}", err),
-            Self::Params(err) => write!(f, "{}", err),
-            Self::Parse(err) => write!(f, "{}", err),
+            Self::OutputTooShort => f.write_str("PHF output too short (min 10-bytes)"),
+            Self::OutputTooLong => f.write_str("PHF output too long (max 64-bytes)"),
+            Self::ParamNameDuplicated => f.write_str("duplicate parameter"),
+            Self::ParamNameInvalid => f.write_str("invalid parameter name"),
+            Self::ParamValueInvalid => f.write_str("invalid parameter value"),
+            Self::ParamsMaxExceeded => f.write_str("maximum number of parameters reached"),
             Self::Password => write!(f, "invalid password"),
+            Self::PhcStringInvalid => write!(f, "password hash string invalid"),
+            Self::PhcStringTooShort => write!(f, "password hash string too short"),
+            Self::PhcStringTooLong => write!(f, "password hash string too long"),
+            Self::SaltTooShort => write!(f, "salt too short"),
+            Self::SaltTooLong => write!(f, "salt too long"),
             Self::Version => write!(f, "invalid algorithm version"),
         }
     }
 }
 
-impl From<B64Error> for HasherError {
-    fn from(err: B64Error) -> HasherError {
-        HasherError::B64(err)
-    }
-}
-
-impl From<base64ct::InvalidLengthError> for HasherError {
-    fn from(_: base64ct::InvalidLengthError) -> HasherError {
-        HasherError::B64(B64Error::InvalidLength)
-    }
-}
-
-impl From<OutputError> for HasherError {
-    fn from(err: OutputError) -> HasherError {
-        HasherError::Output(err)
-    }
-}
-
-impl From<ParamsError> for HasherError {
-    fn from(err: ParamsError) -> HasherError {
-        HasherError::Params(err)
-    }
-}
-
-impl From<ParseError> for HasherError {
-    fn from(err: ParseError) -> HasherError {
-        HasherError::Parse(err)
-    }
-}
-
 #[cfg(feature = "std")]
-impl std::error::Error for HasherError {}
+impl std::error::Error for Error {}
 
-/// Parameter-related errors.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum ParamsError {
-    /// Duplicate parameter name encountered.
-    DuplicateName,
-
-    /// Invalid parameter name.
-    InvalidName,
-
-    /// Invalid parameter value.
-    InvalidValue,
-
-    /// Maximum number of parameters exceeded.
-    MaxExceeded,
-
-    /// Parse errors.
-    Parse(ParseError),
-}
-
-impl fmt::Display for ParamsError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match self {
-            Self::DuplicateName => f.write_str("duplicate parameter"),
-            Self::InvalidName => f.write_str("invalid parameter name"),
-            Self::InvalidValue => f.write_str("invalid parameter value"),
-            Self::MaxExceeded => f.write_str("maximum number of parameters reached"),
-            Self::Parse(err) => write!(f, "{}", err),
-        }
+impl From<B64Error> for Error {
+    fn from(err: B64Error) -> Error {
+        Error::B64(err)
     }
 }
 
-impl From<ParseError> for ParamsError {
-    fn from(err: ParseError) -> ParamsError {
-        Self::Parse(err)
+impl From<base64ct::InvalidLengthError> for Error {
+    fn from(_: base64ct::InvalidLengthError) -> Error {
+        Error::B64(B64Error::InvalidLength)
     }
 }
-
-#[cfg(feature = "std")]
-impl std::error::Error for ParamsError {}
-
-/// Parse errors.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum ParseError {
-    /// Invalid empty input.
-    Empty,
-
-    /// Input contains invalid character.
-    InvalidChar(char),
-
-    /// Input too short.
-    TooShort,
-
-    /// Input too long.
-    TooLong,
-}
-
-impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match self {
-            Self::Empty => f.write_str("invalid empty input"),
-            Self::InvalidChar(char) => write!(f, "invalid character '{}'", char),
-            Self::TooShort => f.write_str("too short"),
-            Self::TooLong => f.write_str("too long"),
-        }
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for ParseError {}
-
-/// Password hash function output (i.e. hash/digest) errors.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum OutputError {
-    /// "B64" encoding error.
-    B64(B64Error),
-
-    /// Output too short (min 10-bytes).
-    TooShort,
-
-    /// Output too long (max 64-bytes).
-    TooLong,
-}
-
-impl fmt::Display for OutputError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match self {
-            Self::B64(err) => write!(f, "{}", err),
-            Self::TooShort => f.write_str("PHF output too short (min 10-bytes)"),
-            Self::TooLong => f.write_str("PHF output too long (max 64-bytes)"),
-        }
-    }
-}
-
-impl From<B64Error> for OutputError {
-    fn from(err: B64Error) -> OutputError {
-        OutputError::B64(err)
-    }
-}
-
-impl From<base64ct::InvalidLengthError> for OutputError {
-    fn from(_: base64ct::InvalidLengthError) -> OutputError {
-        OutputError::B64(B64Error::InvalidLength)
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for OutputError {}
-
-/// Password verification errors.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct VerifyError;
-
-impl fmt::Display for VerifyError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        f.write_str("password verification error")
-    }
-}
-
-impl From<HasherError> for VerifyError {
-    fn from(_: HasherError) -> VerifyError {
-        VerifyError
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for VerifyError {}

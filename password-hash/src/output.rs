@@ -1,6 +1,6 @@
 //! Outputs from password hashing functions.
 
-use crate::{Encoding, OutputError};
+use crate::{Encoding, Error, Result};
 use core::{cmp::PartialEq, convert::TryFrom, fmt, str::FromStr};
 
 /// Output from password hashing functions, i.e. the "hash" or "digest"
@@ -46,11 +46,16 @@ use core::{cmp::PartialEq, convert::TryFrom, fmt, str::FromStr};
 /// this crate does not loop in additional dependencies for
 /// constant-time comparisons (e.g. `subtle`).
 ///
-/// The extent to which constant-time comparisons of password hashes is
-/// actually helpful in practical contexts [topic of considerable debate][3].
+/// The extent to which constant-time comparisons of password hashes provides
+/// meaningful protections in practical contexts is a
+/// [topic of considerable debate][3].
 /// This library has elected to use a non-short-circuiting comparison as a
 /// safer ("belt-and-suspenders") default, and also to
 /// [head off any potential debates around the issue][4].
+/// Our main suggestion to avoid such attacks is to use a unique, randomly
+/// generated salt per password which is unpredictable by the attacker.
+/// The [`SaltString::generate`] function randomly generates high-entropy
+/// salt values.
 ///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#function-duties
 /// [2]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
@@ -82,28 +87,9 @@ impl Output {
     /// (i.e. 86 ASCII characters)
     pub const B64_MAX_LENGTH: usize = ((Self::MAX_LENGTH * 4) / 3) + 1;
 
-    /// Minimum length of a [`Output`] string: 10-bytes.
-    #[deprecated(since = "0.1.4", note = "use Output::MIN_LENGTH instead")]
-    pub const fn min_len() -> usize {
-        Self::MIN_LENGTH
-    }
-
-    /// Maximum length of [`Output`] string: 64-bytes.
-    #[deprecated(since = "0.1.4", note = "use Output::MAX_LENGTH instead")]
-    pub const fn max_len() -> usize {
-        Self::MAX_LENGTH
-    }
-
-    /// Maximum length of [`Output`] when encoded as B64 string: 86-bytes
-    /// (i.e. 86 ASCII characters)
-    #[deprecated(since = "0.1.4", note = "use Output::B64_MAX_LENGTH instead")]
-    pub const fn b64_max_len() -> usize {
-        Self::B64_MAX_LENGTH
-    }
-
     /// Create a [`Output`] from the given byte slice, validating it according
     /// to [`Output::min_len`] and [`Output::max_len`] length restrictions.
-    pub fn new(input: &[u8]) -> Result<Self, OutputError> {
+    pub fn new(input: &[u8]) -> Result<Self> {
         Self::init_with(input.len(), |bytes| {
             bytes.copy_from_slice(input);
             Ok(())
@@ -113,7 +99,7 @@ impl Output {
     /// Create a [`Output`] from the given byte slice and [`Encoding`],
     /// validating it according to [`Output::min_len`] and [`Output::max_len`]
     /// length restrictions.
-    pub fn new_with_encoding(input: &[u8], encoding: Encoding) -> Result<Self, OutputError> {
+    pub fn new_with_encoding(input: &[u8], encoding: Encoding) -> Result<Self> {
         let mut result = Self::new(input)?;
         result.encoding = encoding;
         Ok(result)
@@ -124,16 +110,16 @@ impl Output {
     ///
     /// The `output_size` (in bytes) must be known in advance, as well as at
     /// least [`Output::min_len`] bytes and at most [`Output::max_len`] bytes.
-    pub fn init_with<F>(output_size: usize, f: F) -> Result<Self, OutputError>
+    pub fn init_with<F>(output_size: usize, f: F) -> Result<Self>
     where
-        F: FnOnce(&mut [u8]) -> Result<(), OutputError>,
+        F: FnOnce(&mut [u8]) -> Result<()>,
     {
         if output_size < Self::MIN_LENGTH {
-            return Err(OutputError::TooShort);
+            return Err(Error::OutputTooShort);
         }
 
         if output_size > Self::MAX_LENGTH {
-            return Err(OutputError::TooLong);
+            return Err(Error::OutputTooLong);
         }
 
         let mut bytes = [0u8; Self::MAX_LENGTH];
@@ -163,7 +149,7 @@ impl Output {
 
     /// Parse B64-encoded [`Output`], i.e. using the PHC string
     /// specification's restricted interpretation of Base64.
-    pub fn b64_decode(input: &str) -> Result<Self, OutputError> {
+    pub fn b64_decode(input: &str) -> Result<Self> {
         Self::decode(input, Encoding::B64)
     }
 
@@ -171,12 +157,12 @@ impl Output {
     /// a sub-slice containing the encoded data.
     ///
     /// Returns an error if the buffer is too short to contain the output.
-    pub fn b64_encode<'a>(&self, out: &'a mut [u8]) -> Result<&'a str, OutputError> {
+    pub fn b64_encode<'a>(&self, out: &'a mut [u8]) -> Result<&'a str> {
         self.encode(out, Encoding::B64)
     }
 
     /// Decode the given input string using the specified [`Encoding`].
-    pub fn decode(input: &str, encoding: Encoding) -> Result<Self, OutputError> {
+    pub fn decode(input: &str, encoding: Encoding) -> Result<Self> {
         let mut bytes = [0u8; Self::MAX_LENGTH];
         encoding
             .decode(input, &mut bytes)
@@ -185,11 +171,7 @@ impl Output {
     }
 
     /// Encode this [`Output`] using the specified [`Encoding`].
-    pub fn encode<'a>(
-        &self,
-        out: &'a mut [u8],
-        encoding: Encoding,
-    ) -> Result<&'a str, OutputError> {
+    pub fn encode<'a>(&self, out: &'a mut [u8], encoding: Encoding) -> Result<&'a str> {
         Ok(encoding.encode(self.as_ref(), out)?)
     }
 
@@ -206,9 +188,9 @@ impl AsRef<[u8]> for Output {
 }
 
 impl FromStr for Output {
-    type Err = OutputError;
+    type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self, OutputError> {
+    fn from_str(s: &str) -> Result<Self> {
         Self::b64_decode(s)
     }
 }
@@ -230,9 +212,9 @@ impl PartialEq for Output {
 }
 
 impl TryFrom<&[u8]> for Output {
-    type Error = OutputError;
+    type Error = Error;
 
-    fn try_from(input: &[u8]) -> Result<Output, OutputError> {
+    fn try_from(input: &[u8]) -> Result<Output> {
         Self::new(input)
     }
 }
@@ -254,7 +236,7 @@ impl fmt::Debug for Output {
 
 #[cfg(test)]
 mod tests {
-    use super::{Output, OutputError};
+    use super::{Error, Output};
 
     #[test]
     fn new_with_valid_min_length_input() {
@@ -274,14 +256,14 @@ mod tests {
     fn reject_new_too_short() {
         let bytes = [9u8; 9];
         let err = Output::new(&bytes).err().unwrap();
-        assert_eq!(err, OutputError::TooShort);
+        assert_eq!(err, Error::OutputTooShort);
     }
 
     #[test]
     fn reject_new_too_long() {
         let bytes = [65u8; 65];
         let err = Output::new(&bytes).err().unwrap();
-        assert_eq!(err, OutputError::TooLong);
+        assert_eq!(err, Error::OutputTooLong);
     }
 
     #[test]

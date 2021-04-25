@@ -16,7 +16,7 @@
 //!
 //! [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 
-use crate::errors::ParseError;
+use crate::{Error, Result};
 use core::{convert::TryFrom, fmt, ops::Deref, str};
 
 /// Algorithm or parameter identifier.
@@ -44,12 +44,6 @@ impl<'a> Ident<'a> {
     /// This value corresponds to the maximum size of a function symbolic names
     /// and parameter names according to the PHC string format.
     const MAX_LENGTH: usize = 32;
-
-    /// Maximum length of an [`Ident`] - 32 ASCII characters (i.e. 32-bytes).
-    #[deprecated(since = "0.1.4", note = "use Ident::MAX_LENGTH instead")]
-    pub const fn max_len() -> usize {
-        Self::MAX_LENGTH
-    }
 
     /// Parse an [`Ident`] from a string.
     ///
@@ -122,11 +116,11 @@ impl<'a> Deref for Ident<'a> {
 // Note: this uses `TryFrom` instead of `FromStr` to support a lifetime on
 // the `str` the value is being parsed from.
 impl<'a> TryFrom<&'a str> for Ident<'a> {
-    type Error = ParseError;
+    type Error = Error;
 
-    fn try_from(s: &'a str) -> Result<Self, ParseError> {
+    fn try_from(s: &'a str) -> Result<Self> {
         if s.is_empty() {
-            return Err(ParseError::Empty);
+            return Err(Error::ParamNameInvalid);
         }
 
         let bytes = s.as_bytes();
@@ -134,12 +128,12 @@ impl<'a> TryFrom<&'a str> for Ident<'a> {
 
         for &c in bytes {
             if !is_char_valid(c) {
-                return Err(ParseError::InvalidChar(c.into()));
+                return Err(Error::ParamNameInvalid);
             }
         }
 
         if too_long {
-            return Err(ParseError::TooLong);
+            return Err(Error::ParamNameInvalid);
         }
 
         Ok(Self::new(s))
@@ -165,7 +159,7 @@ const fn is_char_valid(c: u8) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{Ident, ParseError};
+    use super::{Error, Ident};
     use core::convert::TryFrom;
 
     // Invalid ident examples
@@ -195,7 +189,7 @@ mod tests {
     #[test]
     fn reject_empty_fallible() {
         let err = Ident::try_from(INVALID_EMPTY).err().unwrap();
-        assert_eq!(err, ParseError::Empty);
+        assert_eq!(err, Error::ParamNameInvalid);
     }
 
     #[test]
@@ -207,7 +201,7 @@ mod tests {
     #[test]
     fn reject_invalid_char_fallible() {
         let err = Ident::try_from(INVALID_CHAR).err().unwrap();
-        assert_eq!(err, ParseError::InvalidChar(';'));
+        assert_eq!(err, Error::ParamNameInvalid);
     }
 
     #[test]
@@ -219,7 +213,7 @@ mod tests {
     #[test]
     fn reject_too_long_fallible() {
         let err = Ident::try_from(INVALID_TOO_LONG).err().unwrap();
-        assert_eq!(err, ParseError::TooLong);
+        assert_eq!(err, Error::ParamNameInvalid);
     }
 
     #[test]
@@ -231,6 +225,6 @@ mod tests {
     #[test]
     fn reject_invalid_char_and_too_long_fallible() {
         let err = Ident::try_from(INVALID_CHAR_AND_TOO_LONG).err().unwrap();
-        assert_eq!(err, ParseError::InvalidChar('!'));
+        assert_eq!(err, Error::ParamNameInvalid);
     }
 }
