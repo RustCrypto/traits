@@ -54,7 +54,7 @@ pub type UntaggedPointSize<C> = <<C as crate::Curve>::FieldSize as Add>::Output;
 /// This type is an enum over the compressed and uncompressed encodings,
 /// useful for cases where either encoding can be supported, or conversions
 /// between the two forms.
-#[derive(Clone, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Clone, Default, Eq, PartialEq, PartialOrd, Ord)]
 pub struct EncodedPoint<C>
 where
     C: Curve,
@@ -146,7 +146,7 @@ where
     /// Return [`EncodedPoint`] representing the additive identity
     /// (a.k.a. point at infinity)
     pub fn identity() -> Self {
-        Self::from_bytes(&[0]).unwrap()
+        Self::default()
     }
 
     /// Get the length of the encoded point in bytes
@@ -444,10 +444,8 @@ impl Tag {
 
     /// Compress the given y-coordinate, returning a `Tag::Compressed*` value
     fn compress_y(y: &[u8]) -> Self {
-        debug_assert!(!y.is_empty());
-
         // Is the y-coordinate odd in the SEC1 sense: `self mod 2 == 1`?
-        if y.as_ref().last().unwrap() & 1 == 1 {
+        if y.as_ref().last().expect("empty y-coordinate") & 1 == 1 {
             Tag::CompressedOddY
         } else {
             Tag::CompressedEvenY
@@ -742,6 +740,9 @@ mod tests {
         assert_eq!(identity_point.tag(), Tag::Identity);
         assert_eq!(identity_point.len(), 1);
         assert_eq!(identity_point.as_bytes(), &IDENTITY_BYTES[..]);
+
+        // identity is default
+        assert_eq!(identity_point, EncodedPoint::default());
     }
 
     #[cfg(feature = "alloc")]

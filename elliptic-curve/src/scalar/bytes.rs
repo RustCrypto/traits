@@ -65,7 +65,7 @@ where
         let mut borrow = 0;
 
         for (i, chunk) in bytes.as_ref().chunks(8).rev().enumerate() {
-            let limb = u64::from_be_bytes(chunk.try_into().unwrap());
+            let limb = u64::from_be_bytes(chunk.try_into().expect("invalid chunk size"));
             borrow = sbb64(limb, C::ORDER.as_ref()[i], borrow).1;
         }
 
