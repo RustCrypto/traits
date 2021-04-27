@@ -189,10 +189,10 @@ impl PrimeField for Scalar {
         let mut w = [0u64; LIMBS];
 
         // Interpret the bytes as a big-endian integer w.
-        w[3] = u64::from_be_bytes(bytes[0..8].try_into().unwrap());
-        w[2] = u64::from_be_bytes(bytes[8..16].try_into().unwrap());
-        w[1] = u64::from_be_bytes(bytes[16..24].try_into().unwrap());
-        w[0] = u64::from_be_bytes(bytes[24..32].try_into().unwrap());
+        w[3] = u64::from_be_bytes(bytes[0..8].try_into().expect("bad field size"));
+        w[2] = u64::from_be_bytes(bytes[8..16].try_into().expect("bad field size"));
+        w[1] = u64::from_be_bytes(bytes[16..24].try_into().expect("bad field size"));
+        w[0] = u64::from_be_bytes(bytes[24..32].try_into().expect("bad field size"));
 
         // If w is in the range [0, n) then w - n will overflow, resulting in a borrow
         // value of 2^64 - 1.
