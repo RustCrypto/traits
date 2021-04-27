@@ -35,23 +35,6 @@ impl From<OverflowError> for LoopError {
 #[cfg(feature = "std")]
 impl std::error::Error for OverflowError {}
 
-/// The error type returned when key and/or nonce used in the [`FromKey`]
-/// and [`FromKeyNonce`] slice-based methods had an invalid length.
-///
-/// [`FromKey`]: crate::FromKey
-/// [`FromKeyNonce`]: crate::FromKeyNonce
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub struct InvalidLength;
-
-impl fmt::Display for InvalidLength {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        f.write_str("Invalid Length")
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for InvalidLength {}
-
 /// The error type returned by the [`BlockModeEncryptWrapper`] and
 /// [`BlockModeDecryptWrapper`] types.
 ///
@@ -68,3 +51,16 @@ impl fmt::Display for BlockModeError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for BlockModeError {}
+
+/// The error type for methods which require slices of equal length.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct NotEqualError;
+
+impl fmt::Display for NotEqualError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("Length of slices is not equal")
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for NotEqualError {}

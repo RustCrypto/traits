@@ -4,7 +4,44 @@
 //! for ciphers implementation.
 
 use crate::errors::{LoopError, OverflowError};
+use crate::inout::{InOutBuf, InResOutBuf};
 use core::convert::{TryFrom, TryInto};
+use crypto_common::{Block, BlockProcessing};
+use generic_array::typenum::U1;
+
+/// Synchronous stream ciphers.
+pub trait StreamCipherCore: BlockProcessing {
+    /// Generate next keystream block.
+    fn gen_keystream_block(&mut self) -> Result<Block<Self>, LoopError>;
+
+    /// Generate keystream blocks in parallel for provided data blocks.
+    fn gen_keystream_blocks(
+        &mut self,
+        mut blocks: InOutBuf<'_, '_, Block<Self>>,
+        proc: impl FnMut(InResOutBuf<'_, '_, '_, Block<Self>>),
+    ) -> Result<(), LoopError> {
+        blocks.try_chunks::<U1, LoopError, _, _, _, _>(
+            self,
+            |state, _, res| state.gen_keystream_block().map(|b| res[0] = b),
+            |state, _, res| state.gen_keystream_block().map(|b| res[0] = b),
+            proc,
+        )
+    }
+}
+
+/// Counter-based synchronous stream ciphers.
+///
+/// Such ciphers allow random access to an underlying keystream and can return
+/// current position in it.
+pub trait CtrBasedStreamCipherCore: StreamCipherCore {
+    type Counter;
+
+    /// Get current block position.
+    fn get_block_pos(&self) -> Self::Counter;
+
+    /// Set current block position.
+    fn set_block_pos(&mut self, pos: Self::Counter);
+}
 
 /// Synchronous stream cipher core trait.
 pub trait StreamCipher {
@@ -105,7 +142,7 @@ pub trait SeekNum:
     fn from_block_byte<T: SeekNum>(block: T, byte: u8, bs: u8) -> Result<Self, OverflowError>;
 
     /// Try to get block number and bytes position for given block size `bs`.
-    fn to_block_byte<T: SeekNum>(self, bs: u8) -> Result<(T, u8), OverflowError>;
+    fn to_block_byte<T: SeekNum>(&self, bs: u8) -> Result<(T, u8), OverflowError>;
 }
 
 macro_rules! impl_seek_num {
@@ -119,7 +156,7 @@ macro_rules! impl_seek_num {
                     Ok(pos)
                 }
 
-                fn to_block_byte<T: TryFrom<Self>>(self, bs: u8) -> Result<(T, u8), OverflowError> {
+                fn to_block_byte<T: TryFrom<Self>>(&self, bs: u8) -> Result<(T, u8), OverflowError> {
                     let bs = bs as Self;
                     let byte = self % bs;
                     let block = T::try_from(self/bs).map_err(|_| OverflowError)?;
