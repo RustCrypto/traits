@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = "0.14"
-crypto-common = { version = "0.1", path = "../crypto-common/" }
+crypto-common = { version = "=0.1.0-pre", path = "../crypto-common" }
 
 block-buffer = { version = "0.10.0-pre.2", features = ["block-padding"], optional = true }
 blobby = { version = "0.3", optional = true }
