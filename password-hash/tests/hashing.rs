@@ -1,8 +1,7 @@
 //! Password hashing tests
 
 pub use password_hash::{
-    Decimal, HasherError, Ident, Output, ParamsString, PasswordHash, PasswordHasher, Salt,
-    VerifyError,
+    Decimal, Error, Ident, Output, ParamsString, PasswordHash, PasswordHasher, Result, Salt,
 };
 use std::convert::{TryFrom, TryInto};
 
@@ -18,15 +17,15 @@ impl PasswordHasher for StubPasswordHasher {
         &self,
         password: &[u8],
         algorithm: Option<Ident<'a>>,
-        _version: Option<Decimal>,
         params: StubParams,
-        salt: Salt<'a>,
-    ) -> Result<PasswordHash<'a>, HasherError> {
+        salt: impl Into<Salt<'a>>,
+    ) -> Result<PasswordHash<'a>> {
+        let salt = salt.into();
         let mut output = Vec::new();
 
         if let Some(alg) = algorithm {
             if alg != ALG {
-                return Err(HasherError::Algorithm);
+                return Err(Error::Algorithm);
             }
         }
 
@@ -50,18 +49,18 @@ impl PasswordHasher for StubPasswordHasher {
 #[derive(Clone, Debug, Default)]
 pub struct StubParams;
 
-impl<'a> TryFrom<&'a ParamsString> for StubParams {
-    type Error = HasherError;
+impl<'a> TryFrom<&PasswordHash<'a>> for StubParams {
+    type Error = Error;
 
-    fn try_from(_: &'a ParamsString) -> Result<Self, HasherError> {
+    fn try_from(_: &PasswordHash<'a>) -> Result<Self> {
         Ok(Self)
     }
 }
 
 impl<'a> TryFrom<StubParams> for ParamsString {
-    type Error = HasherError;
+    type Error = Error;
 
-    fn try_from(_: StubParams) -> Result<Self, HasherError> {
+    fn try_from(_: StubParams) -> Result<Self> {
         Ok(Self::default())
     }
 }
@@ -84,6 +83,6 @@ fn verify_password_hash() {
 
     assert_eq!(
         hash.verify_password(&[&StubPasswordHasher], "wrong password"),
-        Err(VerifyError)
+        Err(Error::Password)
     );
 }

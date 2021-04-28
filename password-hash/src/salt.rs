@@ -1,6 +1,6 @@
 //! Salt string support.
 
-use crate::{B64Error, Encoding, ParseError, Value};
+use crate::{Encoding, Error, Result, Value};
 use core::{
     convert::{TryFrom, TryInto},
     fmt, str,
@@ -93,36 +93,19 @@ impl<'a> Salt<'a> {
     /// Recommended length of a salt: 16-bytes.
     pub const RECOMMENDED_LENGTH: usize = 16;
 
-    /// Minimum length of a [`Salt`] string: 4-bytes.
-    #[deprecated(since = "0.1.4", note = "use Salt::MIN_LENGTH instead")]
-    pub const fn min_len() -> usize {
-        Self::MIN_LENGTH
-    }
-
-    /// Maximum length of a [`Salt`] string: 64-bytes.
-    #[deprecated(since = "0.1.4", note = "use Salt::MAX_LENGTH instead")]
-    pub const fn max_len() -> usize {
-        Self::MAX_LENGTH
-    }
-
-    /// Recommended length of a salt: 16-bytes.
-    #[deprecated(since = "0.1.4", note = "use Salt::RECOMMENDED_LENGTH instead")]
-    pub const fn recommended_len() -> usize {
-        Self::RECOMMENDED_LENGTH
-    }
-
     /// Create a [`Salt`] from the given `str`, validating it according to
     /// [`Salt::min_len`] and [`Salt::max_len`] length restrictions.
-    pub fn new(input: &'a str) -> Result<Self, ParseError> {
+    pub fn new(input: &'a str) -> Result<Self> {
         if input.len() < Self::MIN_LENGTH {
-            return Err(ParseError::TooShort);
+            return Err(Error::SaltTooShort);
         }
 
         if input.len() > Self::MAX_LENGTH {
-            return Err(ParseError::TooLong);
+            return Err(Error::SaltTooLong);
         }
 
-        Ok(Self(input.try_into()?))
+        // TODO(tarcieri): revisit potentially bogus error handling
+        input.try_into().map(Self).map_err(|_| Error::SaltTooLong)
     }
 
     /// Attempt to decode a B64-encoded [`Salt`], writing the decoded result
@@ -130,7 +113,7 @@ impl<'a> Salt<'a> {
     /// containing the decoded result on success.
     ///
     /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
-    pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8], B64Error> {
+    pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8]> {
         self.0.b64_decode(buf)
     }
 
@@ -157,9 +140,9 @@ impl<'a> AsRef<str> for Salt<'a> {
 }
 
 impl<'a> TryFrom<&'a str> for Salt<'a> {
-    type Error = ParseError;
+    type Error = Error;
 
-    fn try_from(input: &'a str) -> Result<Self, ParseError> {
+    fn try_from(input: &'a str) -> Result<Self> {
         Self::new(input)
     }
 }
@@ -198,7 +181,7 @@ impl SaltString {
     }
 
     /// Create a new [`SaltString`].
-    pub fn new(s: &str) -> Result<Self, ParseError> {
+    pub fn new(s: &str) -> Result<Self> {
         // Assert `s` parses successifully as a `Salt`
         Salt::new(s)?;
 
@@ -212,21 +195,21 @@ impl SaltString {
                 length: length as u8,
             })
         } else {
-            Err(ParseError::TooLong)
+            Err(Error::SaltTooLong)
         }
     }
 
     /// Encode the given byte slice as B64 into a new [`SaltString`].
     ///
     /// Returns `None` if the slice is too long.
-    pub fn b64_encode(input: &[u8]) -> Result<Self, B64Error> {
+    pub fn b64_encode(input: &[u8]) -> Result<Self> {
         let mut bytes = [0u8; Salt::MAX_LENGTH];
         let length = Encoding::B64.encode(input, &mut bytes)?.len() as u8;
         Ok(Self { bytes, length })
     }
 
     /// Decode this [`SaltString`] from B64 into the provided output buffer.
-    pub fn b64_decode<'a>(&self, buf: &'a mut [u8]) -> Result<&'a [u8], B64Error> {
+    pub fn b64_decode<'a>(&self, buf: &'a mut [u8]) -> Result<&'a [u8]> {
         self.as_salt().b64_decode(buf)
     }
 
@@ -272,7 +255,7 @@ impl<'a> From<&'a SaltString> for Salt<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{ParseError, Salt};
+    use super::{Error, Salt};
 
     #[test]
     fn new_with_valid_min_length_input() {
@@ -292,7 +275,7 @@ mod tests {
     fn reject_new_too_short() {
         for &too_short in &["", "a", "ab", "abc"] {
             let err = Salt::new(too_short).err().unwrap();
-            assert_eq!(err, ParseError::TooShort);
+            assert_eq!(err, Error::SaltTooShort);
         }
     }
 
@@ -300,6 +283,6 @@ mod tests {
     fn reject_new_too_long() {
         let s = "0123456789112345678921234567893123456789412345678";
         let err = Salt::new(s).err().unwrap();
-        assert_eq!(err, ParseError::TooLong);
+        assert_eq!(err, Error::SaltTooLong);
     }
 }

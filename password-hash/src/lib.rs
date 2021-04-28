@@ -39,7 +39,7 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_root_url = "https://docs.rs/password-hash/0.1.4"
+    html_root_url = "https://docs.rs/password-hash/0.2.0-pre"
 )]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
@@ -60,7 +60,7 @@ mod value;
 
 pub use crate::{
     encoding::Encoding,
-    errors::{B64Error, HashError, HasherError, OutputError, ParamsError, ParseError, VerifyError},
+    errors::{B64Error, Error, Result},
     ident::Ident,
     output::Output,
     params::ParamsString,
@@ -82,24 +82,22 @@ pub trait PasswordHasher {
     type Params: Clone
         + Debug
         + Default
-        + for<'a> TryFrom<&'a ParamsString, Error = HasherError>
-        + for<'a> TryInto<ParamsString, Error = HasherError>;
+        + for<'a> TryFrom<&'a PasswordHash<'a>, Error = Error>
+        + for<'a> TryInto<ParamsString, Error = Error>;
 
     /// Simple API for computing a [`PasswordHash`] from a password and
     /// [`Salt`] value.
     ///
     /// Uses the default recommended parameters for a given algorithm.
-    fn hash_password_simple<'a>(
-        &self,
-        password: &[u8],
-        salt: &'a str,
-    ) -> Result<PasswordHash<'a>, HasherError> {
+    fn hash_password_simple<'a, S>(&self, password: &[u8], salt: &'a S) -> Result<PasswordHash<'a>>
+    where
+        S: AsRef<str> + ?Sized,
+    {
         self.hash_password(
             password,
             None,
-            None,
             Self::Params::default(),
-            salt.try_into()?,
+            Salt::try_from(salt.as_ref())?,
         )
     }
 
@@ -110,10 +108,9 @@ pub trait PasswordHasher {
         &self,
         password: &[u8],
         algorithm: Option<Ident<'a>>,
-        version: Option<Decimal>,
         params: Self::Params,
-        salt: Salt<'a>,
-    ) -> Result<PasswordHash<'a>, HasherError>;
+        salt: impl Into<Salt<'a>>,
+    ) -> Result<PasswordHash<'a>>;
 }
 
 /// Trait for password verification.
@@ -127,17 +124,16 @@ pub trait PasswordVerifier {
     /// Compute this password hashing function against the provided password
     /// using the parameters from the provided password hash and see if the
     /// computed output matches.
-    fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<(), VerifyError>;
+    fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<()>;
 }
 
 impl<T: PasswordHasher> PasswordVerifier for T {
-    fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<(), VerifyError> {
+    fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<()> {
         if let (Some(salt), Some(expected_output)) = (&hash.salt, &hash.hash) {
             let computed_hash = self.hash_password(
                 password,
                 Some(hash.algorithm),
-                hash.version,
-                T::Params::try_from(&hash.params)?,
+                T::Params::try_from(&hash)?,
                 *salt,
             )?;
 
@@ -149,7 +145,7 @@ impl<T: PasswordHasher> PasswordVerifier for T {
             }
         }
 
-        Err(VerifyError)
+        Err(Error::Password)
     }
 }
 
@@ -166,10 +162,10 @@ pub trait McfHasher {
     ///
     /// MCF hashes are otherwise largely unstructured and parsed according to
     /// algorithm-specific rules so hashers must parse a raw string themselves.
-    fn upgrade_mcf_hash<'a>(&self, hash: &'a str) -> Result<PasswordHash<'a>, HasherError>;
+    fn upgrade_mcf_hash<'a>(&self, hash: &'a str) -> Result<PasswordHash<'a>>;
 
     /// Verify a password hash in MCF format against the provided password.
-    fn verify_mcf_hash(&self, password: &[u8], mcf_hash: &str) -> Result<(), VerifyError>
+    fn verify_mcf_hash(&self, password: &[u8], mcf_hash: &str) -> Result<()>
     where
         Self: PasswordVerifier,
     {
@@ -241,26 +237,26 @@ pub struct PasswordHash<'a> {
 
 impl<'a> PasswordHash<'a> {
     /// Parse a password hash from a string in the PHC string format.
-    pub fn new(s: &'a str) -> Result<Self, HashError> {
+    pub fn new(s: &'a str) -> Result<Self> {
         Self::parse(s, Encoding::B64)
     }
 
     /// Parse a password hash from the given [`Encoding`].
-    pub fn parse(s: &'a str, encoding: Encoding) -> Result<Self, HashError> {
+    pub fn parse(s: &'a str, encoding: Encoding) -> Result<Self> {
         if s.is_empty() {
-            return Err(ParseError::Empty.into());
+            return Err(Error::PhcStringTooShort);
         }
 
         let mut fields = s.split(PASSWORD_HASH_SEPARATOR);
         let beginning = fields.next().expect("no first field");
 
-        if let Some(first_char) = beginning.chars().next() {
-            return Err(ParseError::InvalidChar(first_char).into());
+        if beginning.chars().next().is_some() {
+            return Err(Error::PhcStringInvalid);
         }
 
         let algorithm = fields
             .next()
-            .ok_or(ParseError::TooShort)
+            .ok_or(Error::PhcStringTooShort)
             .and_then(Ident::try_from)?;
 
         let mut version = None;
@@ -303,7 +299,7 @@ impl<'a> PasswordHash<'a> {
         }
 
         if fields.next().is_some() {
-            return Err(ParseError::TooLong.into());
+            return Err(Error::PhcStringTooLong);
         }
 
         Ok(Self {
@@ -320,7 +316,7 @@ impl<'a> PasswordHash<'a> {
         phf: impl PasswordHasher,
         password: impl AsRef<[u8]>,
         salt: &'a str,
-    ) -> Result<Self, HasherError> {
+    ) -> Result<Self> {
         phf.hash_password_simple(password.as_ref(), salt)
     }
 
@@ -330,14 +326,14 @@ impl<'a> PasswordHash<'a> {
         &self,
         phfs: &[&dyn PasswordVerifier],
         password: impl AsRef<[u8]>,
-    ) -> Result<(), VerifyError> {
+    ) -> Result<()> {
         for &phf in phfs {
             if phf.verify_password(password.as_ref(), self).is_ok() {
                 return Ok(());
             }
         }
 
-        Err(VerifyError)
+        Err(Error::Password)
     }
 
     /// Get the [`Encoding`] that this [`PasswordHash`] is serialized with.
@@ -349,9 +345,9 @@ impl<'a> PasswordHash<'a> {
 // Note: this uses `TryFrom` instead of `FromStr` to support a lifetime on
 // the `str` the value is being parsed from.
 impl<'a> TryFrom<&'a str> for PasswordHash<'a> {
-    type Error = HashError;
+    type Error = Error;
 
-    fn try_from(s: &'a str) -> Result<Self, HashError> {
+    fn try_from(s: &'a str) -> Result<Self> {
         Self::new(s)
     }
 }
