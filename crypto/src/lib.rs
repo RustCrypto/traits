@@ -43,8 +43,6 @@
 #![forbid(unsafe_code)]
 #![warn(rust_2018_idioms)]
 
-pub use common;
-
 #[cfg(feature = "aead")]
 pub use aead;
 

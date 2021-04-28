@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.0 (2021-04-29)
+### Added
+- Encrypt/decrypt-only block cipher traits ([#352])
+- Re-export `blobby` from root ([#435])
+- Block cipher trait blanket impls for refs ([#441])
+
+### Changed
+- Consolidate error types ([#373])
+- Change `SeekNum` impls to fit with the new `BlockBuffer` ([#435])
+- Reorganize modules ([#435])
+- Renamed `new_var` to `new_from_slice(s)` ([#442])
+
+[#352]: https://github.com/RustCrypto/traits/pull/352
+[#373]: https://github.com/RustCrypto/traits/pull/373
+[#435]: https://github.com/RustCrypto/traits/pull/435
+[#441]: https://github.com/RustCrypto/traits/pull/441
+[#442]: https://github.com/RustCrypto/traits/pull/442
+
 ## 0.2.5 (2020-11-01)
 ### Fixed
 - Nested macros used old deprecated names ([#360])
