@@ -12,7 +12,3 @@ members = [
     "signature/async",
     "universal-hash",
 ]
-
-[patch.crates-io]
-block-buffer = { git = "https://github.com/RustCrypto/utils", branch = "block_mode" }
-block-padding = { git = "https://github.com/RustCrypto/utils", branch = "block_mode" }

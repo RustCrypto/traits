@@ -78,8 +78,9 @@ dependencies = [
 
 [[package]]
 name = "block-buffer"
-version = "0.10.0-pre.2"
-source = "git+https://github.com/RustCrypto/utils?branch=block_mode#39ee346fde26516678ca3700b88c53b288b39e1c"
+version = "0.10.0-pre.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4b13c429c0b48d55a541108e23c7795eb821ee65b50c2f719f4f7fc5a022dcf"
 dependencies = [
  "block-padding",
  "generic-array 0.14.4",
@@ -88,7 +89,8 @@ dependencies = [
 [[package]]
 name = "block-padding"
 version = "0.3.0-pre"
-source = "git+https://github.com/RustCrypto/utils?branch=block_mode#39ee346fde26516678ca3700b88c53b288b39e1c"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3992d179d1dd2fa87869057217d43cf88ad31d4e44738d159a5a6caafdf63ae6"
 dependencies = [
  "generic-array 0.14.4",
 ]
@@ -107,10 +109,10 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "cipher"
-version = "0.3.0-pre.4"
+version = "0.3.0-pre.5"
 dependencies = [
  "blobby",
- "block-buffer 0.10.0-pre.2",
+ "block-buffer 0.10.0-pre.4",
  "crypto-common",
  "generic-array 0.14.4",
  "rand_core",
@@ -134,6 +136,7 @@ version = "0.2.0-pre"
 dependencies = [
  "aead",
  "cipher",
+ "crypto-common",
  "crypto-mac",
  "digest 0.10.0-pre.3",
  "elliptic-curve",
@@ -146,7 +149,7 @@ dependencies = [
 name = "crypto-common"
 version = "0.1.0-pre"
 dependencies = [
- "block-buffer 0.10.0-pre.2",
+ "block-buffer 0.10.0-pre.4",
  "generic-array 0.14.4",
 ]
 
