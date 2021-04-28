@@ -144,7 +144,7 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.1.0"
+version = "0.1.0-pre"
 dependencies = [
  "block-buffer 0.10.0-pre.2",
  "generic-array 0.14.4",
