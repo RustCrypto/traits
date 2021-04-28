@@ -155,7 +155,7 @@ dependencies = [
 
 [[package]]
 name = "crypto-mac"
-version = "0.11.0-pre"
+version = "0.11.0-pre.1"
 dependencies = [
  "blobby",
  "cipher",
