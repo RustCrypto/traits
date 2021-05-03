@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Encrypt/decrypt-only block cipher traits ([#352])
 - Re-export `blobby` from root ([#435])
 - Block cipher trait blanket impls for refs ([#441])
+- `generate_key` method to `New*` trait ([#513])
 
 ### Changed
 - Consolidate error types ([#373])
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#435]: https://github.com/RustCrypto/traits/pull/435
 [#441]: https://github.com/RustCrypto/traits/pull/441
 [#442]: https://github.com/RustCrypto/traits/pull/442
+[#513]: https://github.com/RustCrypto/traits/pull/513
 
 ## 0.2.5 (2020-11-01)
 ### Fixed
