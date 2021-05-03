@@ -105,6 +105,7 @@ pub trait SeekNum:
     fn from_block_byte<T: SeekNum>(block: T, byte: u8, bs: u8) -> Result<Self, OverflowError>;
 
     /// Try to get block number and bytes position for given block size `bs`.
+    #[allow(clippy::wrong_self_convention)]
     fn to_block_byte<T: SeekNum>(self, bs: u8) -> Result<(T, u8), OverflowError>;
 }
 

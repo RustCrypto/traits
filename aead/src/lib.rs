@@ -499,10 +499,7 @@ impl Buffer for Vec<u8> {
 }
 
 #[cfg(feature = "heapless")]
-impl<N> Buffer for heapless::Vec<u8, N>
-where
-    N: heapless::ArrayLength<u8>,
-{
+impl<const N: usize> Buffer for heapless::Vec<u8, N> {
     fn extend_from_slice(&mut self, other: &[u8]) -> Result<(), Error> {
         heapless::Vec::extend_from_slice(self, other).map_err(|_| Error)
     }
