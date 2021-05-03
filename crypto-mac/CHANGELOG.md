@@ -6,9 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## 0.11.0 (2021-04-28)
+### Added
+- `generate_key` method to `New*` trait ([#513])
+
 ### Changed
+- Renamed `new_var` to `new_from_slice` ([#442])
 - Bump `cipher` dependency to v0.3 ([#621])
 
+[#442]: https://github.com/RustCrypto/traits/pull/442
+[#513]: https://github.com/RustCrypto/traits/pull/513
 [#621]: https://github.com/RustCrypto/traits/pull/621
 
 ## 0.10.0 (2020-10-15)
