@@ -30,6 +30,8 @@
 //!
 //! [1]: https://eprint.iacr.org/2015/189.pdf
 
+#![allow(clippy::upper_case_acronyms)]
+
 use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, NewAead};
 use core::ops::{AddAssign, Sub};
 use generic_array::{
