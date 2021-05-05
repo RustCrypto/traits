@@ -2,6 +2,7 @@
 
 use crate::{Encoding, Error, Result};
 use core::{cmp::PartialEq, convert::TryFrom, fmt, str::FromStr};
+use subtle::{Choice, ConstantTimeEq};
 
 /// Output from password hashing functions, i.e. the "hash" or "digest"
 /// as raw bytes.
@@ -37,30 +38,62 @@ use core::{cmp::PartialEq, convert::TryFrom, fmt, str::FromStr};
 /// as a reasonable maximum, and recommends using 32-bytes.
 ///
 /// # Constant-time comparisons
-/// The [`PartialEq`] and [`Eq`] trait impls for [`Output`] provide a
-/// non-short-circuiting equality comparison.
+/// The [`Output`] type impls the [`ConstantTimeEq`] trait from the [`subtle`]
+/// crate and uses it to perform constant-time comparisons.
 ///
-/// There are few cases where this may actually helpful from a practical
-/// perspective, namely cases where salts are predictable by an attacker.
-/// Due to the limited degree in which such comparisons may be helpful,
-/// this crate does not loop in additional dependencies for
-/// constant-time comparisons (e.g. `subtle`).
+/// Additionally the [`PartialEq`] and [`Eq`] trait impls for [`Output`] use
+/// [`ConstantTimeEq`] when performing comparisons.
 ///
-/// The extent to which constant-time comparisons of password hashes provides
-/// meaningful protections in practical contexts is a
-/// [topic of considerable debate][3].
-/// This library has elected to use a non-short-circuiting comparison as a
-/// safer ("belt-and-suspenders") default, and also to
-/// [head off any potential debates around the issue][4].
-/// Our main suggestion to avoid such attacks is to use a unique, randomly
-/// generated salt per password which is unpredictable by the attacker.
-/// The [`SaltString::generate`] function randomly generates high-entropy
-/// salt values.
+/// ## Attacks on non-constant-time password hash comparisons
+/// Comparing password hashes in constant-time is known to mitigate at least
+/// one [poorly understood attack][3] involving an adversary with the following
+/// knowledge/capabilities:
+///
+/// - full knowledge of what password hashing algorithm is being used
+///   including any relevant configurable parameters
+/// - knowledge of the salt for a particular victim
+/// - ability to accurately measure a timing side-channel on comparisons
+///   of the password hash over the network
+///
+/// An attacker with the above is able to perform an offline computation of
+/// the hash for any chosen password in such a way that it will match the
+/// hash computed by the server.
+///
+/// As noted above, they also measure timing variability in the server's
+/// comparison of the hash it computes for a given password and a target hash
+/// the attacker is trying to learn.
+///
+/// When the attacker observes a hash comparison that takes longer than their
+/// previous attempts, they learn that they guessed another byte in the
+/// password hash correctly. They can leverage repeated measurements and
+/// observations with different candidate passwords to learn the password
+/// hash a byte-at-a-time in a manner similar to other such timing side-channel
+/// attacks.
+///
+/// The attack may seem somewhat counterintuitive since learning prefixes of a
+/// password hash does not reveal any additional information about the password
+/// itself. However, the above can be combined with an offline dictionary
+/// attack where the attacker is able to determine candidate passwords to send
+/// to the server by performing a brute force search offline and selecting
+/// candidate passwords whose hashes match the portion of the prefix they have
+/// learned so far.
+///
+/// As the attacker learns a longer and longer prefix of the password hash,
+/// they are able to more effectively eliminate candidate passwords offline as
+/// part of a dictionary attack, until they eventually guess the correct
+/// password or exhaust their set of candidate passwords.
+///
+/// ## Mitigations
+/// While we have taken care to ensure password hashes are compared in constant
+/// time, we would also suggest preventing such attacks by using randomly
+/// generated salts and keeping those salts secret.
+///
+/// The [`SaltString::generate`][`crate::SaltString::generate`] function can be
+/// used to generate random high-entropy salt values.
 ///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#function-duties
 /// [2]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
-/// [3]: https://github.com/codahale/bcrypt-ruby/issues/42
-/// [4]: https://twitter.com/coda/status/866310352606068736
+/// [3]: https://web.archive.org/web/20130208100210/http://security-assessment.com/files/documents/presentations/TimingAttackPresentation2012.pdf
 #[derive(Copy, Clone, Eq)]
 pub struct Output {
     /// Byte array containing a password hashing function output.
@@ -88,7 +121,7 @@ impl Output {
     pub const B64_MAX_LENGTH: usize = ((Self::MAX_LENGTH * 4) / 3) + 1;
 
     /// Create a [`Output`] from the given byte slice, validating it according
-    /// to [`Output::min_len`] and [`Output::max_len`] length restrictions.
+    /// to [`Output::MIN_LENGTH`] and [`Output::MAX_LENGTH`] restrictions.
     pub fn new(input: &[u8]) -> Result<Self> {
         Self::init_with(input.len(), |bytes| {
             bytes.copy_from_slice(input);
@@ -97,8 +130,8 @@ impl Output {
     }
 
     /// Create a [`Output`] from the given byte slice and [`Encoding`],
-    /// validating it according to [`Output::min_len`] and [`Output::max_len`]
-    /// length restrictions.
+    /// validating it according to [`Output::MIN_LENGTH`] and
+    /// [`Output::MAX_LENGTH`] restrictions.
     pub fn new_with_encoding(input: &[u8], encoding: Encoding) -> Result<Self> {
         let mut result = Self::new(input)?;
         result.encoding = encoding;
@@ -109,7 +142,8 @@ impl Output {
     /// a mutable byte slice into which it should write the output.
     ///
     /// The `output_size` (in bytes) must be known in advance, as well as at
-    /// least [`Output::min_len`] bytes and at most [`Output::max_len`] bytes.
+    /// least [`Output::MIN_LENGTH`] bytes and at most [`Output::MAX_LENGTH`]
+    /// bytes.
     pub fn init_with<F>(output_size: usize, f: F) -> Result<Self>
     where
         F: FnOnce(&mut [u8]) -> Result<()>,
@@ -187,6 +221,12 @@ impl AsRef<[u8]> for Output {
     }
 }
 
+impl ConstantTimeEq for Output {
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.as_ref().ct_eq(other.as_ref())
+    }
+}
+
 impl FromStr for Output {
     type Err = Error;
 
@@ -197,17 +237,7 @@ impl FromStr for Output {
 
 impl PartialEq for Output {
     fn eq(&self, other: &Self) -> bool {
-        if self.len() != other.len() {
-            return false;
-        }
-
-        // Non-short-circuiting comparison.
-        // See "Constant-time comparisons" documentation above.
-        self.as_ref()
-            .iter()
-            .zip(other.as_ref().iter())
-            .fold(0, |acc, (a, b)| acc | (a ^ b))
-            == 0
+        self.ct_eq(other).into()
     }
 }
 

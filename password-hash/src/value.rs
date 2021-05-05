@@ -32,7 +32,7 @@ pub type Decimal = u32;
 /// # Additional Notes
 /// The PHC spec allows for algorithm-defined maximum lengths for parameter
 /// values, however in the interest of interoperability this library defines a
-/// [`Value::max_len`] of 48 ASCII characters.
+/// [`Value::MAX_LENGTH`] of 48 ASCII characters.
 ///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 /// [2]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
