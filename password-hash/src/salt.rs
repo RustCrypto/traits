@@ -94,7 +94,7 @@ impl<'a> Salt<'a> {
     pub const RECOMMENDED_LENGTH: usize = 16;
 
     /// Create a [`Salt`] from the given `str`, validating it according to
-    /// [`Salt::min_len`] and [`Salt::max_len`] length restrictions.
+    /// [`Salt::MIN_LENGTH`] and [`Salt::MAX_LENGTH`] length restrictions.
     pub fn new(input: &'a str) -> Result<Self> {
         if input.len() < Self::MIN_LENGTH {
             return Err(Error::SaltTooShort);

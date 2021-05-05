@@ -17,9 +17,13 @@ keywords = ["crypt", "mcf", "password", "pbkdf", "phc"]
 
 [dependencies]
 base64ct = "1"
+subtle = { version = "2", default-features = false }
+
+# optional features
 rand_core = { version = "0.6", optional = true, default-features = false }
 
 [features]
+default = ["rand_core"]
 alloc = ["base64ct/alloc"]
 std = ["alloc", "base64ct/std"]
 
