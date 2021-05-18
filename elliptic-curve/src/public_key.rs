@@ -10,6 +10,7 @@ use crate::{
     Scalar,
 };
 use core::{
+    cmp::Ordering,
     convert::{TryFrom, TryInto},
     fmt::Debug,
     ops::Add,
@@ -310,9 +311,38 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn eq(&self, other: &Self) -> bool {
+        self.cmp(other) == Ordering::Equal
+    }
+}
+
+impl<C> PartialOrd for PublicKey<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<C> Ord for PublicKey<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+    ProjectivePoint<C>: From<AffinePoint<C>>,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
+{
+    fn cmp(&self, other: &Self) -> Ordering {
         // TODO(tarcieri): more efficient implementation?
         // This is implemented this way to reduce bounds for `AffinePoint<C>`
-        self.to_encoded_point(false) == other.to_encoded_point(false)
+        self.to_encoded_point(false)
+            .cmp(&other.to_encoded_point(false))
     }
 }
 
