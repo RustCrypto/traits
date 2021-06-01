@@ -21,7 +21,7 @@ use alloc::boxed::Box;
 
 #[cfg(feature = "arithmetic")]
 use crate::{
-    ff::PrimeField, weierstrass::DecompressPoint, AffinePoint, ProjectiveArithmetic, Scalar,
+    group::ff::PrimeField, weierstrass::DecompressPoint, AffinePoint, ProjectiveArithmetic, Scalar,
 };
 
 #[cfg(all(feature = "arithmetic", feature = "zeroize"))]

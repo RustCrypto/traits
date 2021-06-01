@@ -9,7 +9,7 @@ use generic_array::{typenum::Unsigned, GenericArray};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "arithmetic")]
-use crate::{ff::PrimeField, ProjectiveArithmetic, Scalar};
+use crate::{group::ff::PrimeField, ProjectiveArithmetic, Scalar};
 
 // TODO(tarcieri): unify these into a target-width gated `sbb`
 #[cfg(target_pointer_width = "32")]

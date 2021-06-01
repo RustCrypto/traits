@@ -15,13 +15,13 @@ use zeroize::Zeroize;
 #[cfg(all(feature = "arithmetic", feature = "pem"))]
 use {
     crate::{
-        ff::PrimeField,
         scalar::Scalar,
         sec1::{FromEncodedPoint, ToEncodedPoint},
         AffinePoint, ProjectiveArithmetic, ProjectivePoint,
     },
     alloc::vec::Vec,
     core::{convert::TryInto, fmt::Debug, iter},
+    ff::PrimeField,
     pkcs8::{der::Encodable, ToPrivateKey},
     zeroize::Zeroizing,
 };

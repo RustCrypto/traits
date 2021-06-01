@@ -21,7 +21,7 @@ use zeroize::Zeroize;
 
 #[cfg(feature = "arithmetic")]
 use crate::{
-    ff::PrimeField,
+    group::ff::PrimeField,
     rand_core::{CryptoRng, RngCore},
     weierstrass, AffinePoint, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, PublicKey,
     Scalar,
