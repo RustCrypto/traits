@@ -10,7 +10,7 @@ use crate::{
     util::sbb64,
     weierstrass,
     zeroize::Zeroize,
-    AlgorithmParameters, Curve, Order, ProjectiveArithmetic,
+    AlgorithmParameters, Curve, ProjectiveArithmetic,
 };
 use core::{
     convert::{TryFrom, TryInto},
@@ -40,12 +40,13 @@ pub struct MockCurve;
 
 impl Curve for MockCurve {
     type FieldSize = U32;
-}
 
-#[cfg(target_pointer_width = "32")]
-impl Order for MockCurve {
+    #[cfg(target_pointer_width = "32")]
     type Limbs = [u32; 8];
+    #[cfg(target_pointer_width = "64")]
+    type Limbs = [u64; 4];
 
+    #[cfg(target_pointer_width = "32")]
     const ORDER: Self::Limbs = [
         0xfc63_2551,
         0xf3b9_cac2,
@@ -56,12 +57,8 @@ impl Order for MockCurve {
         0x0000_0000,
         0xffff_ffff,
     ];
-}
 
-#[cfg(target_pointer_width = "64")]
-impl Order for MockCurve {
-    type Limbs = [u64; 4];
-
+    #[cfg(target_pointer_width = "64")]
     const ORDER: Self::Limbs = [
         0xf3b9_cac2_fc63_2551,
         0xbce6_faad_a717_9e84,
