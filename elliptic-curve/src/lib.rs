@@ -56,7 +56,7 @@ pub use self::{
     error::{Error, Result},
     scalar::bytes::ScalarBytes,
 };
-
+pub use crypto_bigint::{self as bigint, ArrayEncoding, NumBits, NumBytes};
 pub use generic_array::{self, typenum::consts};
 pub use rand_core;
 pub use subtle;
@@ -110,21 +110,14 @@ pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
 /// be impl'd by these ZSTs, facilitating types which are generic over elliptic
 /// curves (e.g. [`SecretKey`]).
 pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
-    /// Type representing the "limbs" of the curves group's order on
-    /// 32-bit platforms.
-    #[cfg(target_pointer_width = "32")]
-    type Limbs: AsRef<[u32]> + Copy + Debug;
-
-    /// Type representing the "limbs" of the curves group's order on
-    /// 64-bit platforms.
-    #[cfg(target_pointer_width = "64")]
-    type Limbs: AsRef<[u64]> + Copy + Debug;
+    /// Integer type used to represent field elements of this elliptic curve.
+    type UInt: AsRef<[bigint::Limb]> + ArrayEncoding + Copy + Debug + NumBits + NumBytes;
 
     /// Order constant.
     ///
     /// Subdivided into either 32-bit or 64-bit "limbs" (depending on the
     /// target CPU's word size), specified from least to most significant.
-    const ORDER: Self::Limbs;
+    const ORDER: Self::UInt;
 
     /// Size of this curve's field in *bytes*, i.e. the number of bytes needed
     /// to serialize a field element.
