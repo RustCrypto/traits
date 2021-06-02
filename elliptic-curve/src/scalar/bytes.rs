@@ -36,7 +36,7 @@ where
     #[cfg(target_pointer_width = "32")]
     pub fn new(bytes: FieldBytes<C>) -> CtOption<Self> {
         assert_eq!(
-            mem::size_of::<C::Limbs>(),
+            mem::size_of::<C::UInt>(),
             mem::size_of::<FieldBytes<C>>(),
             "malformed curve order"
         );
@@ -57,7 +57,7 @@ where
     #[cfg(target_pointer_width = "64")]
     pub fn new(bytes: FieldBytes<C>) -> CtOption<Self> {
         assert_eq!(
-            mem::size_of::<C::Limbs>(),
+            mem::size_of::<C::UInt>(),
             mem::size_of::<FieldBytes<C>>(),
             "malformed curve order"
         );

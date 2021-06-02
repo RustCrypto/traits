@@ -2,12 +2,12 @@
 //! against concrete implementations of the traits in this crate.
 
 use crate::{
+    bigint::{ArrayEncoding, U256},
     consts::U32,
     error::{Error, Result},
     rand_core::RngCore,
     sec1::{FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
-    util::sbb64,
     weierstrass,
     zeroize::Zeroize,
     AlgorithmParameters, Curve, ProjectiveArithmetic,
@@ -21,7 +21,7 @@ use ff::{Field, PrimeField};
 use hex_literal::hex;
 
 #[cfg(feature = "bits")]
-use crate::{group::ff::PrimeFieldBits, ScalarBits};
+use crate::{bigint, group::ff::PrimeFieldBits, ScalarBits};
 
 #[cfg(feature = "jwk")]
 use crate::JwkParameters;
@@ -40,31 +40,10 @@ pub struct MockCurve;
 
 impl Curve for MockCurve {
     type FieldSize = U32;
+    type UInt = U256;
 
-    #[cfg(target_pointer_width = "32")]
-    type Limbs = [u32; 8];
-    #[cfg(target_pointer_width = "64")]
-    type Limbs = [u64; 4];
-
-    #[cfg(target_pointer_width = "32")]
-    const ORDER: Self::Limbs = [
-        0xfc63_2551,
-        0xf3b9_cac2,
-        0xa717_9e84,
-        0xbce6_faad,
-        0xffff_ffff,
-        0xffff_ffff,
-        0x0000_0000,
-        0xffff_ffff,
-    ];
-
-    #[cfg(target_pointer_width = "64")]
-    const ORDER: Self::Limbs = [
-        0xf3b9_cac2_fc63_2551,
-        0xbce6_faad_a717_9e84,
-        0xffff_ffff_ffff_ffff,
-        0xffff_ffff_0000_0000,
-    ];
+    const ORDER: U256 =
+        U256::from_be_hex("ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
 }
 
 impl weierstrass::Curve for MockCurve {}
@@ -99,21 +78,9 @@ pub type PublicKey = crate::PublicKey<MockCurve>;
 /// Secret key.
 pub type SecretKey = crate::SecretKey<MockCurve>;
 
-const LIMBS: usize = 4;
-
-type U256 = [u64; LIMBS];
-
-/// P-256 modulus
-pub const MODULUS: U256 = [
-    0xf3b9_cac2_fc63_2551,
-    0xbce6_faad_a717_9e84,
-    0xffff_ffff_ffff_ffff,
-    0xffff_ffff_0000_0000,
-];
-
 /// Example scalar type
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct Scalar([u64; LIMBS]);
+pub struct Scalar(U256);
 
 impl Field for Scalar {
     fn random(_rng: impl RngCore) -> Self {
@@ -121,15 +88,15 @@ impl Field for Scalar {
     }
 
     fn zero() -> Self {
-        Self(Default::default())
+        Self(U256::ZERO)
     }
 
     fn one() -> Self {
-        Self([1, 0, 0, 0])
+        Self(U256::ONE)
     }
 
     fn is_zero(&self) -> bool {
-        self.ct_eq(&Self::zero()).into()
+        self.0.is_zero().into()
     }
 
     #[must_use]
@@ -151,26 +118,6 @@ impl Field for Scalar {
     }
 }
 
-#[cfg(all(feature = "bits", target_pointer_width = "64"))]
-fn pack_bits(native: U256) -> ScalarBits<MockCurve> {
-    native.into()
-}
-
-#[cfg(all(feature = "bits", target_pointer_width = "32"))]
-fn pack_bits(native: U256) -> ScalarBits<MockCurve> {
-    [
-        (native[0] & 0xffff_ffff) as u32,
-        (native[0] >> 32) as u32,
-        (native[1] & 0xffff_ffff) as u32,
-        (native[1] >> 32) as u32,
-        (native[2] & 0xffff_ffff) as u32,
-        (native[2] >> 32) as u32,
-        (native[3] & 0xffff_ffff) as u32,
-        (native[3] >> 32) as u32,
-    ]
-    .into()
-}
-
 impl PrimeField for Scalar {
     type Repr = FieldBytes;
 
@@ -179,35 +126,11 @@ impl PrimeField for Scalar {
     const S: u32 = 4;
 
     fn from_repr(bytes: FieldBytes) -> Option<Self> {
-        let mut w = [0u64; LIMBS];
-
-        // Interpret the bytes as a big-endian integer w.
-        w[3] = u64::from_be_bytes(bytes[0..8].try_into().expect("bad field size"));
-        w[2] = u64::from_be_bytes(bytes[8..16].try_into().expect("bad field size"));
-        w[1] = u64::from_be_bytes(bytes[16..24].try_into().expect("bad field size"));
-        w[0] = u64::from_be_bytes(bytes[24..32].try_into().expect("bad field size"));
-
-        // If w is in the range [0, n) then w - n will overflow, resulting in a borrow
-        // value of 2^64 - 1.
-        let (_, borrow) = sbb64(w[0], MODULUS[0], 0);
-        let (_, borrow) = sbb64(w[1], MODULUS[1], borrow);
-        let (_, borrow) = sbb64(w[2], MODULUS[2], borrow);
-        let (_, borrow) = sbb64(w[3], MODULUS[3], borrow);
-
-        if (borrow as u8) & 1 == 1 {
-            Some(Scalar(w))
-        } else {
-            None
-        }
+        U256::from_be_bytes(&bytes).try_into().ok()
     }
 
     fn to_repr(&self) -> FieldBytes {
-        let mut ret = FieldBytes::default();
-        ret[0..8].copy_from_slice(&self.0[3].to_be_bytes());
-        ret[8..16].copy_from_slice(&self.0[2].to_be_bytes());
-        ret[16..24].copy_from_slice(&self.0[1].to_be_bytes());
-        ret[24..32].copy_from_slice(&self.0[0].to_be_bytes());
-        ret
+        self.0.to_be_byte_array()
     }
 
     fn is_odd(&self) -> bool {
@@ -225,47 +148,38 @@ impl PrimeField for Scalar {
 
 #[cfg(feature = "bits")]
 impl PrimeFieldBits for Scalar {
-    #[cfg(target_pointer_width = "32")]
-    type ReprBits = [u32; 8];
-
-    #[cfg(target_pointer_width = "64")]
-    type ReprBits = [u64; 4];
+    type ReprBits = [bigint::Limb; 32 / bigint::LIMB_BYTES];
 
     fn to_le_bits(&self) -> ScalarBits<MockCurve> {
-        pack_bits(self.0)
+        (*self.0.limbs()).into()
     }
 
     fn char_le_bits() -> ScalarBits<MockCurve> {
-        pack_bits(MODULUS)
+        (*MockCurve::ORDER.limbs()).into()
     }
 }
 
-impl TryFrom<[u64; 4]> for Scalar {
+impl TryFrom<U256> for Scalar {
     type Error = Error;
 
-    fn try_from(limbs: [u64; 4]) -> Result<Self> {
-        // TODO(tarcieri): reject values that overflow the order
-        Ok(Scalar(limbs))
+    fn try_from(w: U256) -> Result<Self> {
+        if w < MockCurve::ORDER {
+            Ok(Scalar(w))
+        } else {
+            Err(Error)
+        }
     }
 }
 
 impl ConditionallySelectable for Scalar {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        Scalar([
-            u64::conditional_select(&a.0[0], &b.0[0], choice),
-            u64::conditional_select(&a.0[1], &b.0[1], choice),
-            u64::conditional_select(&a.0[2], &b.0[2], choice),
-            u64::conditional_select(&a.0[3], &b.0[3], choice),
-        ])
+        Scalar(U256::conditional_select(&a.0, &b.0, choice))
     }
 }
 
 impl ConstantTimeEq for Scalar {
     fn ct_eq(&self, other: &Self) -> Choice {
-        self.0[0].ct_eq(&other.0[0])
-            & self.0[1].ct_eq(&other.0[1])
-            & self.0[2].ct_eq(&other.0[2])
-            & self.0[3].ct_eq(&other.0[3])
+        self.0.ct_eq(&other.0)
     }
 }
 
@@ -375,12 +289,7 @@ impl From<Scalar> for FieldBytes {
 
 impl From<&Scalar> for FieldBytes {
     fn from(scalar: &Scalar) -> Self {
-        let mut ret = FieldBytes::default();
-        ret[0..8].copy_from_slice(&scalar.0[3].to_be_bytes());
-        ret[8..16].copy_from_slice(&scalar.0[2].to_be_bytes());
-        ret[16..24].copy_from_slice(&scalar.0[1].to_be_bytes());
-        ret[24..32].copy_from_slice(&scalar.0[0].to_be_bytes());
-        ret
+        scalar.to_repr()
     }
 }
 

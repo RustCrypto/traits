@@ -179,6 +179,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crypto-bigint"
+version = "0.1.0"
+source = "git+https://github.com/rustcrypto/utils.git#01c945e05d86cd36b7222f0a8628cf51410eebc7"
+dependencies = [
+ "generic-array",
+ "subtle",
+]
+
+[[package]]
 name = "crypto-common"
 version = "0.1.0-pre"
 dependencies = [
@@ -240,6 +249,7 @@ name = "elliptic-curve"
 version = "0.10.0-pre"
 dependencies = [
  "base64ct",
+ "crypto-bigint",
  "ff",
  "generic-array",
  "group",
