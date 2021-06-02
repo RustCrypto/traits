@@ -4,7 +4,7 @@
 //!
 //! ## Minimum Supported Rust Version
 //!
-//! Rust **1.47** or higher.
+//! Rust **1.51** or higher.
 //!
 //! Minimum supported Rust version can be changed in the future, but it will be
 //! done with a minor version bump.
@@ -68,11 +68,14 @@ pub use {
     crate::{
         point::{AffinePoint, ProjectiveArithmetic, ProjectivePoint},
         public_key::PublicKey,
-        scalar::{non_zero::NonZeroScalar, Scalar, ScalarBits},
+        scalar::{non_zero::NonZeroScalar, Scalar},
     },
-    ff::{self, Field},
+    ff::Field,
     group::{self, Group},
 };
+
+#[cfg(feature = "bits")]
+pub use crate::scalar::ScalarBits;
 
 #[cfg(all(feature = "hazmat", feature = "zeroize"))]
 pub use secret_key::{SecretBytes, SecretValue};

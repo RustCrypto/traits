@@ -4,22 +4,24 @@
 use crate::{
     consts::U32,
     error::{Error, Result},
-    ff::{Field, PrimeField},
-    group,
     rand_core::RngCore,
     sec1::{FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     util::sbb64,
     weierstrass,
     zeroize::Zeroize,
-    AlgorithmParameters, Curve, Order, ProjectiveArithmetic, ScalarBits,
+    AlgorithmParameters, Curve, Order, ProjectiveArithmetic,
 };
 use core::{
     convert::{TryFrom, TryInto},
     iter::Sum,
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
+use ff::{Field, PrimeField};
 use hex_literal::hex;
+
+#[cfg(feature = "bits")]
+use crate::{group::ff::PrimeFieldBits, ScalarBits};
 
 #[cfg(feature = "jwk")]
 use crate::JwkParameters;
@@ -152,12 +154,12 @@ impl Field for Scalar {
     }
 }
 
-#[cfg(target_pointer_width = "64")]
+#[cfg(all(feature = "bits", target_pointer_width = "64"))]
 fn pack_bits(native: U256) -> ScalarBits<MockCurve> {
     native.into()
 }
 
-#[cfg(target_pointer_width = "32")]
+#[cfg(all(feature = "bits", target_pointer_width = "32"))]
 fn pack_bits(native: U256) -> ScalarBits<MockCurve> {
     [
         (native[0] & 0xffff_ffff) as u32,
@@ -174,12 +176,6 @@ fn pack_bits(native: U256) -> ScalarBits<MockCurve> {
 
 impl PrimeField for Scalar {
     type Repr = FieldBytes;
-
-    #[cfg(target_pointer_width = "32")]
-    type ReprBits = [u32; 8];
-
-    #[cfg(target_pointer_width = "64")]
-    type ReprBits = [u64; 4];
 
     const NUM_BITS: u32 = 256;
     const CAPACITY: u32 = 255;
@@ -217,16 +213,8 @@ impl PrimeField for Scalar {
         ret
     }
 
-    fn to_le_bits(&self) -> ScalarBits<MockCurve> {
-        pack_bits(self.0)
-    }
-
     fn is_odd(&self) -> bool {
         unimplemented!();
-    }
-
-    fn char_le_bits() -> ScalarBits<MockCurve> {
-        pack_bits(MODULUS)
     }
 
     fn multiplicative_generator() -> Self {
@@ -235,6 +223,23 @@ impl PrimeField for Scalar {
 
     fn root_of_unity() -> Self {
         unimplemented!();
+    }
+}
+
+#[cfg(feature = "bits")]
+impl PrimeFieldBits for Scalar {
+    #[cfg(target_pointer_width = "32")]
+    type ReprBits = [u32; 8];
+
+    #[cfg(target_pointer_width = "64")]
+    type ReprBits = [u64; 4];
+
+    fn to_le_bits(&self) -> ScalarBits<MockCurve> {
+        pack_bits(self.0)
+    }
+
+    fn char_le_bits() -> ScalarBits<MockCurve> {
+        pack_bits(MODULUS)
     }
 }
 

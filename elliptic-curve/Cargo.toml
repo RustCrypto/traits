@@ -5,7 +5,7 @@ General purpose Elliptic Curve Cryptography (ECC) support, including types
 and traits for representing various elliptic curve forms, scalars, points,
 and public/secret keys composed thereof.
 """
-version    = "0.9.12" # Also update html_root_url in lib.rs when bumping this
+version    = "0.10.0-pre" # Also update html_root_url in lib.rs when bumping this
 authors    = ["RustCrypto Developers"]
 license    = "Apache-2.0 OR MIT"
 repository = "https://github.com/RustCrypto/traits/tree/master/elliptic-curve"
@@ -16,9 +16,8 @@ keywords   = ["crypto", "ecc", "elliptic", "weierstrass"]
 
 [dependencies]
 base64ct = { version = "1", optional = true, default-features = false }
-bitvec = { version = "0.20.2", optional = true, default-features = false }
-ff = { version = "0.9", optional = true, default-features = false }
-group = { version = "0.9", optional = true, default-features = false }
+ff = { version = "0.10", optional = true, default-features = false }
+group = { version = "0.10", optional = true, default-features = false }
 hex-literal = { version = "0.3", optional = true }
 generic-array = { version = "0.14", default-features = false }
 pkcs8 = { version = "0.6", optional = true }
@@ -34,7 +33,8 @@ hex-literal = "0.3"
 [features]
 default = ["arithmetic"]
 alloc = []
-arithmetic = ["bitvec", "ff", "group"]
+arithmetic = ["ff", "group"]
+bits = ["arithmetic", "ff/bits"]
 dev = ["arithmetic", "hex-literal", "pem", "zeroize"]
 ecdh = ["arithmetic", "zeroize"]
 hazmat = []

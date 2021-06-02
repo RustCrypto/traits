@@ -30,7 +30,7 @@ use zeroize::Zeroize;
 
 #[cfg(feature = "arithmetic")]
 use crate::{
-    ff::PrimeField,
+    group::ff::PrimeField,
     public_key::PublicKey,
     sec1::{FromEncodedPoint, ToEncodedPoint},
     AffinePoint, ProjectiveArithmetic, ProjectivePoint, Scalar,
