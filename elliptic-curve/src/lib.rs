@@ -91,6 +91,7 @@ pub use zeroize;
 
 use core::fmt::Debug;
 use generic_array::GenericArray;
+use subtle::{ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess};
 
 /// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic
 /// curve public key cryptography.
@@ -111,7 +112,16 @@ pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
 /// curves (e.g. [`SecretKey`]).
 pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
     /// Integer type used to represent field elements of this elliptic curve.
-    type UInt: AsRef<[bigint::Limb]> + ArrayEncoding + Copy + Debug + NumBits + NumBytes;
+    type UInt: AsRef<[bigint::Limb]>
+        + ArrayEncoding
+        + Copy
+        + Debug
+        + Default
+        + NumBits
+        + NumBytes
+        + ConstantTimeEq
+        + ConstantTimeGreater
+        + ConstantTimeLess;
 
     /// Order constant.
     ///
