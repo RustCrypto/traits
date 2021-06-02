@@ -27,7 +27,6 @@ extern crate std;
 
 pub mod ops;
 pub mod sec1;
-pub mod util;
 pub mod weierstrass;
 
 mod error;
