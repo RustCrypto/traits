@@ -1,11 +1,11 @@
 //! Scalar bytes.
 
-use crate::{Curve, Error, FieldBytes, Result};
+use crate::{bigint::NumBytes, Curve, Error, FieldBytes, Result};
 use core::{
     convert::{TryFrom, TryInto},
     mem,
 };
-use generic_array::{typenum::Unsigned, GenericArray};
+use generic_array::GenericArray;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "arithmetic")]
@@ -218,7 +218,7 @@ where
     type Error = Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self> {
-        if bytes.len() == C::FieldSize::to_usize() {
+        if bytes.len() == C::UInt::NUM_BYTES {
             Option::from(ScalarBytes::new(GenericArray::clone_from_slice(bytes))).ok_or(Error)
         } else {
             Err(Error)

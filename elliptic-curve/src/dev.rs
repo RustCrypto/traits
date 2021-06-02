@@ -3,7 +3,6 @@
 
 use crate::{
     bigint::{ArrayEncoding, U256},
-    consts::U32,
     error::{Error, Result},
     rand_core::RngCore,
     sec1::{FromEncodedPoint, ToEncodedPoint},
@@ -39,7 +38,6 @@ pub const PSEUDO_COORDINATE_FIXED_BASE_MUL: [u8; 32] =
 pub struct MockCurve;
 
 impl Curve for MockCurve {
-    type FieldSize = U32;
     type UInt = U256;
 
     const ORDER: U256 =

@@ -89,8 +89,8 @@ pub use secret_key::SecretKey;
 #[cfg(feature = "zeroize")]
 pub use zeroize;
 
-use core::{fmt::Debug, ops::Add};
-use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+use core::fmt::Debug;
+use generic_array::GenericArray;
 
 /// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic
 /// curve public key cryptography.
@@ -118,17 +118,13 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
     /// Subdivided into either 32-bit or 64-bit "limbs" (depending on the
     /// target CPU's word size), specified from least to most significant.
     const ORDER: Self::UInt;
-
-    /// Size of this curve's field in *bytes*, i.e. the number of bytes needed
-    /// to serialize a field element.
-    ///
-    /// This is used for computing the sizes of field element types related to
-    /// this curve and other types composed from them (e.g. signatures).
-    type FieldSize: ArrayLength<u8> + Add + Eq + Ord + Unsigned;
 }
 
+/// Size of field elements of this elliptic curve.
+pub type FieldSize<C> = <<C as Curve>::UInt as ArrayEncoding>::ByteSize;
+
 /// Byte representation of a base/scalar field element of a given curve.
-pub type FieldBytes<C> = GenericArray<u8, <C as Curve>::FieldSize>;
+pub type FieldBytes<C> = GenericArray<u8, FieldSize<C>>;
 
 /// Associate an [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] (OID) with an
 /// elliptic curve algorithm implementation.

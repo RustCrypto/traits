@@ -10,13 +10,12 @@
 #[cfg(feature = "pkcs8")]
 mod pkcs8;
 
-use crate::{Curve, Error, FieldBytes, Result};
+use crate::{bigint::NumBytes, Curve, Error, FieldBytes, Result};
 use core::{
     convert::TryFrom,
     fmt::{self, Debug},
     ops::Deref,
 };
-use generic_array::typenum::Unsigned;
 use zeroize::Zeroize;
 
 #[cfg(feature = "arithmetic")]
@@ -105,7 +104,7 @@ where
     pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self> {
         let bytes = bytes.as_ref();
 
-        if bytes.len() != C::FieldSize::to_usize() {
+        if bytes.len() != C::UInt::NUM_BYTES {
             return Err(Error);
         }
 
