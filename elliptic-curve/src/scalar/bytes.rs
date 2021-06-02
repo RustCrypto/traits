@@ -1,6 +1,6 @@
 //! Scalar bytes.
 
-use crate::{Curve, Error, FieldBytes, Order, Result};
+use crate::{Curve, Error, FieldBytes, Result};
 use core::{
     convert::{TryFrom, TryInto},
     mem,
@@ -18,21 +18,21 @@ use crate::util::sbb32;
 use crate::util::sbb64;
 
 /// Scalar bytes: wrapper for [`FieldBytes`] which guarantees that the the
-/// inner byte value is within range of the curve's [`Order`].
+/// inner byte value is within range of the [`Curve::ORDER`].
 ///
 /// Does not require an arithmetic implementation.
 #[derive(Clone, Debug, Eq)]
-pub struct ScalarBytes<C: Curve + Order> {
+pub struct ScalarBytes<C: Curve> {
     /// Inner byte value; guaranteed to be in range of the curve's order.
     inner: FieldBytes<C>,
 }
 
 impl<C> ScalarBytes<C>
 where
-    C: Curve + Order,
+    C: Curve,
 {
     /// Create new [`ScalarBytes`], checking that the given input is within
-    /// range of the curve's [`Order`].
+    /// range of the [`Curve::ORDER`].
     #[cfg(target_pointer_width = "32")]
     pub fn new(bytes: FieldBytes<C>) -> CtOption<Self> {
         assert_eq!(
@@ -53,7 +53,7 @@ where
     }
 
     /// Create new [`ScalarBytes`], checking that the given input is within
-    /// range of the curve's [`Order`].
+    /// range of the [`Curve::ORDER`].
     #[cfg(target_pointer_width = "64")]
     pub fn new(bytes: FieldBytes<C>) -> CtOption<Self> {
         assert_eq!(
@@ -133,7 +133,7 @@ where
 
 impl<C> AsRef<FieldBytes<C>> for ScalarBytes<C>
 where
-    C: Curve + Order,
+    C: Curve,
 {
     fn as_ref(&self) -> &FieldBytes<C> {
         &self.inner
@@ -142,7 +142,7 @@ where
 
 impl<C> AsRef<[u8]> for ScalarBytes<C>
 where
-    C: Curve + Order,
+    C: Curve,
 {
     fn as_ref(&self) -> &[u8] {
         self.inner.as_slice()
@@ -152,7 +152,7 @@ where
 impl<C> ConditionallySelectable for ScalarBytes<C>
 where
     Self: Copy,
-    C: Curve + Order,
+    C: Curve,
 {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         let mut inner = FieldBytes::<C>::default();
@@ -167,7 +167,7 @@ where
 
 impl<C> ConstantTimeEq for ScalarBytes<C>
 where
-    C: Curve + Order,
+    C: Curve,
 {
     fn ct_eq(&self, other: &Self) -> Choice {
         self.inner
@@ -179,14 +179,14 @@ where
 
 impl<C> Copy for ScalarBytes<C>
 where
-    C: Curve + Order,
+    C: Curve,
     FieldBytes<C>: Copy,
 {
 }
 
 impl<C> Default for ScalarBytes<C>
 where
-    C: Curve + Order,
+    C: Curve,
 {
     fn default() -> Self {
         Self::zero()
@@ -195,7 +195,7 @@ where
 
 impl<C> From<ScalarBytes<C>> for FieldBytes<C>
 where
-    C: Curve + Order,
+    C: Curve,
 {
     fn from(scalar_bytes: ScalarBytes<C>) -> FieldBytes<C> {
         scalar_bytes.inner
@@ -204,7 +204,7 @@ where
 
 impl<C> PartialEq for ScalarBytes<C>
 where
-    C: Curve + Order,
+    C: Curve,
 {
     fn eq(&self, other: &Self) -> bool {
         self.ct_eq(other).into()
@@ -213,7 +213,7 @@ where
 
 impl<C> TryFrom<&[u8]> for ScalarBytes<C>
 where
-    C: Curve + Order,
+    C: Curve,
 {
     type Error = Error;
 

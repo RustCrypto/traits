@@ -545,24 +545,15 @@ where
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "dev"))]
 mod tests {
     use super::{Coordinates, Tag};
-    use crate::{weierstrass, Curve};
-    use generic_array::{typenum::U32, GenericArray};
+    use crate::dev::MockCurve;
+    use generic_array::GenericArray;
     use hex_literal::hex;
     use subtle::ConditionallySelectable;
 
-    #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Ord)]
-    struct ExampleCurve;
-
-    impl Curve for ExampleCurve {
-        type FieldSize = U32;
-    }
-
-    impl weierstrass::Curve for ExampleCurve {}
-
-    type EncodedPoint = super::EncodedPoint<ExampleCurve>;
+    type EncodedPoint = super::EncodedPoint<MockCurve>;
 
     /// Identity point
     const IDENTITY_BYTES: [u8; 1] = [0];

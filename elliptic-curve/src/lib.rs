@@ -31,7 +31,6 @@ pub mod util;
 pub mod weierstrass;
 
 mod error;
-mod order;
 mod scalar;
 
 #[cfg(feature = "arithmetic")]
@@ -55,7 +54,6 @@ mod secret_key;
 
 pub use self::{
     error::{Error, Result},
-    order::Order,
     scalar::bytes::ScalarBytes,
 };
 
@@ -112,6 +110,22 @@ pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
 /// be impl'd by these ZSTs, facilitating types which are generic over elliptic
 /// curves (e.g. [`SecretKey`]).
 pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
+    /// Type representing the "limbs" of the curves group's order on
+    /// 32-bit platforms.
+    #[cfg(target_pointer_width = "32")]
+    type Limbs: AsRef<[u32]> + Copy + Debug;
+
+    /// Type representing the "limbs" of the curves group's order on
+    /// 64-bit platforms.
+    #[cfg(target_pointer_width = "64")]
+    type Limbs: AsRef<[u64]> + Copy + Debug;
+
+    /// Order constant.
+    ///
+    /// Subdivided into either 32-bit or 64-bit "limbs" (depending on the
+    /// target CPU's word size), specified from least to most significant.
+    const ORDER: Self::Limbs;
+
     /// Size of this curve's field in *bytes*, i.e. the number of bytes needed
     /// to serialize a field element.
     ///
