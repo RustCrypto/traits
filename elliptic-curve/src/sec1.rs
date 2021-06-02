@@ -5,15 +5,12 @@
 //!
 //! <https://www.secg.org/sec1-v2.pdf>
 
-use crate::{weierstrass::Curve, Error, FieldBytes, Result};
+use crate::{bigint::NumBytes, weierstrass::Curve, Error, FieldBytes, FieldSize, Result};
 use core::{
     fmt::{self, Debug},
     ops::Add,
 };
-use generic_array::{
-    typenum::{Unsigned, U1},
-    ArrayLength, GenericArray,
-};
+use generic_array::{typenum::U1, ArrayLength, GenericArray};
 use subtle::{Choice, ConditionallySelectable};
 
 #[cfg(feature = "alloc")]
@@ -39,7 +36,7 @@ use crate::{
 /// Size of a compressed point for the given elliptic curve when encoded
 /// using the SEC1 `Elliptic-Curve-Point-to-Octet-String` algorithm
 /// (including leading `0x02` or `0x03` tag byte).
-pub type CompressedPointSize<C> = <<C as crate::Curve>::FieldSize as Add<U1>>::Output;
+pub type CompressedPointSize<C> = <FieldSize<C> as Add<U1>>::Output;
 
 /// Size of an uncompressed point for the given elliptic curve when encoded
 /// using the SEC1 `Elliptic-Curve-Point-to-Octet-String` algorithm
@@ -47,7 +44,7 @@ pub type CompressedPointSize<C> = <<C as crate::Curve>::FieldSize as Add<U1>>::O
 pub type UncompressedPointSize<C> = <UntaggedPointSize<C> as Add<U1>>::Output;
 
 /// Size of an untagged point for given elliptic curve.
-pub type UntaggedPointSize<C> = <<C as crate::Curve>::FieldSize as Add>::Output;
+pub type UntaggedPointSize<C> = <FieldSize<C> as Add>::Output;
 
 /// SEC1 encoded curve point.
 ///
@@ -84,7 +81,7 @@ where
         let tag = input.first().cloned().ok_or(Error).and_then(Tag::from_u8)?;
 
         // Validate length
-        let expected_len = tag.message_len(C::FieldSize::to_usize());
+        let expected_len = tag.message_len(C::UInt::NUM_BYTES);
 
         if input.len() != expected_len {
             return Err(Error);
@@ -99,7 +96,7 @@ where
     /// encoded as the concatenated `x || y` coordinates with no leading SEC1
     /// tag byte (which would otherwise be `0x04` for an uncompressed point).
     pub fn from_untagged_bytes(bytes: &GenericArray<u8, UntaggedPointSize<C>>) -> Self {
-        let (x, y) = bytes.split_at(C::FieldSize::to_usize());
+        let (x, y) = bytes.split_at(C::UInt::NUM_BYTES);
         Self::from_affine_coordinates(x.into(), y.into(), false)
     }
 
@@ -115,11 +112,10 @@ where
         let mut bytes = GenericArray::default();
         bytes[0] = tag.into();
 
-        let element_size = C::FieldSize::to_usize();
-        bytes[1..(element_size + 1)].copy_from_slice(x);
+        bytes[1..(C::UInt::NUM_BYTES + 1)].copy_from_slice(x);
 
         if !compress {
-            bytes[(element_size + 1)..].copy_from_slice(y);
+            bytes[(C::UInt::NUM_BYTES + 1)..].copy_from_slice(y);
         }
 
         Self { bytes }
@@ -151,7 +147,7 @@ where
 
     /// Get the length of the encoded point in bytes
     pub fn len(&self) -> usize {
-        self.tag().message_len(C::FieldSize::to_usize())
+        self.tag().message_len(C::UInt::NUM_BYTES)
     }
 
     /// Get byte slice containing the serialized [`EncodedPoint`].
@@ -250,7 +246,7 @@ where
             return Coordinates::Identity;
         }
 
-        let (x, y) = self.bytes[1..].split_at(C::FieldSize::to_usize());
+        let (x, y) = self.bytes[1..].split_at(C::UInt::NUM_BYTES);
 
         if self.is_compressed() {
             Coordinates::Compressed {

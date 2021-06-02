@@ -181,7 +181,7 @@ dependencies = [
 [[package]]
 name = "crypto-bigint"
 version = "0.1.0"
-source = "git+https://github.com/rustcrypto/utils.git#01c945e05d86cd36b7222f0a8628cf51410eebc7"
+source = "git+https://github.com/rustcrypto/utils.git#4ff54f79d5c478720d5e6297e53208365aabbf07"
 dependencies = [
  "generic-array",
  "subtle",

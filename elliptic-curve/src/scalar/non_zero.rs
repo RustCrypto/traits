@@ -1,13 +1,14 @@
 //! Non-zero scalar type.
 
 use crate::{
+    bigint::NumBytes,
     ops::Invert,
     rand_core::{CryptoRng, RngCore},
     Curve, Error, FieldBytes, ProjectiveArithmetic, Result, Scalar,
 };
 use core::{convert::TryFrom, ops::Deref};
 use ff::{Field, PrimeField};
-use generic_array::{typenum::Unsigned, GenericArray};
+use generic_array::GenericArray;
 use subtle::{Choice, ConditionallySelectable, CtOption};
 
 #[cfg(feature = "zeroize")]
@@ -134,7 +135,7 @@ where
     type Error = Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self> {
-        if bytes.len() == C::FieldSize::to_usize() {
+        if bytes.len() == C::UInt::NUM_BYTES {
             NonZeroScalar::from_repr(GenericArray::clone_from_slice(bytes)).ok_or(Error)
         } else {
             Err(Error)
