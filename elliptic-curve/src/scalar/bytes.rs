@@ -1,21 +1,15 @@
 //! Scalar bytes.
 
-use crate::{bigint::NumBytes, Curve, Error, FieldBytes, Result};
-use core::{
-    convert::{TryFrom, TryInto},
-    mem,
+use crate::{
+    bigint::{ArrayEncoding, NumBytes},
+    Curve, Error, FieldBytes, Result,
 };
+use core::convert::TryFrom;
 use generic_array::GenericArray;
-use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
+use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeLess, CtOption};
 
 #[cfg(feature = "arithmetic")]
 use crate::{group::ff::PrimeField, ProjectiveArithmetic, Scalar};
-
-// TODO(tarcieri): unify these into a target-width gated `sbb`
-#[cfg(target_pointer_width = "32")]
-use crate::util::sbb32;
-#[cfg(target_pointer_width = "64")]
-use crate::util::sbb64;
 
 /// Scalar bytes: wrapper for [`FieldBytes`] which guarantees that the the
 /// inner byte value is within range of the [`Curve::ORDER`].
@@ -33,43 +27,8 @@ where
 {
     /// Create new [`ScalarBytes`], checking that the given input is within
     /// range of the [`Curve::ORDER`].
-    #[cfg(target_pointer_width = "32")]
     pub fn new(bytes: FieldBytes<C>) -> CtOption<Self> {
-        assert_eq!(
-            mem::size_of::<C::UInt>(),
-            mem::size_of::<FieldBytes<C>>(),
-            "malformed curve order"
-        );
-
-        let mut borrow = 0;
-
-        for (i, chunk) in bytes.as_ref().chunks(4).rev().enumerate() {
-            let limb = u32::from_be_bytes(chunk.try_into().unwrap());
-            borrow = sbb32(limb, C::ORDER.as_ref()[i], borrow).1;
-        }
-
-        let is_some = Choice::from((borrow as u8) & 1);
-        CtOption::new(Self { inner: bytes }, is_some)
-    }
-
-    /// Create new [`ScalarBytes`], checking that the given input is within
-    /// range of the [`Curve::ORDER`].
-    #[cfg(target_pointer_width = "64")]
-    pub fn new(bytes: FieldBytes<C>) -> CtOption<Self> {
-        assert_eq!(
-            mem::size_of::<C::UInt>(),
-            mem::size_of::<FieldBytes<C>>(),
-            "malformed curve order"
-        );
-
-        let mut borrow = 0;
-
-        for (i, chunk) in bytes.as_ref().chunks(8).rev().enumerate() {
-            let limb = u64::from_be_bytes(chunk.try_into().expect("invalid chunk size"));
-            borrow = sbb64(limb, C::ORDER.as_ref()[i], borrow).1;
-        }
-
-        let is_some = Choice::from((borrow as u8) & 1);
+        let is_some = C::UInt::from_be_byte_array(&bytes).ct_lt(&C::ORDER);
         CtOption::new(Self { inner: bytes }, is_some)
     }
 
