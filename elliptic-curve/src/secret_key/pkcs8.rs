@@ -1,6 +1,6 @@
 //! PKCS#8 encoding/decoding support
 
-use super::{SecretKey, SecretValue};
+use super::SecretKey;
 use crate::{
     sec1::{self, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
     weierstrass, AlgorithmParameters, FieldBytes, ALGORITHM_OID,
@@ -43,9 +43,7 @@ const ENCODING_ERROR_MSG: &str = "DER encoding error";
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 impl<C> FromPrivateKey for SecretKey<C>
 where
-    C: weierstrass::Curve + AlgorithmParameters + ValidatePublicKey + SecretValue,
-    C::Secret: Clone + Zeroize,
-    FieldBytes<C>: From<C::Secret>,
+    C: weierstrass::Curve + AlgorithmParameters + ValidatePublicKey,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -157,9 +155,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for SecretKey<C>
 where
-    C: weierstrass::Curve + AlgorithmParameters + ValidatePublicKey + SecretValue,
-    C::Secret: Clone + Zeroize,
-    FieldBytes<C>: From<C::Secret>,
+    C: weierstrass::Curve + AlgorithmParameters + ValidatePublicKey,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {

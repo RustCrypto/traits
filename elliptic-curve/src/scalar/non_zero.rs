@@ -12,7 +12,7 @@ use generic_array::GenericArray;
 use subtle::{Choice, ConditionallySelectable, CtOption};
 
 #[cfg(feature = "zeroize")]
-use zeroize::Zeroize;
+use {crate::SecretKey, zeroize::Zeroize};
 
 /// Non-zero scalar type.
 ///
@@ -111,6 +111,20 @@ where
 {
     fn from(scalar: NonZeroScalar<C>) -> FieldBytes<C> {
         scalar.scalar.to_repr()
+    }
+}
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl<C> From<&SecretKey<C>> for NonZeroScalar<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+{
+    fn from(sk: &SecretKey<C>) -> NonZeroScalar<C> {
+        let scalar = sk.as_scalar_bytes().to_scalar();
+        debug_assert!(!scalar.is_zero());
+        Self { scalar }
     }
 }
 

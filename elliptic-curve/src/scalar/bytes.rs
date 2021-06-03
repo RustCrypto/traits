@@ -9,7 +9,10 @@ use generic_array::GenericArray;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeLess, CtOption};
 
 #[cfg(feature = "arithmetic")]
-use crate::{group::ff::PrimeField, ProjectiveArithmetic, Scalar};
+use crate::{group::ff::PrimeField, NonZeroScalar, ProjectiveArithmetic, Scalar};
+
+#[cfg(feature = "zeroize")]
+use zeroize::Zeroize;
 
 /// Scalar bytes: wrapper for [`FieldBytes`] which guarantees that the the
 /// inner byte value is within range of the [`Curve::ORDER`].
@@ -161,6 +164,32 @@ where
     }
 }
 
+#[cfg(feature = "arithmetic")]
+impl<C> From<NonZeroScalar<C>> for ScalarBytes<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+{
+    fn from(scalar: NonZeroScalar<C>) -> ScalarBytes<C> {
+        ScalarBytes {
+            inner: scalar.into(),
+        }
+    }
+}
+
+#[cfg(feature = "arithmetic")]
+impl<C> TryFrom<ScalarBytes<C>> for NonZeroScalar<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+{
+    type Error = Error;
+
+    fn try_from(bytes: ScalarBytes<C>) -> Result<NonZeroScalar<C>> {
+        NonZeroScalar::<C>::from_repr(bytes.inner).ok_or(Error)
+    }
+}
+
 impl<C> PartialEq for ScalarBytes<C>
 where
     C: Curve,
@@ -182,6 +211,16 @@ where
         } else {
             Err(Error)
         }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl<C> Zeroize for ScalarBytes<C>
+where
+    C: Curve,
+{
+    fn zeroize(&mut self) {
+        self.inner.zeroize();
     }
 }
 

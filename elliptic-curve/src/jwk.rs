@@ -7,7 +7,7 @@ use crate::{
     sec1::{
         Coordinates, EncodedPoint, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey,
     },
-    secret_key::{SecretKey, SecretValue},
+    secret_key::SecretKey,
     weierstrass::Curve,
     Error, FieldBytes,
 };
@@ -135,9 +135,7 @@ impl JwkEcKey {
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn to_secret_key<C>(&self) -> Result<SecretKey<C>, Error>
     where
-        C: Curve + JwkParameters + ValidatePublicKey + SecretValue,
-        C::Secret: Clone + Zeroize,
-        FieldBytes<C>: From<C::Secret>,
+        C: Curve + JwkParameters + ValidatePublicKey,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -232,9 +230,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<JwkEcKey> for SecretKey<C>
 where
-    C: Curve + JwkParameters + ValidatePublicKey + SecretValue,
-    C::Secret: Clone + Zeroize,
-    FieldBytes<C>: From<C::Secret>,
+    C: Curve + JwkParameters + ValidatePublicKey,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -248,9 +244,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<&JwkEcKey> for SecretKey<C>
 where
-    C: Curve + JwkParameters + ValidatePublicKey + SecretValue,
-    C::Secret: Clone + Zeroize,
-    FieldBytes<C>: From<C::Secret>,
+    C: Curve + JwkParameters + ValidatePublicKey,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {

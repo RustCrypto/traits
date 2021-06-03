@@ -74,9 +74,6 @@ pub use {
 #[cfg(feature = "bits")]
 pub use crate::scalar::ScalarBits;
 
-#[cfg(all(feature = "hazmat", feature = "zeroize"))]
-pub use secret_key::{SecretBytes, SecretValue};
-
 #[cfg(feature = "jwk")]
 pub use crate::jwk::{JwkEcKey, JwkParameters};
 

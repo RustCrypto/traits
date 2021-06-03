@@ -28,10 +28,7 @@ use crate::{
 };
 
 #[cfg(feature = "zeroize")]
-use crate::{
-    secret_key::{SecretKey, SecretValue},
-    zeroize::Zeroize,
-};
+use crate::{secret_key::SecretKey, zeroize::Zeroize};
 
 /// Size of a compressed point for the given elliptic curve when encoded
 /// using the SEC1 `Elliptic-Curve-Point-to-Octet-String` algorithm
@@ -134,7 +131,7 @@ where
         AffinePoint<C>: ToEncodedPoint<C>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
-        (C::ProjectivePoint::generator() * secret_key.secret_scalar().as_ref())
+        (C::ProjectivePoint::generator() * secret_key.to_secret_scalar().as_ref())
             .to_affine()
             .to_encoded_point(compress)
     }
@@ -496,7 +493,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 pub trait ValidatePublicKey
 where
-    Self: Curve + SecretValue,
+    Self: Curve,
     UntaggedPointSize<Self>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<Self>: ArrayLength<u8>,
 {

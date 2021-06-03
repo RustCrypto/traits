@@ -10,11 +10,10 @@
 #[cfg(feature = "pkcs8")]
 mod pkcs8;
 
-use crate::{bigint::NumBytes, Curve, Error, FieldBytes, Result};
+use crate::{Curve, Error, FieldBytes, Result, ScalarBytes};
 use core::{
     convert::TryFrom,
     fmt::{self, Debug},
-    ops::Deref,
 };
 use zeroize::Zeroize;
 
@@ -71,68 +70,69 @@ use {crate::pkcs8::FromPrivateKey, core::str::FromStr};
 /// curve crate) is enabled, a [`FromStr`] impl is also available.
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 #[derive(Clone)]
-pub struct SecretKey<C: Curve + SecretValue> {
-    /// Secret value (i.e. secret scalar)
-    secret_value: C::Secret,
+pub struct SecretKey<C: Curve> {
+    /// Serialized scalar value
+    inner: ScalarBytes<C>,
 }
 
 impl<C> SecretKey<C>
 where
-    C: Curve + SecretValue,
-    C::Secret: Clone + Zeroize,
-    FieldBytes<C>: From<C::Secret>,
+    C: Curve,
 {
     /// Generate a random [`SecretKey`]
     #[cfg(feature = "arithmetic")]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn random(rng: impl CryptoRng + RngCore) -> Self
     where
-        C: ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
+        C: ProjectiveArithmetic,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
         Self {
-            secret_value: NonZeroScalar::<C>::random(rng),
+            inner: NonZeroScalar::<C>::random(rng).into(),
         }
     }
 
     /// Create a new secret key from a serialized scalar value
-    pub fn new(secret_value: C::Secret) -> Self {
-        Self { secret_value }
+    pub fn new(scalar: ScalarBytes<C>) -> Self {
+        Self { inner: scalar }
     }
 
     /// Deserialize raw private scalar as a big endian integer
     pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self> {
-        let bytes = bytes.as_ref();
+        let scalar = ScalarBytes::try_from(bytes.as_ref())?;
 
-        if bytes.len() != C::UInt::NUM_BYTES {
+        if scalar.is_zero().into() {
             return Err(Error);
         }
 
-        C::from_secret_bytes(bytes.into())
-            .map(|secret_value| SecretKey { secret_value })
-            .ok_or(Error)
+        Ok(Self { inner: scalar })
     }
 
     /// Expose the byte serialization of the value this [`SecretKey`] wraps
     pub fn to_bytes(&self) -> FieldBytes<C> {
-        self.secret_value.clone().into()
+        self.inner.clone().into()
     }
 
-    /// Borrow the inner secret [`Scalar`] value.
+    /// Borrow the inner secret [`ScalarBytes`] value.
     ///
     /// # Warning
     ///
     /// This value is key material.
     ///
     /// Please treat it with the care it deserves!
+    pub fn as_scalar_bytes(&self) -> &ScalarBytes<C> {
+        &self.inner
+    }
+
+    /// Get the secret scalar value for this key..
     #[cfg(feature = "arithmetic")]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-    pub fn secret_scalar(&self) -> &NonZeroScalar<C>
+    pub fn to_secret_scalar(&self) -> NonZeroScalar<C>
     where
-        C: ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
+        C: ProjectiveArithmetic,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
-        &self.secret_value
+        self.into()
     }
 
     /// Get the [`PublicKey`] which corresponds to this secret key
@@ -140,12 +140,13 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn public_key(&self) -> PublicKey<C>
     where
-        C: weierstrass::Curve + ProjectiveArithmetic + SecretValue<Secret = NonZeroScalar<C>>,
+        C: weierstrass::Curve + ProjectiveArithmetic,
         AffinePoint<C>: Copy + Clone + Debug + Default,
         ProjectivePoint<C>: From<AffinePoint<C>>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
-        PublicKey::from_secret_scalar(self.secret_scalar())
+        // TODO(tarcieri): simplify conversion
+        PublicKey::from_secret_scalar(&self.to_secret_scalar())
     }
 
     /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`SecretKey`].
@@ -207,9 +208,7 @@ where
 
 impl<C> TryFrom<&[u8]> for SecretKey<C>
 where
-    C: Curve + SecretValue,
-    C::Secret: Clone + Zeroize,
-    FieldBytes<C>: From<C::Secret>,
+    C: Curve,
 {
     type Error = Error;
 
@@ -220,7 +219,7 @@ where
 
 impl<C> Debug for SecretKey<C>
 where
-    C: Curve + SecretValue,
+    C: Curve,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO(tarcieri): use `debug_struct` and `finish_non_exhaustive` when stable
@@ -230,90 +229,9 @@ where
 
 impl<C> Drop for SecretKey<C>
 where
-    C: Curve + SecretValue,
+    C: Curve,
 {
     fn drop(&mut self) {
-        self.secret_value.zeroize();
-    }
-}
-
-/// Inner value stored by a [`SecretKey`].
-#[cfg_attr(docsrs, doc(cfg(feature = "hazmat")))]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-pub trait SecretValue: Curve {
-    /// Inner secret value.
-    ///
-    /// ⚠️ WARNING ⚠️
-    ///
-    /// This type is not intended to be part of the public API and in future
-    /// versions of this crate we will try to explore ways to hide it.
-    ///
-    /// Crates such as `k256` and `p256` conditionally define this type
-    /// differently depending on what cargo features are enabled.
-    /// This means any consumers of this crate attempting to use this type
-    /// may experience breakages if the cargo features are not what are
-    /// expected.
-    ///
-    /// We regret exposing it as part of the public API for now, however if
-    /// you do reference this type as a downstream consumer of a curve crate,
-    /// be aware you will experience breakages!
-    type Secret: Into<FieldBytes<Self>> + Zeroize;
-
-    /// Parse the secret value from bytes
-    // TODO(tarcieri): make this a `CtOption`?
-    fn from_secret_bytes(bytes: &FieldBytes<Self>) -> Option<Self::Secret>;
-}
-
-#[cfg(feature = "arithmetic")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-impl<C> SecretValue for C
-where
-    C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
-{
-    type Secret = NonZeroScalar<C>;
-
-    fn from_secret_bytes(repr: &FieldBytes<C>) -> Option<NonZeroScalar<C>> {
-        NonZeroScalar::from_repr(repr.clone())
-    }
-}
-
-/// Newtype wrapper for [`FieldBytes`] which impls [`Zeroize`].
-///
-/// This allows it to fulfill the [`Zeroize`] bound on [`SecretValue::Secret`].
-#[cfg_attr(docsrs, doc(cfg(feature = "hazmat")))]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-#[derive(Clone)]
-pub struct SecretBytes<C: Curve>(FieldBytes<C>);
-
-impl<C: Curve> From<FieldBytes<C>> for SecretBytes<C> {
-    fn from(bytes: FieldBytes<C>) -> SecretBytes<C> {
-        Self(bytes)
-    }
-}
-
-impl<C: Curve> From<SecretBytes<C>> for FieldBytes<C> {
-    fn from(bytes: SecretBytes<C>) -> FieldBytes<C> {
-        bytes.0
-    }
-}
-
-impl<C: Curve> AsRef<[u8]> for SecretBytes<C> {
-    fn as_ref(&self) -> &[u8] {
-        &self.0
-    }
-}
-
-impl<C: Curve> Deref for SecretBytes<C> {
-    type Target = FieldBytes<C>;
-
-    fn deref(&self) -> &FieldBytes<C> {
-        &self.0
-    }
-}
-
-impl<C: Curve> Zeroize for SecretBytes<C> {
-    fn zeroize(&mut self) {
-        self.0.as_mut().zeroize();
+        self.inner.zeroize();
     }
 }
