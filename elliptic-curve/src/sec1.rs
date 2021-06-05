@@ -17,14 +17,12 @@ use subtle::{Choice, ConditionallySelectable};
 use alloc::boxed::Box;
 
 #[cfg(feature = "arithmetic")]
-use crate::{
-    group::ff::PrimeField, weierstrass::DecompressPoint, AffinePoint, ProjectiveArithmetic, Scalar,
-};
+use crate::{weierstrass::DecompressPoint, AffinePoint, ProjectiveArithmetic};
 
 #[cfg(all(feature = "arithmetic", feature = "zeroize"))]
 use crate::{
     group::{Curve as _, Group},
-    ProjectivePoint,
+    ProjectivePoint, Scalar,
 };
 
 #[cfg(feature = "zeroize")]
@@ -129,7 +127,7 @@ where
     where
         C: Curve + ProjectiveArithmetic,
         AffinePoint<C>: ToEncodedPoint<C>,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+        Scalar<C>: Zeroize,
     {
         (C::ProjectivePoint::generator() * secret_key.to_secret_scalar().as_ref())
             .to_affine()
@@ -167,7 +165,6 @@ where
     where
         C: Curve + ProjectiveArithmetic,
         AffinePoint<C>: ConditionallySelectable + Default + DecompressPoint<C> + ToEncodedPoint<C>,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     {
         self.decompress().map(|point| {
             let mut bytes = GenericArray::<u8, UntaggedPointSize<C>>::default();
@@ -200,7 +197,6 @@ where
     pub fn decompress(&self) -> Option<Self>
     where
         C: Curve + ProjectiveArithmetic,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
         AffinePoint<C>: ConditionallySelectable + Default + DecompressPoint<C> + ToEncodedPoint<C>,
     {
         match self.coordinates() {
@@ -521,7 +517,7 @@ where
     C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+    Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {

@@ -9,7 +9,7 @@ use crate::{
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     weierstrass,
     zeroize::Zeroize,
-    AlgorithmParameters, Curve, ProjectiveArithmetic,
+    AlgorithmParameters, Curve, ProjectiveArithmetic, ScalarArithmetic,
 };
 use core::{
     convert::{TryFrom, TryInto},
@@ -45,6 +45,10 @@ impl Curve for MockCurve {
 }
 
 impl weierstrass::Curve for MockCurve {}
+
+impl ScalarArithmetic for MockCurve {
+    type Scalar = Scalar;
+}
 
 impl ProjectiveArithmetic for MockCurve {
     type ProjectivePoint = ProjectivePoint;

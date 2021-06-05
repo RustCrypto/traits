@@ -30,7 +30,6 @@ use zeroize::Zeroize;
 
 #[cfg(feature = "arithmetic")]
 use crate::{
-    group::ff::PrimeField,
     public_key::PublicKey,
     sec1::{FromEncodedPoint, ToEncodedPoint},
     AffinePoint, ProjectiveArithmetic, ProjectivePoint, Scalar,
@@ -123,7 +122,6 @@ impl JwkEcKey {
         C: Curve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
         ProjectivePoint<C>: From<AffinePoint<C>>,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -275,7 +273,7 @@ where
     C: Curve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+    Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -292,7 +290,7 @@ where
     C: Curve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+    Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -313,7 +311,6 @@ where
     C: Curve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -332,7 +329,6 @@ where
     C: Curve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -351,7 +347,6 @@ where
     C: Curve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -368,7 +363,6 @@ where
     C: Curve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {

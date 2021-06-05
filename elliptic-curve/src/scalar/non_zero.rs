@@ -27,7 +27,6 @@ use {crate::SecretKey, zeroize::Zeroize};
 pub struct NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     scalar: Scalar<C>,
 }
@@ -35,7 +34,6 @@ where
 impl<C> NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     /// Generate a random `NonZeroScalar`
     pub fn random(mut rng: impl CryptoRng + RngCore) -> Self {
@@ -66,7 +64,6 @@ where
 impl<C> AsRef<Scalar<C>> for NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     fn as_ref(&self) -> &Scalar<C> {
         &self.scalar
@@ -76,7 +73,6 @@ where
 impl<C> ConditionallySelectable for NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         Self {
@@ -85,17 +81,11 @@ where
     }
 }
 
-impl<C> Copy for NonZeroScalar<C>
-where
-    C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
-{
-}
+impl<C> Copy for NonZeroScalar<C> where C: Curve + ProjectiveArithmetic {}
 
 impl<C> Deref for NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     type Target = Scalar<C>;
 
@@ -107,7 +97,6 @@ where
 impl<C> From<NonZeroScalar<C>> for FieldBytes<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     fn from(scalar: NonZeroScalar<C>) -> FieldBytes<C> {
         scalar.scalar.to_repr()
@@ -119,7 +108,6 @@ where
 impl<C> From<&SecretKey<C>> for NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     fn from(sk: &SecretKey<C>) -> NonZeroScalar<C> {
         let scalar = sk.as_scalar_bytes().to_scalar();
@@ -131,7 +119,6 @@ where
 impl<C> Invert for NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Invert,
 {
     type Output = Scalar<C>;
 
@@ -144,7 +131,6 @@ where
 impl<C> TryFrom<&[u8]> for NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     type Error = Error;
 
@@ -161,7 +147,7 @@ where
 impl<C> Zeroize for NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+    Scalar<C>: Zeroize,
 {
     fn zeroize(&mut self) {
         self.scalar.zeroize();

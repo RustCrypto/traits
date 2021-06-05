@@ -31,7 +31,6 @@ use crate::{
     ProjectivePoint, PublicKey, Scalar,
 };
 use core::{borrow::Borrow, fmt::Debug};
-use ff::PrimeField;
 use group::Curve as _;
 use rand_core::{CryptoRng, RngCore};
 use zeroize::Zeroize;
@@ -64,7 +63,7 @@ where
     C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
+    Scalar<C>: Zeroize,
     SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     let public_point = ProjectivePoint::<C>::from(*public_key.borrow());
@@ -98,7 +97,7 @@ where
 pub struct EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+    Scalar<C>: Zeroize,
 {
     scalar: NonZeroScalar<C>,
 }
@@ -108,7 +107,7 @@ where
     C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
+    Scalar<C>: Zeroize,
     SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     /// Generate a cryptographically random [`EphemeralSecret`].
@@ -137,7 +136,7 @@ where
     C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug + Zeroize,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Clone + Zeroize,
+    Scalar<C>: Zeroize,
     SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     fn from(ephemeral_secret: &EphemeralSecret<C>) -> Self {
@@ -148,7 +147,7 @@ where
 impl<C> Zeroize for EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+    Scalar<C>: Zeroize,
 {
     fn zeroize(&mut self) {
         self.scalar.zeroize()
@@ -158,7 +157,7 @@ where
 impl<C> Drop for EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+    Scalar<C>: Zeroize,
 {
     fn drop(&mut self) {
         self.zeroize();
