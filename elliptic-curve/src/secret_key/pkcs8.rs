@@ -72,23 +72,15 @@ where
 
         let result = decoder.sequence(|decoder| {
             if decoder.uint8()? != VERSION {
-                return Err(der::ErrorKind::Value {
-                    tag: der::Tag::Integer,
-                }
-                .into());
+                return Err(der::Tag::Integer.value_error());
             }
 
-            let secret_key = Self::from_bytes(decoder.octet_string()?).map_err(|_| {
-                der::Error::from(der::ErrorKind::Value {
-                    tag: der::Tag::Sequence,
-                })
-            })?;
+            let secret_key = Self::from_bytes(decoder.octet_string()?)
+                .map_err(|_| der::Tag::Sequence.value_error())?;
 
             let public_key = decoder
                 .context_specific(PUBLIC_KEY_TAG)?
-                .ok_or(der::ErrorKind::Value {
-                    tag: der::Tag::ContextSpecific(PUBLIC_KEY_TAG),
-                })?
+                .ok_or_else(|| der::Tag::ContextSpecific(PUBLIC_KEY_TAG).value_error())?
                 .bit_string()?;
 
             if let Ok(pk) = sec1::EncodedPoint::<C>::from_bytes(public_key.as_ref()) {
@@ -97,10 +89,7 @@ where
                 }
             }
 
-            Err(der::ErrorKind::Value {
-                tag: der::Tag::BitString,
-            }
-            .into())
+            Err(der::Tag::BitString.value_error())
         })?;
 
         Ok(decoder.finish(result)?)
