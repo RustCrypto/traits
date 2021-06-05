@@ -47,7 +47,6 @@ where
     pub fn from_scalar(scalar: &Scalar<C>) -> Self
     where
         C: ProjectiveArithmetic,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     {
         Self {
             inner: scalar.to_repr(),
@@ -60,7 +59,6 @@ where
     pub fn to_scalar(&self) -> Scalar<C>
     where
         C: ProjectiveArithmetic,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     {
         self.clone().into_scalar()
     }
@@ -71,7 +69,6 @@ where
     pub fn into_scalar(self) -> Scalar<C>
     where
         C: ProjectiveArithmetic,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     {
         Scalar::<C>::from_repr(self.inner).expect("ScalarBytes order invariant violated")
     }
@@ -174,7 +171,6 @@ where
 impl<C> From<NonZeroScalar<C>> for ScalarBytes<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     fn from(scalar: NonZeroScalar<C>) -> ScalarBytes<C> {
         ScalarBytes {
@@ -187,7 +183,6 @@ where
 impl<C> TryFrom<ScalarBytes<C>> for NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     type Error = Error;
 

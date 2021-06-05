@@ -6,8 +6,7 @@ use crate::{
         EncodedPoint, FromEncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize,
     },
     weierstrass::{Curve, PointCompression},
-    AffinePoint, Error, FieldBytes, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, Result,
-    Scalar,
+    AffinePoint, Error, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, Result,
 };
 use core::{
     cmp::Ordering,
@@ -15,7 +14,6 @@ use core::{
     fmt::Debug,
     ops::Add,
 };
-use ff::PrimeField;
 use generic_array::ArrayLength;
 use group::{Curve as _, Group};
 
@@ -66,7 +64,6 @@ pub struct PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     point: AffinePoint<C>,
 }
@@ -76,7 +73,6 @@ where
     C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
 {
     /// Convert an [`AffinePoint`] into a [`PublicKey`]
     pub fn from_affine(point: AffinePoint<C>) -> Result<Self> {
@@ -181,7 +177,6 @@ where
 impl<C> AsRef<AffinePoint<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug,
     ProjectivePoint<C>: From<AffinePoint<C>>,
 {
@@ -193,7 +188,6 @@ where
 impl<C> TryFrom<EncodedPoint<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -209,7 +203,6 @@ where
 impl<C> TryFrom<&EncodedPoint<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -225,7 +218,6 @@ where
 impl<C> From<PublicKey<C>> for EncodedPoint<C>
 where
     C: Curve + ProjectiveArithmetic + PointCompression,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -239,7 +231,6 @@ where
 impl<C> From<&PublicKey<C>> for EncodedPoint<C>
 where
     C: Curve + ProjectiveArithmetic + PointCompression,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -253,7 +244,6 @@ where
 impl<C> FromEncodedPoint<C> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -269,7 +259,6 @@ where
 impl<C> ToEncodedPoint<C> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -285,7 +274,7 @@ where
 impl<C> Copy for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
+
     AffinePoint<C>: Copy + Clone + Debug,
 {
 }
@@ -293,7 +282,6 @@ where
 impl<C> Eq for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -304,7 +292,6 @@ where
 impl<C> PartialEq for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -318,7 +305,6 @@ where
 impl<C> PartialOrd for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -332,7 +318,6 @@ where
 impl<C> Ord for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -352,7 +337,6 @@ impl<C> FromPublicKey for PublicKey<C>
 where
     Self: TryFrom<EncodedPoint<C>, Error = Error>,
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -382,7 +366,6 @@ where
 impl<C> ToPublicKey for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -405,7 +388,6 @@ impl<C> FromStr for PublicKey<C>
 where
     Self: TryFrom<EncodedPoint<C>, Error = Error>,
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -423,7 +405,6 @@ where
 impl<C> ToString for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>>,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,

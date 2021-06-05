@@ -19,7 +19,6 @@ use zeroize::Zeroize;
 
 #[cfg(feature = "arithmetic")]
 use crate::{
-    group::ff::PrimeField,
     rand_core::{CryptoRng, RngCore},
     weierstrass, AffinePoint, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, PublicKey,
     Scalar,
@@ -85,7 +84,7 @@ where
     pub fn random(rng: impl CryptoRng + RngCore) -> Self
     where
         C: ProjectiveArithmetic,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+        Scalar<C>: Zeroize,
     {
         Self {
             inner: NonZeroScalar::<C>::random(rng).into(),
@@ -130,7 +129,7 @@ where
     pub fn to_secret_scalar(&self) -> NonZeroScalar<C>
     where
         C: ProjectiveArithmetic,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+        Scalar<C>: Zeroize,
     {
         self.into()
     }
@@ -143,7 +142,7 @@ where
         C: weierstrass::Curve + ProjectiveArithmetic,
         AffinePoint<C>: Copy + Clone + Debug + Default,
         ProjectivePoint<C>: From<AffinePoint<C>>,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+        Scalar<C>: Zeroize,
     {
         PublicKey::from_secret_scalar(&self.to_secret_scalar())
     }
@@ -181,7 +180,7 @@ where
         C: JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: Copy + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
         ProjectivePoint<C>: From<AffinePoint<C>>,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+        Scalar<C>: Zeroize,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -197,7 +196,7 @@ where
         C: JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: Copy + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
         ProjectivePoint<C>: From<AffinePoint<C>>,
-        Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+        Scalar<C>: Zeroize,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {

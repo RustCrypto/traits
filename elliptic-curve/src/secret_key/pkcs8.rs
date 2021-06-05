@@ -3,7 +3,7 @@
 use super::SecretKey;
 use crate::{
     sec1::{self, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
-    weierstrass, AlgorithmParameters, FieldBytes, ALGORITHM_OID,
+    weierstrass, AlgorithmParameters, ALGORITHM_OID,
 };
 use core::ops::Add;
 use generic_array::{typenum::U1, ArrayLength};
@@ -27,7 +27,6 @@ use {
         AffinePoint, ProjectiveArithmetic, ProjectivePoint,
     },
     core::{convert::TryInto, fmt::Debug},
-    ff::PrimeField,
     pkcs8::{der::Encodable, ToPrivateKey},
     zeroize::Zeroizing,
 };
@@ -107,7 +106,7 @@ where
     C: weierstrass::Curve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
     ProjectivePoint<C>: From<AffinePoint<C>>,
-    Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
+    Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {

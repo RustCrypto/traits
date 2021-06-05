@@ -67,7 +67,7 @@ pub use {
     crate::{
         point::{AffinePoint, ProjectiveArithmetic, ProjectivePoint},
         public_key::PublicKey,
-        scalar::{non_zero::NonZeroScalar, Scalar},
+        scalar::{non_zero::NonZeroScalar, Scalar, ScalarArithmetic},
     },
     ff::Field,
     group::{self, Group},
