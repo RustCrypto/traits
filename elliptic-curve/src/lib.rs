@@ -20,6 +20,8 @@
 )]
 
 #[cfg(feature = "alloc")]
+#[allow(unused_imports)]
+#[macro_use]
 extern crate alloc;
 
 #[cfg(feature = "std")]

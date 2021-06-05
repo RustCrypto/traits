@@ -7,7 +7,14 @@ use crate::{
 };
 use core::ops::Add;
 use generic_array::{typenum::U1, ArrayLength};
-use pkcs8::{der, FromPrivateKey};
+use pkcs8::{
+    der::{
+        self,
+        asn1::{BitString, ContextSpecific, OctetString},
+        TagNumber,
+    },
+    FromPrivateKey,
+};
 use zeroize::Zeroize;
 
 // Imports for the `ToPrivateKey` impl
@@ -19,8 +26,7 @@ use {
         sec1::{FromEncodedPoint, ToEncodedPoint},
         AffinePoint, ProjectiveArithmetic, ProjectivePoint,
     },
-    alloc::vec::Vec,
-    core::{convert::TryInto, fmt::Debug, iter},
+    core::{convert::TryInto, fmt::Debug},
     ff::PrimeField,
     pkcs8::{der::Encodable, ToPrivateKey},
     zeroize::Zeroizing,
@@ -36,9 +42,8 @@ use {
 /// Version
 const VERSION: u8 = 1;
 
-/// Encoding error message
-#[cfg(all(feature = "arithmetic", feature = "pem"))]
-const ENCODING_ERROR_MSG: &str = "DER encoding error";
+/// Context-specific tag number for the public key.
+const PUBLIC_KEY_TAG: TagNumber = TagNumber::new(1);
 
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 impl<C> FromPrivateKey for SecretKey<C>
@@ -50,10 +55,17 @@ where
     fn from_pkcs8_private_key_info(
         private_key_info: pkcs8::PrivateKeyInfo<'_>,
     ) -> pkcs8::Result<Self> {
-        if private_key_info.algorithm.oid != ALGORITHM_OID
-            || private_key_info.algorithm.parameters_oid()? != C::OID
-        {
-            return Err(pkcs8::Error::Decode);
+        if private_key_info.algorithm.oid != ALGORITHM_OID {
+            return Err(pkcs8::der::ErrorKind::UnknownOid {
+                oid: private_key_info.algorithm.oid,
+            }
+            .into());
+        }
+
+        let params_oid = private_key_info.algorithm.parameters_oid()?;
+
+        if params_oid != C::OID {
+            return Err(pkcs8::der::ErrorKind::UnknownOid { oid: params_oid }.into());
         }
 
         let mut decoder = der::Decoder::new(private_key_info.private_key);
@@ -72,15 +84,14 @@ where
                 })
             })?;
 
-            let public_key_field = decoder.any()?;
+            let public_key = decoder
+                .context_specific(PUBLIC_KEY_TAG)?
+                .ok_or(der::ErrorKind::Value {
+                    tag: der::Tag::ContextSpecific(PUBLIC_KEY_TAG),
+                })?
+                .bit_string()?;
 
-            public_key_field
-                .tag()
-                .assert_eq(der::Tag::ContextSpecific1)?;
-
-            let public_key_bytes = der::Decoder::new(public_key_field.as_bytes()).bit_string()?;
-
-            if let Ok(pk) = sec1::EncodedPoint::<C>::from_bytes(public_key_bytes.as_ref()) {
+            if let Ok(pk) = sec1::EncodedPoint::<C>::from_bytes(public_key.as_ref()) {
                 if C::validate_public_key(&secret_key, &pk).is_ok() {
                     return Ok(secret_key);
                 }
@@ -111,43 +122,29 @@ where
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
-    fn to_pkcs8_der(&self) -> pkcs8::PrivateKeyDocument {
+    fn to_pkcs8_der(&self) -> pkcs8::Result<pkcs8::PrivateKeyDocument> {
         // TODO(tarcieri): wrap `secret_key_bytes` in `Zeroizing`
         let mut secret_key_bytes = self.to_bytes();
-        let secret_key_field = der::OctetString::new(&secret_key_bytes).expect(ENCODING_ERROR_MSG);
-
-        let public_key_body = self.public_key().to_encoded_point(false);
-        let public_key_bytes = der::BitString::new(public_key_body.as_ref())
-            .and_then(|bit_string| bit_string.to_vec())
-            .expect("DER encoding error");
-
-        let public_key_field =
-            der::Any::new(der::Tag::ContextSpecific1, &public_key_bytes).expect(ENCODING_ERROR_MSG);
+        let secret_key_field = OctetString::new(&secret_key_bytes)?;
+        let public_key_bytes = self.public_key().to_encoded_point(false);
+        let public_key_field = ContextSpecific {
+            tag_number: PUBLIC_KEY_TAG,
+            value: BitString::new(public_key_bytes.as_ref())?.into(),
+        };
 
         let der_message_fields: &[&dyn Encodable] =
             &[&VERSION, &secret_key_field, &public_key_field];
 
-        let encoded_len = der::message::encoded_len(der_message_fields)
-            .and_then(TryInto::try_into)
-            .expect(ENCODING_ERROR_MSG);
-
-        let mut der_message = Zeroizing::new(Vec::new());
-        der_message.reserve(encoded_len);
-        der_message.extend(iter::repeat(0).take(encoded_len));
-
+        let encoded_len = der::message::encoded_len(der_message_fields)?.try_into()?;
+        let mut der_message = Zeroizing::new(vec![0u8; encoded_len]);
         let mut encoder = der::Encoder::new(&mut der_message);
-        encoder
-            .message(der_message_fields)
-            .expect(ENCODING_ERROR_MSG);
+        encoder.message(der_message_fields)?;
+        encoder.finish()?;
 
-        encoder.finish().expect(ENCODING_ERROR_MSG);
+        // TODO(tarcieri): wrap `secret_key_bytes` in `Zeroizing`
         secret_key_bytes.zeroize();
 
-        pkcs8::PrivateKeyInfo {
-            algorithm: C::algorithm_identifier(),
-            private_key: &der_message,
-        }
-        .to_der()
+        Ok(pkcs8::PrivateKeyInfo::new(C::algorithm_identifier(), &der_message).to_der())
     }
 }
 

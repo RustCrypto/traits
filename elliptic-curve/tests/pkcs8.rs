@@ -25,6 +25,7 @@ fn example_private_key() -> PrivateKeyDocument {
     SecretKey::from_bytes(&EXAMPLE_SCALAR)
         .unwrap()
         .to_pkcs8_der()
+        .unwrap()
 }
 
 #[test]

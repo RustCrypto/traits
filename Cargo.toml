@@ -15,3 +15,4 @@ members = [
 
 [patch.crates-io]
 crypto-bigint = { git = "https://github.com/rustcrypto/utils.git" }
+pkcs8 = { git = "https://github.com/rustcrypto/utils.git" }

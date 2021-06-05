@@ -359,11 +359,25 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn from_spki(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> pkcs8::Result<Self> {
-        if spki.algorithm.oid != ALGORITHM_OID || spki.algorithm.parameters_oid()? != C::OID {
-            return Err(pkcs8::Error::Decode);
+        if spki.algorithm.oid != ALGORITHM_OID {
+            return Err(pkcs8::der::ErrorKind::UnknownOid {
+                oid: spki.algorithm.oid,
+            }
+            .into());
         }
 
-        Self::from_sec1_bytes(&spki.subject_public_key).map_err(|_| pkcs8::Error::Decode)
+        let params_oid = spki.algorithm.parameters_oid()?;
+
+        if params_oid != C::OID {
+            return Err(pkcs8::der::ErrorKind::UnknownOid { oid: params_oid }.into());
+        }
+
+        Self::from_sec1_bytes(&spki.subject_public_key).map_err(|_| {
+            pkcs8::der::ErrorKind::Value {
+                tag: pkcs8::der::Tag::BitString,
+            }
+            .into()
+        })
     }
 }
 
@@ -378,14 +392,14 @@ where
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
-    fn to_public_key_der(&self) -> pkcs8::PublicKeyDocument {
+    fn to_public_key_der(&self) -> pkcs8::Result<pkcs8::PublicKeyDocument> {
         let public_key_bytes = self.to_encoded_point(false);
 
-        pkcs8::SubjectPublicKeyInfo {
+        Ok(pkcs8::SubjectPublicKeyInfo {
             algorithm: C::algorithm_identifier(),
             subject_public_key: public_key_bytes.as_ref(),
         }
-        .into()
+        .into())
     }
 }
 
@@ -420,7 +434,7 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn to_string(&self) -> String {
-        self.to_public_key_pem()
+        self.to_public_key_pem().expect("PEM encoding error")
     }
 }
 
