@@ -145,7 +145,6 @@ where
         ProjectivePoint<C>: From<AffinePoint<C>>,
         Scalar<C>: PrimeField<Repr = FieldBytes<C>> + Zeroize,
     {
-        // TODO(tarcieri): simplify conversion
         PublicKey::from_secret_scalar(&self.to_secret_scalar())
     }
 

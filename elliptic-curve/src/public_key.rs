@@ -372,12 +372,8 @@ where
             return Err(pkcs8::der::ErrorKind::UnknownOid { oid: params_oid }.into());
         }
 
-        Self::from_sec1_bytes(&spki.subject_public_key).map_err(|_| {
-            pkcs8::der::ErrorKind::Value {
-                tag: pkcs8::der::Tag::BitString,
-            }
-            .into()
-        })
+        Self::from_sec1_bytes(&spki.subject_public_key)
+            .map_err(|_| pkcs8::der::Tag::BitString.value_error().into())
     }
 }
 
