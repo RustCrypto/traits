@@ -31,8 +31,14 @@ where
     /// Create new [`ScalarBytes`], checking that the given input is within
     /// range of the [`Curve::ORDER`].
     pub fn new(bytes: FieldBytes<C>) -> CtOption<Self> {
-        let is_some = C::UInt::from_be_byte_array(&bytes).ct_lt(&C::ORDER);
-        CtOption::new(Self { inner: bytes }, is_some)
+        Self::from_uint(&C::UInt::from_be_byte_array(&bytes))
+    }
+
+    /// Create [`ScalarBytes`] from the provided `C::UInt`.
+    pub fn from_uint(uint: &C::UInt) -> CtOption<Self> {
+        let inner = uint.to_be_byte_array();
+        let in_range = uint.ct_lt(&C::ORDER);
+        CtOption::new(Self { inner }, in_range)
     }
 
     /// Convert from a [`Scalar`] type for this curve.
