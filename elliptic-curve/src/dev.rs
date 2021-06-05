@@ -76,6 +76,9 @@ pub type PublicKey = crate::PublicKey<MockCurve>;
 /// Secret key.
 pub type SecretKey = crate::SecretKey<MockCurve>;
 
+/// Scalar bytes.
+pub type ScalarBytes = crate::ScalarBytes<MockCurve>;
+
 /// Example scalar type
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct Scalar(U256);
