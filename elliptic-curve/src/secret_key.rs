@@ -20,8 +20,7 @@ use zeroize::Zeroize;
 #[cfg(feature = "arithmetic")]
 use crate::{
     rand_core::{CryptoRng, RngCore},
-    weierstrass, AffinePoint, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, PublicKey,
-    Scalar,
+    weierstrass, NonZeroScalar, ProjectiveArithmetic, PublicKey, Scalar,
 };
 
 #[cfg(feature = "jwk")]
@@ -34,7 +33,10 @@ use crate::{
 
 #[cfg(all(feature = "arithmetic", feature = "jwk"))]
 use {
-    crate::sec1::{FromEncodedPoint, ToEncodedPoint},
+    crate::{
+        sec1::{FromEncodedPoint, ToEncodedPoint},
+        AffinePoint,
+    },
     alloc::string::{String, ToString},
 };
 
@@ -140,8 +142,6 @@ where
     pub fn public_key(&self) -> PublicKey<C>
     where
         C: weierstrass::Curve + ProjectiveArithmetic,
-        AffinePoint<C>: Copy + Clone + Debug + Default,
-        ProjectivePoint<C>: From<AffinePoint<C>>,
         Scalar<C>: Zeroize,
     {
         PublicKey::from_secret_scalar(&self.to_secret_scalar())
@@ -178,8 +178,7 @@ where
     pub fn to_jwk(&self) -> JwkEcKey
     where
         C: JwkParameters + ProjectiveArithmetic,
-        AffinePoint<C>: Copy + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-        ProjectivePoint<C>: From<AffinePoint<C>>,
+        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         Scalar<C>: Zeroize,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
@@ -194,8 +193,7 @@ where
     pub fn to_jwk_string(&self) -> String
     where
         C: JwkParameters + ProjectiveArithmetic,
-        AffinePoint<C>: Copy + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-        ProjectivePoint<C>: From<AffinePoint<C>>,
+        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         Scalar<C>: Zeroize,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,

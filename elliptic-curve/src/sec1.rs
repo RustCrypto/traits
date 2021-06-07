@@ -22,7 +22,7 @@ use crate::{weierstrass::DecompressPoint, AffinePoint, ProjectiveArithmetic};
 #[cfg(all(feature = "arithmetic", feature = "zeroize"))]
 use crate::{
     group::{Curve as _, Group},
-    ProjectivePoint, Scalar,
+    Scalar,
 };
 
 #[cfg(feature = "zeroize")]
@@ -164,7 +164,7 @@ where
     pub fn to_untagged_bytes(&self) -> Option<GenericArray<u8, UntaggedPointSize<C>>>
     where
         C: Curve + ProjectiveArithmetic,
-        AffinePoint<C>: ConditionallySelectable + Default + DecompressPoint<C> + ToEncodedPoint<C>,
+        AffinePoint<C>: DecompressPoint<C> + ToEncodedPoint<C>,
     {
         self.decompress().map(|point| {
             let mut bytes = GenericArray::<u8, UntaggedPointSize<C>>::default();
@@ -197,7 +197,7 @@ where
     pub fn decompress(&self) -> Option<Self>
     where
         C: Curve + ProjectiveArithmetic,
-        AffinePoint<C>: ConditionallySelectable + Default + DecompressPoint<C> + ToEncodedPoint<C>,
+        AffinePoint<C>: DecompressPoint<C> + ToEncodedPoint<C>,
     {
         match self.coordinates() {
             Coordinates::Identity => None,
@@ -515,8 +515,7 @@ where
 impl<C> ValidatePublicKey for C
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
