@@ -63,7 +63,6 @@ use alloc::string::{String, ToString};
 pub struct PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug,
 {
     point: AffinePoint<C>,
 }
@@ -71,8 +70,6 @@ where
 impl<C> PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
 {
     /// Convert an [`AffinePoint`] into a [`PublicKey`]
     pub fn from_affine(point: AffinePoint<C>) -> Result<Self> {
@@ -127,7 +124,7 @@ where
     pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
     where
         C: JwkParameters,
-        AffinePoint<C>: Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -140,7 +137,7 @@ where
     pub fn from_jwk_str(jwk: &str) -> Result<Self>
     where
         C: JwkParameters,
-        AffinePoint<C>: Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -153,7 +150,7 @@ where
     pub fn to_jwk(&self) -> JwkEcKey
     where
         C: JwkParameters,
-        AffinePoint<C>: Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -166,7 +163,7 @@ where
     pub fn to_jwk_string(&self) -> String
     where
         C: JwkParameters,
-        AffinePoint<C>: Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
+        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -177,8 +174,6 @@ where
 impl<C> AsRef<AffinePoint<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
 {
     fn as_ref(&self) -> &AffinePoint<C> {
         self.as_affine()
@@ -188,8 +183,7 @@ where
 impl<C> TryFrom<EncodedPoint<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -203,8 +197,7 @@ where
 impl<C> TryFrom<&EncodedPoint<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -218,8 +211,7 @@ where
 impl<C> From<PublicKey<C>> for EncodedPoint<C>
 where
     C: Curve + ProjectiveArithmetic + PointCompression,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -231,8 +223,7 @@ where
 impl<C> From<&PublicKey<C>> for EncodedPoint<C>
 where
     C: Curve + ProjectiveArithmetic + PointCompression,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -244,8 +235,7 @@ where
 impl<C> FromEncodedPoint<C> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -259,8 +249,7 @@ where
 impl<C> ToEncodedPoint<C> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -282,8 +271,7 @@ where
 impl<C> Eq for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -292,8 +280,7 @@ where
 impl<C> PartialEq for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -305,8 +292,7 @@ where
 impl<C> PartialOrd for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -318,8 +304,7 @@ where
 impl<C> Ord for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -337,8 +322,6 @@ impl<C> FromPublicKey for PublicKey<C>
 where
     Self: TryFrom<EncodedPoint<C>, Error = Error>,
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -366,8 +349,7 @@ where
 impl<C> ToPublicKey for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -388,8 +370,6 @@ impl<C> FromStr for PublicKey<C>
 where
     Self: TryFrom<EncodedPoint<C>, Error = Error>,
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -405,8 +385,7 @@ where
 impl<C> ToString for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {

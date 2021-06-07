@@ -9,7 +9,7 @@ use crate::{
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     weierstrass,
     zeroize::Zeroize,
-    AlgorithmParameters, Curve, ProjectiveArithmetic, ScalarArithmetic,
+    AffineArithmetic, AlgorithmParameters, Curve, ProjectiveArithmetic, ScalarArithmetic,
 };
 use core::{
     convert::{TryFrom, TryInto},
@@ -46,12 +46,16 @@ impl Curve for MockCurve {
 
 impl weierstrass::Curve for MockCurve {}
 
-impl ScalarArithmetic for MockCurve {
-    type Scalar = Scalar;
+impl AffineArithmetic for MockCurve {
+    type AffinePoint = AffinePoint;
 }
 
 impl ProjectiveArithmetic for MockCurve {
     type ProjectivePoint = ProjectivePoint;
+}
+
+impl ScalarArithmetic for MockCurve {
+    type Scalar = Scalar;
 }
 
 impl AlgorithmParameters for MockCurve {
@@ -320,6 +324,12 @@ pub enum AffinePoint {
     Other(EncodedPoint),
 }
 
+impl ConstantTimeEq for AffinePoint {
+    fn ct_eq(&self, _other: &Self) -> Choice {
+        unimplemented!();
+    }
+}
+
 impl ConditionallySelectable for AffinePoint {
     fn conditional_select(_a: &Self, _b: &Self, _choice: Choice) -> Self {
         unimplemented!();
@@ -386,6 +396,18 @@ pub enum ProjectivePoint {
     Other(AffinePoint),
 }
 
+impl ConstantTimeEq for ProjectivePoint {
+    fn ct_eq(&self, _other: &Self) -> Choice {
+        unimplemented!();
+    }
+}
+
+impl ConditionallySelectable for ProjectivePoint {
+    fn conditional_select(_a: &Self, _b: &Self, _choice: Choice) -> Self {
+        unimplemented!();
+    }
+}
+
 impl Default for ProjectivePoint {
     fn default() -> Self {
         Self::Identity
@@ -400,6 +422,12 @@ impl From<AffinePoint> for ProjectivePoint {
             AffinePoint::Generator => ProjectivePoint::Generator,
             other => ProjectivePoint::Other(other),
         }
+    }
+}
+
+impl From<ProjectivePoint> for AffinePoint {
+    fn from(point: ProjectivePoint) -> AffinePoint {
+        group::Curve::to_affine(&point)
     }
 }
 

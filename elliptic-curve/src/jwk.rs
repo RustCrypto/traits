@@ -32,7 +32,7 @@ use zeroize::Zeroize;
 use crate::{
     public_key::PublicKey,
     sec1::{FromEncodedPoint, ToEncodedPoint},
-    AffinePoint, ProjectiveArithmetic, ProjectivePoint, Scalar,
+    AffinePoint, ProjectiveArithmetic, Scalar,
 };
 
 /// Key Type (`kty`) for elliptic curve keys.
@@ -120,8 +120,7 @@ impl JwkEcKey {
     pub fn to_public_key<C>(&self) -> Result<PublicKey<C>, Error>
     where
         C: Curve + JwkParameters + ProjectiveArithmetic,
-        AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-        ProjectivePoint<C>: From<AffinePoint<C>>,
+        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -271,8 +270,7 @@ where
 impl<C> From<SecretKey<C>> for JwkEcKey
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -288,8 +286,7 @@ where
 impl<C> From<&SecretKey<C>> for JwkEcKey
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -309,8 +306,7 @@ where
 impl<C> TryFrom<JwkEcKey> for PublicKey<C>
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -327,8 +323,7 @@ where
 impl<C> TryFrom<&JwkEcKey> for PublicKey<C>
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -345,8 +340,7 @@ where
 impl<C> From<PublicKey<C>> for JwkEcKey
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -361,8 +355,7 @@ where
 impl<C> From<&PublicKey<C>> for JwkEcKey
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {

@@ -24,9 +24,9 @@ use {
     crate::{
         scalar::Scalar,
         sec1::{FromEncodedPoint, ToEncodedPoint},
-        AffinePoint, ProjectiveArithmetic, ProjectivePoint,
+        AffinePoint, ProjectiveArithmetic,
     },
-    core::{convert::TryInto, fmt::Debug},
+    core::convert::TryInto,
     pkcs8::{der::Encodable, ToPrivateKey},
     zeroize::Zeroizing,
 };
@@ -95,8 +95,7 @@ where
 impl<C> ToPrivateKey for SecretKey<C>
 where
     C: weierstrass::Curve + AlgorithmParameters + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Default + FromEncodedPoint<C> + ToEncodedPoint<C>,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,

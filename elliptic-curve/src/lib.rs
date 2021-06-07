@@ -35,7 +35,7 @@ mod error;
 mod scalar;
 
 #[cfg(feature = "arithmetic")]
-mod point;
+mod arithmetic;
 #[cfg(feature = "arithmetic")]
 mod public_key;
 
@@ -65,9 +65,9 @@ pub use subtle;
 #[cfg(feature = "arithmetic")]
 pub use {
     crate::{
-        point::{AffinePoint, ProjectiveArithmetic, ProjectivePoint},
+        arithmetic::{AffineArithmetic, ProjectiveArithmetic, ScalarArithmetic},
         public_key::PublicKey,
-        scalar::{non_zero::NonZeroScalar, Scalar, ScalarArithmetic},
+        scalar::{non_zero::NonZeroScalar, Scalar},
     },
     ff::Field,
     group::{self, Group},
@@ -133,6 +133,18 @@ pub type FieldSize<C> = <<C as Curve>::UInt as ArrayEncoding>::ByteSize;
 
 /// Byte representation of a base/scalar field element of a given curve.
 pub type FieldBytes<C> = GenericArray<u8, FieldSize<C>>;
+
+/// Affine point type for a given curve with a [`ProjectiveArithmetic`]
+/// implementation.
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+#[cfg(feature = "arithmetic")]
+pub type AffinePoint<C> = <C as AffineArithmetic>::AffinePoint;
+
+/// Projective point type for a given curve with a [`ProjectiveArithmetic`]
+/// implementation.
+#[cfg(feature = "arithmetic")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+pub type ProjectivePoint<C> = <C as ProjectiveArithmetic>::ProjectivePoint;
 
 /// Associate an [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] (OID) with an
 /// elliptic curve algorithm implementation.

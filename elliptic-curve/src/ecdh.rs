@@ -30,7 +30,7 @@ use crate::{
     weierstrass::Curve, AffinePoint, FieldBytes, NonZeroScalar, ProjectiveArithmetic,
     ProjectivePoint, PublicKey, Scalar,
 };
-use core::{borrow::Borrow, fmt::Debug};
+use core::borrow::Borrow;
 use group::Curve as _;
 use rand_core::{CryptoRng, RngCore};
 use zeroize::Zeroize;
@@ -61,8 +61,7 @@ pub fn diffie_hellman<C>(
 ) -> SharedSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Zeroize,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: Zeroize,
     Scalar<C>: Zeroize,
     SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
@@ -105,8 +104,7 @@ where
 impl<C> EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Zeroize,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: Zeroize,
     Scalar<C>: Zeroize,
     SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
@@ -134,8 +132,7 @@ where
 impl<C> From<&EphemeralSecret<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Copy + Clone + Debug + Zeroize,
-    ProjectivePoint<C>: From<AffinePoint<C>>,
+    AffinePoint<C>: Zeroize,
     Scalar<C>: Zeroize,
     SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
