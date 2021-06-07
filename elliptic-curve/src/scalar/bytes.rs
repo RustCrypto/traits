@@ -167,12 +167,31 @@ where
     }
 }
 
+impl<C> From<&ScalarBytes<C>> for FieldBytes<C>
+where
+    C: Curve,
+{
+    fn from(scalar_bytes: &ScalarBytes<C>) -> FieldBytes<C> {
+        scalar_bytes.inner.clone()
+    }
+}
+
 #[cfg(feature = "arithmetic")]
 impl<C> From<NonZeroScalar<C>> for ScalarBytes<C>
 where
     C: Curve + ProjectiveArithmetic,
 {
     fn from(scalar: NonZeroScalar<C>) -> ScalarBytes<C> {
+        Self::from(&scalar)
+    }
+}
+
+#[cfg(feature = "arithmetic")]
+impl<C> From<&NonZeroScalar<C>> for ScalarBytes<C>
+where
+    C: Curve + ProjectiveArithmetic,
+{
+    fn from(scalar: &NonZeroScalar<C>) -> ScalarBytes<C> {
         ScalarBytes {
             inner: scalar.into(),
         }

@@ -128,7 +128,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn to_secret_scalar(&self) -> NonZeroScalar<C>
     where
-        C: ProjectiveArithmetic,
+        C: Curve + ProjectiveArithmetic,
         Scalar<C>: Zeroize,
     {
         self.into()
@@ -201,6 +201,30 @@ where
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
         self.to_jwk().to_string()
+    }
+}
+
+#[cfg(feature = "arithmetic")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+impl<C> From<NonZeroScalar<C>> for SecretKey<C>
+where
+    C: Curve + ProjectiveArithmetic,
+{
+    fn from(scalar: NonZeroScalar<C>) -> SecretKey<C> {
+        SecretKey::from(&scalar)
+    }
+}
+
+#[cfg(feature = "arithmetic")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+impl<C> From<&NonZeroScalar<C>> for SecretKey<C>
+where
+    C: Curve + ProjectiveArithmetic,
+{
+    fn from(scalar: &NonZeroScalar<C>) -> SecretKey<C> {
+        SecretKey {
+            inner: scalar.into(),
+        }
     }
 }
 
