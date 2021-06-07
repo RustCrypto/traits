@@ -99,7 +99,27 @@ where
     C: Curve + ProjectiveArithmetic,
 {
     fn from(scalar: NonZeroScalar<C>) -> FieldBytes<C> {
+        Self::from(&scalar)
+    }
+}
+
+impl<C> From<&NonZeroScalar<C>> for FieldBytes<C>
+where
+    C: Curve + ProjectiveArithmetic,
+{
+    fn from(scalar: &NonZeroScalar<C>) -> FieldBytes<C> {
         scalar.scalar.to_repr()
+    }
+}
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl<C> From<SecretKey<C>> for NonZeroScalar<C>
+where
+    C: Curve + ProjectiveArithmetic,
+{
+    fn from(sk: SecretKey<C>) -> NonZeroScalar<C> {
+        Self::from(&sk)
     }
 }
 
