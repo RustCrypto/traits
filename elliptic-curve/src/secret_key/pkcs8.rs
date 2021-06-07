@@ -54,18 +54,9 @@ where
     fn from_pkcs8_private_key_info(
         private_key_info: pkcs8::PrivateKeyInfo<'_>,
     ) -> pkcs8::Result<Self> {
-        if private_key_info.algorithm.oid != ALGORITHM_OID {
-            return Err(pkcs8::der::ErrorKind::UnknownOid {
-                oid: private_key_info.algorithm.oid,
-            }
-            .into());
-        }
-
-        let params_oid = private_key_info.algorithm.parameters_oid()?;
-
-        if params_oid != C::OID {
-            return Err(pkcs8::der::ErrorKind::UnknownOid { oid: params_oid }.into());
-        }
+        private_key_info
+            .algorithm
+            .assert_oids(ALGORITHM_OID, C::OID)?;
 
         let mut decoder = der::Decoder::new(private_key_info.private_key);
 
