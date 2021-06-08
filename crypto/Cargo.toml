@@ -1,6 +1,6 @@
 [package]
 name = "crypto"
-version = "0.2.0" # Also update html_root_url in lib.rs when bumping this
+version = "0.3.0" # Also update html_root_url in lib.rs when bumping this
 description = """
 Resources for building cryptosystems in Rust using the RustCrypto project's ecosystem.
 """
