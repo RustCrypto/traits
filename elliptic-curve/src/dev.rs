@@ -2,7 +2,7 @@
 //! against concrete implementations of the traits in this crate.
 
 use crate::{
-    bigint::{ArrayEncoding, U256},
+    bigint::{ArrayEncoding as _, U256},
     error::{Error, Result},
     rand_core::RngCore,
     sec1::{FromEncodedPoint, ToEncodedPoint},
@@ -135,7 +135,7 @@ impl PrimeField for Scalar {
     const S: u32 = 4;
 
     fn from_repr(bytes: FieldBytes) -> Option<Self> {
-        U256::from_be_bytes(&bytes).try_into().ok()
+        U256::from_be_byte_array(bytes).try_into().ok()
     }
 
     fn to_repr(&self) -> FieldBytes {
