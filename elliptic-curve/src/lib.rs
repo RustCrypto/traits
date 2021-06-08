@@ -110,6 +110,8 @@ pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
 /// curves (e.g. [`SecretKey`]).
 pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
     /// Integer type used to represent field elements of this elliptic curve.
+    // TODO(tarcieri): replace this with an e.g. `const Curve::MODULUS: uint`.
+    // Requires rust-lang/rust#60551, i.e. `const_evaluatable_checked`
     type UInt: AsRef<[bigint::Limb]>
         + ArrayEncoding
         + Copy
