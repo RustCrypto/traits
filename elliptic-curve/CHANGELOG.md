@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.10.0 (2021-06-07)
+### Added
+- `ScalarBytes::from_uint` ([#651])
+- `dev::ScalarBytes` ([#652])
+- `ScalarArithmetic` trait ([#654])
+- `AffineArithmetic` trait ([#658])
+- `PointCompaction` trait and SEC1 tag support ([#659])
+
+### Changed
+- Bump `ff` and `group` to v0.10; MSRV 1.51+ ([#643])
+- Merge `Curve` and `Order` traits ([#644])
+- Use `crypto-bigint` to represent `Curve::ORDER` ([#645])
+- Source `FieldSize<C>` from `C::UInt` type ([#646])
+- Impl `ScalarBytes<C>` using `C::UInt` ([#647])
+- Make `ScalarBytes<C>` the `SecretKey<C>` internal repr ([#649])
+- Bump `crypto-bigint` to v0.2 ([#662])
+- Bump `pkcs8` to v0.7 ([#662])
+
+### Removed
+- `util` module ([#648])
+
+[#643]: https://github.com/RustCrypto/traits/pull/643
+[#644]: https://github.com/RustCrypto/traits/pull/644
+[#645]: https://github.com/RustCrypto/traits/pull/645
+[#646]: https://github.com/RustCrypto/traits/pull/646
+[#647]: https://github.com/RustCrypto/traits/pull/647
+[#648]: https://github.com/RustCrypto/traits/pull/648
+[#649]: https://github.com/RustCrypto/traits/pull/649
+[#651]: https://github.com/RustCrypto/traits/pull/651
+[#652]: https://github.com/RustCrypto/traits/pull/652
+[#654]: https://github.com/RustCrypto/traits/pull/654
+[#658]: https://github.com/RustCrypto/traits/pull/658
+[#659]: https://github.com/RustCrypto/traits/pull/659
+[#662]: https://github.com/RustCrypto/traits/pull/662
+
 ## 0.9.12 (2021-05-18)
 ### Added
 - `Ord` and `PartialOrd` impls on `PublicKey` ([#637])
