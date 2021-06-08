@@ -1,7 +1,7 @@
 //! Scalar bytes.
 
 use crate::{
-    bigint::{ArrayEncoding, NumBytes},
+    bigint::{ArrayEncoding as _, Encoding as _},
     Curve, Error, FieldBytes, Result,
 };
 use core::convert::TryFrom;
@@ -31,7 +31,7 @@ where
     /// Create new [`ScalarBytes`], checking that the given input is within
     /// range of the [`Curve::ORDER`].
     pub fn new(bytes: FieldBytes<C>) -> CtOption<Self> {
-        Self::from_uint(&C::UInt::from_be_byte_array(&bytes))
+        Self::from_uint(&C::UInt::from_be_byte_array(bytes))
     }
 
     /// Create [`ScalarBytes`] from the provided `C::UInt`.
@@ -226,7 +226,7 @@ where
     type Error = Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self> {
-        if bytes.len() == C::UInt::NUM_BYTES {
+        if bytes.len() == C::UInt::BYTE_SIZE {
             Option::from(ScalarBytes::new(GenericArray::clone_from_slice(bytes))).ok_or(Error)
         } else {
             Err(Error)

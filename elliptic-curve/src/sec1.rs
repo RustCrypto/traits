@@ -5,7 +5,7 @@
 //!
 //! <https://www.secg.org/sec1-v2.pdf>
 
-use crate::{bigint::NumBytes, weierstrass::Curve, Error, FieldBytes, FieldSize, Result};
+use crate::{bigint::Encoding as _, weierstrass::Curve, Error, FieldBytes, FieldSize, Result};
 use core::{
     fmt::{self, Debug},
     ops::Add,
@@ -76,7 +76,7 @@ where
         let tag = input.first().cloned().ok_or(Error).and_then(Tag::from_u8)?;
 
         // Validate length
-        let expected_len = tag.message_len(C::UInt::NUM_BYTES);
+        let expected_len = tag.message_len(C::UInt::BYTE_SIZE);
 
         if input.len() != expected_len {
             return Err(Error);
@@ -91,7 +91,7 @@ where
     /// encoded as the concatenated `x || y` coordinates with no leading SEC1
     /// tag byte (which would otherwise be `0x04` for an uncompressed point).
     pub fn from_untagged_bytes(bytes: &GenericArray<u8, UntaggedPointSize<C>>) -> Self {
-        let (x, y) = bytes.split_at(C::UInt::NUM_BYTES);
+        let (x, y) = bytes.split_at(C::UInt::BYTE_SIZE);
         Self::from_affine_coordinates(x.into(), y.into(), false)
     }
 
@@ -106,11 +106,10 @@ where
 
         let mut bytes = GenericArray::default();
         bytes[0] = tag.into();
-
-        bytes[1..(C::UInt::NUM_BYTES + 1)].copy_from_slice(x);
+        bytes[1..(C::UInt::BYTE_SIZE + 1)].copy_from_slice(x);
 
         if !compress {
-            bytes[(C::UInt::NUM_BYTES + 1)..].copy_from_slice(y);
+            bytes[(C::UInt::BYTE_SIZE + 1)..].copy_from_slice(y);
         }
 
         Self { bytes }
@@ -142,7 +141,7 @@ where
 
     /// Get the length of the encoded point in bytes
     pub fn len(&self) -> usize {
-        self.tag().message_len(C::UInt::NUM_BYTES)
+        self.tag().message_len(C::UInt::BYTE_SIZE)
     }
 
     /// Get byte slice containing the serialized [`EncodedPoint`].
@@ -246,7 +245,7 @@ where
             return Coordinates::Identity;
         }
 
-        let (x, y) = self.bytes[1..].split_at(C::UInt::NUM_BYTES);
+        let (x, y) = self.bytes[1..].split_at(C::UInt::BYTE_SIZE);
 
         if self.is_compressed() {
             Coordinates::Compressed {

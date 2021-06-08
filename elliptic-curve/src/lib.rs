@@ -57,7 +57,7 @@ pub use self::{
     error::{Error, Result},
     scalar::bytes::ScalarBytes,
 };
-pub use crypto_bigint::{self as bigint, ArrayEncoding, NumBits, NumBytes};
+pub use crypto_bigint as bigint;
 pub use generic_array::{self, typenum::consts};
 pub use rand_core;
 pub use subtle;
@@ -111,12 +111,11 @@ pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
 pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
     /// Integer type used to represent field elements of this elliptic curve.
     type UInt: AsRef<[bigint::Limb]>
-        + ArrayEncoding
+        + bigint::ArrayEncoding
+        + bigint::Encoding
         + Copy
         + Debug
         + Default
-        + NumBits
-        + NumBytes
         + ConstantTimeEq
         + ConstantTimeGreater
         + ConstantTimeLess;
@@ -129,7 +128,7 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
 }
 
 /// Size of field elements of this elliptic curve.
-pub type FieldSize<C> = <<C as Curve>::UInt as ArrayEncoding>::ByteSize;
+pub type FieldSize<C> = <<C as Curve>::UInt as bigint::ArrayEncoding>::ByteSize;
 
 /// Byte representation of a base/scalar field element of a given curve.
 pub type FieldBytes<C> = GenericArray<u8, FieldSize<C>>;

@@ -56,7 +56,7 @@ checksum = "d0d27fb6b6f1e43147af148af49d49329413ba781aa0d5e10979831c210173b5"
 [[package]]
 name = "base64ct"
 version = "1.0.0"
-source = "git+https://github.com/rustcrypto/utils.git#3fc828a86a31b2b5016dd64e4f3b38a858f9d070"
+source = "git+https://github.com/rustcrypto/utils.git#dd17922cba2798f9a002850acf455cf2d6215483"
 
 [[package]]
 name = "bitfield"
@@ -145,7 +145,7 @@ dependencies = [
 [[package]]
 name = "const-oid"
 version = "0.6.0"
-source = "git+https://github.com/rustcrypto/utils.git#3fc828a86a31b2b5016dd64e4f3b38a858f9d070"
+source = "git+https://github.com/rustcrypto/utils.git#dd17922cba2798f9a002850acf455cf2d6215483"
 
 [[package]]
 name = "cortex-m"
@@ -184,8 +184,8 @@ dependencies = [
 
 [[package]]
 name = "crypto-bigint"
-version = "0.1.0"
-source = "git+https://github.com/rustcrypto/utils.git#3fc828a86a31b2b5016dd64e4f3b38a858f9d070"
+version = "0.2.0-pre"
+source = "git+https://github.com/rustcrypto/utils.git#dd17922cba2798f9a002850acf455cf2d6215483"
 dependencies = [
  "generic-array",
  "subtle",
@@ -224,7 +224,7 @@ dependencies = [
 [[package]]
 name = "der"
 version = "0.4.0-pre"
-source = "git+https://github.com/rustcrypto/utils.git#3fc828a86a31b2b5016dd64e4f3b38a858f9d070"
+source = "git+https://github.com/rustcrypto/utils.git#dd17922cba2798f9a002850acf455cf2d6215483"
 dependencies = [
  "const-oid",
 ]
@@ -403,7 +403,7 @@ dependencies = [
 [[package]]
 name = "pkcs8"
 version = "0.7.0-pre"
-source = "git+https://github.com/rustcrypto/utils.git#3fc828a86a31b2b5016dd64e4f3b38a858f9d070"
+source = "git+https://github.com/rustcrypto/utils.git#dd17922cba2798f9a002850acf455cf2d6215483"
 dependencies = [
  "base64ct 1.0.0 (git+https://github.com/rustcrypto/utils.git)",
  "der",
@@ -531,7 +531,7 @@ dependencies = [
 [[package]]
 name = "spki"
 version = "0.4.0-pre"
-source = "git+https://github.com/rustcrypto/utils.git#3fc828a86a31b2b5016dd64e4f3b38a858f9d070"
+source = "git+https://github.com/rustcrypto/utils.git#dd17922cba2798f9a002850acf455cf2d6215483"
 dependencies = [
  "der",
 ]
