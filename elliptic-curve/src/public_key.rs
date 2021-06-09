@@ -59,7 +59,7 @@ use alloc::string::{String, ToString};
 /// When the `pem` feature of this crate (or a specific RustCrypto elliptic
 /// curve crate) is enabled, a [`FromStr`] impl is also available.
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
@@ -179,6 +179,8 @@ where
         self.as_affine()
     }
 }
+
+impl<C> Copy for PublicKey<C> where C: Curve + ProjectiveArithmetic {}
 
 impl<C> TryFrom<EncodedPoint<C>> for PublicKey<C>
 where
