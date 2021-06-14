@@ -1,4 +1,5 @@
 //! Non-zero scalar type.
+// TODO(tarcieri): change bounds to `ScalarArithmetic` instead of `ProjectiveArithmetic`
 
 use crate::{
     bigint::Encoding as _,
@@ -9,7 +10,7 @@ use crate::{
 use core::{convert::TryFrom, ops::Deref};
 use ff::{Field, PrimeField};
 use generic_array::GenericArray;
-use subtle::{Choice, ConditionallySelectable, CtOption};
+use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "zeroize")]
 use {crate::SecretKey, zeroize::Zeroize};
@@ -45,7 +46,7 @@ where
         }
     }
 
-    /// Decode a [`NonZeroScalar] from a serialized field element
+    /// Decode a [`NonZeroScalar`] from a serialized field element
     pub fn from_repr(repr: FieldBytes<C>) -> Option<Self> {
         Scalar::<C>::from_repr(repr).and_then(Self::new)
     }
@@ -78,6 +79,15 @@ where
         Self {
             scalar: Scalar::<C>::conditional_select(&a.scalar, &b.scalar, choice),
         }
+    }
+}
+
+impl<C> ConstantTimeEq for NonZeroScalar<C>
+where
+    C: Curve + ProjectiveArithmetic,
+{
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.scalar.ct_eq(&other.scalar)
     }
 }
 
