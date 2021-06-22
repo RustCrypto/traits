@@ -20,7 +20,7 @@ use ff::{Field, PrimeField};
 use hex_literal::hex;
 
 #[cfg(feature = "bits")]
-use crate::{bigint, group::ff::PrimeFieldBits, ScalarBits};
+use crate::{group::ff::PrimeFieldBits, ScalarBits};
 
 #[cfg(feature = "jwk")]
 use crate::JwkParameters;
@@ -157,14 +157,29 @@ impl PrimeField for Scalar {
 
 #[cfg(feature = "bits")]
 impl PrimeFieldBits for Scalar {
-    type ReprBits = [bigint::Limb; 32 / bigint::LIMB_BYTES];
+    #[cfg(target_pointer_width = "32")]
+    type ReprBits = [u32; 8];
+    #[cfg(target_pointer_width = "64")]
+    type ReprBits = [u64; 4];
 
     fn to_le_bits(&self) -> ScalarBits<MockCurve> {
-        (*self.0.limbs()).into()
+        let mut limbs = Self::ReprBits::default();
+
+        for (i, limb) in self.0.limbs().iter().cloned().enumerate() {
+            limbs[i] = limb.into();
+        }
+
+        limbs.into()
     }
 
     fn char_le_bits() -> ScalarBits<MockCurve> {
-        (*MockCurve::ORDER.limbs()).into()
+        let mut limbs = Self::ReprBits::default();
+
+        for (i, limb) in MockCurve::ORDER.limbs().iter().cloned().enumerate() {
+            limbs[i] = limb.into();
+        }
+
+        limbs.into()
     }
 }
 
@@ -304,7 +319,7 @@ impl From<&Scalar> for FieldBytes {
 
 impl Zeroize for Scalar {
     fn zeroize(&mut self) {
-        self.0.as_mut().zeroize()
+        self.0.as_mut().zeroize();
     }
 }
 
