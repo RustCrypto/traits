@@ -15,7 +15,7 @@ categories = ["cryptography", "no-std"]
 keywords   = ["crypto", "ecc", "elliptic", "weierstrass"]
 
 [dependencies]
-crypto-bigint = { version = "0.2", features = ["generic-array"] }
+crypto-bigint = { version = "0.2.1", features = ["generic-array"] }
 generic-array = { version = "0.14", default-features = false }
 rand_core = { version = "0.6", default-features = false }
 subtle = { version = "2.4", default-features = false }
@@ -35,8 +35,8 @@ hex-literal = "0.3"
 
 [features]
 default = ["arithmetic"]
-alloc = []
-arithmetic = ["ff", "group"]
+alloc = [] # todo: activate `group/alloc` when weak feature activation is available
+arithmetic = ["crypto-bigint/zeroize", "ff", "group", "zeroize"]
 bits = ["arithmetic", "ff/bits"]
 dev = ["arithmetic", "hex-literal", "pem", "zeroize"]
 ecdh = ["arithmetic", "zeroize"]
