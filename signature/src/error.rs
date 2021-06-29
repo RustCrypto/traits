@@ -5,6 +5,11 @@ use core::fmt::{self, Debug, Display};
 #[cfg(feature = "std")]
 use std::boxed::Box;
 
+/// Result type.
+///
+/// A result with the `signature` crate's [`Error`] type.
+pub type Result<T> = core::result::Result<T, Error>;
+
 /// Signature errors.
 ///
 /// This type is deliberately opaque as to avoid sidechannel leakage which
