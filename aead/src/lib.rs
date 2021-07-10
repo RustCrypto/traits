@@ -40,16 +40,21 @@ pub mod stream;
 pub use generic_array::{self, typenum::consts};
 
 #[cfg(feature = "heapless")]
+#[cfg_attr(docsrs, doc(cfg(feature = "heapless")))]
 pub use heapless;
 
 #[cfg(feature = "rand_core")]
-use rand_core::{CryptoRng, RngCore};
+#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+pub use rand_core;
 
 use core::fmt;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
+
+#[cfg(feature = "rand_core")]
+use rand_core::{CryptoRng, RngCore};
 
 /// Error type.
 ///
