@@ -17,13 +17,15 @@ categories = ["cryptography", "no-std"]
 [dependencies]
 generic-array = { version = "0.14", default-features = false }
 
+# optional dependencies
 blobby = { version = "0.3", optional = true }
 heapless = { version = "0.7", optional = true, default-features = false }
 rand_core = { version = "0.6", optional = true }
 
 [features]
-std = ["alloc"]
+default = ["rand_core"]
 alloc = []
+std = ["alloc", "rand_core/std"]
 dev = ["blobby"]
 stream = []
 
