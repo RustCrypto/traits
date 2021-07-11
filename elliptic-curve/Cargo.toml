@@ -43,7 +43,7 @@ ecdh = ["arithmetic", "zeroize"]
 hazmat = []
 jwk = ["alloc", "base64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
 pem = ["alloc", "pkcs8/pem"]
-std = ["alloc"]
+std = ["alloc", "rand_core/std"]
 
 [package.metadata.docs.rs]
 features = ["arithmetic", "ecdh", "jwk", "pem", "std"]

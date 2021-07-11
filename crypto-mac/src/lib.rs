@@ -12,6 +12,10 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+#[cfg(feature = "rand_core")]
+#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+pub use rand_core;
+
 #[cfg(feature = "cipher")]
 pub use cipher;
 #[cfg(feature = "cipher")]

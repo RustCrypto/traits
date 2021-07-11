@@ -50,6 +50,10 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
+#[cfg(feature = "rand_core")]
+#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+pub use rand_core;
+
 mod encoding;
 mod errors;
 mod ident;
