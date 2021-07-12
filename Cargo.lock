@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "aead"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "blobby",
  "generic-array",
@@ -251,7 +251,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.10.3"
+version = "0.10.4"
 dependencies = [
  "base64ct",
  "crypto-bigint",
