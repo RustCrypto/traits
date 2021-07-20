@@ -251,7 +251,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.10.4"
+version = "0.10.5"
 dependencies = [
  "base64ct",
  "crypto-bigint",
@@ -387,7 +387,7 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "password-hash"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "base64ct",
  "rand_core",
@@ -584,7 +584,7 @@ checksum = "8ccb82d61f80a663efe1f787a51b16b5a51e3314d6ac365b08639f52387b33f3"
 
 [[package]]
 name = "universal-hash"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "generic-array",
  "subtle",
