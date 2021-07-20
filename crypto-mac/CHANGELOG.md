@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#683]: https://github.com/RustCrypto/traits/pull/683
 
+## 0.11.1 (2021-07-20)
+### Changed
+- Pin `subtle` dependency to v2.4 ([#691])
+
+[#691]: https://github.com/RustCrypto/traits/pull/691
+
 ## 0.11.0 (2021-04-28)
 ### Added
 - `generate_key` method to `New*` trait ([#513])
@@ -22,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#442]: https://github.com/RustCrypto/traits/pull/442
 [#513]: https://github.com/RustCrypto/traits/pull/513
 [#621]: https://github.com/RustCrypto/traits/pull/621
+
+## 0.10.1 (2021-07-20)
+### Changed
+- Pin `subtle` dependency to v2.4 ([#690])
+
+[#690]: https://github.com/RustCrypto/traits/pull/690
 
 ## 0.10.0 (2020-10-15)
 ### Changed
