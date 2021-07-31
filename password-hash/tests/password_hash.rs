@@ -40,6 +40,7 @@ fn params() {
     let ph = PasswordHash {
         algorithm: EXAMPLE_ALGORITHM,
         version: None,
+        pepper_algorithm: None,
         params: example_params(),
         salt: None,
         hash: None,
@@ -57,6 +58,7 @@ fn salt() {
     let ph = PasswordHash {
         algorithm: EXAMPLE_ALGORITHM,
         version: None,
+        pepper_algorithm: None,
         params: ParamsString::new(),
         salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
         hash: None,
@@ -77,6 +79,7 @@ fn one_param_and_salt() {
     let ph = PasswordHash {
         algorithm: EXAMPLE_ALGORITHM,
         version: None,
+        pepper_algorithm: None,
         params,
         salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
         hash: None,
@@ -94,6 +97,7 @@ fn params_and_salt() {
     let ph = PasswordHash {
         algorithm: EXAMPLE_ALGORITHM,
         version: None,
+        pepper_algorithm: None,
         params: example_params(),
         salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
         hash: None,
@@ -111,6 +115,7 @@ fn salt_and_hash() {
     let ph = PasswordHash {
         algorithm: EXAMPLE_ALGORITHM,
         version: None,
+        pepper_algorithm: None,
         params: ParamsString::default(),
         salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
         hash: Some(EXAMPLE_HASH.try_into().unwrap()),
@@ -130,6 +135,7 @@ fn salt_and_hash() {
 fn all_fields() {
     let ph = PasswordHash {
         algorithm: EXAMPLE_ALGORITHM,
+        pepper_algorithm: None,
         version: None,
         params: example_params(),
         salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),

@@ -38,6 +38,7 @@ impl PasswordHasher for StubPasswordHasher {
         Ok(PasswordHash {
             algorithm: ALG,
             version: None,
+            pepper_algorithm: None,
             params: params.try_into()?,
             salt: Some(salt),
             hash: Some(hash),

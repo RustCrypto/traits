@@ -57,6 +57,8 @@ pub enum Error {
 
     /// Invalid algorithm version.
     Version,
+
+    Pepper,
 }
 
 impl fmt::Display for Error {
@@ -78,6 +80,7 @@ impl fmt::Display for Error {
             Self::SaltTooShort => write!(f, "salt too short"),
             Self::SaltTooLong => write!(f, "salt too long"),
             Self::Version => write!(f, "invalid algorithm version"),
+            Self::Pepper => write!(f, "pepper"),
         }
     }
 }

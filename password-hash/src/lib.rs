@@ -59,6 +59,7 @@ mod errors;
 mod ident;
 mod output;
 mod params;
+mod pepper;
 mod salt;
 mod value;
 
@@ -68,6 +69,7 @@ pub use crate::{
     ident::Ident,
     output::Output,
     params::ParamsString,
+    pepper::Pepper,
     salt::{Salt, SaltString},
     value::{Decimal, Value},
 };
@@ -103,6 +105,29 @@ pub trait PasswordHasher {
             Self::Params::default(),
             Salt::try_from(salt.as_ref())?,
         )
+    }
+
+    fn hash_password_with_pepper<'a, P>(
+        &self,
+        password: &[u8],
+        algorithm: Option<Ident<'a>>,
+        params: Self::Params,
+        salt: impl Into<Salt<'a>>,
+        pepper_method: &'a P,
+    ) -> Result<PasswordHash<'a>>
+    where
+        P: Pepper,
+    {
+        let mut hash = self.hash_password(password, algorithm, params, salt)?;
+
+        hash.hash = Some(
+            pepper_method
+                .pepper(hash.hash.unwrap().as_bytes())
+                .map_err(|_e| Error::Pepper)?,
+        );
+        hash.pepper_algorithm = Some(pepper_method.ident());
+
+        Ok(hash)
     }
 
     /// Compute a [`PasswordHash`] with the given algorithm [`Ident`]
@@ -222,6 +247,8 @@ pub struct PasswordHash<'a> {
     /// This corresponds to the `<version>` field in a PHC string.
     pub version: Option<Decimal>,
 
+    pub pepper_algorithm: Option<Ident<'a>>,
+
     /// Algorithm-specific parameters.
     ///
     /// This corresponds to the set of `$<param>=<value>(,<param>=<value>)*`
@@ -309,6 +336,7 @@ impl<'a> PasswordHash<'a> {
         Ok(Self {
             algorithm,
             version,
+            pepper_algorithm: None,
             params,
             salt,
             hash,
