@@ -107,6 +107,9 @@ pub trait PasswordHasher {
         )
     }
 
+    /// Compute a [`PasswordHash`] with the given algorithm [`Ident`]
+    /// (or `None` for the recommended default), password, salt,
+    /// parameters and peppering.
     fn hash_password_with_pepper<'a, P>(
         &self,
         password: &[u8],
@@ -122,11 +125,7 @@ pub trait PasswordHasher {
 
         hash.hash = hash
             .hash
-            .map(|hash| {
-                pepper_method
-                    .pepper(hash.as_bytes())
-                    .map_err(|_e| Error::Pepper)
-            })
+            .map(|hash| pepper_method.pepper(hash).map_err(|_e| Error::Pepper))
             .transpose()?;
         hash.pepper_algorithm = Some(pepper_method.ident());
 
@@ -213,13 +212,14 @@ pub trait McfHasher {
 /// PHC strings have the following format:
 ///
 /// ```text
-/// $<id>[$v=<version>][$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
+/// $<id>[$v=<version>][$pepper=<pepper_algorithm>][$<param>=<value>(,<param>=<value>)*][$<salt>[$<hash>]]
 /// ```
 ///
 /// where:
 ///
 /// - `<id>` is the symbolic name for the function
 /// - `<version>` is the algorithm version
+/// - `<pepper_algorithm>` is the symbolic name of the `pepper_method`
 /// - `<param>` is a parameter name
 /// - `<value>` is a parameter value
 /// - `<salt>` is an encoding of the salt
@@ -230,6 +230,7 @@ pub trait McfHasher {
 /// - a `$` sign;
 /// - the function symbolic name;
 /// - optionally, a `$` sign followed by the algorithm version with a `v=version` format;
+/// - optionally, a `$` sign followed by the pepper algorithm with a `pepper=pepper_algorithm` format;
 /// - optionally, a `$` sign followed by one or several parameters, each with a `name=value` format;
 ///   the parameters are separated by commas;
 /// - optionally, a `$` sign followed by the (encoded) salt value;
@@ -250,6 +251,9 @@ pub struct PasswordHash<'a> {
     /// This corresponds to the `<version>` field in a PHC string.
     pub version: Option<Decimal>,
 
+    /// Optional pepper field.
+    ///
+    /// This corresponds to the `<pepper_algorithm>` field in a PHC string.
     pub pepper_algorithm: Option<Ident<'a>>,
 
     /// Algorithm-specific parameters.

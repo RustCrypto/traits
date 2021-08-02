@@ -58,6 +58,7 @@ pub enum Error {
     /// Invalid algorithm version.
     Version,
 
+    /// An error during peppering.
     Pepper,
 }
 
