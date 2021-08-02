@@ -120,11 +120,14 @@ pub trait PasswordHasher {
     {
         let mut hash = self.hash_password(password, algorithm, params, salt)?;
 
-        hash.hash = Some(
-            pepper_method
-                .pepper(hash.hash.unwrap().as_bytes())
-                .map_err(|_e| Error::Pepper)?,
-        );
+        hash.hash = hash
+            .hash
+            .map(|hash| {
+                pepper_method
+                    .pepper(hash.as_bytes())
+                    .map_err(|_e| Error::Pepper)
+            })
+            .transpose()?;
         hash.pepper_algorithm = Some(pepper_method.ident());
 
         Ok(hash)
@@ -291,6 +294,7 @@ impl<'a> PasswordHash<'a> {
             .and_then(Ident::try_from)?;
 
         let mut version = None;
+        let mut pepper_algorithm = None;
         let mut params = ParamsString::new();
         let mut salt = None;
         let mut hash = None;
@@ -301,6 +305,19 @@ impl<'a> PasswordHash<'a> {
             // v=<version>
             if field.starts_with("v=") && !field.contains(params::PARAMS_DELIMITER) {
                 version = Some(Value::new(&field[2..]).and_then(|value| value.decimal())?);
+                next_field = None;
+            }
+        }
+
+        if next_field.is_none() {
+            next_field = fields.next();
+        }
+
+        if let Some(field) = next_field {
+            // pepper=<pepper_algorithm>
+            const KEY: &str = "pepper=";
+            if field.starts_with(KEY) && !field.contains(params::PARAMS_DELIMITER) {
+                pepper_algorithm = Some(Ident::try_from(&field[KEY.len()..])?);
                 next_field = None;
             }
         }
@@ -336,7 +353,7 @@ impl<'a> PasswordHash<'a> {
         Ok(Self {
             algorithm,
             version,
-            pepper_algorithm: None,
+            pepper_algorithm,
             params,
             salt,
             hash,
@@ -390,6 +407,10 @@ impl<'a> fmt::Display for PasswordHash<'a> {
 
         if let Some(version) = self.version {
             write!(f, "{}v={}", PASSWORD_HASH_SEPARATOR, version)?;
+        }
+
+        if let Some(pepper_algorithm) = self.pepper_algorithm {
+            write!(f, "{}pepper={}", PASSWORD_HASH_SEPARATOR, pepper_algorithm)?;
         }
 
         if !self.params.is_empty() {
