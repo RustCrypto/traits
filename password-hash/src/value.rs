@@ -27,12 +27,12 @@ pub type Decimal = u32;
 /// - ASCII-encoded string consisting of the characters `[a-zA-Z0-9/+.-]`
 ///   (lowercase letters, digits, and the minus sign)
 /// - Minimum length: 0 (i.e. empty values are allowed)
-/// - Maximum length: 48 ASCII characters (i.e. 48-bytes)
+/// - Maximum length: 64 ASCII characters (i.e. 64-bytes)
 ///
 /// # Additional Notes
 /// The PHC spec allows for algorithm-defined maximum lengths for parameter
-/// values, however in the interest of interoperability this library defines a
-/// [`Value::MAX_LENGTH`] of 48 ASCII characters.
+/// values, however this library defines a [`Value::MAX_LENGTH`] of 64 ASCII
+/// characters.
 ///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 /// [2]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
@@ -40,17 +40,11 @@ pub type Decimal = u32;
 pub struct Value<'a>(&'a str);
 
 impl<'a> Value<'a> {
-    /// Maximum length of an [`Value`] - 48 ASCII characters (i.e. 48-bytes).
+    /// Maximum length of an [`Value`] - 64 ASCII characters (i.e. 64-bytes).
     ///
-    /// This value is selected based on the maximum value size used in the
-    /// [Argon2 Encoding][1] as described in the PHC string format specification.
-    /// Namely the `data` parameter, when encoded as B64, can be up to 43
-    /// characters.
-    ///
-    /// This implementation rounds that up to 48 as a safe maximum limit.
-    ///
-    /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
-    pub const MAX_LENGTH: usize = 48;
+    /// This value is selected to match the maximum length of a [`Salt`], as this
+    /// library internally uses this type to represent salts.
+    pub const MAX_LENGTH: usize = 64;
 
     /// Parse a [`Value`] from the provided `str`, validating it according to
     /// the PHC string format's rules.
@@ -218,8 +212,10 @@ mod tests {
 
     // Invalid value examples
     const INVALID_CHAR: &str = "x;y";
-    const INVALID_TOO_LONG: &str = "0123456789112345678921234567893123456789412345678";
-    const INVALID_CHAR_AND_TOO_LONG: &str = "0!23456789112345678921234567893123456789412345678";
+    const INVALID_TOO_LONG: &str =
+        "01234567891123456789212345678931234567894123456785234567896234567";
+    const INVALID_CHAR_AND_TOO_LONG: &str =
+        "0!234567891123456789212345678931234567894123456785234567896234567";
 
     //
     // Decimal parsing tests

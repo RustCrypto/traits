@@ -96,16 +96,17 @@ impl<'a> Salt<'a> {
     /// Create a [`Salt`] from the given `str`, validating it according to
     /// [`Salt::MIN_LENGTH`] and [`Salt::MAX_LENGTH`] length restrictions.
     pub fn new(input: &'a str) -> Result<Self> {
-        if input.len() < Self::MIN_LENGTH {
+        let length = input.as_bytes().len();
+
+        if length < Self::MIN_LENGTH {
             return Err(Error::SaltTooShort);
         }
 
-        if input.len() > Self::MAX_LENGTH {
+        if length > Self::MAX_LENGTH {
             return Err(Error::SaltTooLong);
         }
 
-        // TODO(tarcieri): revisit potentially bogus error handling
-        input.try_into().map(Self).map_err(|_| Error::SaltTooLong)
+        input.try_into().map(Self)
     }
 
     /// Attempt to decode a B64-encoded [`Salt`], writing the decoded result
@@ -281,7 +282,7 @@ mod tests {
 
     #[test]
     fn reject_new_too_long() {
-        let s = "0123456789112345678921234567893123456789412345678";
+        let s = "01234567891123456789212345678931234567894123456785234567896234567";
         let err = Salt::new(s).err().unwrap();
         assert_eq!(err, Error::SaltTooLong);
     }

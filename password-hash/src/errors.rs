@@ -9,6 +9,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 /// Password hashing errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+// #[non_exhaustive] TODO(tarcieri): make non-exhaustive in next breaking release
 pub enum Error {
     /// Unsupported algorithm.
     Algorithm,
