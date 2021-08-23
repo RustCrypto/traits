@@ -5,7 +5,7 @@ Traits which describe the functionality of password hashing algorithms,
 as well as a `no_std`-friendly implementation of the PHC string format
 (a well-defined subset of the Modular Crypt Format a.k.a. MCF)
 """
-version = "0.2.2" # Also update html_root_url in lib.rs when bumping this
+version = "0.2.3" # Also update html_root_url in lib.rs when bumping this
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -17,7 +17,7 @@ keywords = ["crypt", "mcf", "password", "pbkdf", "phc"]
 
 [dependencies]
 base64ct = "1"
-subtle = { version = "=2.4", default-features = false }
+subtle = { version = ">=2, <2.5", default-features = false }
 
 # optional features
 rand_core = { version = "0.6", optional = true, default-features = false }
