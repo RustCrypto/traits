@@ -5,7 +5,7 @@ General purpose Elliptic Curve Cryptography (ECC) support, including types
 and traits for representing various elliptic curve forms, scalars, points,
 and public/secret keys composed thereof.
 """
-version    = "0.10.5" # Also update html_root_url in lib.rs when bumping this
+version    = "0.10.6" # Also update html_root_url in lib.rs when bumping this
 authors    = ["RustCrypto Developers"]
 license    = "Apache-2.0 OR MIT"
 repository = "https://github.com/RustCrypto/traits/tree/master/elliptic-curve"
@@ -28,7 +28,7 @@ hex-literal = { version = "0.3", optional = true }
 pkcs8 = { version = "0.7", optional = true }
 serde = { version = "1", optional = true, default-features = false }
 serde_json = { version = "1", optional = true, default-features = false, features = ["alloc"] }
-zeroize = { version = "=1.4", optional = true,  default-features = false }
+zeroize = { version = ">=1, <1.5", optional = true,  default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.3"
