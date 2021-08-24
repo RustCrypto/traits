@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.10.6 (2021-08-23)
+### Changed
+- Bump `crypto-bigint` dependency to v0.2.4 ([#710])
+
+[#710]: https://github.com/RustCrypto/traits/pull/710
+
 ## 0.10.5 (2021-07-20)
 ### Changed
 - Pin `zeroize` dependency to v1.4 and `subtle` to v2.4 ([#349])
