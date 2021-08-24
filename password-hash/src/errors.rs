@@ -33,7 +33,7 @@ pub enum Error {
     ParamNameInvalid,
 
     /// Invalid parameter value.
-    ParamValueInvalid,
+    ParamValueInvalid(ParamValueError),
 
     /// Maximum number of parameters exceeded.
     ParamsMaxExceeded,
@@ -56,8 +56,21 @@ pub enum Error {
     /// Salt too long.
     SaltTooLong,
 
+    /// Salt invalid.
+    SaltInvalid,
+
     /// Invalid algorithm version.
     Version,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[non_exhaustive]
+pub enum ParamValueError {
+    ToLong,
+    ToShort,
+    NotProvided,
+    InvalidChar,
+    InvalidFormat,
 }
 
 impl fmt::Display for Error {
@@ -70,7 +83,19 @@ impl fmt::Display for Error {
             Self::OutputTooLong => f.write_str("PHF output too long (max 64-bytes)"),
             Self::ParamNameDuplicated => f.write_str("duplicate parameter"),
             Self::ParamNameInvalid => f.write_str("invalid parameter name"),
-            Self::ParamValueInvalid => f.write_str("invalid parameter value"),
+            Self::ParamValueInvalid(param_err) => match param_err {
+                ParamValueError::ToLong => f.write_str("invalid parameter value: value to long"),
+                ParamValueError::ToShort => f.write_str("invalid parameter value: value to short"),
+                ParamValueError::NotProvided => {
+                    f.write_str("invalid parameter value: required value not provided")
+                }
+                ParamValueError::InvalidChar => {
+                    f.write_str("invalid parameter value: contains invalid character")
+                }
+                ParamValueError::InvalidFormat => {
+                    f.write_str("invalid parameter value: value format is invalid")
+                }
+            },
             Self::ParamsMaxExceeded => f.write_str("maximum number of parameters reached"),
             Self::Password => write!(f, "invalid password"),
             Self::PhcStringInvalid => write!(f, "password hash string invalid"),
@@ -78,6 +103,7 @@ impl fmt::Display for Error {
             Self::PhcStringTooLong => write!(f, "password hash string too long"),
             Self::SaltTooShort => write!(f, "salt too short"),
             Self::SaltTooLong => write!(f, "salt too long"),
+            Self::SaltInvalid => write!(f, "salt invalid"),
             Self::Version => write!(f, "invalid algorithm version"),
         }
     }

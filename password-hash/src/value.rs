@@ -13,6 +13,7 @@
 //!
 //! [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 
+use crate::errors::ParamValueError;
 use crate::{Encoding, Error, Result};
 use core::{convert::TryFrom, fmt, str};
 
@@ -50,7 +51,7 @@ impl<'a> Value<'a> {
     /// the PHC string format's rules.
     pub fn new(input: &'a str) -> Result<Self> {
         if input.as_bytes().len() > Self::MAX_LENGTH {
-            return Err(Error::ParamValueInvalid);
+            return Err(Error::ParamValueInvalid(ParamValueError::ToLong));
         }
 
         // Check that the characters are permitted in a PHC parameter value.
@@ -124,26 +125,26 @@ impl<'a> Value<'a> {
 
         // Empty strings aren't decimals
         if value.is_empty() {
-            return Err(Error::ParamValueInvalid);
+            return Err(Error::ParamValueInvalid(ParamValueError::NotProvided));
         }
 
         // Ensure all characters are digits
         for c in value.chars() {
             if !matches!(c, '0'..='9') {
-                return Err(Error::ParamValueInvalid);
+                return Err(Error::ParamValueInvalid(ParamValueError::InvalidChar));
             }
         }
 
         // Disallow leading zeroes
         if value.starts_with('0') && value.len() > 1 {
-            return Err(Error::ParamValueInvalid);
+            return Err(Error::ParamValueInvalid(ParamValueError::InvalidFormat));
         }
 
         value.parse().map_err(|_| {
             // In theory a value overflow should be the only potential error here.
             // When `ParseIntError::kind` is stable it might be good to double check:
             // <https://github.com/rust-lang/rust/issues/22639>
-            Error::ParamValueInvalid
+            Error::ParamValueInvalid(ParamValueError::InvalidFormat)
         })
     }
 
@@ -193,7 +194,7 @@ impl<'a> fmt::Display for Value<'a> {
 fn assert_valid_value(input: &str) -> Result<()> {
     for c in input.chars() {
         if !is_char_valid(c) {
-            return Err(Error::ParamValueInvalid);
+            return Err(Error::ParamValueInvalid(ParamValueError::InvalidChar));
         }
     }
 
@@ -207,7 +208,7 @@ fn is_char_valid(c: char) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{Error, Value};
+    use super::{Error, ParamValueError, Value};
     use core::convert::TryFrom;
 
     // Invalid value examples
@@ -236,21 +237,30 @@ mod tests {
     fn reject_decimal_with_leading_zero() {
         let value = Value::new("01").unwrap();
         let err = u32::try_from(value).err().unwrap();
-        assert!(matches!(err, Error::ParamValueInvalid));
+        assert!(matches!(
+            err,
+            Error::ParamValueInvalid(ParamValueError::InvalidFormat)
+        ));
     }
 
     #[test]
     fn reject_overlong_decimal() {
         let value = Value::new("4294967296").unwrap();
         let err = u32::try_from(value).err().unwrap();
-        assert_eq!(err, Error::ParamValueInvalid);
+        assert_eq!(
+            err,
+            Error::ParamValueInvalid(ParamValueError::InvalidFormat)
+        );
     }
 
     #[test]
     fn reject_negative() {
         let value = Value::new("-1").unwrap();
         let err = u32::try_from(value).err().unwrap();
-        assert!(matches!(err, Error::ParamValueInvalid));
+        assert!(matches!(
+            err,
+            Error::ParamValueInvalid(ParamValueError::InvalidChar)
+        ));
     }
 
     //
@@ -278,18 +288,21 @@ mod tests {
     #[test]
     fn reject_invalid_char() {
         let err = Value::new(INVALID_CHAR).err().unwrap();
-        assert!(matches!(err, Error::ParamValueInvalid));
+        assert!(matches!(
+            err,
+            Error::ParamValueInvalid(ParamValueError::InvalidChar)
+        ));
     }
 
     #[test]
     fn reject_too_long() {
         let err = Value::new(INVALID_TOO_LONG).err().unwrap();
-        assert_eq!(err, Error::ParamValueInvalid);
+        assert_eq!(err, Error::ParamValueInvalid(ParamValueError::ToLong));
     }
 
     #[test]
     fn reject_invalid_char_and_too_long() {
         let err = Value::new(INVALID_CHAR_AND_TOO_LONG).err().unwrap();
-        assert_eq!(err, Error::ParamValueInvalid);
+        assert_eq!(err, Error::ParamValueInvalid(ParamValueError::ToLong));
     }
 }
