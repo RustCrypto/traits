@@ -107,7 +107,7 @@ impl<'a> Salt<'a> {
             return Err(Error::SaltInvalid(InvalidValue::ToLong));
         }
 
-        input.try_into().map(Self).map_err(|e| match err {
+        input.try_into().map(Self).map_err(|e| match e {
             Error::ParamValueInvalid(value_err) => Error::SaltInvalid(value_err),
             err => err,
         })
