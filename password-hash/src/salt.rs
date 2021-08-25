@@ -6,7 +6,7 @@ use core::{
     fmt, str,
 };
 
-use crate::errors::ParamValueError;
+use crate::errors::InvalidValue;
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, RngCore};
 
@@ -100,14 +100,17 @@ impl<'a> Salt<'a> {
         let length = input.as_bytes().len();
 
         if length < Self::MIN_LENGTH {
-            return Err(Error::SaltTooShort);
+            return Err(Error::SaltInvalid(InvalidValue::ToShort));
         }
 
         if length > Self::MAX_LENGTH {
-            return Err(Error::SaltTooLong);
+            return Err(Error::SaltInvalid(InvalidValue::ToLong));
         }
 
-        input.try_into().map(Self).map_err(map_error_to_salt_error)
+        input.try_into().map(Self).map_err(|e| match err {
+            Error::ParamValueInvalid(value_err) => Error::SaltInvalid(value_err),
+            err => err,
+        })
     }
 
     /// Attempt to decode a B64-encoded [`Salt`], writing the decoded result
@@ -132,17 +135,6 @@ impl<'a> Salt<'a> {
     /// Get the length of this value in ASCII characters.
     pub fn len(&self) -> usize {
         self.as_str().len()
-    }
-}
-
-fn map_error_to_salt_error(err: Error) -> Error {
-    match err {
-        Error::ParamValueInvalid(value_err) => match value_err {
-            ParamValueError::ToLong => Error::SaltTooLong,
-            ParamValueError::ToShort | ParamValueError::NotProvided => Error::SaltTooShort,
-            _ => Error::SaltInvalid,
-        },
-        _ => Error::SaltInvalid,
     }
 }
 
@@ -195,7 +187,7 @@ impl SaltString {
 
     /// Create a new [`SaltString`].
     pub fn new(s: &str) -> Result<Self> {
-        // Assert `s` parses successifully as a `Salt`
+        // Assert `s` parses successfully as a `Salt`
         Salt::new(s)?;
 
         let length = s.as_bytes().len();
@@ -208,7 +200,7 @@ impl SaltString {
                 length: length as u8,
             })
         } else {
-            Err(Error::SaltTooLong)
+            Err(Error::SaltInvalid(InvalidValue::ToLong))
         }
     }
 
@@ -269,7 +261,7 @@ impl<'a> From<&'a SaltString> for Salt<'a> {
 #[cfg(test)]
 mod tests {
     use super::{Error, Salt};
-    use crate::errors::ParamValueError;
+    use crate::errors::InvalidValue;
 
     #[test]
     fn new_with_valid_min_length_input() {
@@ -289,7 +281,7 @@ mod tests {
     fn reject_new_too_short() {
         for &too_short in &["", "a", "ab", "abc"] {
             let err = Salt::new(too_short).err().unwrap();
-            assert_eq!(err, Error::SaltTooShort);
+            assert_eq!(err, Error::SaltInvalid(InvalidValue::ToShort));
         }
     }
 
@@ -297,13 +289,13 @@ mod tests {
     fn reject_new_too_long() {
         let s = "01234567891123456789212345678931234567894123456785234567896234567";
         let err = Salt::new(s).err().unwrap();
-        assert_eq!(err, Error::SaltTooLong);
+        assert_eq!(err, Error::SaltInvalid(InvalidValue::ToLong));
     }
 
     #[test]
     fn reject_new_invalid_char() {
         let s = "01234_abcd";
         let err = Salt::new(s).err().unwrap();
-        assert_eq!(err, Error::SaltInvalid);
+        assert_eq!(err, Error::SaltInvalid(InvalidValue::InvalidChar));
     }
 }

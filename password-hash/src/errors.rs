@@ -33,7 +33,7 @@ pub enum Error {
     ParamNameInvalid,
 
     /// Invalid parameter value.
-    ParamValueInvalid(ParamValueError),
+    ParamValueInvalid(InvalidValue),
 
     /// Maximum number of parameters exceeded.
     ParamsMaxExceeded,
@@ -50,27 +50,11 @@ pub enum Error {
     /// Password hash string too long.
     PhcStringTooLong,
 
-    /// Salt too short.
-    SaltTooShort,
-
-    /// Salt too long.
-    SaltTooLong,
-
     /// Salt invalid.
-    SaltInvalid,
+    SaltInvalid(InvalidValue),
 
     /// Invalid algorithm version.
     Version,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-#[non_exhaustive]
-pub enum ParamValueError {
-    ToLong,
-    ToShort,
-    NotProvided,
-    InvalidChar,
-    InvalidFormat,
 }
 
 impl fmt::Display for Error {
@@ -83,27 +67,13 @@ impl fmt::Display for Error {
             Self::OutputTooLong => f.write_str("PHF output too long (max 64-bytes)"),
             Self::ParamNameDuplicated => f.write_str("duplicate parameter"),
             Self::ParamNameInvalid => f.write_str("invalid parameter name"),
-            Self::ParamValueInvalid(param_err) => match param_err {
-                ParamValueError::ToLong => f.write_str("invalid parameter value: value to long"),
-                ParamValueError::ToShort => f.write_str("invalid parameter value: value to short"),
-                ParamValueError::NotProvided => {
-                    f.write_str("invalid parameter value: required value not provided")
-                }
-                ParamValueError::InvalidChar => {
-                    f.write_str("invalid parameter value: contains invalid character")
-                }
-                ParamValueError::InvalidFormat => {
-                    f.write_str("invalid parameter value: value format is invalid")
-                }
-            },
+            Self::ParamValueInvalid(val_err) => write!(f, "invalid parameter value: {}", val_err),
             Self::ParamsMaxExceeded => f.write_str("maximum number of parameters reached"),
             Self::Password => write!(f, "invalid password"),
             Self::PhcStringInvalid => write!(f, "password hash string invalid"),
             Self::PhcStringTooShort => write!(f, "password hash string too short"),
             Self::PhcStringTooLong => write!(f, "password hash string too long"),
-            Self::SaltTooShort => write!(f, "salt too short"),
-            Self::SaltTooLong => write!(f, "salt too long"),
-            Self::SaltInvalid => write!(f, "salt invalid"),
+            Self::SaltInvalid(val_err) => write!(f, "salt invalid: {}", val_err),
             Self::Version => write!(f, "invalid algorithm version"),
         }
     }
@@ -121,5 +91,27 @@ impl From<B64Error> for Error {
 impl From<base64ct::InvalidLengthError> for Error {
     fn from(_: base64ct::InvalidLengthError) -> Error {
         Error::B64(B64Error::InvalidLength)
+    }
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[non_exhaustive]
+pub enum InvalidValue {
+    ToLong,
+    ToShort,
+    NotProvided,
+    InvalidChar,
+    InvalidFormat,
+}
+
+impl fmt::Display for InvalidValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> core::result::Result<(), fmt::Error> {
+        match self {
+            Self::ToLong => f.write_str("value to long"),
+            Self::ToShort => f.write_str("value to short"),
+            Self::NotProvided => f.write_str("required value not provided"),
+            Self::InvalidChar => f.write_str("contains invalid character"),
+            Self::InvalidFormat => f.write_str("value format is invalid"),
+        }
     }
 }

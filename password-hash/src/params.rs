@@ -1,6 +1,6 @@
 //! Algorithm parameters.
 
-use crate::errors::ParamValueError;
+use crate::errors::InvalidValue;
 use crate::{
     value::{Decimal, Value},
     Error, Ident, Result,
@@ -59,7 +59,7 @@ impl ParamsString {
         let name = name.try_into().map_err(|_| Error::ParamNameInvalid)?;
         let value = value
             .try_into()
-            .map_err(|_| Error::ParamValueInvalid(ParamValueError::InvalidFormat))?;
+            .map_err(|_| Error::ParamValueInvalid(InvalidValue::InvalidFormat))?;
         self.add(name, value)
     }
 
@@ -165,11 +165,11 @@ impl FromStr for ParamsString {
             // Validate value
             param
                 .next()
-                .ok_or(Error::ParamValueInvalid(ParamValueError::NotProvided))
+                .ok_or(Error::ParamValueInvalid(InvalidValue::NotProvided))
                 .and_then(Value::try_from)?;
 
             if param.next().is_some() {
-                return Err(Error::ParamValueInvalid(ParamValueError::NotProvided));
+                return Err(Error::ParamValueInvalid(InvalidValue::NotProvided));
             }
         }
 
