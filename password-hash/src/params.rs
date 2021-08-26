@@ -165,11 +165,11 @@ impl FromStr for ParamsString {
             // Validate value
             param
                 .next()
-                .ok_or(Error::ParamValueInvalid(InvalidValue::NotProvided))
+                .ok_or(Error::ParamValueInvalid(InvalidValue::Malformed))
                 .and_then(Value::try_from)?;
 
             if param.next().is_some() {
-                return Err(Error::ParamValueInvalid(InvalidValue::NotProvided));
+                return Err(Error::ParamValueInvalid(InvalidValue::Malformed));
             }
         }
 

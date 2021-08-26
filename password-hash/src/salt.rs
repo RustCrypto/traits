@@ -296,6 +296,6 @@ mod tests {
     fn reject_new_invalid_char() {
         let s = "01234_abcd";
         let err = Salt::new(s).err().unwrap();
-        assert_eq!(err, Error::SaltInvalid(InvalidValue::InvalidChar));
+        assert_eq!(err, Error::SaltInvalid(InvalidValue::InvalidChar('_')));
     }
 }

@@ -125,13 +125,13 @@ impl<'a> Value<'a> {
 
         // Empty strings aren't decimals
         if value.is_empty() {
-            return Err(Error::ParamValueInvalid(InvalidValue::NotProvided));
+            return Err(Error::ParamValueInvalid(InvalidValue::Malformed));
         }
 
         // Ensure all characters are digits
         for c in value.chars() {
             if !matches!(c, '0'..='9') {
-                return Err(Error::ParamValueInvalid(InvalidValue::InvalidChar));
+                return Err(Error::ParamValueInvalid(InvalidValue::InvalidChar(c)));
             }
         }
 
@@ -194,7 +194,7 @@ impl<'a> fmt::Display for Value<'a> {
 fn assert_valid_value(input: &str) -> Result<()> {
     for c in input.chars() {
         if !is_char_valid(c) {
-            return Err(Error::ParamValueInvalid(InvalidValue::InvalidChar));
+            return Err(Error::ParamValueInvalid(InvalidValue::InvalidChar(c)));
         }
     }
 
@@ -256,7 +256,7 @@ mod tests {
         let err = u32::try_from(value).err().unwrap();
         assert!(matches!(
             err,
-            Error::ParamValueInvalid(InvalidValue::InvalidChar)
+            Error::ParamValueInvalid(InvalidValue::InvalidChar(_))
         ));
     }
 
@@ -287,7 +287,7 @@ mod tests {
         let err = Value::new(INVALID_CHAR).err().unwrap();
         assert!(matches!(
             err,
-            Error::ParamValueInvalid(InvalidValue::InvalidChar)
+            Error::ParamValueInvalid(InvalidValue::InvalidChar(_))
         ));
     }
 
