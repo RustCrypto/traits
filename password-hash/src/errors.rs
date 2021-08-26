@@ -114,6 +114,18 @@ pub enum InvalidValue {
     TooShort,
 }
 
+impl InvalidValue {
+    /// Create an [`Error::ParamValueInvalid`] which warps this error.
+    pub fn param_error(self) -> Error {
+        Error::ParamValueInvalid(self)
+    }
+
+    /// Create an [`Error::SaltInvalid`] which wraps this error.
+    pub fn salt_error(self) -> Error {
+        Error::SaltInvalid(self)
+    }
+}
+
 impl fmt::Display for InvalidValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> core::result::Result<(), fmt::Error> {
         match self {
