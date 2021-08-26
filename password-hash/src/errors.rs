@@ -98,31 +98,30 @@ impl From<base64ct::InvalidLengthError> for Error {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum InvalidValue {
+    /// Character is not in the allowed set.
+    InvalidChar(char),
+
+    /// Format is invalid.
+    InvalidFormat,
+
+    /// Value is malformed.
+    Malformed,
+
     /// Value exceeds the maximum allowed length.
     TooLong,
 
     /// Value does not satisfy the minimum length.
     TooShort,
-
-    /// Unspecified error.
-    // TODO(tarcieri): specify all error cases
-    NotProvided,
-
-    /// Character is not in the allowed set.
-    InvalidChar,
-
-    /// Format is invalid.
-    InvalidFormat,
 }
 
 impl fmt::Display for InvalidValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> core::result::Result<(), fmt::Error> {
         match self {
+            Self::InvalidChar(c) => write!(f, "contains invalid character: '{}'", c),
+            Self::InvalidFormat => f.write_str("value format is invalid"),
+            Self::Malformed => f.write_str("value malformed"),
             Self::TooLong => f.write_str("value to long"),
             Self::TooShort => f.write_str("value to short"),
-            Self::NotProvided => f.write_str("required value not provided"),
-            Self::InvalidChar => f.write_str("contains invalid character"),
-            Self::InvalidFormat => f.write_str("value format is invalid"),
         }
     }
 }
