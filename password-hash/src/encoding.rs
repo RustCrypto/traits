@@ -1,7 +1,8 @@
 //! Base64 encoding variants.
 
-use crate::B64Error;
-use base64ct::{Base64Bcrypt, Base64Crypt, Base64Unpadded as B64, Encoding as _};
+use base64ct::{
+    Base64Bcrypt, Base64Crypt, Base64Unpadded as B64, Encoding as _, Error as B64Error,
+};
 
 /// Base64 encoding variants.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
