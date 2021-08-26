@@ -9,7 +9,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 /// Password hashing errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-// #[non_exhaustive] TODO(tarcieri): make non-exhaustive in next breaking release
+#[non_exhaustive]
 pub enum Error {
     /// Unsupported algorithm.
     Algorithm,
@@ -94,21 +94,32 @@ impl From<base64ct::InvalidLengthError> for Error {
     }
 }
 
+/// Parse errors relating to invalid parameter values or salts.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum InvalidValue {
-    ToLong,
-    ToShort,
+    /// Value exceeds the maximum allowed length.
+    TooLong,
+
+    /// Value does not satisfy the minimum length.
+    TooShort,
+
+    /// Unspecified error.
+    // TODO(tarcieri): specify all error cases
     NotProvided,
+
+    /// Character is not in the allowed set.
     InvalidChar,
+
+    /// Format is invalid.
     InvalidFormat,
 }
 
 impl fmt::Display for InvalidValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> core::result::Result<(), fmt::Error> {
         match self {
-            Self::ToLong => f.write_str("value to long"),
-            Self::ToShort => f.write_str("value to short"),
+            Self::TooLong => f.write_str("value to long"),
+            Self::TooShort => f.write_str("value to short"),
             Self::NotProvided => f.write_str("required value not provided"),
             Self::InvalidChar => f.write_str("contains invalid character"),
             Self::InvalidFormat => f.write_str("value format is invalid"),

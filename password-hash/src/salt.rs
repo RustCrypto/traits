@@ -100,11 +100,11 @@ impl<'a> Salt<'a> {
         let length = input.as_bytes().len();
 
         if length < Self::MIN_LENGTH {
-            return Err(Error::SaltInvalid(InvalidValue::ToShort));
+            return Err(Error::SaltInvalid(InvalidValue::TooShort));
         }
 
         if length > Self::MAX_LENGTH {
-            return Err(Error::SaltInvalid(InvalidValue::ToLong));
+            return Err(Error::SaltInvalid(InvalidValue::TooLong));
         }
 
         input.try_into().map(Self).map_err(|e| match e {
@@ -200,7 +200,7 @@ impl SaltString {
                 length: length as u8,
             })
         } else {
-            Err(Error::SaltInvalid(InvalidValue::ToLong))
+            Err(Error::SaltInvalid(InvalidValue::TooLong))
         }
     }
 
@@ -281,7 +281,7 @@ mod tests {
     fn reject_new_too_short() {
         for &too_short in &["", "a", "ab", "abc"] {
             let err = Salt::new(too_short).err().unwrap();
-            assert_eq!(err, Error::SaltInvalid(InvalidValue::ToShort));
+            assert_eq!(err, Error::SaltInvalid(InvalidValue::TooShort));
         }
     }
 
@@ -289,7 +289,7 @@ mod tests {
     fn reject_new_too_long() {
         let s = "01234567891123456789212345678931234567894123456785234567896234567";
         let err = Salt::new(s).err().unwrap();
-        assert_eq!(err, Error::SaltInvalid(InvalidValue::ToLong));
+        assert_eq!(err, Error::SaltInvalid(InvalidValue::TooLong));
     }
 
     #[test]

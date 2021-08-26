@@ -54,8 +54,9 @@ extern crate std;
 #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
 pub use rand_core;
 
+pub mod errors;
+
 mod encoding;
-mod errors;
 mod ident;
 mod output;
 mod params;
@@ -64,7 +65,7 @@ mod value;
 
 pub use crate::{
     encoding::Encoding,
-    errors::{B64Error, Error, Result},
+    errors::{Error, Result},
     ident::Ident,
     output::Output,
     params::ParamsString,

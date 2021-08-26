@@ -43,15 +43,15 @@ pub struct Value<'a>(&'a str);
 impl<'a> Value<'a> {
     /// Maximum length of an [`Value`] - 64 ASCII characters (i.e. 64-bytes).
     ///
-    /// This value is selected to match the maximum length of a [`Salt`], as this
-    /// library internally uses this type to represent salts.
+    /// This value is selected to match the maximum length of a [`Salt`][`crate::Salt`]
+    /// as this library internally uses this type to represent salts.
     pub const MAX_LENGTH: usize = 64;
 
     /// Parse a [`Value`] from the provided `str`, validating it according to
     /// the PHC string format's rules.
     pub fn new(input: &'a str) -> Result<Self> {
         if input.as_bytes().len() > Self::MAX_LENGTH {
-            return Err(Error::ParamValueInvalid(InvalidValue::ToLong));
+            return Err(Error::ParamValueInvalid(InvalidValue::TooLong));
         }
 
         // Check that the characters are permitted in a PHC parameter value.
@@ -294,12 +294,12 @@ mod tests {
     #[test]
     fn reject_too_long() {
         let err = Value::new(INVALID_TOO_LONG).err().unwrap();
-        assert_eq!(err, Error::ParamValueInvalid(InvalidValue::ToLong));
+        assert_eq!(err, Error::ParamValueInvalid(InvalidValue::TooLong));
     }
 
     #[test]
     fn reject_invalid_char_and_too_long() {
         let err = Value::new(INVALID_CHAR_AND_TOO_LONG).err().unwrap();
-        assert_eq!(err, Error::ParamValueInvalid(InvalidValue::ToLong));
+        assert_eq!(err, Error::ParamValueInvalid(InvalidValue::TooLong));
     }
 }
