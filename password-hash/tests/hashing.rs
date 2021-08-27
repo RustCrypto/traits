@@ -13,7 +13,7 @@ pub struct StubPasswordHasher;
 impl PasswordHasher for StubPasswordHasher {
     type Params = StubParams;
 
-    fn hash_password<'a>(
+    fn hash_password_customized<'a>(
         &self,
         password: &[u8],
         algorithm: Option<Ident<'a>>,

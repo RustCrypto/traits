@@ -15,27 +15,12 @@ pub trait PasswordHasher {
         + for<'a> TryFrom<&'a PasswordHash<'a>, Error = Error>
         + for<'a> TryInto<ParamsString, Error = Error>;
 
-    /// Simple API for computing a [`PasswordHash`] from a password and
-    /// [`Salt`] value.
+    /// Compute a [`PasswordHash`] from the provided password using an
+    /// explicit set of customized algorithm parameters as opposed to the
+    /// defaults.
     ///
-    /// Uses the default recommended parameters for a given algorithm.
-    fn hash_password_simple<'a, S>(&self, password: &[u8], salt: &'a S) -> Result<PasswordHash<'a>>
-    where
-        S: AsRef<str> + ?Sized,
-    {
-        self.hash_password(
-            password,
-            None,
-            None,
-            Self::Params::default(),
-            Salt::try_from(salt.as_ref())?,
-        )
-    }
-
-    /// Compute a [`PasswordHash`] with the given algorithm [`Ident`]
-    /// (or `None` for the recommended default), password, salt, and
-    /// parameters.
-    fn hash_password<'a>(
+    /// When in doubt, use [`PasswordHasher::hash_password`] instead.
+    fn hash_password_customized<'a>(
         &self,
         password: &[u8],
         algorithm: Option<Ident<'a>>,
@@ -43,6 +28,23 @@ pub trait PasswordHasher {
         params: Self::Params,
         salt: impl Into<Salt<'a>>,
     ) -> Result<PasswordHash<'a>>;
+
+    /// Simple API for computing a [`PasswordHash`] from a password and
+    /// salt value.
+    ///
+    /// Uses the default recommended parameters for a given algorithm.
+    fn hash_password<'a, S>(&self, password: &[u8], salt: &'a S) -> Result<PasswordHash<'a>>
+    where
+        S: AsRef<str> + ?Sized,
+    {
+        self.hash_password_customized(
+            password,
+            None,
+            None,
+            Self::Params::default(),
+            Salt::try_from(salt.as_ref())?,
+        )
+    }
 }
 
 /// Trait for password verification.
@@ -62,7 +64,7 @@ pub trait PasswordVerifier {
 impl<T: PasswordHasher> PasswordVerifier for T {
     fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<()> {
         if let (Some(salt), Some(expected_output)) = (&hash.salt, &hash.hash) {
-            let computed_hash = self.hash_password(
+            let computed_hash = self.hash_password_customized(
                 password,
                 Some(hash.algorithm),
                 hash.version,
