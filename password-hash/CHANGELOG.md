@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.0 (2021-08-27)
+### Added
+- More details to `ParamValueInvalid` ([#713])
+- `SaltInvalid` error ([#713])
+- `version` param to `PasswordHasher` ([#719])
+- `ParamsString::add_b64_bytes` method ([#722])
+
+### Changed
+- Rename `PasswordHash::hash_password_simple` => `PasswordHash::hash_password` ([#720])
+- Rename `PasswordHash::hash_password` => `PasswordHash::hash_password_customized` ([#720])
+- Rename `Error::B64` => `Error::B64Encoding` ([#721])
+
+[#713]: https://github.com/RustCrypto/traits/pull/713
+[#719]: https://github.com/RustCrypto/traits/pull/719
+[#720]: https://github.com/RustCrypto/traits/pull/720
+[#721]: https://github.com/RustCrypto/traits/pull/721
+[#722]: https://github.com/RustCrypto/traits/pull/722
+
 ## 0.2.3 (2021-08-23)
 ### Changed
 - Make max lengths of `Value` and `Salt` both 64 ([#707])
