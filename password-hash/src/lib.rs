@@ -227,7 +227,7 @@ impl<'a> PasswordHash<'a> {
         password: impl AsRef<[u8]>,
         salt: &'a str,
     ) -> Result<Self> {
-        phf.hash_password_simple(password.as_ref(), salt)
+        phf.hash_password(password.as_ref(), salt)
     }
 
     /// Verify this password hash using the specified set of supported
