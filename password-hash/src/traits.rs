@@ -1,6 +1,6 @@
 //! Trait definitions.
 
-use crate::{Error, Ident, ParamsString, PasswordHash, Result, Salt};
+use crate::{Decimal, Error, Ident, ParamsString, PasswordHash, Result, Salt};
 use core::{
     convert::{TryFrom, TryInto},
     fmt::Debug,
@@ -26,6 +26,7 @@ pub trait PasswordHasher {
         self.hash_password(
             password,
             None,
+            None,
             Self::Params::default(),
             Salt::try_from(salt.as_ref())?,
         )
@@ -38,6 +39,7 @@ pub trait PasswordHasher {
         &self,
         password: &[u8],
         algorithm: Option<Ident<'a>>,
+        version: Option<Decimal>,
         params: Self::Params,
         salt: impl Into<Salt<'a>>,
     ) -> Result<PasswordHash<'a>>;
@@ -63,6 +65,7 @@ impl<T: PasswordHasher> PasswordVerifier for T {
             let computed_hash = self.hash_password(
                 password,
                 Some(hash.algorithm),
+                hash.version,
                 T::Params::try_from(&hash)?,
                 *salt,
             )?;
