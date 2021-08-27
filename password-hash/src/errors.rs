@@ -15,7 +15,7 @@ pub enum Error {
     Algorithm,
 
     /// "B64" encoding error.
-    B64(B64Error),
+    B64Encoding(B64Error),
 
     /// Cryptographic error.
     Crypto,
@@ -61,7 +61,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> core::result::Result<(), fmt::Error> {
         match self {
             Self::Algorithm => write!(f, "unsupported algorithm"),
-            Self::B64(err) => write!(f, "{}", err),
+            Self::B64Encoding(err) => write!(f, "{}", err),
             Self::Crypto => write!(f, "cryptographic error"),
             Self::OutputTooShort => f.write_str("PHF output too short (min 10-bytes)"),
             Self::OutputTooLong => f.write_str("PHF output too long (max 64-bytes)"),
@@ -84,13 +84,13 @@ impl std::error::Error for Error {}
 
 impl From<B64Error> for Error {
     fn from(err: B64Error) -> Error {
-        Error::B64(err)
+        Error::B64Encoding(err)
     }
 }
 
 impl From<base64ct::InvalidLengthError> for Error {
     fn from(_: base64ct::InvalidLengthError) -> Error {
-        Error::B64(B64Error::InvalidLength)
+        Error::B64Encoding(B64Error::InvalidLength)
     }
 }
 
