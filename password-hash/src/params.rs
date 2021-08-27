@@ -3,7 +3,7 @@
 use crate::errors::InvalidValue;
 use crate::{
     value::{Decimal, Value},
-    Error, Ident, Result,
+    Encoding, Error, Ident, Result,
 };
 use core::{
     convert::{TryFrom, TryInto},
@@ -50,6 +50,39 @@ impl ParamsString {
         Self::default()
     }
 
+    /// Add the given byte value to the [`ParamsString`], encoding it as "B64".
+    pub fn add_b64_bytes<'a>(&mut self, name: impl TryInto<Ident<'a>>, bytes: &[u8]) -> Result<()> {
+        if !self.is_empty() {
+            self.0
+                .write_char(PARAMS_DELIMITER)
+                .map_err(|_| Error::ParamsMaxExceeded)?
+        }
+
+        let name = name.try_into().map_err(|_| Error::ParamNameInvalid)?;
+
+        // Add param name
+        let offset = self.0.length;
+        if write!(self.0, "{}=", name).is_err() {
+            self.0.length = offset;
+            return Err(Error::ParamsMaxExceeded);
+        }
+
+        // Encode B64 value
+        let offset = self.0.length as usize;
+        let written = Encoding::B64
+            .encode(bytes, &mut self.0.bytes[offset..])?
+            .len();
+
+        self.0.length += written as u8;
+        Ok(())
+    }
+
+    /// Add a key/value pair with a decimal value to the [`ParamsString`].
+    pub fn add_decimal<'a>(&mut self, name: impl TryInto<Ident<'a>>, value: Decimal) -> Result<()> {
+        let name = name.try_into().map_err(|_| Error::ParamNameInvalid)?;
+        self.add(name, value)
+    }
+
     /// Add a key/value pair with a string value to the [`ParamsString`].
     pub fn add_str<'a>(
         &mut self,
@@ -57,15 +90,11 @@ impl ParamsString {
         value: impl TryInto<Value<'a>>,
     ) -> Result<()> {
         let name = name.try_into().map_err(|_| Error::ParamNameInvalid)?;
+
         let value = value
             .try_into()
             .map_err(|_| Error::ParamValueInvalid(InvalidValue::InvalidFormat))?;
-        self.add(name, value)
-    }
 
-    /// Add a key/value pair with a decimal value to the [`ParamsString`].
-    pub fn add_decimal<'a>(&mut self, name: impl TryInto<Ident<'a>>, value: Decimal) -> Result<()> {
-        let name = name.try_into().map_err(|_| Error::ParamNameInvalid)?;
         self.add(name, value)
     }
 
@@ -309,6 +338,16 @@ mod tests {
         assert_eq!(params.get_decimal("a").unwrap(), 1);
         assert_eq!(params.get_decimal("b").unwrap(), 2);
         assert_eq!(params.get_decimal("c").unwrap(), 3);
+    }
+
+    #[test]
+    #[cfg(feature = "alloc")]
+    fn add_b64_bytes() {
+        let mut params = ParamsString::new();
+        params.add_b64_bytes("a", &[1]).unwrap();
+        params.add_b64_bytes("b", &[2, 3]).unwrap();
+        params.add_b64_bytes("c", &[4, 5, 6]).unwrap();
+        assert_eq!(params.to_string(), "a=AQ,b=AgM,c=BAUG");
     }
 
     #[test]
