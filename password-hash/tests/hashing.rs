@@ -17,6 +17,7 @@ impl PasswordHasher for StubPasswordHasher {
         &self,
         password: &[u8],
         algorithm: Option<Ident<'a>>,
+        version: Option<Decimal>,
         params: StubParams,
         salt: impl Into<Salt<'a>>,
     ) -> Result<PasswordHash<'a>> {
@@ -37,7 +38,7 @@ impl PasswordHasher for StubPasswordHasher {
 
         Ok(PasswordHash {
             algorithm: ALG,
-            version: None,
+            version,
             params: params.try_into()?,
             salt: Some(salt),
             hash: Some(hash),
