@@ -63,6 +63,9 @@ use rand_core::{CryptoRng, RngCore};
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Error;
 
+/// Result type alias with [`Error`].
+pub type Result<T> = core::result::Result<T, Error>;
+
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("aead::Error")
@@ -93,7 +96,7 @@ pub trait NewAead {
     /// Create new AEAD instance from key given as a byte slice..
     ///
     /// Default implementation will accept only keys with length equal to `KeySize`.
-    fn new_from_slice(key: &[u8]) -> Result<Self, Error>
+    fn new_from_slice(key: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
@@ -164,7 +167,7 @@ pub trait Aead: AeadCore {
         &self,
         nonce: &Nonce<Self>,
         plaintext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error>;
+    ) -> Result<Vec<u8>>;
 
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
     /// as a vector of bytes.
@@ -187,7 +190,7 @@ pub trait Aead: AeadCore {
         &self,
         nonce: &Nonce<Self>,
         ciphertext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error>;
+    ) -> Result<Vec<u8>>;
 }
 
 /// Stateful Authenticated Encryption with Associated Data algorithm.
@@ -203,7 +206,7 @@ pub trait AeadMut: AeadCore {
         &mut self,
         nonce: &Nonce<Self>,
         plaintext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error>;
+    ) -> Result<Vec<u8>>;
 
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
     /// as a vector of bytes.
@@ -214,7 +217,7 @@ pub trait AeadMut: AeadCore {
         &mut self,
         nonce: &Nonce<Self>,
         ciphertext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error>;
+    ) -> Result<Vec<u8>>;
 }
 
 /// Implement the `decrypt_in_place` method on [`AeadInPlace`] and
@@ -254,7 +257,7 @@ pub trait AeadInPlace: AeadCore {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let tag = self.encrypt_in_place_detached(nonce, associated_data, buffer.as_mut())?;
         buffer.extend_from_slice(tag.as_slice())?;
         Ok(())
@@ -266,7 +269,7 @@ pub trait AeadInPlace: AeadCore {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut [u8],
-    ) -> Result<Tag<Self>, Error>;
+    ) -> Result<Tag<Self>>;
 
     /// Decrypt the message in-place, returning an error in the event the
     /// provided authentication tag does not match the given ciphertext.
@@ -278,7 +281,7 @@ pub trait AeadInPlace: AeadCore {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         impl_decrypt_in_place!(self, nonce, associated_data, buffer)
     }
 
@@ -291,7 +294,7 @@ pub trait AeadInPlace: AeadCore {
         associated_data: &[u8],
         buffer: &mut [u8],
         tag: &Tag<Self>,
-    ) -> Result<(), Error>;
+    ) -> Result<()>;
 }
 
 /// In-place stateful AEAD trait.
@@ -312,7 +315,7 @@ pub trait AeadMutInPlace: AeadCore {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut impl Buffer,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let tag = self.encrypt_in_place_detached(nonce, associated_data, buffer.as_mut())?;
         buffer.extend_from_slice(tag.as_slice())?;
         Ok(())
@@ -324,7 +327,7 @@ pub trait AeadMutInPlace: AeadCore {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut [u8],
-    ) -> Result<Tag<Self>, Error>;
+    ) -> Result<Tag<Self>>;
 
     /// Decrypt the message in-place, returning an error in the event the
     /// provided authentication tag does not match the given ciphertext.
@@ -336,7 +339,7 @@ pub trait AeadMutInPlace: AeadCore {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut impl Buffer,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         impl_decrypt_in_place!(self, nonce, associated_data, buffer)
     }
 
@@ -349,7 +352,7 @@ pub trait AeadMutInPlace: AeadCore {
         associated_data: &[u8],
         buffer: &mut [u8],
         tag: &Tag<Self>,
-    ) -> Result<(), Error>;
+    ) -> Result<()>;
 }
 
 #[cfg(feature = "alloc")]
@@ -358,7 +361,7 @@ impl<Alg: AeadInPlace> Aead for Alg {
         &self,
         nonce: &Nonce<Self>,
         plaintext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error> {
+    ) -> Result<Vec<u8>> {
         let payload = plaintext.into();
         let mut buffer = Vec::with_capacity(payload.msg.len() + Self::TagSize::to_usize());
         buffer.extend_from_slice(payload.msg);
@@ -370,7 +373,7 @@ impl<Alg: AeadInPlace> Aead for Alg {
         &self,
         nonce: &Nonce<Self>,
         ciphertext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error> {
+    ) -> Result<Vec<u8>> {
         let payload = ciphertext.into();
         let mut buffer = Vec::from(payload.msg);
         self.decrypt_in_place(nonce, payload.aad, &mut buffer)?;
@@ -384,7 +387,7 @@ impl<Alg: AeadMutInPlace> AeadMut for Alg {
         &mut self,
         nonce: &Nonce<Self>,
         plaintext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error> {
+    ) -> Result<Vec<u8>> {
         let payload = plaintext.into();
         let mut buffer = Vec::with_capacity(payload.msg.len() + Self::TagSize::to_usize());
         buffer.extend_from_slice(payload.msg);
@@ -396,7 +399,7 @@ impl<Alg: AeadMutInPlace> AeadMut for Alg {
         &mut self,
         nonce: &Nonce<Self>,
         ciphertext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error> {
+    ) -> Result<Vec<u8>> {
         let payload = ciphertext.into();
         let mut buffer = Vec::from(payload.msg);
         self.decrypt_in_place(nonce, payload.aad, &mut buffer)?;
@@ -410,7 +413,7 @@ impl<Alg: AeadInPlace> AeadMutInPlace for Alg {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut impl Buffer,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         <Self as AeadInPlace>::encrypt_in_place(self, nonce, associated_data, buffer)
     }
 
@@ -419,7 +422,7 @@ impl<Alg: AeadInPlace> AeadMutInPlace for Alg {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut [u8],
-    ) -> Result<Tag<Self>, Error> {
+    ) -> Result<Tag<Self>> {
         <Self as AeadInPlace>::encrypt_in_place_detached(self, nonce, associated_data, buffer)
     }
 
@@ -428,7 +431,7 @@ impl<Alg: AeadInPlace> AeadMutInPlace for Alg {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut impl Buffer,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         <Self as AeadInPlace>::decrypt_in_place(self, nonce, associated_data, buffer)
     }
 
@@ -438,7 +441,7 @@ impl<Alg: AeadInPlace> AeadMutInPlace for Alg {
         associated_data: &[u8],
         buffer: &mut [u8],
         tag: &Tag<Self>,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         <Self as AeadInPlace>::decrypt_in_place_detached(self, nonce, associated_data, buffer, tag)
     }
 }
@@ -485,7 +488,7 @@ pub trait Buffer: AsRef<[u8]> + AsMut<[u8]> {
     }
 
     /// Extend this buffer from the given slice
-    fn extend_from_slice(&mut self, other: &[u8]) -> Result<(), Error>;
+    fn extend_from_slice(&mut self, other: &[u8]) -> Result<()>;
 
     /// Truncate this buffer to the given size
     fn truncate(&mut self, len: usize);
@@ -493,7 +496,7 @@ pub trait Buffer: AsRef<[u8]> + AsMut<[u8]> {
 
 #[cfg(feature = "alloc")]
 impl Buffer for Vec<u8> {
-    fn extend_from_slice(&mut self, other: &[u8]) -> Result<(), Error> {
+    fn extend_from_slice(&mut self, other: &[u8]) -> Result<()> {
         Vec::extend_from_slice(self, other);
         Ok(())
     }
@@ -505,7 +508,7 @@ impl Buffer for Vec<u8> {
 
 #[cfg(feature = "heapless")]
 impl<const N: usize> Buffer for heapless::Vec<u8, N> {
-    fn extend_from_slice(&mut self, other: &[u8]) -> Result<(), Error> {
+    fn extend_from_slice(&mut self, other: &[u8]) -> Result<()> {
         heapless::Vec::extend_from_slice(self, other).map_err(|_| Error)
     }
 
