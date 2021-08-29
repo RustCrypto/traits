@@ -32,7 +32,7 @@
 
 #![allow(clippy::upper_case_acronyms)]
 
-use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, NewAead};
+use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, NewAead, Result};
 use core::ops::{AddAssign, Sub};
 use generic_array::{
     typenum::{Unsigned, U4, U5},
@@ -117,7 +117,7 @@ where
         last_block: bool,
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
-    ) -> Result<(), Error>;
+    ) -> Result<()>;
 
     /// Decrypt an AEAD message in-place at the given position in the STREAM.
     fn decrypt_in_place(
@@ -126,7 +126,7 @@ where
         last_block: bool,
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
-    ) -> Result<(), Error>;
+    ) -> Result<()>;
 
     /// Encrypt the given plaintext payload, and return the resulting
     /// ciphertext as a vector of bytes.
@@ -137,7 +137,7 @@ where
         position: Self::Counter,
         last_block: bool,
         plaintext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error> {
+    ) -> Result<Vec<u8>> {
         let payload = plaintext.into();
         let mut buffer = Vec::with_capacity(payload.msg.len() + A::TagSize::to_usize());
         buffer.extend_from_slice(payload.msg);
@@ -154,7 +154,7 @@ where
         position: Self::Counter,
         last_block: bool,
         ciphertext: impl Into<Payload<'msg, 'aad>>,
-    ) -> Result<Vec<u8>, Error> {
+    ) -> Result<Vec<u8>> {
         let payload = ciphertext.into();
         let mut buffer = Vec::from(payload.msg);
         self.decrypt_in_place(position, last_block, payload.aad, &mut buffer)?;
@@ -263,7 +263,7 @@ macro_rules! impl_stream_object {
             pub fn $next_method<'msg, 'aad>(
                 &mut self,
                 payload: impl Into<Payload<'msg, 'aad>>,
-            ) -> Result<Vec<u8>, Error> {
+            ) -> Result<Vec<u8>> {
                 if self.position == S::COUNTER_MAX {
                     // Counter overflow. Note that the maximum counter value is
                     // deliberately disallowed, as it would preclude being able
@@ -285,7 +285,7 @@ macro_rules! impl_stream_object {
                 &mut self,
                 associated_data: &[u8],
                 buffer: &mut dyn Buffer,
-            ) -> Result<(), Error> {
+            ) -> Result<()> {
                 if self.position == S::COUNTER_MAX {
                     // Counter overflow. Note that the maximum counter value is
                     // deliberately disallowed, as it would preclude being able
@@ -312,7 +312,7 @@ macro_rules! impl_stream_object {
             pub fn $last_method<'msg, 'aad>(
                 self,
                 payload: impl Into<Payload<'msg, 'aad>>,
-            ) -> Result<Vec<u8>, Error> {
+            ) -> Result<Vec<u8>> {
                 self.stream.$op(self.position, true, payload)
             }
 
@@ -326,7 +326,7 @@ macro_rules! impl_stream_object {
                 self,
                 associated_data: &[u8],
                 buffer: &mut dyn Buffer,
-            ) -> Result<(), Error> {
+            ) -> Result<()> {
                 self.stream
                     .$in_place_op(self.position, true, associated_data, buffer)
             }
@@ -409,7 +409,7 @@ where
         last_block: bool,
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let nonce = self.aead_nonce(position, last_block);
         self.aead.encrypt_in_place(&nonce, associated_data, buffer)
     }
@@ -420,7 +420,7 @@ where
         last_block: bool,
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let nonce = self.aead_nonce(position, last_block);
         self.aead.decrypt_in_place(&nonce, associated_data, buffer)
     }
@@ -498,7 +498,7 @@ where
         last_block: bool,
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let nonce = self.aead_nonce(position, last_block)?;
         self.aead.encrypt_in_place(&nonce, associated_data, buffer)
     }
@@ -509,7 +509,7 @@ where
         last_block: bool,
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let nonce = self.aead_nonce(position, last_block)?;
         self.aead.decrypt_in_place(&nonce, associated_data, buffer)
     }
@@ -523,7 +523,7 @@ where
 {
     /// Compute the full AEAD nonce including the STREAM counter and last
     /// block flag.
-    fn aead_nonce(&self, position: u32, last_block: bool) -> Result<crate::Nonce<A>, Error> {
+    fn aead_nonce(&self, position: u32, last_block: bool) -> Result<crate::Nonce<A>> {
         if position > Self::COUNTER_MAX {
             return Err(Error);
         }
