@@ -21,6 +21,7 @@ blobby = { version = "0.3", optional = true }
 
 [features]
 std = ["crypto-common/std"]
+rand_core = ["crypto-common/rand_core"]
 dev = ["blobby"]
 
 [package.metadata.docs.rs]
