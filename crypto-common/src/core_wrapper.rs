@@ -101,7 +101,7 @@ impl<D: FixedOutputCore + Reset> FixedOutputReset for CoreWrapper<D> {
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<D: UpdateCore> std::io::Write for CoreWrapper<D> {
+impl<D: UpdateCore + BufferUser> std::io::Write for CoreWrapper<D> {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         Update::update(self, buf);
