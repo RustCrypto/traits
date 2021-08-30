@@ -39,6 +39,9 @@ pub trait StreamCipherCore: BlockUser + Sized {
             buf = tail;
         }
         let n = buf.len();
+        if n == 0 {
+            return;
+        }
         let mut block = Block::<Self>::default();
         block[..n].copy_from_slice(buf.get_in());
         let mut t = InOutBuf::from_mut(&mut block);
