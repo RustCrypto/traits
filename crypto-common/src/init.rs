@@ -10,7 +10,7 @@ pub type Key<B> = GenericArray<u8, <B as KeyUser>::KeySize>;
 /// Initialization vector (nonce) used by [`IvUser`] implementors.
 pub type Iv<B> = GenericArray<u8, <B as IvUser>::IvSize>;
 
-/// Trait for types which use key for initialization.
+/// Types which use key for initialization.
 ///
 /// Generally it's used indirectly via [`KeyInit`] or [`KeyIvInit`].
 pub trait KeyUser {
@@ -28,7 +28,7 @@ pub trait KeyUser {
     }
 }
 
-/// Trait for types which use initialization vector (nonce) for initialization.
+/// Types which use initialization vector (nonce) for initialization.
 ///
 /// Generally it's used indirectly via [`KeyIvInit`] or [`InnerIvInit`].
 pub trait IvUser {
@@ -46,7 +46,7 @@ pub trait IvUser {
     }
 }
 
-/// Trait for types which use another type for initialization.
+/// Types which use another type for initialization.
 ///
 /// Generally it's used indirectly via [`InnerInit`] or [`InnerIvInit`].
 pub trait InnerUser {
@@ -54,7 +54,7 @@ pub trait InnerUser {
     type Inner;
 }
 
-/// Trait for types which can be initialized from key.
+/// Types which can be initialized from key.
 pub trait KeyInit: KeyUser + Sized {
     /// Create new value from fixed size key.
     fn new(key: &Key<Self>) -> Self;
@@ -69,8 +69,7 @@ pub trait KeyInit: KeyUser + Sized {
     }
 }
 
-/// Trait for types which can be initialized from key and
-/// initialization vector (nonce).
+/// Types which can be initialized from key and initialization vector (nonce).
 pub trait KeyIvInit: KeyUser + IvUser + Sized {
     /// Create new value from fixed length key and nonce.
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self;

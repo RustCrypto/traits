@@ -91,19 +91,19 @@ pub trait FixedOutputReset: FixedOutput + Reset {
     }
 }
 
-/// Trait resetting of state to its initial value.
+/// Resettable types.
 pub trait Reset {
     /// Reset state to its initial value.
     fn reset(&mut self);
 }
 
-/// Trait for types which consume data in blocks.
+/// Types which consume data in blocks.
 pub trait UpdateCore: BlockUser {
     /// Update state using the provided data blocks.
     fn update_blocks(&mut self, blocks: &[Block<Self>]);
 }
 
-/// Trait for types which use [`DigestBuffer`] functionality.
+/// Types which use [`DigestBuffer`] functionality.
 pub trait BufferUser: BlockUser {
     /// Block buffer type over which value operates.
     type Buffer: DigestBuffer<Self::BlockSize>;
