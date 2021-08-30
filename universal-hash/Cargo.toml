@@ -1,6 +1,6 @@
 [package]
 name = "universal-hash"
-version = "0.4.1" # Also update html_root_url in lib.rs when bumping this
+version = "0.5.0" # Also update html_root_url in lib.rs when bumping this
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 description = "Trait for universal hash functions"
@@ -13,7 +13,7 @@ edition = "2018"
 
 [dependencies]
 generic-array = "0.14"
-subtle = { version = "=2.4", default-features = false }
+crypto-common = { version = "0.1", features = ["subtle"], path = "../crypto-common" }
 
 [features]
 std = []

@@ -18,11 +18,10 @@
 //! [Universal Hash Functions]: https://en.wikipedia.org/wiki/Universal_hashing
 
 #![no_std]
-#![forbid(unsafe_code)]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_root_url = "https://docs.rs/universal-hash/0.4.1"
+    html_root_url = "https://docs.rs/universal-hash/0.5.0"
 )]
 #![warn(missing_docs, rust_2018_idioms)]
 
@@ -31,34 +30,17 @@ extern crate std;
 
 pub use generic_array::{self, typenum::consts};
 
-use generic_array::typenum::Unsigned;
-use generic_array::{ArrayLength, GenericArray};
-use subtle::{Choice, ConstantTimeEq};
+use core::slice;
+use generic_array::{typenum::Unsigned, GenericArray};
 
-/// Keys to a [`UniversalHash`].
-pub type Key<U> = GenericArray<u8, <U as NewUniversalHash>::KeySize>;
-
-/// Blocks are inputs to a [`UniversalHash`].
-pub type Block<U> = GenericArray<u8, <U as UniversalHash>::BlockSize>;
-
-/// Instantiate a [`UniversalHash`] algorithm.
-pub trait NewUniversalHash: Sized {
-    /// Size of the key for the universal hash function.
-    type KeySize: ArrayLength<u8>;
-
-    /// Instantiate a universal hash function with the given key.
-    fn new(key: &Key<Self>) -> Self;
-}
+pub use crypto_common::{
+    Block, BlockUser, CtOutput, FixedOutput, FixedOutputReset, Key, KeyInit, KeyUser, Output,
+    Reset, UpdateCore,
+};
 
 /// The [`UniversalHash`] trait defines a generic interface for universal hash
 /// functions.
-pub trait UniversalHash: Clone {
-    /// Size of the inputs to and outputs from the universal hash function
-    type BlockSize: ArrayLength<u8>;
-
-    /// Input a block into the universal hash function
-    fn update(&mut self, block: &Block<Self>);
-
+pub trait UniversalHash: KeyInit + UpdateCore + FixedOutput {
     /// Input data into the universal hash function. If the length of the
     /// data is not a multiple of the block size, the remaining data is
     /// padded with zeroes up to the `BlockSize`.
@@ -66,39 +48,45 @@ pub trait UniversalHash: Clone {
     /// This approach is frequently used by AEAD modes which use
     /// Message Authentication Codes (MACs) based on universal hashing.
     fn update_padded(&mut self, data: &[u8]) {
-        let mut chunks = data.chunks_exact(Self::BlockSize::to_usize());
+        // TODO: replace with `array_chunks` on migration to const generics
+        let (blocks, tail) = unsafe {
+            let blocks_len = data.len() / Self::BlockSize::USIZE;
+            let tail_start = Self::BlockSize::USIZE * blocks_len;
+            let tail_len = data.len() - tail_start;
+            (
+                slice::from_raw_parts(data.as_ptr() as *const Block<Self>, blocks_len),
+                slice::from_raw_parts(data.as_ptr().add(tail_start), tail_len),
+            )
+        };
 
-        for chunk in &mut chunks {
-            self.update(GenericArray::from_slice(chunk));
-        }
+        self.update_blocks(blocks);
 
-        let rem = chunks.remainder();
-
-        if !rem.is_empty() {
+        if !tail.is_empty() {
             let mut padded_block = GenericArray::default();
-            padded_block[..rem.len()].copy_from_slice(rem);
-            self.update(&padded_block);
+            padded_block[..tail.len()].copy_from_slice(tail);
+            self.update_blocks(slice::from_ref(&padded_block));
         }
     }
 
-    /// Reset [`UniversalHash`] instance.
-    fn reset(&mut self);
-
     /// Obtain the [`Output`] of a [`UniversalHash`] function and consume it.
-    fn finalize(self) -> Output<Self>;
+    fn finalize(self) -> CtOutput<Self> {
+        CtOutput::new(self.finalize_fixed())
+    }
 
     /// Obtain the [`Output`] of a [`UniversalHash`] computation and reset it back
     /// to its initial state.
-    fn finalize_reset(&mut self) -> Output<Self> {
-        let res = self.clone().finalize();
-        self.reset();
-        res
+    #[inline]
+    fn finalize_reset(&mut self) -> CtOutput<Self>
+    where
+        Self: FixedOutputReset,
+    {
+        CtOutput::new(self.finalize_fixed_reset())
     }
 
     /// Verify the [`UniversalHash`] of the processed input matches a given [`Output`].
     /// This is useful when constructing Message Authentication Codes (MACs)
     /// from universal hash functions.
-    fn verify(self, other: &Block<Self>) -> Result<(), Error> {
+    fn verify(self, other: &Output<Self>) -> Result<(), Error> {
         if self.finalize() == other.into() {
             Ok(())
         } else {
@@ -106,68 +94,6 @@ pub trait UniversalHash: Clone {
         }
     }
 }
-
-/// Outputs of universal hash functions which are a thin wrapper around a
-/// byte array. Provides a safe [`Eq`] implementation that runs in constant time,
-/// which is useful for implementing Message Authentication Codes (MACs) based
-/// on universal hashing.
-#[derive(Clone)]
-pub struct Output<U: UniversalHash> {
-    bytes: GenericArray<u8, U::BlockSize>,
-}
-
-impl<U> Output<U>
-where
-    U: UniversalHash,
-{
-    /// Create a new [`Output`] block.
-    pub fn new(bytes: Block<U>) -> Output<U> {
-        Output { bytes }
-    }
-
-    /// Get the inner [`GenericArray`] this type wraps
-    pub fn into_bytes(self) -> Block<U> {
-        self.bytes
-    }
-}
-
-impl<U> From<Block<U>> for Output<U>
-where
-    U: UniversalHash,
-{
-    fn from(bytes: Block<U>) -> Self {
-        Output { bytes }
-    }
-}
-
-impl<'a, U> From<&'a Block<U>> for Output<U>
-where
-    U: UniversalHash,
-{
-    fn from(bytes: &'a Block<U>) -> Self {
-        bytes.clone().into()
-    }
-}
-
-impl<U> ConstantTimeEq for Output<U>
-where
-    U: UniversalHash,
-{
-    fn ct_eq(&self, other: &Self) -> Choice {
-        self.bytes.ct_eq(&other.bytes)
-    }
-}
-
-impl<U> PartialEq for Output<U>
-where
-    U: UniversalHash,
-{
-    fn eq(&self, x: &Output<U>) -> bool {
-        self.ct_eq(x).unwrap_u8() == 1
-    }
-}
-
-impl<U: UniversalHash> Eq for Output<U> {}
 
 /// Error type for when the [`Output`] of a [`UniversalHash`]
 /// is not equal to the expected value.

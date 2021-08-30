@@ -1,48 +1,22 @@
 //! Low-level core API traits.
-use super::{Block, BlockUser, FixedOutput, FixedOutputReset, KeyInit, KeyUser, Reset, Update};
+use super::{
+    AlgorithmName, BufferUser, FixedOutput, FixedOutputCore, FixedOutputReset, KeyInit, KeyUser,
+    OutputUser, Reset, Update, UpdateCore,
+};
 use block_buffer::DigestBuffer;
 use core::fmt;
-use generic_array::{ArrayLength, GenericArray};
-
-/// Trait for types which consume data in blocks.
-pub trait UpdateCore: BlockUser {
-    /// Block buffer type over which value operates.
-    type Buffer: DigestBuffer<Self::BlockSize>;
-
-    /// Update state using the provided data blocks.
-    fn update_blocks(&mut self, blocks: &[Block<Self>]);
-}
-
-/// Core trait for hash functions with fixed output size.
-pub trait FixedOutputCore: UpdateCore {
-    /// Size of result in bytes.
-    type OutputSize: ArrayLength<u8>;
-
-    /// Finalize state using remaining data stored in the provided block buffer,
-    /// write result into provided array using and leave value in a dirty state.
-    fn finalize_fixed_core(
-        &mut self,
-        buffer: &mut Self::Buffer,
-        out: &mut GenericArray<u8, Self::OutputSize>,
-    );
-}
-
-/// Trait which stores algorithm name constant, used in `Debug` implementations.
-pub trait AlgorithmName {
-    /// Write algorithm name into `f`.
-    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result;
-}
+use generic_array::GenericArray;
 
 /// Wrapper around [`UpdateCore`] implementations.
 ///
 /// It handles data buffering and implements the slice-based traits.
 #[derive(Clone, Default)]
-pub struct CoreWrapper<T: UpdateCore> {
+pub struct CoreWrapper<T: UpdateCore + BufferUser> {
     core: T,
     buffer: T::Buffer,
 }
 
-impl<T: UpdateCore> CoreWrapper<T> {
+impl<T: UpdateCore + BufferUser> CoreWrapper<T> {
     /// Create new wrapper from `core`.
     #[inline]
     pub fn from_core(core: T) -> Self {
@@ -58,7 +32,7 @@ impl<T: UpdateCore> CoreWrapper<T> {
     }
 }
 
-impl<T: UpdateCore + Reset> CoreWrapper<T> {
+impl<T: UpdateCore + BufferUser + Reset> CoreWrapper<T> {
     /// Apply function to core and buffer, return its result,
     /// and reset core and buffer.
     pub fn apply_reset<V>(&mut self, mut f: impl FnMut(&mut T, &mut T::Buffer) -> V) -> V {
@@ -70,11 +44,11 @@ impl<T: UpdateCore + Reset> CoreWrapper<T> {
     }
 }
 
-impl<T: KeyUser + UpdateCore> KeyUser for CoreWrapper<T> {
+impl<T: KeyUser + BufferUser + UpdateCore> KeyUser for CoreWrapper<T> {
     type KeySize = T::KeySize;
 }
 
-impl<T: UpdateCore + KeyInit> KeyInit for CoreWrapper<T> {
+impl<T: UpdateCore + BufferUser + KeyInit> KeyInit for CoreWrapper<T> {
     fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
         Self {
             core: T::new(key),
@@ -83,14 +57,14 @@ impl<T: UpdateCore + KeyInit> KeyInit for CoreWrapper<T> {
     }
 }
 
-impl<T: UpdateCore + AlgorithmName> fmt::Debug for CoreWrapper<T> {
+impl<T: UpdateCore + BufferUser + AlgorithmName> fmt::Debug for CoreWrapper<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         T::write_alg_name(f)?;
         f.write_str(" { .. }")
     }
 }
 
-impl<D: Reset + UpdateCore> Reset for CoreWrapper<D> {
+impl<D: Reset + BufferUser + UpdateCore> Reset for CoreWrapper<D> {
     #[inline]
     fn reset(&mut self) {
         self.core.reset();
@@ -98,7 +72,7 @@ impl<D: Reset + UpdateCore> Reset for CoreWrapper<D> {
     }
 }
 
-impl<D: UpdateCore> Update for CoreWrapper<D> {
+impl<D: UpdateCore + BufferUser> Update for CoreWrapper<D> {
     #[inline]
     fn update(&mut self, input: &[u8]) {
         let Self { core, buffer } = self;
@@ -106,9 +80,11 @@ impl<D: UpdateCore> Update for CoreWrapper<D> {
     }
 }
 
-impl<D: FixedOutputCore> FixedOutput for CoreWrapper<D> {
+impl<D: FixedOutputCore> OutputUser for CoreWrapper<D> {
     type OutputSize = D::OutputSize;
+}
 
+impl<D: FixedOutputCore> FixedOutput for CoreWrapper<D> {
     #[inline]
     fn finalize_into(mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
         let Self { core, buffer } = &mut self;
