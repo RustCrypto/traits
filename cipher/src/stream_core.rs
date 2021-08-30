@@ -1,5 +1,5 @@
 use crate::{BlockDecryptMut, BlockEncryptMut};
-use block_buffer::inout::InOutBuf;
+use block_buffer::{generic_array::typenum::Unsigned, inout::InOutBuf};
 use core::convert::{TryFrom, TryInto};
 use crypto_common::{Block, BlockUser};
 
@@ -7,7 +7,7 @@ use crypto_common::{Block, BlockUser};
 pub trait AsyncStreamCipherCore: BlockEncryptMut + BlockDecryptMut {}
 
 /// Block-level synchronous stream ciphers.
-pub trait StreamCipherCore: BlockUser {
+pub trait StreamCipherCore: BlockUser + Sized {
     /// Return number of remaining blocks before cipher wraps around.
     ///
     /// Returns `None` if number of remaining blocks can not be computed
@@ -17,12 +17,34 @@ pub trait StreamCipherCore: BlockUser {
 
     /// Apply keystream blocks with pre and post callbacks using
     /// parallel block processing if possible.
+    ///
+    /// WARNING: this method does not check number of remaining blocks!
     fn apply_keystream_blocks(
         &mut self,
         blocks: InOutBuf<'_, Block<Self>>,
         pre_fn: impl FnMut(&[Block<Self>]),
         post_fn: impl FnMut(&[Block<Self>]),
     );
+
+    /// Apply keystream to data not divided into blocks.
+    ///
+    /// Consumes cipher since it may consume final keystream block only
+    /// partially.
+    ///
+    /// WARNING: this method does not check number of remaining blocks!
+    fn apply_keystream_partial(mut self, mut buf: InOutBuf<'_, u8>) {
+        if buf.len() > Self::BlockSize::USIZE {
+            let (blocks, tail) = buf.into_chunks();
+            self.apply_keystream_blocks(blocks, |_| {}, |_| {});
+            buf = tail;
+        }
+        let n = buf.len();
+        let mut block = Block::<Self>::default();
+        block[..n].copy_from_slice(buf.get_in());
+        let mut t = InOutBuf::from_mut(&mut block);
+        self.apply_keystream_blocks(t.reborrow(), |_| {}, |_| {});
+        buf.get_out().copy_from_slice(&block[..n]);
+    }
 }
 
 // note: unfortunately currently we can not write blanket impls of

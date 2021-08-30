@@ -31,7 +31,7 @@ pub type Block<B> = GenericArray<u8, <B as BlockUser>::BlockSize>;
 /// Types which process data in blocks.
 pub trait BlockUser {
     /// Size of the block in bytes.
-    type BlockSize: ArrayLength<u8> + IsLess<U256>;
+    type BlockSize: ArrayLength<u8> + IsLess<U256> + 'static;
 }
 
 impl<Alg: BlockUser> BlockUser for &Alg {
