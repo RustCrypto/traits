@@ -46,21 +46,17 @@ use alloc::boxed::Box;
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
-#[cfg(feature = "core-api")]
-#[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub mod core_api;
 mod digest;
 mod dyn_digest;
 
-pub use crate::digest::{Digest, Output};
 use core::fmt;
-#[cfg(feature = "core-api")]
-#[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
+
+pub use crate::digest::{Digest, Output};
 pub use crypto_common::block_buffer;
+pub use crypto_common::{FixedOutput, FixedOutputReset, Reset, Update};
 pub use dyn_digest::{DynDigest, InvalidBufferLength};
 pub use generic_array::{self, typenum::consts, GenericArray};
-
-pub use crypto_common::{FixedOutput, FixedOutputReset, Reset, Update};
 
 /// Trait for describing readers which are used to extract extendable output
 /// from XOF (extendable-output function) result.

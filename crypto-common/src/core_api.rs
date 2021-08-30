@@ -1,25 +1,19 @@
 //! Low-level core API traits.
-use super::{FixedOutput, FixedOutputReset, Reset, Update};
+use super::{Block, BlockUser, FixedOutput, FixedOutputReset, KeyInit, KeyUser, Reset, Update};
 use block_buffer::DigestBuffer;
 use core::fmt;
 use generic_array::{ArrayLength, GenericArray};
 
 /// Trait for types which consume data in blocks.
-#[cfg(feature = "core-api")]
-#[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
-pub trait UpdateCore {
-    /// Block size in bytes.
-    type BlockSize: ArrayLength<u8>;
+pub trait UpdateCore: BlockUser {
     /// Block buffer type over which value operates.
     type Buffer: DigestBuffer<Self::BlockSize>;
 
     /// Update state using the provided data blocks.
-    fn update_blocks(&mut self, blocks: &[GenericArray<u8, Self::BlockSize>]);
+    fn update_blocks(&mut self, blocks: &[Block<Self>]);
 }
 
 /// Core trait for hash functions with fixed output size.
-#[cfg(feature = "core-api")]
-#[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub trait FixedOutputCore: UpdateCore {
     /// Size of result in bytes.
     type OutputSize: ArrayLength<u8>;
@@ -73,6 +67,19 @@ impl<T: UpdateCore + Reset> CoreWrapper<T> {
         core.reset();
         buffer.reset();
         res
+    }
+}
+
+impl<T: KeyUser + UpdateCore> KeyUser for CoreWrapper<T> {
+    type KeySize = T::KeySize;
+}
+
+impl<T: UpdateCore + KeyInit> KeyInit for CoreWrapper<T> {
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
+        Self {
+            core: T::new(key),
+            buffer: Default::default(),
+        }
     }
 }
 

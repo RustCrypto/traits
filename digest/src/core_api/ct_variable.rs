@@ -1,5 +1,6 @@
 use super::{AlgorithmName, FixedOutputCore, Reset, UpdateCore, VariableOutputCore};
 use core::{fmt, marker::PhantomData};
+use crypto_common::{Block, BlockUser};
 use generic_array::{
     typenum::{IsLessOrEqual, LeEq, NonZero},
     ArrayLength, GenericArray,
@@ -18,17 +19,25 @@ where
     _out: PhantomData<OutSize>,
 }
 
-impl<T, OutSize> UpdateCore for CtVariableCoreWrapper<T, OutSize>
+impl<T, OutSize> BlockUser for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
     LeEq<OutSize, T::MaxOutputSize>: NonZero,
 {
     type BlockSize = T::BlockSize;
+}
+
+impl<T, OutSize> UpdateCore for CtVariableCoreWrapper<T, OutSize>
+where
+    T: VariableOutputCore,
+    OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
+    LeEq<OutSize, T::MaxOutputSize>: NonZero,
+{
     type Buffer = T::Buffer;
 
     #[inline]
-    fn update_blocks(&mut self, blocks: &[GenericArray<u8, Self::BlockSize>]) {
+    fn update_blocks(&mut self, blocks: &[Block<Self>]) {
         self.inner.update_blocks(blocks);
     }
 }

@@ -13,8 +13,8 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = "0.14"
-crypto-common = { version = "=0.1.0-pre", path = "../crypto-common" }
-cipher = { version = "=0.4.0-pre", path = "../cipher" }
+crypto-common = { version = "0.1", path = "../crypto-common" }
+cipher = { version = "0.4", path = "../cipher" }
 subtle = { version = "=2.4", default-features = false }
 
 blobby = { version = "0.3", optional = true }
@@ -22,7 +22,6 @@ rand_core = { version = "0.6", optional = true }
 
 [features]
 dev = ["blobby"]
-core-api = ["crypto-common/core-api"]
 std = ["crypto-common/std", "rand_core/std"]
 
 [package.metadata.docs.rs]

@@ -12,17 +12,33 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-use generic_array::{ArrayLength, GenericArray};
+use generic_array::{
+    typenum::{type_operators::IsLess, U256},
+    ArrayLength, GenericArray,
+};
 
-#[cfg(feature = "core-api")]
-#[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub use block_buffer;
 
-#[cfg(feature = "core-api")]
-#[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
-pub mod core_api;
+mod core_api;
+mod init;
 
-/// Trait for types which consume data.
+pub use core_api::*;
+pub use init::*;
+
+/// Block on which [`BlockUser`] implementors operate.
+pub type Block<B> = GenericArray<u8, <B as BlockUser>::BlockSize>;
+
+/// Types which process data in blocks.
+pub trait BlockUser {
+    /// Size of the block in bytes.
+    type BlockSize: ArrayLength<u8> + IsLess<U256>;
+}
+
+impl<Alg: BlockUser> BlockUser for &Alg {
+    type BlockSize = Alg::BlockSize;
+}
+
+/// Trait which allows consumption of data.
 pub trait Update {
     /// Update state using the provided data.
     fn update(&mut self, data: &[u8]);
@@ -46,7 +62,7 @@ pub trait FixedOutput: Sized {
 }
 
 /// Trait for types which return fixed-sized result after finalization and reset
-/// values into its initial state.
+/// state into its initial value.
 pub trait FixedOutputReset: FixedOutput + Reset {
     /// Write result into provided array and reset value to its initial state.
     fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>);
@@ -60,8 +76,8 @@ pub trait FixedOutputReset: FixedOutput + Reset {
     }
 }
 
-/// Trait for resetting values to initial state.
+/// Trait resetting of state to its initial value.
 pub trait Reset {
-    /// Reset value to its initial state.
+    /// Reset state to its initial value.
     fn reset(&mut self);
 }

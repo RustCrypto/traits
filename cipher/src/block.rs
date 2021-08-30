@@ -10,228 +10,398 @@
 //! [2]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
 //! [3]: https://en.wikipedia.org/wiki/Symmetric-key_algorithm
 
-use crate::errors::InvalidLength;
-use crate::{FromKey, FromKeyNonce};
-use core::convert::TryInto;
-use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+use block_buffer::inout::{InOut, InOutBuf, InSrc, InTmpOutBuf, NotEqualError};
+use generic_array::typenum::U1;
 
-/// Key for an algorithm that implements [`FromKey`].
-pub type BlockCipherKey<B> = GenericArray<u8, <B as FromKey>::KeySize>;
+pub use crypto_common::{Block, BlockUser};
 
-/// Block on which a [`BlockCipher`] operates.
-pub type Block<B> = GenericArray<u8, <B as BlockCipher>::BlockSize>;
-
-/// Block on which a [`BlockCipher`] operates in parallel.
-pub type ParBlocks<B> = GenericArray<Block<B>, <B as BlockCipher>::ParBlocks>;
-
-/// Trait which marks a type as being a block cipher.
-pub trait BlockCipher {
-    /// Size of the block in bytes
-    type BlockSize: ArrayLength<u8>;
-
-    /// Number of blocks which can be processed in parallel by
-    /// cipher implementation
-    type ParBlocks: ArrayLength<Block<Self>>;
-}
+/// Marker trait for block ciphers.
+pub trait BlockCipher: BlockUser {}
 
 /// Encrypt-only functionality for block ciphers.
-pub trait BlockEncrypt: BlockCipher {
-    /// Encrypt block in-place
-    fn encrypt_block(&self, block: &mut Block<Self>);
+pub trait BlockEncrypt: BlockUser {
+    /// Encrypt single `inout` block.
+    fn encrypt_block_inout(&self, block: InOut<'_, Block<Self>>);
 
-    /// Encrypt several blocks in parallel using instruction level parallelism
-    /// if possible.
-    ///
-    /// If `ParBlocks` equals to 1 it's equivalent to `encrypt_block`.
-    #[inline]
-    fn encrypt_par_blocks(&self, blocks: &mut ParBlocks<Self>) {
-        for block in blocks.iter_mut() {
-            self.encrypt_block(block);
-        }
+    /// Encrypt `inout` blocks with given pre and post hooks.
+    fn encrypt_blocks_with_pre(
+        &self,
+        blocks: InOutBuf<'_, Block<Self>>,
+        pre_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>) -> InSrc,
+        post_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>),
+    ) {
+        blocks.process_chunks::<U1, _, _, _, _, _>(
+            self,
+            pre_fn,
+            post_fn,
+            |state, mut chunk| state.encrypt_block_inout(chunk.get(0)),
+            |state, mut chunk| state.encrypt_block_inout(chunk.get(0)),
+        )
     }
 
-    /// Encrypt a slice of blocks, leveraging parallelism when available.
+    /// Encrypt single block in-place.
     #[inline]
-    fn encrypt_blocks(&self, mut blocks: &mut [Block<Self>]) {
-        let pb = Self::ParBlocks::to_usize();
+    fn encrypt_block(&self, block: &mut Block<Self>) {
+        self.encrypt_block_inout(block.into())
+    }
 
-        if pb > 1 {
-            let mut iter = blocks.chunks_exact_mut(pb);
+    /// Encrypt single block block-to-block, i.e. encrypt
+    /// block from `in_block` and write result to `out_block`.
+    #[inline]
+    fn encrypt_block_b2b(&self, in_block: &Block<Self>, out_block: &mut Block<Self>) {
+        self.encrypt_block_inout((in_block, out_block).into())
+    }
 
-            for chunk in &mut iter {
-                self.encrypt_par_blocks(chunk.try_into().unwrap())
-            }
+    /// Encrypt `inout` blocks with given post hook.
+    fn encrypt_blocks_inout(
+        &self,
+        blocks: InOutBuf<'_, Block<Self>>,
+        post_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>),
+    ) {
+        self.encrypt_blocks_with_pre(blocks, |_| InSrc::In, post_fn)
+    }
 
-            blocks = iter.into_remainder();
-        }
+    /// Encrypt blocks in-place with given post hook.
+    fn encrypt_blocks(&self, blocks: &mut [Block<Self>], mut post_fn: impl FnMut(&[Block<Self>])) {
+        self.encrypt_blocks_with_pre(
+            blocks.into(),
+            |_| InSrc::In,
+            |mut buf| {
+                buf.copy_tmp2out();
+                post_fn(buf.get_out());
+            },
+        )
+    }
 
-        for block in blocks {
-            self.encrypt_block(block);
-        }
+    /// Encrypt blocks buffer-to-buffer with given post hook.
+    ///
+    /// Returns [`NotEqualError`] if provided `in_blocks` and `out_blocks`
+    /// have different lengths.
+    fn encrypt_blocks_b2b(
+        &self,
+        in_blocks: &[Block<Self>],
+        out_blocks: &mut [Block<Self>],
+        mut post_fn: impl FnMut(&[Block<Self>]),
+    ) -> Result<(), NotEqualError> {
+        self.encrypt_blocks_with_pre(
+            InOutBuf::new(in_blocks, out_blocks)?,
+            |_| InSrc::In,
+            |mut buf| {
+                buf.copy_tmp2out();
+                post_fn(buf.get_out());
+            },
+        );
+        Ok(())
     }
 }
 
 /// Decrypt-only functionality for block ciphers.
-pub trait BlockDecrypt: BlockCipher {
-    /// Decrypt block in-place
-    fn decrypt_block(&self, block: &mut Block<Self>);
+pub trait BlockDecrypt: BlockUser {
+    /// Decrypt single `inout` block.
+    fn decrypt_block_inout(&self, block: InOut<'_, Block<Self>>);
 
-    /// Decrypt several blocks in parallel using instruction level parallelism
-    /// if possible.
+    /// Decrypt `inout` blocks with given pre and post hooks.
+    fn decrypt_blocks_with_pre(
+        &self,
+        blocks: InOutBuf<'_, Block<Self>>,
+        pre_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>) -> InSrc,
+        post_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>),
+    ) {
+        blocks.process_chunks::<U1, _, _, _, _, _>(
+            self,
+            pre_fn,
+            post_fn,
+            |state, mut chunk| state.decrypt_block_inout(chunk.get(0)),
+            |state, mut chunk| state.decrypt_block_inout(chunk.get(0)),
+        )
+    }
+
+    /// Decrypt single block in-place.
+    #[inline]
+    fn decrypt_block(&self, block: &mut Block<Self>) {
+        self.decrypt_block_inout(block.into())
+    }
+
+    /// Decrypt single block block-to-block, i.e. encrypt
+    /// block from `in_block` and write result to `out_block`.
+    #[inline]
+    fn decrypt_block_b2b(&self, in_block: &Block<Self>, out_block: &mut Block<Self>) {
+        self.decrypt_block_inout((in_block, out_block).into())
+    }
+
+    /// Decrypt `inout` blocks with given post hook.
+    fn decrypt_blocks_inout(
+        &self,
+        blocks: InOutBuf<'_, Block<Self>>,
+        post_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>),
+    ) {
+        self.decrypt_blocks_with_pre(blocks, |_| InSrc::In, post_fn)
+    }
+
+    /// Decrypt blocks in-place with given post hook.
+    fn decrypt_blocks(&self, blocks: &mut [Block<Self>], mut post_fn: impl FnMut(&[Block<Self>])) {
+        self.decrypt_blocks_with_pre(
+            blocks.into(),
+            |_| InSrc::In,
+            |mut buf| {
+                buf.copy_tmp2out();
+                post_fn(buf.get_out());
+            },
+        )
+    }
+
+    /// Decrypt blocks buffer-to-buffer with given post hook.
     ///
-    /// If `ParBlocks` equals to 1 it's equivalent to `decrypt_block`.
-    #[inline]
-    fn decrypt_par_blocks(&self, blocks: &mut ParBlocks<Self>) {
-        for block in blocks.iter_mut() {
-            self.decrypt_block(block);
-        }
-    }
-
-    /// Decrypt a slice of blocks, leveraging parallelism when available.
-    #[inline]
-    fn decrypt_blocks(&self, mut blocks: &mut [Block<Self>]) {
-        let pb = Self::ParBlocks::to_usize();
-
-        if pb > 1 {
-            let mut iter = blocks.chunks_exact_mut(pb);
-
-            for chunk in &mut iter {
-                self.decrypt_par_blocks(chunk.try_into().unwrap())
-            }
-
-            blocks = iter.into_remainder();
-        }
-
-        for block in blocks {
-            self.decrypt_block(block);
-        }
+    /// Returns [`NotEqualError`] if provided `in_blocks` and `out_blocks`
+    /// have different lengths.
+    fn decrypt_blocks_b2b(
+        &self,
+        in_blocks: &[Block<Self>],
+        out_blocks: &mut [Block<Self>],
+        mut post_fn: impl FnMut(&[Block<Self>]),
+    ) -> Result<(), NotEqualError> {
+        self.decrypt_blocks_with_pre(
+            InOutBuf::new(in_blocks, out_blocks)?,
+            |_| InSrc::In,
+            |mut buf| {
+                buf.copy_tmp2out();
+                post_fn(buf.get_out());
+            },
+        );
+        Ok(())
     }
 }
 
-/// Encrypt-only functionality for block ciphers with mutable access to `self`.
+/// Encrypt-only functionality for block ciphers and modes with mutable access to `self`.
 ///
-/// The main use case for this trait is hardware encryption engines which
-/// require `&mut self` access to an underlying hardware peripheral.
-pub trait BlockEncryptMut: BlockCipher {
-    /// Encrypt block in-place
-    fn encrypt_block_mut(&mut self, block: &mut Block<Self>);
+/// The main use case for this trait is blocks modes, but it also can be used
+/// for hardware cryptographic engines which require `&mut self` access to an
+/// underlying hardware peripheral.
+pub trait BlockEncryptMut: BlockUser {
+    /// Encrypt single `inout` block.
+    fn encrypt_block_inout_mut(&mut self, block: InOut<'_, Block<Self>>);
+
+    /// Encrypt `inout` blocks with given pre and post hooks.
+    fn encrypt_blocks_with_pre_mut(
+        &mut self,
+        blocks: InOutBuf<'_, Block<Self>>,
+        pre_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>) -> InSrc,
+        post_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>),
+    ) {
+        blocks.process_chunks::<U1, _, _, _, _, _>(
+            self,
+            pre_fn,
+            post_fn,
+            |state, mut chunk| state.encrypt_block_inout_mut(chunk.get(0)),
+            |state, mut chunk| state.encrypt_block_inout_mut(chunk.get(0)),
+        )
+    }
+
+    /// Encrypt block in-place.
+    #[inline]
+    fn encrypt_block_mut(&mut self, block: &mut Block<Self>) {
+        self.encrypt_block_inout_mut(block.into())
+    }
+
+    /// Encrypt single block block-to-block, i.e. encrypt
+    /// block from `in_block` and write result to `out_block`.
+    #[inline]
+    fn encrypt_block_b2b_mut(&mut self, in_block: &Block<Self>, out_block: &mut Block<Self>) {
+        self.encrypt_block_inout_mut((in_block, out_block).into())
+    }
+
+    /// Encrypt `inout` blocks with given post hook.
+    fn encrypt_blocks_inout_mut(
+        &mut self,
+        blocks: InOutBuf<'_, Block<Self>>,
+        post_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>),
+    ) {
+        self.encrypt_blocks_with_pre_mut(blocks, |_| InSrc::In, post_fn)
+    }
+
+    /// Encrypt blocks in-place with given post hook.
+    fn encrypt_blocks_mut(
+        &mut self,
+        blocks: &mut [Block<Self>],
+        mut post_fn: impl FnMut(&[Block<Self>]),
+    ) {
+        self.encrypt_blocks_with_pre_mut(
+            blocks.into(),
+            |_| InSrc::In,
+            |mut buf| {
+                buf.copy_tmp2out();
+                post_fn(buf.get_out());
+            },
+        )
+    }
+
+    /// Encrypt blocks buffer-to-buffer with given post hook.
+    ///
+    /// Returns [`NotEqualError`] if provided `in_blocks` and `out_blocks`
+    /// have different lengths.
+    fn decrypt_blocks_b2b_mut(
+        &mut self,
+        in_blocks: &[Block<Self>],
+        out_blocks: &mut [Block<Self>],
+        mut post_fn: impl FnMut(&[Block<Self>]),
+    ) -> Result<(), NotEqualError> {
+        self.encrypt_blocks_with_pre_mut(
+            InOutBuf::new(in_blocks, out_blocks)?,
+            |_| InSrc::In,
+            |mut buf| {
+                buf.copy_tmp2out();
+                post_fn(buf.get_out());
+            },
+        );
+        Ok(())
+    }
 }
 
-/// Decrypt-only functionality for block ciphers with mutable access to `self`.
+/// Decrypt-only functionality for block ciphers and modes with mutable access to `self`.
 ///
-/// The main use case for this trait is hardware encryption engines which
-/// require `&mut self` access to an underlying hardware peripheral.
-pub trait BlockDecryptMut: BlockCipher {
-    /// Decrypt block in-place
-    fn decrypt_block_mut(&mut self, block: &mut Block<Self>);
+/// The main use case for this trait is blocks modes, but it also can be used
+/// for hardware cryptographic engines which require `&mut self` access to an
+/// underlying hardware peripheral.
+pub trait BlockDecryptMut: BlockUser {
+    /// Decrypt single `inout` block.
+    fn decrypt_block_inout_mut(&mut self, block: InOut<'_, Block<Self>>);
+
+    /// Decrypt `inout` blocks with given pre and post hooks.
+    fn decrypt_blocks_with_pre_mut(
+        &mut self,
+        blocks: InOutBuf<'_, Block<Self>>,
+        pre_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>) -> InSrc,
+        post_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>),
+    ) {
+        blocks.process_chunks::<U1, _, _, _, _, _>(
+            self,
+            pre_fn,
+            post_fn,
+            |state, mut chunk| state.decrypt_block_inout_mut(chunk.get(0)),
+            |state, mut chunk| state.decrypt_block_inout_mut(chunk.get(0)),
+        )
+    }
+
+    /// Decrypt single block in-place.
+    #[inline]
+    fn decrypt_block_mut(&mut self, block: &mut Block<Self>) {
+        self.decrypt_block_inout_mut(block.into())
+    }
+
+    /// Decrypt single block block-to-block, i.e. encrypt
+    /// block from `in_block` and write result to `out_block`.
+    #[inline]
+    fn decrypt_block_b2b_mut(&mut self, in_block: &Block<Self>, out_block: &mut Block<Self>) {
+        self.decrypt_block_inout_mut((in_block, out_block).into())
+    }
+
+    /// Decrypt `inout` blocks with given post hook.
+    fn decrypt_blocks_inout_mut(
+        &mut self,
+        blocks: InOutBuf<'_, Block<Self>>,
+        post_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>),
+    ) {
+        self.decrypt_blocks_with_pre_mut(blocks, |_| InSrc::In, post_fn)
+    }
+
+    /// Decrypt blocks in-place with given post hook.
+    fn decrypt_blocks_mut(
+        &mut self,
+        blocks: &mut [Block<Self>],
+        mut post_fn: impl FnMut(&[Block<Self>]),
+    ) {
+        self.decrypt_blocks_with_pre_mut(
+            blocks.into(),
+            |_| InSrc::In,
+            |mut buf| {
+                buf.copy_tmp2out();
+                post_fn(buf.get_out());
+            },
+        )
+    }
+
+    /// Decrypt blocks buffer-to-buffer with given post hook.
+    ///
+    /// Returns [`NotEqualError`] if provided `in_blocks` and `out_blocks`
+    /// have different lengths.
+    fn decrypt_blocks_b2b_mut(
+        &mut self,
+        in_blocks: &[Block<Self>],
+        out_blocks: &mut [Block<Self>],
+        mut post_fn: impl FnMut(&[Block<Self>]),
+    ) -> Result<(), NotEqualError> {
+        self.decrypt_blocks_with_pre_mut(
+            InOutBuf::new(in_blocks, out_blocks)?,
+            |_| InSrc::In,
+            |mut buf| {
+                buf.copy_tmp2out();
+                post_fn(buf.get_out());
+            },
+        );
+        Ok(())
+    }
 }
 
 impl<Alg: BlockEncrypt> BlockEncryptMut for Alg {
-    fn encrypt_block_mut(&mut self, block: &mut Block<Self>) {
-        self.encrypt_block(block);
+    #[inline]
+    fn encrypt_block_inout_mut(&mut self, block: InOut<'_, Block<Self>>) {
+        self.encrypt_block_inout(block)
+    }
+
+    fn encrypt_blocks_with_pre_mut(
+        &mut self,
+        blocks: InOutBuf<'_, Block<Self>>,
+        pre_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>) -> InSrc,
+        post_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>),
+    ) {
+        self.encrypt_blocks_with_pre(blocks, pre_fn, post_fn)
     }
 }
 
 impl<Alg: BlockDecrypt> BlockDecryptMut for Alg {
-    fn decrypt_block_mut(&mut self, block: &mut Block<Self>) {
-        self.decrypt_block(block);
+    #[inline]
+    fn decrypt_block_inout_mut(&mut self, block: InOut<'_, Block<Self>>) {
+        self.decrypt_block_inout(block)
     }
-}
 
-// Impls of block cipher traits for reference types
-
-impl<Alg: BlockCipher> BlockCipher for &Alg {
-    type BlockSize = Alg::BlockSize;
-    type ParBlocks = Alg::ParBlocks;
+    fn decrypt_blocks_with_pre_mut(
+        &mut self,
+        blocks: InOutBuf<'_, Block<Self>>,
+        pre_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>) -> InSrc,
+        post_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>),
+    ) {
+        self.decrypt_blocks_with_pre(blocks, pre_fn, post_fn)
+    }
 }
 
 impl<Alg: BlockEncrypt> BlockEncrypt for &Alg {
     #[inline]
-    fn encrypt_block(&self, block: &mut Block<Self>) {
-        Alg::encrypt_block(self, block);
+    fn encrypt_block_inout(&self, block: InOut<'_, Block<Self>>) {
+        Alg::encrypt_block_inout(self, block)
     }
 
-    #[inline]
-    fn encrypt_par_blocks(&self, blocks: &mut ParBlocks<Self>) {
-        Alg::encrypt_par_blocks(self, blocks);
-    }
-
-    #[inline]
-    fn encrypt_blocks(&self, blocks: &mut [Block<Self>]) {
-        Alg::encrypt_blocks(self, blocks);
+    fn encrypt_blocks_with_pre(
+        &self,
+        blocks: InOutBuf<'_, Block<Self>>,
+        pre_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>) -> InSrc,
+        post_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>),
+    ) {
+        Alg::encrypt_blocks_with_pre(self, blocks, pre_fn, post_fn)
     }
 }
 
 impl<Alg: BlockDecrypt> BlockDecrypt for &Alg {
     #[inline]
-    fn decrypt_block(&self, block: &mut Block<Self>) {
-        Alg::decrypt_block(self, block);
+    fn decrypt_block_inout(&self, block: InOut<'_, Block<Self>>) {
+        Alg::decrypt_block_inout(self, block)
     }
 
-    #[inline]
-    fn decrypt_par_blocks(&self, blocks: &mut ParBlocks<Self>) {
-        Alg::decrypt_par_blocks(self, blocks);
-    }
-
-    #[inline]
-    fn decrypt_blocks(&self, blocks: &mut [Block<Self>]) {
-        Alg::decrypt_blocks(self, blocks);
-    }
-}
-
-/// Trait for types which can be initialized from a block cipher.
-pub trait FromBlockCipher {
-    /// Block cipher used for initialization.
-    type BlockCipher: BlockCipher;
-
-    /// Initialize instance from block cipher.
-    fn from_block_cipher(cipher: Self::BlockCipher) -> Self;
-}
-
-/// Trait for types which can be initialized from a block cipher and nonce.
-pub trait FromBlockCipherNonce {
-    /// Block cipher used for initialization.
-    type BlockCipher: BlockCipher;
-    /// Nonce size in bytes.
-    type NonceSize: ArrayLength<u8>;
-
-    /// Initialize instance from block cipher and nonce.
-    fn from_block_cipher_nonce(
-        cipher: Self::BlockCipher,
-        nonce: &GenericArray<u8, Self::NonceSize>,
-    ) -> Self;
-}
-
-impl<T> FromKeyNonce for T
-where
-    T: FromBlockCipherNonce,
-    T::BlockCipher: FromKey,
-{
-    type KeySize = <T::BlockCipher as FromKey>::KeySize;
-    type NonceSize = T::NonceSize;
-
-    fn new(
-        key: &GenericArray<u8, Self::KeySize>,
-        nonce: &GenericArray<u8, Self::NonceSize>,
-    ) -> Self {
-        Self::from_block_cipher_nonce(T::BlockCipher::new(key), nonce)
-    }
-}
-
-impl<T> FromKey for T
-where
-    T: FromBlockCipher,
-    T::BlockCipher: FromKey,
-{
-    type KeySize = <T::BlockCipher as FromKey>::KeySize;
-
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
-        Self::from_block_cipher(T::BlockCipher::new(key))
-    }
-
-    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
-        T::BlockCipher::new_from_slice(key)
-            .map_err(|_| InvalidLength)
-            .map(Self::from_block_cipher)
+    fn decrypt_blocks_with_pre(
+        &self,
+        blocks: InOutBuf<'_, Block<Self>>,
+        pre_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>) -> InSrc,
+        post_fn: impl FnMut(InTmpOutBuf<'_, Block<Self>>),
+    ) {
+        Alg::decrypt_blocks_with_pre(self, blocks, pre_fn, post_fn)
     }
 }

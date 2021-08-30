@@ -23,7 +23,11 @@ impl<R: XofReaderCore> XofReader for XofReaderCoreWrapper<R> {
     #[inline]
     fn read(&mut self, buffer: &mut [u8]) {
         let Self { core, buffer: buf } = self;
-        buf.set_data(buffer, || core.read_block());
+        buf.set_data(buffer, |blocks| {
+            for block in blocks {
+                *block = core.read_block();
+            }
+        });
     }
 }
 

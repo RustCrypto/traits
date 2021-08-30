@@ -8,7 +8,7 @@ macro_rules! stream_cipher_test {
         #[test]
         fn $name() {
             use cipher::generic_array::GenericArray;
-            use cipher::{blobby::Blob4Iterator, NewCipher, StreamCipher};
+            use cipher::{blobby::Blob4Iterator, KeyIvInit, StreamCipher};
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
@@ -18,7 +18,7 @@ macro_rules! stream_cipher_test {
                     let mut mode = <$cipher>::new_from_slices(key, iv).unwrap();
                     let mut pt = pt.to_vec();
                     for chunk in pt.chunks_mut(chunk_n) {
-                        mode.apply_keystream(chunk);
+                        mode.apply_keystream_inplace(chunk);
                     }
                     if pt != &ct[..] {
                         panic!(
@@ -44,7 +44,7 @@ macro_rules! stream_cipher_seek_test {
         #[test]
         fn $name() {
             use cipher::generic_array::GenericArray;
-            use cipher::{NewCipher, StreamCipher, StreamCipherSeek};
+            use cipher::{KeyIvInit, StreamCipher, StreamCipherSeek};
 
             fn get_cipher() -> $cipher {
                 <$cipher>::new(&Default::default(), &Default::default())
@@ -53,7 +53,7 @@ macro_rules! stream_cipher_seek_test {
             const MAX_SEEK: usize = 512;
 
             let mut ct = [0u8; MAX_SEEK];
-            get_cipher().apply_keystream(&mut ct[..]);
+            get_cipher().apply_keystream_inplace(&mut ct[..]);
 
             for n in 0..MAX_SEEK {
                 let mut cipher = get_cipher();
@@ -61,7 +61,7 @@ macro_rules! stream_cipher_seek_test {
                 cipher.seek(n);
                 assert_eq!(cipher.current_pos::<usize>(), n);
                 let mut buf = [0u8; MAX_SEEK];
-                cipher.apply_keystream(&mut buf[n..]);
+                cipher.apply_keystream_inplace(&mut buf[n..]);
                 assert_eq!(cipher.current_pos::<usize>(), MAX_SEEK);
                 assert_eq!(&buf[n..], &ct[n..]);
             }
@@ -72,12 +72,12 @@ macro_rules! stream_cipher_seek_test {
             let mut buf = [0u8; MAX_CHUNK];
             let mut cipher = get_cipher();
             assert_eq!(cipher.current_pos::<usize>(), 0);
-            cipher.apply_keystream(&mut []);
+            cipher.apply_keystream_inplace(&mut []);
             assert_eq!(cipher.current_pos::<usize>(), 0);
             for n in 1..MAX_CHUNK {
                 assert_eq!(cipher.current_pos::<usize>(), 0);
                 for m in 1.. {
-                    cipher.apply_keystream(&mut buf[..n]);
+                    cipher.apply_keystream_inplace(&mut buf[..n]);
                     assert_eq!(cipher.current_pos::<usize>(), n * m);
                     if n * m > MAX_LEN {
                         break;
@@ -97,7 +97,7 @@ macro_rules! stream_cipher_async_test {
         #[test]
         fn $name() {
             use cipher::generic_array::GenericArray;
-            use cipher::{blobby::Blob4Iterator, AsyncStreamCipher, NewCipher};
+            use cipher::{blobby::Blob4Iterator, AsyncStreamCipher, KeyIvInit};
 
             fn run_test(
                 key: &[u8],

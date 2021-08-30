@@ -66,19 +66,18 @@ dependencies = [
 
 [[package]]
 name = "block-buffer"
-version = "0.10.0-pre.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4b13c429c0b48d55a541108e23c7795eb821ee65b50c2f719f4f7fc5a022dcf"
+version = "0.10.0"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#6b7199fb78dba025deb1e4f46bdaf10ee812341e"
 dependencies = [
  "block-padding",
  "generic-array",
+ "inout",
 ]
 
 [[package]]
 name = "block-padding"
-version = "0.3.0-pre"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3992d179d1dd2fa87869057217d43cf88ad31d4e44738d159a5a6caafdf63ae6"
+version = "0.3.0"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#6b7199fb78dba025deb1e4f46bdaf10ee812341e"
 dependencies = [
  "generic-array",
 ]
@@ -106,13 +105,12 @@ dependencies = [
 
 [[package]]
 name = "cipher"
-version = "0.4.0-pre"
+version = "0.4.0"
 dependencies = [
  "blobby",
- "block-buffer 0.10.0-pre.4",
+ "block-buffer 0.10.0",
  "crypto-common",
  "generic-array",
- "rand_core",
 ]
 
 [[package]]
@@ -158,10 +156,11 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.1.0-pre"
+version = "0.1.0"
 dependencies = [
- "block-buffer 0.10.0-pre.4",
+ "block-buffer 0.10.0",
  "generic-array",
+ "rand_core",
 ]
 
 [[package]]
@@ -179,7 +178,7 @@ name = "crypto-mac"
 version = "0.12.0-pre"
 dependencies = [
  "blobby",
- "cipher 0.4.0-pre",
+ "cipher 0.4.0",
  "crypto-common",
  "generic-array",
  "rand_core",
@@ -206,7 +205,7 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.10.0-pre.3"
+version = "0.10.0"
 dependencies = [
  "blobby",
  "crypto-common",
@@ -304,6 +303,14 @@ name = "hex-literal"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "21e4590e13640f19f249fe3e4eca5113bc4289f2497710378190e7f4bd96f45b"
+
+[[package]]
+name = "inout"
+version = "0.1.0"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#6b7199fb78dba025deb1e4f46bdaf10ee812341e"
+dependencies = [
+ "generic-array",
+]
 
 [[package]]
 name = "itoa"
