@@ -1,7 +1,7 @@
 //! Low-level core API traits.
 use super::{
     AlgorithmName, BufferUser, FixedOutput, FixedOutputCore, FixedOutputReset, KeyInit, KeyUser,
-    OutputUser, Reset, Update, UpdateCore,
+    OutputSizeUser, Reset, Update, UpdateCore,
 };
 use block_buffer::DigestBuffer;
 use core::fmt;
@@ -11,7 +11,7 @@ use generic_array::GenericArray;
 ///
 /// It handles data buffering and implements the slice-based traits.
 #[derive(Clone, Default)]
-pub struct CoreWrapper<T: UpdateCore + BufferUser> {
+pub struct CoreWrapper<T: BufferUser> {
     core: T,
     buffer: T::Buffer,
 }
@@ -80,7 +80,7 @@ impl<D: UpdateCore + BufferUser> Update for CoreWrapper<D> {
     }
 }
 
-impl<D: FixedOutputCore> OutputUser for CoreWrapper<D> {
+impl<D: OutputSizeUser + BufferUser> OutputSizeUser for CoreWrapper<D> {
     type OutputSize = D::OutputSize;
 }
 

@@ -1,6 +1,6 @@
 use super::{AlgorithmName, FixedOutputCore, Reset, UpdateCore, VariableOutputCore};
 use core::{fmt, marker::PhantomData};
-use crypto_common::{Block, BlockUser};
+use crypto_common::{Block, BlockUser, BufferUser, OutputSizeUser};
 use generic_array::{
     typenum::{IsLessOrEqual, LeEq, NonZero},
     ArrayLength, GenericArray,
@@ -34,22 +34,36 @@ where
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
     LeEq<OutSize, T::MaxOutputSize>: NonZero,
 {
-    type Buffer = T::Buffer;
-
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
         self.inner.update_blocks(blocks);
     }
 }
 
-impl<T, OutSize> FixedOutputCore for CtVariableCoreWrapper<T, OutSize>
+impl<T, OutSize> OutputSizeUser for CtVariableCoreWrapper<T, OutSize>
+where
+    T: VariableOutputCore,
+    OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize> + 'static,
+    LeEq<OutSize, T::MaxOutputSize>: NonZero,
+{
+    type OutputSize = OutSize;
+}
+
+impl<T, OutSize> BufferUser for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
     LeEq<OutSize, T::MaxOutputSize>: NonZero,
 {
-    type OutputSize = OutSize;
+    type Buffer = T::Buffer;
+}
 
+impl<T, OutSize> FixedOutputCore for CtVariableCoreWrapper<T, OutSize>
+where
+    T: VariableOutputCore,
+    OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize> + 'static,
+    LeEq<OutSize, T::MaxOutputSize>: NonZero,
+{
     #[inline]
     fn finalize_fixed_core(
         &mut self,

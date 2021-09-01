@@ -1,4 +1,5 @@
 use super::{FixedOutput, FixedOutputReset, Update};
+use crypto_common::OutputSizeUser;
 use generic_array::typenum::Unsigned;
 use generic_array::{ArrayLength, GenericArray};
 
@@ -45,7 +46,7 @@ pub trait Digest {
 }
 
 impl<D: FixedOutput + Default + Update> Digest for D {
-    type OutputSize = <Self as FixedOutput>::OutputSize;
+    type OutputSize = <Self as OutputSizeUser>::OutputSize;
 
     #[inline]
     fn new() -> Self {

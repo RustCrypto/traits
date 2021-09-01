@@ -8,7 +8,7 @@ use crate::{ExtendableOutput, Reset};
 use generic_array::ArrayLength;
 
 pub use crypto_common::{
-    AlgorithmName, Block, BlockUser, CoreWrapper, FixedOutputCore, UpdateCore,
+    AlgorithmName, Block, BlockUser, BufferUser, CoreWrapper, FixedOutputCore, UpdateCore,
 };
 
 mod ct_variable;
@@ -20,7 +20,7 @@ pub use rt_variable::RtVariableCoreWrapper;
 pub use xof_reader::XofReaderCoreWrapper;
 
 /// Core trait for hash functions with extendable (XOF) output size.
-pub trait ExtendableOutputCore: UpdateCore {
+pub trait ExtendableOutputCore: UpdateCore + BufferUser {
     /// XOF reader core state.
     type ReaderCore: XofReaderCore;
 
@@ -36,7 +36,7 @@ pub trait XofReaderCore: BlockUser {
 }
 
 /// Core trait for hash functions with variable output size.
-pub trait VariableOutputCore: UpdateCore + Sized {
+pub trait VariableOutputCore: UpdateCore + BufferUser + Sized {
     /// Maximum output size.
     type MaxOutputSize: ArrayLength<u8>;
 

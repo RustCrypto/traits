@@ -37,8 +37,8 @@ pub use init::*;
 /// Block on which [`BlockUser`] implementors operate.
 pub type Block<B> = GenericArray<u8, <B as BlockUser>::BlockSize>;
 
-/// Output array of [`FixedOutput`] implementors.
-pub type Output<T> = GenericArray<u8, <T as OutputUser>::OutputSize>;
+/// Output array of [`OutputSizeUser`] implementors.
+pub type Output<T> = GenericArray<u8, <T as OutputSizeUser>::OutputSize>;
 
 /// Types which process data in blocks.
 pub trait BlockUser {
@@ -51,7 +51,7 @@ impl<Alg: BlockUser> BlockUser for &Alg {
 }
 
 /// Types which return data with the given size.
-pub trait OutputUser {
+pub trait OutputSizeUser {
     /// Size of the output in bytes.
     type OutputSize: ArrayLength<u8> + 'static;
 }
@@ -63,7 +63,7 @@ pub trait Update {
 }
 
 /// Types which return fixed-sized result after finalization.
-pub trait FixedOutput: OutputUser + Sized {
+pub trait FixedOutput: OutputSizeUser + Sized {
     /// Consume value and write result into provided array.
     fn finalize_into(self, out: &mut Output<Self>);
 
@@ -110,7 +110,7 @@ pub trait BufferUser: BlockUser {
 }
 
 /// Core trait for hash functions with fixed output size.
-pub trait FixedOutputCore: UpdateCore + BufferUser + OutputUser {
+pub trait FixedOutputCore: UpdateCore + BufferUser + OutputSizeUser {
     /// Finalize state using remaining data stored in the provided block buffer,
     /// write result into provided array using and leave value in a dirty state.
     fn finalize_fixed_core(&mut self, buffer: &mut Self::Buffer, out: &mut Output<Self>);

@@ -1,5 +1,6 @@
-use super::{FixedOutput, FixedOutputReset, Reset, Update};
+use super::{FixedOutputReset, Reset, Update};
 use core::fmt;
+use crypto_common::OutputSizeUser;
 use generic_array::{typenum::Unsigned, GenericArray};
 
 #[cfg(feature = "alloc")]
@@ -92,7 +93,7 @@ impl<D: Update + FixedOutputReset + Clone + 'static> DynDigest for D {
     }
 
     fn output_size(&self) -> usize {
-        <Self as FixedOutput>::OutputSize::to_usize()
+        <Self as OutputSizeUser>::OutputSize::to_usize()
     }
 
     #[cfg(feature = "alloc")]
