@@ -8,7 +8,7 @@ use generic_array::ArrayLength;
 
 pub use crypto_common::{
     AlgorithmName, Block, BlockUser, BufferUser, CoreWrapper, FixedOutputCore, OutputSizeUser,
-    UpdateCore, Reset,
+    Reset, UpdateCore,
 };
 
 mod ct_variable;
