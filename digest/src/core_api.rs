@@ -3,13 +3,12 @@
 //! Usage of traits in this module in user code is discouraged. Instead use
 //! core algorithm wrapped by the wrapper types, which implement the
 //! higher-level traits.
-use crate::InvalidOutputSize;
-use crate::{ExtendableOutput, Reset};
+use crate::{ExtendableOutput, InvalidOutputSize};
 use generic_array::ArrayLength;
 
 pub use crypto_common::{
     AlgorithmName, Block, BlockUser, BufferUser, CoreWrapper, FixedOutputCore, OutputSizeUser,
-    UpdateCore,
+    UpdateCore, Reset,
 };
 
 mod ct_variable;

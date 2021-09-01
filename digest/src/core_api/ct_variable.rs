@@ -85,7 +85,7 @@ where
     fn default() -> Self {
         Self {
             inner: T::new(OutSize::USIZE).unwrap(),
-            _out: Default::default(),
+            _out: PhantomData,
         }
     }
 }
