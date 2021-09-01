@@ -8,7 +8,8 @@ use crate::{ExtendableOutput, Reset};
 use generic_array::ArrayLength;
 
 pub use crypto_common::{
-    AlgorithmName, Block, BlockUser, BufferUser, CoreWrapper, FixedOutputCore, UpdateCore,
+    AlgorithmName, Block, BlockUser, BufferUser, CoreWrapper, FixedOutputCore, OutputSizeUser,
+    UpdateCore,
 };
 
 mod ct_variable;
