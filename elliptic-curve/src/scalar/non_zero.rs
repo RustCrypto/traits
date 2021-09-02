@@ -36,7 +36,7 @@ impl<C> NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
 {
-    /// Generate a random `NonZeroScalar`
+    /// Generate a random `NonZeroScalar`.
     pub fn random(mut rng: impl CryptoRng + RngCore) -> Self {
         // Use rejection sampling to eliminate zero values.
         // While this method isn't constant-time, the attacker shouldn't learn
@@ -48,14 +48,14 @@ where
         }
     }
 
-    /// Decode a [`NonZeroScalar`] from a serialized field element
-    pub fn from_repr(repr: FieldBytes<C>) -> CtOption<Self> {
-        Scalar::<C>::from_repr(repr).and_then(Self::new)
-    }
-
     /// Create a [`NonZeroScalar`] from a scalar.
     pub fn new(scalar: Scalar<C>) -> CtOption<Self> {
         CtOption::new(Self { scalar }, !scalar.is_zero())
+    }
+
+    /// Decode a [`NonZeroScalar`] from a big endian-serialized field element.
+    pub fn from_repr(repr: FieldBytes<C>) -> CtOption<Self> {
+        Scalar::<C>::from_repr(repr).and_then(Self::new)
     }
 }
 
@@ -181,5 +181,19 @@ where
 {
     fn zeroize(&mut self) {
         self.scalar.zeroize();
+    }
+}
+
+#[cfg(all(test, feature = "dev"))]
+mod tests {
+    use crate::dev::NonZeroScalar;
+    use ff::PrimeField;
+    use hex_literal::hex;
+
+    #[test]
+    fn round_trip() {
+        let bytes = hex!("c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721");
+        let scalar = NonZeroScalar::from_repr(bytes.into()).unwrap();
+        assert_eq!(&bytes, scalar.to_repr().as_slice());
     }
 }
