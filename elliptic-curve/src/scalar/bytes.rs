@@ -70,7 +70,7 @@ where
     where
         C: ProjectiveArithmetic,
     {
-        Scalar::<C>::from_repr(self.inner).expect("ScalarBytes order invariant violated")
+        Scalar::<C>::from_repr(self.inner).unwrap()
     }
 
     /// Borrow the inner [`FieldBytes`]
@@ -206,7 +206,7 @@ where
     type Error = Error;
 
     fn try_from(bytes: ScalarBytes<C>) -> Result<NonZeroScalar<C>> {
-        NonZeroScalar::<C>::from_repr(bytes.inner).ok_or(Error)
+        Option::from(NonZeroScalar::<C>::from_repr(bytes.inner)).ok_or(Error)
     }
 }
 

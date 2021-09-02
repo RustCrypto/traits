@@ -38,27 +38,24 @@ where
 {
     /// Generate a random `NonZeroScalar`
     pub fn random(mut rng: impl CryptoRng + RngCore) -> Self {
-        // Use rejection sampling to eliminate zero values
+        // Use rejection sampling to eliminate zero values.
+        // While this method isn't constant-time, the attacker shouldn't learn
+        // anything about unrelated outputs so long as `rng` is a secure `CryptoRng`.
         loop {
-            if let Some(result) = Self::new(Field::random(&mut rng)) {
+            if let Some(result) = Self::new(Field::random(&mut rng)).into() {
                 break result;
             }
         }
     }
 
     /// Decode a [`NonZeroScalar`] from a serialized field element
-    pub fn from_repr(repr: FieldBytes<C>) -> Option<Self> {
+    pub fn from_repr(repr: FieldBytes<C>) -> CtOption<Self> {
         Scalar::<C>::from_repr(repr).and_then(Self::new)
     }
 
     /// Create a [`NonZeroScalar`] from a scalar.
-    // TODO(tarcieri): make this constant time?
-    pub fn new(scalar: Scalar<C>) -> Option<Self> {
-        if scalar.is_zero() {
-            None
-        } else {
-            Some(Self { scalar })
-        }
+    pub fn new(scalar: Scalar<C>) -> CtOption<Self> {
+        CtOption::new(Self { scalar }, !scalar.is_zero())
     }
 }
 
@@ -141,7 +138,7 @@ where
 {
     fn from(sk: &SecretKey<C>) -> NonZeroScalar<C> {
         let scalar = sk.as_scalar_bytes().to_scalar();
-        debug_assert!(!scalar.is_zero());
+        debug_assert!(!bool::from(scalar.is_zero()));
         Self { scalar }
     }
 }
@@ -166,7 +163,10 @@ where
 
     fn try_from(bytes: &[u8]) -> Result<Self> {
         if bytes.len() == C::UInt::BYTE_SIZE {
-            NonZeroScalar::from_repr(GenericArray::clone_from_slice(bytes)).ok_or(Error)
+            Option::from(NonZeroScalar::from_repr(GenericArray::clone_from_slice(
+                bytes,
+            )))
+            .ok_or(Error)
         } else {
             Err(Error)
         }

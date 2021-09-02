@@ -25,14 +25,15 @@ pub trait AffineArithmetic: Curve + ScalarArithmetic {
 pub trait ProjectiveArithmetic: Curve + AffineArithmetic {
     /// Elliptic curve point in projective coordinates.
     ///
-    /// Note: the following bounds are enforced by [`group::Group`]:
-    /// - `Copy`
-    /// - `Clone`
-    /// - `Debug`
-    /// - `Eq`
-    /// - `Sized`
-    /// - `Send`
-    /// - `Sync`
+    /// Note: the following bounds are provided by [`group::Group`]:
+    /// - `'static`
+    /// - [`Copy`]
+    /// - [`Clone`]
+    /// - [`Debug`]
+    /// - [`Eq`]
+    /// - [`Sized`]
+    /// - [`Send`]
+    /// - [`Sync`]
     type ProjectivePoint: ConditionallySelectable
         + ConstantTimeEq
         + Default
@@ -48,13 +49,15 @@ pub trait ProjectiveArithmetic: Curve + AffineArithmetic {
 pub trait ScalarArithmetic: Curve {
     /// Scalar field type.
     ///
-    /// Note: the following bounds are enforced by [`ff::Field`]:
-    /// - `Copy`
-    /// - `Clone`
-    /// - `ConditionallySelectable`
-    /// - `Debug`
-    /// - `Default`
-    /// - `Send`
-    /// - `Sync`
-    type Scalar: ConstantTimeEq + ff::Field + ff::PrimeField<Repr = FieldBytes<Self>>;
+    /// Note: the following bounds are provided by [`ff::Field`]:
+    /// - `'static`
+    /// - [`Copy`]
+    /// - [`Clone`]
+    /// - [`ConditionallySelectable`]
+    /// - [`ConstantTimeEq`]
+    /// - [`Debug`]
+    /// - [`Default`]
+    /// - [`Send`]
+    /// - [`Sync`]
+    type Scalar: ff::Field + ff::PrimeField<Repr = FieldBytes<Self>>;
 }
