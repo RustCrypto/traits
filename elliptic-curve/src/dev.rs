@@ -6,13 +6,13 @@ use crate::{
     error::{Error, Result},
     rand_core::RngCore,
     sec1::{FromEncodedPoint, ToEncodedPoint},
-    subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
+    subtle::{Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeLess, CtOption},
     weierstrass,
     zeroize::Zeroize,
     AffineArithmetic, AlgorithmParameters, Curve, ProjectiveArithmetic, ScalarArithmetic,
 };
 use core::{
-    convert::{TryFrom, TryInto},
+    convert::TryFrom,
     iter::Sum,
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
@@ -104,8 +104,8 @@ impl Field for Scalar {
         Self(U256::ONE)
     }
 
-    fn is_zero(&self) -> bool {
-        self.0.is_zero().into()
+    fn is_zero(&self) -> Choice {
+        self.0.is_zero()
     }
 
     #[must_use]
@@ -134,15 +134,16 @@ impl PrimeField for Scalar {
     const CAPACITY: u32 = 255;
     const S: u32 = 4;
 
-    fn from_repr(bytes: FieldBytes) -> Option<Self> {
-        U256::from_be_byte_array(bytes).try_into().ok()
+    fn from_repr(bytes: FieldBytes) -> CtOption<Self> {
+        let inner = U256::from_be_byte_array(bytes);
+        CtOption::new(Scalar(inner), inner.ct_lt(&MockCurve::ORDER))
     }
 
     fn to_repr(&self) -> FieldBytes {
         self.0.to_be_byte_array()
     }
 
-    fn is_odd(&self) -> bool {
+    fn is_odd(&self) -> Choice {
         unimplemented!();
     }
 
