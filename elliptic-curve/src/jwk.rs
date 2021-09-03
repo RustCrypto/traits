@@ -251,7 +251,7 @@ where
         if let Some(d_base64) = &jwk.d {
             let pk = EncodedPoint::<C>::try_from(jwk)?;
             let mut d_bytes = decode_base64url_fe::<C>(d_base64)?;
-            let result = SecretKey::from_bytes(&d_bytes);
+            let result = SecretKey::from_bytes_be(&d_bytes);
             d_bytes.zeroize();
 
             result.and_then(|secret_key| {
@@ -293,7 +293,7 @@ where
 {
     fn from(sk: &SecretKey<C>) -> JwkEcKey {
         let mut jwk = sk.public_key().to_jwk();
-        let mut d = sk.to_bytes();
+        let mut d = sk.to_bytes_be();
         jwk.d = Some(Base64Url::encode_string(&d));
         d.zeroize();
         jwk

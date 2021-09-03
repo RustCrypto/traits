@@ -44,7 +44,6 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features jwk
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features pem
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features pkcs8
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features zeroize
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features ecdh,hazmat,jwk,pem
   test:
     runs-on: ubuntu-latest

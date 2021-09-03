@@ -115,7 +115,7 @@ where
 
     /// Convert this [`PublicKey`] to a [`ProjectivePoint`] for the given curve
     pub fn to_projective(&self) -> ProjectivePoint<C> {
-        self.point.clone().into()
+        self.point.into()
     }
 
     /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`PublicKey`].
@@ -333,7 +333,7 @@ where
             return Err(pkcs8::der::ErrorKind::UnknownOid { oid: params_oid }.into());
         }
 
-        Self::from_sec1_bytes(&spki.subject_public_key)
+        Self::from_sec1_bytes(spki.subject_public_key)
             .map_err(|_| pkcs8::der::Tag::BitString.value_error().into())
     }
 }

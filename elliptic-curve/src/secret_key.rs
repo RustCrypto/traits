@@ -10,11 +10,14 @@
 #[cfg(feature = "pkcs8")]
 mod pkcs8;
 
-use crate::{Curve, Error, FieldBytes, Result, ScalarBytes};
+use crate::{Curve, Error, FieldBytes, Result, ScalarCore};
 use core::{
     convert::TryFrom,
     fmt::{self, Debug},
 };
+use crypto_bigint::Encoding;
+use generic_array::GenericArray;
+use subtle::{Choice, ConstantTimeEq};
 use zeroize::Zeroize;
 
 #[cfg(feature = "arithmetic")]
@@ -46,8 +49,7 @@ use {crate::pkcs8::FromPrivateKey, core::str::FromStr};
 /// Elliptic curve secret keys.
 ///
 /// This type wraps a secret scalar value, helping to prevent accidental
-/// exposure and securely erasing the value from memory when dropped
-/// (when the `zeroize` feature of this crate is enabled).
+/// exposure and securely erasing the value from memory when dropped.
 ///
 /// # Parsing PKCS#8 Keys
 ///
@@ -69,18 +71,17 @@ use {crate::pkcs8::FromPrivateKey, core::str::FromStr};
 ///
 /// When the `pem` feature of this crate (or a specific RustCrypto elliptic
 /// curve crate) is enabled, a [`FromStr`] impl is also available.
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 #[derive(Clone)]
 pub struct SecretKey<C: Curve> {
-    /// Serialized scalar value
-    inner: ScalarBytes<C>,
+    /// Scalar value
+    inner: ScalarCore<C>,
 }
 
 impl<C> SecretKey<C>
 where
     C: Curve,
 {
-    /// Generate a random [`SecretKey`]
+    /// Generate a random [`SecretKey`].
     #[cfg(feature = "arithmetic")]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn random(rng: impl CryptoRng + RngCore) -> Self
@@ -93,39 +94,46 @@ where
         }
     }
 
-    /// Create a new secret key from a serialized scalar value
-    pub fn new(scalar: ScalarBytes<C>) -> Self {
+    /// Create a new secret key from a scalar value.
+    pub fn new(scalar: ScalarCore<C>) -> Self {
         Self { inner: scalar }
     }
 
-    /// Deserialize raw private scalar as a big endian integer
-    pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self> {
-        let scalar = ScalarBytes::try_from(bytes.as_ref())?;
-
-        if scalar.is_zero().into() {
+    /// Deserialize raw private scalar as a big endian integer.
+    pub fn from_bytes_be(bytes: &[u8]) -> Result<Self> {
+        if bytes.len() != C::UInt::BYTE_SIZE {
             return Err(Error);
         }
 
-        Ok(Self { inner: scalar })
+        let inner: ScalarCore<C> = Option::from(ScalarCore::from_bytes_be(
+            GenericArray::clone_from_slice(bytes),
+        ))
+        .ok_or(Error)?;
+
+        if inner.is_zero().into() {
+            return Err(Error);
+        }
+
+        Ok(Self { inner })
     }
 
-    /// Expose the byte serialization of the value this [`SecretKey`] wraps
-    pub fn to_bytes(&self) -> FieldBytes<C> {
-        self.inner.clone().into()
+    /// Expose the byte serialization of the value this [`SecretKey`] wraps.
+    pub fn to_bytes_be(&self) -> FieldBytes<C> {
+        self.inner.to_bytes_be()
     }
 
-    /// Borrow the inner secret [`ScalarBytes`] value.
+    /// Borrow the inner secret [`ScalarCore`] value.
     ///
     /// # Warning
     ///
     /// This value is key material.
     ///
     /// Please treat it with the care it deserves!
-    pub fn as_scalar_bytes(&self) -> &ScalarBytes<C> {
+    pub fn as_secret_scalar(&self) -> &ScalarCore<C> {
         &self.inner
     }
 
-    /// Get the secret scalar value for this key..
+    /// Get the secret scalar value for this key.
     #[cfg(feature = "arithmetic")]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn to_secret_scalar(&self) -> NonZeroScalar<C>
@@ -202,6 +210,56 @@ where
     }
 }
 
+impl<C> ConstantTimeEq for SecretKey<C>
+where
+    C: Curve,
+{
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.inner.ct_eq(&other.inner)
+    }
+}
+
+impl<C> Debug for SecretKey<C>
+where
+    C: Curve,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // TODO(tarcieri): use `debug_struct` and `finish_non_exhaustive` when stable
+        write!(f, "SecretKey<{:?}>{{ ... }}", C::default())
+    }
+}
+
+impl<C> Drop for SecretKey<C>
+where
+    C: Curve,
+{
+    fn drop(&mut self) {
+        self.inner.zeroize();
+    }
+}
+
+impl<C: Curve> Eq for SecretKey<C> {}
+
+impl<C> PartialEq for SecretKey<C>
+where
+    C: Curve,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.ct_eq(other).into()
+    }
+}
+
+impl<C> TryFrom<&[u8]> for SecretKey<C>
+where
+    C: Curve,
+{
+    type Error = Error;
+
+    fn try_from(slice: &[u8]) -> Result<Self> {
+        Self::from_bytes_be(slice)
+    }
+}
+
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 impl<C> From<NonZeroScalar<C>> for SecretKey<C>
@@ -223,35 +281,5 @@ where
         SecretKey {
             inner: scalar.into(),
         }
-    }
-}
-
-impl<C> TryFrom<&[u8]> for SecretKey<C>
-where
-    C: Curve,
-{
-    type Error = Error;
-
-    fn try_from(slice: &[u8]) -> Result<Self> {
-        Self::from_bytes(slice)
-    }
-}
-
-impl<C> Debug for SecretKey<C>
-where
-    C: Curve,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // TODO(tarcieri): use `debug_struct` and `finish_non_exhaustive` when stable
-        write!(f, "SecretKey<{:?}>{{ ... }}", C::default())
-    }
-}
-
-impl<C> Drop for SecretKey<C>
-where
-    C: Curve,
-{
-    fn drop(&mut self) {
-        self.inner.zeroize();
     }
 }

@@ -34,7 +34,7 @@ pub const PSEUDO_COORDINATE_FIXED_BASE_MUL: [u8; 32] =
 ///
 /// Note: this type is roughly modeled off of NIST P-256, but does not provide
 /// an actual cure arithmetic implementation.
-#[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, PartialOrd, Ord)]
 pub struct MockCurve;
 
 impl Curve for MockCurve {
@@ -84,8 +84,9 @@ pub type PublicKey = crate::PublicKey<MockCurve>;
 /// Secret key.
 pub type SecretKey = crate::SecretKey<MockCurve>;
 
-/// Scalar bytes.
-pub type ScalarBytes = crate::ScalarBytes<MockCurve>;
+/// Scalar core.
+// TODO(tarcieri): make this the scalar type
+pub type ScalarCore = crate::ScalarCore<MockCurve>;
 
 /// Example scalar type
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
