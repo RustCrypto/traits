@@ -5,15 +5,13 @@ use crate::{
     bigint::Encoding as _,
     ops::Invert,
     rand_core::{CryptoRng, RngCore},
-    Curve, Error, FieldBytes, ProjectiveArithmetic, Result, Scalar,
+    Curve, Error, FieldBytes, ProjectiveArithmetic, Result, Scalar, ScalarCore, SecretKey,
 };
 use core::{convert::TryFrom, ops::Deref};
 use ff::{Field, PrimeField};
 use generic_array::GenericArray;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
-
-#[cfg(feature = "zeroize")]
-use {crate::SecretKey, zeroize::Zeroize};
+use zeroize::Zeroize;
 
 /// Non-zero scalar type.
 ///
@@ -115,12 +113,28 @@ where
     C: Curve + ProjectiveArithmetic,
 {
     fn from(scalar: &NonZeroScalar<C>) -> FieldBytes<C> {
-        scalar.scalar.to_repr()
+        scalar.to_repr()
     }
 }
 
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl<C> From<NonZeroScalar<C>> for ScalarCore<C>
+where
+    C: Curve + ProjectiveArithmetic,
+{
+    fn from(scalar: NonZeroScalar<C>) -> ScalarCore<C> {
+        ScalarCore::from_bytes_be(scalar.to_repr()).unwrap()
+    }
+}
+
+impl<C> From<&NonZeroScalar<C>> for ScalarCore<C>
+where
+    C: Curve + ProjectiveArithmetic,
+{
+    fn from(scalar: &NonZeroScalar<C>) -> ScalarCore<C> {
+        ScalarCore::from_bytes_be(scalar.to_repr()).unwrap()
+    }
+}
+
 impl<C> From<SecretKey<C>> for NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
@@ -130,14 +144,12 @@ where
     }
 }
 
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl<C> From<&SecretKey<C>> for NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
 {
     fn from(sk: &SecretKey<C>) -> NonZeroScalar<C> {
-        let scalar = sk.as_scalar_bytes().to_scalar();
+        let scalar = sk.as_secret_scalar().to_scalar();
         debug_assert!(!bool::from(scalar.is_zero()));
         Self { scalar }
     }
@@ -173,7 +185,6 @@ where
     }
 }
 
-#[cfg(feature = "zeroize")]
 impl<C> Zeroize for NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,

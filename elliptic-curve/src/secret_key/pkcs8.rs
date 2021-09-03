@@ -8,14 +8,9 @@ use crate::{
 use core::ops::Add;
 use generic_array::{typenum::U1, ArrayLength};
 use pkcs8::{
-    der::{
-        self,
-        asn1::{BitString, ContextSpecific, OctetString},
-        TagNumber,
-    },
+    der::{self, TagNumber},
     FromPrivateKey,
 };
-use zeroize::Zeroize;
 
 // Imports for the `ToPrivateKey` impl
 // TODO(tarcieri): use weak activation of `pkcs8/alloc` for gating `ToPrivateKey` impl
@@ -27,8 +22,14 @@ use {
         AffinePoint, ProjectiveArithmetic,
     },
     core::convert::TryInto,
-    pkcs8::{der::Encodable, ToPrivateKey},
-    zeroize::Zeroizing,
+    pkcs8::{
+        der::{
+            asn1::{BitString, ContextSpecific, OctetString},
+            Encodable,
+        },
+        ToPrivateKey,
+    },
+    zeroize::{Zeroize, Zeroizing},
 };
 
 // Imports for actual PEM support
@@ -65,7 +66,7 @@ where
                 return Err(der::Tag::Integer.value_error());
             }
 
-            let secret_key = Self::from_bytes(decoder.octet_string()?)
+            let secret_key = Self::from_bytes_be(decoder.octet_string()?.as_ref())
                 .map_err(|_| der::Tag::Sequence.value_error())?;
 
             let public_key = decoder
@@ -102,7 +103,7 @@ where
 {
     fn to_pkcs8_der(&self) -> pkcs8::Result<pkcs8::PrivateKeyDocument> {
         // TODO(tarcieri): wrap `secret_key_bytes` in `Zeroizing`
-        let mut secret_key_bytes = self.to_bytes();
+        let mut secret_key_bytes = self.to_bytes_be();
         let secret_key_field = OctetString::new(&secret_key_bytes)?;
         let public_key_bytes = self.public_key().to_encoded_point(false);
         let public_key_field = ContextSpecific {

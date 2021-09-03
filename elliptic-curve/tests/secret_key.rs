@@ -6,5 +6,5 @@ use elliptic_curve::dev::SecretKey;
 
 #[test]
 fn undersize_secret_key() {
-    assert!(SecretKey::from_bytes(&[]).is_err());
+    assert!(SecretKey::from_bytes_be(&[]).is_err());
 }

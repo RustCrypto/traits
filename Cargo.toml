@@ -12,3 +12,6 @@ members = [
     "signature/async",
     "universal-hash",
 ]
+
+[patch.crates-io]
+crypto-bigint = { git = "https://github.com/RustCrypto/utils.git" }

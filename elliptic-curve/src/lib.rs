@@ -37,6 +37,7 @@ pub mod weierstrass;
 
 mod error;
 mod scalar;
+mod secret_key;
 
 #[cfg(feature = "arithmetic")]
 mod arithmetic;
@@ -54,17 +55,16 @@ pub mod ecdh;
 #[cfg(feature = "jwk")]
 mod jwk;
 
-#[cfg(feature = "zeroize")]
-mod secret_key;
-
-pub use self::{
+pub use crate::{
     error::{Error, Result},
-    scalar::bytes::ScalarBytes,
+    scalar::ScalarCore,
+    secret_key::SecretKey,
 };
 pub use crypto_bigint as bigint;
 pub use generic_array::{self, typenum::consts};
 pub use rand_core;
 pub use subtle;
+pub use zeroize;
 
 #[cfg(feature = "arithmetic")]
 pub use {
@@ -86,14 +86,8 @@ pub use crate::jwk::{JwkEcKey, JwkParameters};
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;
 
-#[cfg(feature = "zeroize")]
-pub use secret_key::SecretKey;
-#[cfg(feature = "zeroize")]
-pub use zeroize;
-
 use core::fmt::Debug;
 use generic_array::GenericArray;
-use subtle::{ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess};
 
 /// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic
 /// curve public key cryptography.
@@ -112,19 +106,18 @@ pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
 /// Other traits in this crate which are bounded by [`Curve`] are intended to
 /// be impl'd by these ZSTs, facilitating types which are generic over elliptic
 /// curves (e.g. [`SecretKey`]).
-pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
+pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sync {
     /// Integer type used to represent field elements of this elliptic curve.
     // TODO(tarcieri): replace this with an e.g. `const Curve::MODULUS: uint`.
     // Requires rust-lang/rust#60551, i.e. `const_evaluatable_checked`
-    type UInt: AsRef<[bigint::Limb]>
+    type UInt: bigint::AddMod<Output = Self::UInt>
         + bigint::ArrayEncoding
-        + bigint::Encoding
-        + Copy
-        + Debug
-        + Default
-        + ConstantTimeEq
-        + ConstantTimeGreater
-        + ConstantTimeLess;
+        + bigint::Integer
+        + bigint::NegMod<Output = Self::UInt>
+        + bigint::Random
+        + bigint::RandomMod
+        + bigint::SubMod<Output = Self::UInt>
+        + zeroize::Zeroize;
 
     /// Order constant.
     ///

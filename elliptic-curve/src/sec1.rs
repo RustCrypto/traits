@@ -5,13 +5,16 @@
 //!
 //! <https://www.secg.org/sec1-v2.pdf>
 
-use crate::{bigint::Encoding as _, weierstrass::Curve, Error, FieldBytes, FieldSize, Result};
+use crate::{
+    bigint::Encoding as _, weierstrass::Curve, Error, FieldBytes, FieldSize, Result, SecretKey,
+};
 use core::{
     fmt::{self, Debug},
     ops::Add,
 };
 use generic_array::{typenum::U1, ArrayLength, GenericArray};
 use subtle::{Choice, ConditionallySelectable};
+use zeroize::Zeroize;
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
@@ -19,14 +22,11 @@ use alloc::boxed::Box;
 #[cfg(feature = "arithmetic")]
 use crate::{weierstrass::DecompressPoint, AffinePoint, ProjectiveArithmetic};
 
-#[cfg(all(feature = "arithmetic", feature = "zeroize"))]
+#[cfg(all(feature = "arithmetic"))]
 use crate::{
     group::{Curve as _, Group},
     Scalar,
 };
-
-#[cfg(feature = "zeroize")]
-use crate::{secret_key::SecretKey, zeroize::Zeroize};
 
 /// Size of a compressed point for the given elliptic curve when encoded
 /// using the SEC1 `Elliptic-Curve-Point-to-Octet-String` algorithm
@@ -119,9 +119,8 @@ where
     /// [`SecretKey`].
     ///
     /// The `compress` flag requests point compression.
-    #[cfg(all(feature = "arithmetic", feature = "zeroize"))]
+    #[cfg(all(feature = "arithmetic"))]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-    #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
     pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Self
     where
         C: Curve + ProjectiveArithmetic,
@@ -336,7 +335,6 @@ where
     }
 }
 
-#[cfg(feature = "zeroize")]
 impl<C> Zeroize for EncodedPoint<C>
 where
     C: Curve,
@@ -344,7 +342,8 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn zeroize(&mut self) {
-        self.bytes.zeroize()
+        self.bytes.zeroize();
+        *self = Self::identity();
     }
 }
 
@@ -526,8 +525,6 @@ where
 ///
 /// Curve implementations which also impl [`ProjectiveArithmetic`] will receive
 /// a blanket default impl of this trait.
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 pub trait ValidatePublicKey
 where
     Self: Curve,
@@ -552,7 +549,7 @@ where
     }
 }
 
-#[cfg(all(feature = "arithmetic", feature = "zeroize"))]
+#[cfg(all(feature = "arithmetic"))]
 impl<C> ValidatePublicKey for C
 where
     C: Curve + ProjectiveArithmetic,
