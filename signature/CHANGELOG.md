@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Re-export `rand_core`. Emit compilation error if unstable functionality
 is enabled by bypassing the preview features. ([#683])
+- Defined the `StatefulSigner` trait
 
 [#683]: https://github.com/RustCrypto/traits/pull/683
 
