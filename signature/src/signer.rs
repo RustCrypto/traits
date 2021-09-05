@@ -26,7 +26,7 @@ pub trait Signer<S: Signature> {
 
 /// Sign the provided message bytestring using `&mut Self` (e.g., an evolving
 /// cryptographic key), returning a digital signature.
-pub trait StatefulSigner<S: Signature> {
+pub trait SignerMut<S: Signature> {
     /// Sign the given message, update the state, and return a digital signature
     fn sign(&mut self, msg: &[u8]) -> S {
         self.try_sign(msg).expect("signature operation failed")
