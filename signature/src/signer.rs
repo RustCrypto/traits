@@ -24,6 +24,33 @@ pub trait Signer<S: Signature> {
     fn try_sign(&self, msg: &[u8]) -> Result<S, Error>;
 }
 
+/// Sign the provided message bytestring using `&mut Self` (e.g., an evolving
+/// cryptographic key), returning a digital signature.
+pub trait SignerMut<S: Signature> {
+    /// Sign the given message, update the state, and return a digital signature
+    fn sign(&mut self, msg: &[u8]) -> S {
+        self.try_sign(msg).expect("signature operation failed")
+    }
+
+    /// Attempt to sign the given message, updating the state, and returning a
+    /// digital signature on success, or an error if something went wrong.
+    ///
+    /// Signing can fail, e.g., if the number of time periods allowed by the
+    /// current key is exceeded.
+    fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error>;
+}
+
+// Blanket impl of SignerMut for all Signer types
+impl<T, S> SignerMut<S> for T
+where
+    T: Signer<S>,
+    S: Signature,
+{
+    fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error> {
+        T::try_sign(&self, msg)
+    }
+}
+
 /// Sign the given prehashed message [`Digest`] using `Self`.
 ///
 /// ## Notes
