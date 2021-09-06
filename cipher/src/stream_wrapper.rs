@@ -3,7 +3,7 @@ use crate::{
     StreamCipher, StreamCipherCore, StreamCipherSeek, StreamCipherSeekCore,
 };
 use block_buffer::{inout::InOutBuf, BlockBuffer};
-use crypto_common::{BlockUser, InnerIvInit, InnerUser, Iv, IvUser};
+use crypto_common::{BlockUser, InnerUser, InnerInit};
 use generic_array::typenum::Unsigned;
 
 /// Wrapper around [`StreamCipherCore`] implementations.
@@ -97,19 +97,15 @@ impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
     }
 }
 
-impl<T: IvUser + BlockUser> IvUser for StreamCipherCoreWrapper<T> {
-    type IvSize = T::IvSize;
+impl<T: BlockUser> InnerUser for StreamCipherCoreWrapper<T> {
+    type Inner = T;
 }
 
-impl<T: InnerUser + BlockUser> InnerUser for StreamCipherCoreWrapper<T> {
-    type Inner = T::Inner;
-}
-
-impl<T: InnerIvInit + BlockUser> InnerIvInit for StreamCipherCoreWrapper<T> {
+impl<T: BlockUser> InnerInit for StreamCipherCoreWrapper<T> {
     #[inline]
-    fn inner_iv_init(cipher: Self::Inner, iv: &Iv<Self>) -> Self {
+    fn inner_init(core: T) -> Self {
         Self {
-            core: T::inner_iv_init(cipher, iv),
+            core,
             buffer: Default::default(),
         }
     }
