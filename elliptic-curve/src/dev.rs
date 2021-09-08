@@ -197,6 +197,12 @@ impl TryFrom<U256> for Scalar {
     }
 }
 
+impl From<Scalar> for U256 {
+    fn from(scalar: Scalar) -> U256 {
+        scalar.0
+    }
+}
+
 impl ConditionallySelectable for Scalar {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         Scalar(U256::conditional_select(&a.0, &b.0, choice))
@@ -306,6 +312,12 @@ impl Neg for Scalar {
 impl From<u64> for Scalar {
     fn from(_: u64) -> Scalar {
         unimplemented!();
+    }
+}
+
+impl From<ScalarCore> for Scalar {
+    fn from(scalar: ScalarCore) -> Scalar {
+        Scalar(*scalar.as_uint())
     }
 }
 
