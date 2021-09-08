@@ -23,7 +23,7 @@ use zeroize::Zeroize;
 #[cfg(feature = "arithmetic")]
 use crate::{
     rand_core::{CryptoRng, RngCore},
-    weierstrass, NonZeroScalar, ProjectiveArithmetic, PublicKey, Scalar,
+    NonZeroScalar, ProjectiveArithmetic, PublicKey, Scalar,
 };
 
 #[cfg(feature = "jwk")]
@@ -38,7 +38,7 @@ use crate::{
 use {
     crate::{
         sec1::{FromEncodedPoint, ToEncodedPoint},
-        AffinePoint,
+        AffinePoint, PrimeCurve,
     },
     alloc::string::{String, ToString},
 };
@@ -149,7 +149,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn public_key(&self) -> PublicKey<C>
     where
-        C: weierstrass::Curve + ProjectiveArithmetic,
+        C: Curve + ProjectiveArithmetic,
         Scalar<C>: Zeroize,
     {
         PublicKey::from_secret_scalar(&self.to_secret_scalar())
@@ -185,7 +185,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk(&self) -> JwkEcKey
     where
-        C: JwkParameters + ProjectiveArithmetic,
+        C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         Scalar<C>: Zeroize,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -200,7 +200,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk_string(&self) -> String
     where
-        C: JwkParameters + ProjectiveArithmetic,
+        C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         Scalar<C>: Zeroize,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,

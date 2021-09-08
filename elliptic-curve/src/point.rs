@@ -1,10 +1,7 @@
-//! Elliptic curves in short Weierstrass form.
+//! Traits for elliptic curve points.
 
-use crate::FieldBytes;
+use crate::{Curve, FieldBytes};
 use subtle::{Choice, CtOption};
-
-/// Marker trait for elliptic curves in short Weierstrass form.
-pub trait Curve: super::Curve {}
 
 /// Point compression settings.
 pub trait PointCompression {
@@ -12,7 +9,7 @@ pub trait PointCompression {
     const COMPRESS_POINTS: bool;
 }
 
-/// Point compaction settings
+/// Point compaction settings.
 pub trait PointCompaction {
     /// Should point compaction be applied by default?
     const COMPACT_POINTS: bool;
@@ -25,7 +22,7 @@ pub trait DecompressPoint<C: Curve>: Sized {
     fn decompress(x: &FieldBytes<C>, y_is_odd: Choice) -> CtOption<Self>;
 }
 
-/// Attempt to decompact an elliptic curve point from an x-coordinate
+/// Attempt to decompact an elliptic curve point from an x-coordinate.
 pub trait DecompactPoint<C: Curve>: Sized {
     /// Attempt to decompact an elliptic curve point
     fn decompact(x: &FieldBytes<C>) -> CtOption<Self>;

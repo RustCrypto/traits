@@ -2,11 +2,12 @@
 
 use crate::{
     consts::U1,
+    point::PointCompression,
     sec1::{
         EncodedPoint, FromEncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize,
     },
-    weierstrass::{Curve, PointCompression},
-    AffinePoint, Error, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, Result,
+    AffinePoint, Curve, Error, NonZeroScalar, PrimeCurve, ProjectiveArithmetic, ProjectivePoint,
+    Result,
 };
 use core::{
     cmp::Ordering,
@@ -98,6 +99,7 @@ where
     pub fn from_sec1_bytes(bytes: &[u8]) -> Result<Self>
     where
         Self: TryFrom<EncodedPoint<C>, Error = Error>,
+        C: PrimeCurve,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -123,7 +125,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
     where
-        C: JwkParameters,
+        C: PrimeCurve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
@@ -136,7 +138,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn from_jwk_str(jwk: &str) -> Result<Self>
     where
-        C: JwkParameters,
+        C: PrimeCurve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
@@ -149,7 +151,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk(&self) -> JwkEcKey
     where
-        C: JwkParameters,
+        C: PrimeCurve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
@@ -162,7 +164,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk_string(&self) -> String
     where
-        C: JwkParameters,
+        C: PrimeCurve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
@@ -184,7 +186,7 @@ impl<C> Copy for PublicKey<C> where C: Curve + ProjectiveArithmetic {}
 
 impl<C> TryFrom<EncodedPoint<C>> for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: PrimeCurve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -198,7 +200,7 @@ where
 
 impl<C> TryFrom<&EncodedPoint<C>> for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: PrimeCurve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -212,7 +214,7 @@ where
 
 impl<C> From<PublicKey<C>> for EncodedPoint<C>
 where
-    C: Curve + ProjectiveArithmetic + PointCompression,
+    C: PrimeCurve + ProjectiveArithmetic + PointCompression,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -224,7 +226,7 @@ where
 
 impl<C> From<&PublicKey<C>> for EncodedPoint<C>
 where
-    C: Curve + ProjectiveArithmetic + PointCompression,
+    C: PrimeCurve + ProjectiveArithmetic + PointCompression,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -236,7 +238,7 @@ where
 
 impl<C> FromEncodedPoint<C> for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: PrimeCurve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -250,7 +252,7 @@ where
 
 impl<C> ToEncodedPoint<C> for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: PrimeCurve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -264,7 +266,7 @@ where
 
 impl<C> Eq for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: PrimeCurve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -273,7 +275,7 @@ where
 
 impl<C> PartialEq for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: PrimeCurve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -285,7 +287,7 @@ where
 
 impl<C> PartialOrd for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: PrimeCurve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -297,7 +299,7 @@ where
 
 impl<C> Ord for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: PrimeCurve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -315,7 +317,7 @@ where
 impl<C> FromPublicKey for PublicKey<C>
 where
     Self: TryFrom<EncodedPoint<C>, Error = Error>,
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: PrimeCurve + AlgorithmParameters + ProjectiveArithmetic,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -342,7 +344,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> ToPublicKey for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: PrimeCurve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -363,7 +365,7 @@ where
 impl<C> FromStr for PublicKey<C>
 where
     Self: TryFrom<EncodedPoint<C>, Error = Error>,
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: PrimeCurve + AlgorithmParameters + ProjectiveArithmetic,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -378,7 +380,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> ToString for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: PrimeCurve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,

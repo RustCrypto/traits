@@ -3,7 +3,7 @@
 use super::SecretKey;
 use crate::{
     sec1::{self, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
-    weierstrass, AlgorithmParameters, ALGORITHM_OID,
+    AlgorithmParameters, Curve, ALGORITHM_OID,
 };
 use core::ops::Add;
 use generic_array::{typenum::U1, ArrayLength};
@@ -35,7 +35,7 @@ use {
 // Imports for actual PEM support
 #[cfg(feature = "pem")]
 use {
-    crate::{error::Error, Result},
+    crate::{error::Error, PrimeCurve, Result},
     core::str::FromStr,
 };
 
@@ -48,7 +48,7 @@ const PUBLIC_KEY_TAG: TagNumber = TagNumber::new(1);
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 impl<C> FromPrivateKey for SecretKey<C>
 where
-    C: weierstrass::Curve + AlgorithmParameters + ValidatePublicKey,
+    C: Curve + AlgorithmParameters + ValidatePublicKey,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -95,7 +95,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> ToPrivateKey for SecretKey<C>
 where
-    C: weierstrass::Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: PrimeCurve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -131,7 +131,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for SecretKey<C>
 where
-    C: weierstrass::Curve + AlgorithmParameters + ValidatePublicKey,
+    C: PrimeCurve + AlgorithmParameters + ValidatePublicKey,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
