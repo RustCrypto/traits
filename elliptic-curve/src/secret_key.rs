@@ -41,6 +41,7 @@ use {
         AffinePoint, PrimeCurve,
     },
     alloc::string::{String, ToString},
+    zeroize::Zeroizing,
 };
 
 #[cfg(all(docsrs, feature = "pkcs8"))]
@@ -184,7 +185,6 @@ where
     where
         C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -195,15 +195,14 @@ where
     #[cfg(all(feature = "arithmetic", feature = "jwk"))]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
-    pub fn to_jwk_string(&self) -> String
+    pub fn to_jwk_string(&self) -> Zeroizing<String>
     where
         C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
-        self.to_jwk().to_string()
+        Zeroizing::new(self.to_jwk().to_string())
     }
 }
 
