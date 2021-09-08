@@ -70,12 +70,12 @@ where
     }
 
     /// Decode [`ScalarCore`] from big endian bytes.
-    pub fn from_bytes_be(bytes: FieldBytes<C>) -> CtOption<Self> {
+    pub fn from_be_bytes(bytes: FieldBytes<C>) -> CtOption<Self> {
         Self::new(C::UInt::from_be_byte_array(bytes))
     }
 
     /// Decode [`ScalarCore`] from little endian bytes.
-    pub fn from_bytes_le(bytes: FieldBytes<C>) -> CtOption<Self> {
+    pub fn from_le_bytes(bytes: FieldBytes<C>) -> CtOption<Self> {
         Self::new(C::UInt::from_le_byte_array(bytes))
     }
 
@@ -105,7 +105,7 @@ where
     }
 
     /// Encode [`ScalarCore`] as big endian bytes.
-    pub fn to_bytes_be(self) -> FieldBytes<C> {
+    pub fn to_be_bytes(self) -> FieldBytes<C> {
         self.inner.to_be_byte_array()
     }
 
@@ -123,7 +123,7 @@ where
     /// Convert [`ScalarCore`] into a given curve's scalar type
     // TODO(tarcieri): replace curve-specific scalars with `ScalarCore`
     fn to_scalar(self) -> Scalar<C> {
-        Scalar::<C>::from_repr(self.to_bytes_be()).unwrap()
+        Scalar::<C>::from_repr(self.to_be_bytes()).unwrap()
     }
 }
 

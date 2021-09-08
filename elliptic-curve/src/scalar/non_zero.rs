@@ -122,7 +122,7 @@ where
     C: Curve + ProjectiveArithmetic,
 {
     fn from(scalar: NonZeroScalar<C>) -> ScalarCore<C> {
-        ScalarCore::from_bytes_be(scalar.to_repr()).unwrap()
+        ScalarCore::from_be_bytes(scalar.to_repr()).unwrap()
     }
 }
 
@@ -131,7 +131,7 @@ where
     C: Curve + ProjectiveArithmetic,
 {
     fn from(scalar: &NonZeroScalar<C>) -> ScalarCore<C> {
-        ScalarCore::from_bytes_be(scalar.to_repr()).unwrap()
+        ScalarCore::from_be_bytes(scalar.to_repr()).unwrap()
     }
 }
 

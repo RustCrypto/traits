@@ -99,12 +99,12 @@ where
     }
 
     /// Deserialize raw private scalar as a big endian integer.
-    pub fn from_bytes_be(bytes: &[u8]) -> Result<Self> {
+    pub fn from_be_bytes(bytes: &[u8]) -> Result<Self> {
         if bytes.len() != C::UInt::BYTE_SIZE {
             return Err(Error);
         }
 
-        let inner: ScalarCore<C> = Option::from(ScalarCore::from_bytes_be(
+        let inner: ScalarCore<C> = Option::from(ScalarCore::from_be_bytes(
             GenericArray::clone_from_slice(bytes),
         ))
         .ok_or(Error)?;
@@ -117,8 +117,8 @@ where
     }
 
     /// Expose the byte serialization of the value this [`SecretKey`] wraps.
-    pub fn to_bytes_be(&self) -> FieldBytes<C> {
-        self.inner.to_bytes_be()
+    pub fn to_be_bytes(&self) -> FieldBytes<C> {
+        self.inner.to_be_bytes()
     }
 
     /// Borrow the inner secret [`ScalarCore`] value.
@@ -253,7 +253,7 @@ where
     type Error = Error;
 
     fn try_from(slice: &[u8]) -> Result<Self> {
-        Self::from_bytes_be(slice)
+        Self::from_be_bytes(slice)
     }
 }
 
