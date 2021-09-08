@@ -3,7 +3,7 @@ use crate::{
     StreamCipher, StreamCipherCore, StreamCipherSeek, StreamCipherSeekCore,
 };
 use block_buffer::{inout::InOutBuf, BlockBuffer};
-use crypto_common::{BlockUser, KeyIvInit, Key, Iv, KeyUser, IvUser};
+use crypto_common::{BlockUser, KeyIvInit, Key, Iv, KeyUser, IvUser, KeyInit};
 use generic_array::typenum::Unsigned;
 
 /// Wrapper around [`StreamCipherCore`] implementations.
@@ -101,11 +101,11 @@ impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
 // would be handled by blanket impls, but unfortunately it will not work
 // properly without mutually exclusive traits
 
-impl<T: KeyIvInit + BlockUser> KeyUser for StreamCipherCoreWrapper<T> {
+impl<T: KeyUser + BlockUser> KeyUser for StreamCipherCoreWrapper<T> {
     type KeySize = T::KeySize;
 }
 
-impl<T: KeyIvInit + BlockUser> IvUser for StreamCipherCoreWrapper<T> {
+impl<T: IvUser + BlockUser> IvUser for StreamCipherCoreWrapper<T> {
     type IvSize = T::IvSize;
 }
 
@@ -114,6 +114,16 @@ impl<T: KeyIvInit + BlockUser> KeyIvInit for StreamCipherCoreWrapper<T> {
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self {
         Self {
             core: T::new(key, iv),
+            buffer: Default::default(),
+        }
+    }
+}
+
+impl<T: KeyInit + BlockUser> KeyInit for StreamCipherCoreWrapper<T> {
+    #[inline]
+    fn new(key: &Key<Self>) -> Self {
+        Self {
+            core: T::new(key),
             buffer: Default::default(),
         }
     }
