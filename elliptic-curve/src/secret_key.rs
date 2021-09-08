@@ -124,19 +124,25 @@ where
 
     /// Borrow the inner secret [`ScalarCore`] value.
     ///
-    /// # Warning
+    /// # ⚠️ Warning
     ///
     /// This value is key material.
     ///
     /// Please treat it with the care it deserves!
-    pub fn as_secret_scalar(&self) -> &ScalarCore<C> {
+    pub fn as_scalar_core(&self) -> &ScalarCore<C> {
         &self.inner
     }
 
-    /// Get the secret scalar value for this key.
+    /// Get the secret [`NonZeroScalar`] value for this key.
+    ///
+    /// # ⚠️ Warning
+    ///
+    /// This value is key material.
+    ///
+    /// Please treat it with the care it deserves!
     #[cfg(feature = "arithmetic")]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-    pub fn to_secret_scalar(&self) -> NonZeroScalar<C>
+    pub fn to_nonzero_scalar(&self) -> NonZeroScalar<C>
     where
         C: Curve + ProjectiveArithmetic,
     {
@@ -150,7 +156,7 @@ where
     where
         C: Curve + ProjectiveArithmetic,
     {
-        PublicKey::from_secret_scalar(&self.to_secret_scalar())
+        PublicKey::from_secret_scalar(&self.to_nonzero_scalar())
     }
 
     /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`SecretKey`].
