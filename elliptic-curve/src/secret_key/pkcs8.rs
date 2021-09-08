@@ -65,7 +65,7 @@ where
                 return Err(der::Tag::Integer.value_error());
             }
 
-            let secret_key = Self::from_bytes_be(decoder.octet_string()?.as_ref())
+            let secret_key = Self::from_be_bytes(decoder.octet_string()?.as_ref())
                 .map_err(|_| der::Tag::Sequence.value_error())?;
 
             let public_key = decoder
@@ -101,7 +101,7 @@ where
 {
     fn to_pkcs8_der(&self) -> pkcs8::Result<pkcs8::PrivateKeyDocument> {
         // TODO(tarcieri): wrap `secret_key_bytes` in `Zeroizing`
-        let mut secret_key_bytes = self.to_bytes_be();
+        let mut secret_key_bytes = self.to_be_bytes();
         let secret_key_field = OctetString::new(&secret_key_bytes)?;
         let public_key_bytes = self.public_key().to_encoded_point(false);
         let public_key_field = ContextSpecific {
