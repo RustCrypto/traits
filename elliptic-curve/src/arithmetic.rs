@@ -23,6 +23,7 @@ pub trait AffineArithmetic: Curve + ScalarArithmetic {
 }
 
 /// Prime order elliptic curve with projective arithmetic implementation.
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub trait PrimeCurveArithmetic:
     PrimeCurve + ProjectiveArithmetic<ProjectivePoint = Self::CurveGroup>
 {

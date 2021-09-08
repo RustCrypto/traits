@@ -121,7 +121,7 @@ where
         C: PrimeCurve + ProjectiveArithmetic,
         AffinePoint<C>: ToEncodedPoint<C>,
     {
-        (C::ProjectivePoint::generator() * secret_key.to_secret_scalar().as_ref())
+        (C::ProjectivePoint::generator() * secret_key.to_nonzero_scalar().as_ref())
             .to_affine()
             .to_encoded_point(compress)
     }
