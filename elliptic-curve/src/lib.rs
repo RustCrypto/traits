@@ -4,7 +4,7 @@
 //!
 //! ## Minimum Supported Rust Version
 //!
-//! Rust **1.51** or higher.
+//! Rust **1.52** or higher.
 //!
 //! Minimum supported Rust version can be changed in the future, but it will be
 //! done with a minor version bump.
@@ -70,7 +70,9 @@ pub use zeroize;
 #[cfg(feature = "arithmetic")]
 pub use {
     crate::{
-        arithmetic::{AffineArithmetic, ProjectiveArithmetic, ScalarArithmetic},
+        arithmetic::{
+            AffineArithmetic, PrimeCurveArithmetic, ProjectiveArithmetic, ScalarArithmetic,
+        },
         public_key::PublicKey,
         scalar::{non_zero::NonZeroScalar, Scalar},
     },
