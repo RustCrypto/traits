@@ -8,8 +8,7 @@ use crate::{
         Coordinates, EncodedPoint, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey,
     },
     secret_key::SecretKey,
-    weierstrass::Curve,
-    Error, FieldBytes,
+    Curve, Error, FieldBytes, PrimeCurve,
 };
 use alloc::{
     borrow::ToOwned,
@@ -119,7 +118,7 @@ impl JwkEcKey {
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn to_public_key<C>(&self) -> Result<PublicKey<C>, Error>
     where
-        C: Curve + JwkParameters + ProjectiveArithmetic,
+        C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
@@ -132,7 +131,7 @@ impl JwkEcKey {
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn to_secret_key<C>(&self) -> Result<SecretKey<C>, Error>
     where
-        C: Curve + JwkParameters + ValidatePublicKey,
+        C: PrimeCurve + JwkParameters + ValidatePublicKey,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -157,7 +156,7 @@ impl ToString for JwkEcKey {
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<JwkEcKey> for EncodedPoint<C>
 where
-    C: Curve + JwkParameters,
+    C: PrimeCurve + JwkParameters,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -171,7 +170,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<&JwkEcKey> for EncodedPoint<C>
 where
-    C: Curve + JwkParameters,
+    C: PrimeCurve + JwkParameters,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -191,7 +190,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<EncodedPoint<C>> for JwkEcKey
 where
-    C: Curve + JwkParameters,
+    C: PrimeCurve + JwkParameters,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -205,7 +204,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<&EncodedPoint<C>> for JwkEcKey
 where
-    C: Curve + JwkParameters,
+    C: PrimeCurve + JwkParameters,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -227,7 +226,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<JwkEcKey> for SecretKey<C>
 where
-    C: Curve + JwkParameters + ValidatePublicKey,
+    C: PrimeCurve + JwkParameters + ValidatePublicKey,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -241,7 +240,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<&JwkEcKey> for SecretKey<C>
 where
-    C: Curve + JwkParameters + ValidatePublicKey,
+    C: PrimeCurve + JwkParameters + ValidatePublicKey,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -269,7 +268,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> From<SecretKey<C>> for JwkEcKey
 where
-    C: Curve + JwkParameters + ProjectiveArithmetic,
+    C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -285,7 +284,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> From<&SecretKey<C>> for JwkEcKey
 where
-    C: Curve + JwkParameters + ProjectiveArithmetic,
+    C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
@@ -305,7 +304,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<JwkEcKey> for PublicKey<C>
 where
-    C: Curve + JwkParameters + ProjectiveArithmetic,
+    C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -322,7 +321,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<&JwkEcKey> for PublicKey<C>
 where
-    C: Curve + JwkParameters + ProjectiveArithmetic,
+    C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -339,7 +338,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> From<PublicKey<C>> for JwkEcKey
 where
-    C: Curve + JwkParameters + ProjectiveArithmetic,
+    C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -354,7 +353,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> From<&PublicKey<C>> for JwkEcKey
 where
-    C: Curve + JwkParameters + ProjectiveArithmetic,
+    C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
@@ -631,7 +630,7 @@ impl Serialize for JwkEcKey {
 }
 
 /// Decode a Base64url-encoded field element
-fn decode_base64url_fe<C: Curve>(s: &str) -> Result<FieldBytes<C>, Error> {
+fn decode_base64url_fe<C: PrimeCurve>(s: &str) -> Result<FieldBytes<C>, Error> {
     let mut result = FieldBytes::<C>::default();
     Base64Url::decode(s, &mut result).map_err(|_| Error)?;
     Ok(result)

@@ -79,7 +79,7 @@ where
         Self::new(C::UInt::from_le_byte_array(bytes))
     }
 
-    /// Borrow the inner [`UInt`].
+    /// Borrow the inner `C::UInt`.
     pub fn as_uint(&self) -> &C::UInt {
         &self.inner
     }

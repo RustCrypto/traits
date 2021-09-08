@@ -33,9 +33,9 @@ pub use rand_core;
 
 pub mod ops;
 pub mod sec1;
-pub mod weierstrass;
 
 mod error;
+mod point;
 mod scalar;
 mod secret_key;
 
@@ -57,6 +57,7 @@ mod jwk;
 
 pub use crate::{
     error::{Error, Result},
+    point::{DecompactPoint, DecompressPoint, PointCompaction, PointCompression},
     scalar::ScalarCore,
     secret_key::SecretKey,
 };
@@ -125,6 +126,9 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
     /// target CPU's word size), specified from least to most significant.
     const ORDER: Self::UInt;
 }
+
+/// Marker trait for elliptic curves with prime order.
+pub trait PrimeCurve: Curve {}
 
 /// Size of field elements of this elliptic curve.
 pub type FieldSize<C> = <<C as Curve>::UInt as bigint::ArrayEncoding>::ByteSize;

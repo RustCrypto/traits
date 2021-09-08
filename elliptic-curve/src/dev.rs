@@ -7,9 +7,9 @@ use crate::{
     rand_core::RngCore,
     sec1::{FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeLess, CtOption},
-    weierstrass,
     zeroize::Zeroize,
-    AffineArithmetic, AlgorithmParameters, Curve, ProjectiveArithmetic, ScalarArithmetic,
+    AffineArithmetic, AlgorithmParameters, Curve, PrimeCurve, ProjectiveArithmetic,
+    ScalarArithmetic,
 };
 use core::{
     convert::TryFrom,
@@ -44,7 +44,7 @@ impl Curve for MockCurve {
         U256::from_be_hex("ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
 }
 
-impl weierstrass::Curve for MockCurve {}
+impl PrimeCurve for MockCurve {}
 
 impl AffineArithmetic for MockCurve {
     type AffinePoint = AffinePoint;

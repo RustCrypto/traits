@@ -27,8 +27,8 @@
 //! [SIGMA]: https://webee.technion.ac.il/~hugo/sigma-pdf.pdf
 
 use crate::{
-    weierstrass::Curve, AffinePoint, FieldBytes, NonZeroScalar, ProjectiveArithmetic,
-    ProjectivePoint, PublicKey, Scalar,
+    AffinePoint, Curve, FieldBytes, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint,
+    PublicKey, Scalar,
 };
 use core::borrow::Borrow;
 use group::Curve as _;

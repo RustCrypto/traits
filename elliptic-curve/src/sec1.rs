@@ -5,9 +5,7 @@
 //!
 //! <https://www.secg.org/sec1-v2.pdf>
 
-use crate::{
-    bigint::Encoding as _, weierstrass::Curve, Error, FieldBytes, FieldSize, Result, SecretKey,
-};
+use crate::{bigint::Encoding as _, Error, FieldBytes, FieldSize, PrimeCurve, Result, SecretKey};
 use core::{
     fmt::{self, Debug},
     ops::Add,
@@ -20,7 +18,7 @@ use zeroize::Zeroize;
 use alloc::boxed::Box;
 
 #[cfg(feature = "arithmetic")]
-use crate::{weierstrass::DecompressPoint, AffinePoint, ProjectiveArithmetic};
+use crate::{point::DecompressPoint, AffinePoint, ProjectiveArithmetic};
 
 #[cfg(all(feature = "arithmetic"))]
 use crate::{
@@ -49,7 +47,7 @@ pub type UntaggedPointSize<C> = <FieldSize<C> as Add>::Output;
 #[derive(Clone, Default, Eq, PartialEq, PartialOrd, Ord)]
 pub struct EncodedPoint<C>
 where
-    C: Curve,
+    C: PrimeCurve,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -59,7 +57,7 @@ where
 #[allow(clippy::len_without_is_empty)]
 impl<C> EncodedPoint<C>
 where
-    C: Curve,
+    C: PrimeCurve,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -123,7 +121,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn from_secret_key(secret_key: &SecretKey<C>, compress: bool) -> Self
     where
-        C: Curve + ProjectiveArithmetic,
+        C: PrimeCurve + ProjectiveArithmetic,
         AffinePoint<C>: ToEncodedPoint<C>,
         Scalar<C>: Zeroize,
     {
@@ -161,7 +159,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn to_untagged_bytes(&self) -> Option<GenericArray<u8, UntaggedPointSize<C>>>
     where
-        C: Curve + ProjectiveArithmetic,
+        C: PrimeCurve + ProjectiveArithmetic,
         AffinePoint<C>: DecompressPoint<C> + ToEncodedPoint<C>,
     {
         self.decompress().map(|point| {
@@ -201,7 +199,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn decompress(&self) -> Option<Self>
     where
-        C: Curve + ProjectiveArithmetic,
+        C: PrimeCurve + ProjectiveArithmetic,
         AffinePoint<C>: DecompressPoint<C> + ToEncodedPoint<C>,
     {
         match self.coordinates() {
@@ -287,7 +285,7 @@ where
 
 impl<C> AsRef<[u8]> for EncodedPoint<C>
 where
-    C: Curve,
+    C: PrimeCurve,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -299,7 +297,7 @@ where
 
 impl<C> ConditionallySelectable for EncodedPoint<C>
 where
-    C: Curve,
+    C: PrimeCurve,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
     <UncompressedPointSize<C> as ArrayLength<u8>>::ArrayType: Copy,
@@ -317,7 +315,7 @@ where
 
 impl<C> Copy for EncodedPoint<C>
 where
-    C: Curve,
+    C: PrimeCurve,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
     <UncompressedPointSize<C> as ArrayLength<u8>>::ArrayType: Copy,
@@ -326,7 +324,7 @@ where
 
 impl<C> Debug for EncodedPoint<C>
 where
-    C: Curve,
+    C: PrimeCurve,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -337,7 +335,7 @@ where
 
 impl<C> Zeroize for EncodedPoint<C>
 where
-    C: Curve,
+    C: PrimeCurve,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -350,7 +348,7 @@ where
 /// Enum representing the coordinates of either compressed or uncompressed
 /// SEC1-encoded elliptic curve points.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum Coordinates<'a, C: Curve> {
+pub enum Coordinates<'a, C: PrimeCurve> {
     /// Identity point (a.k.a. point at infinity)
     Identity,
 
@@ -379,7 +377,7 @@ pub enum Coordinates<'a, C: Curve> {
     },
 }
 
-impl<'a, C: Curve> Coordinates<'a, C> {
+impl<'a, C: PrimeCurve> Coordinates<'a, C> {
     /// Get the tag octet needed to encode this set of [`Coordinates`]
     pub fn tag(&self) -> Tag {
         match self {
@@ -480,7 +478,7 @@ impl From<Tag> for u8 {
 pub trait FromEncodedPoint<C>
 where
     Self: Sized,
-    C: Curve,
+    C: PrimeCurve,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -497,7 +495,7 @@ where
 /// This is intended for use with the `AffinePoint` type for a given elliptic curve.
 pub trait ToEncodedPoint<C>
 where
-    C: Curve,
+    C: PrimeCurve,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -511,7 +509,7 @@ where
 /// This is intended for use with the `AffinePoint` type for a given elliptic curve.
 pub trait ToCompactEncodedPoint<C>
 where
-    C: Curve,
+    C: PrimeCurve,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -527,7 +525,7 @@ where
 /// a blanket default impl of this trait.
 pub trait ValidatePublicKey
 where
-    Self: Curve,
+    Self: PrimeCurve,
     UntaggedPointSize<Self>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<Self>: ArrayLength<u8>,
 {
@@ -552,7 +550,7 @@ where
 #[cfg(all(feature = "arithmetic"))]
 impl<C> ValidatePublicKey for C
 where
-    C: Curve + ProjectiveArithmetic,
+    C: PrimeCurve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
