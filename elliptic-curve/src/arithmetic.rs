@@ -1,6 +1,6 @@
 //! Elliptic curve arithmetic traits.
 
-use crate::{Curve, FieldBytes};
+use crate::{Curve, FieldBytes, PrimeCurve};
 use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq};
 use zeroize::DefaultIsZeroes;
@@ -20,6 +20,14 @@ pub trait AffineArithmetic: Curve + ScalarArithmetic {
         + Sized
         + Send
         + Sync;
+}
+
+/// Prime order elliptic curve with projective arithmetic implementation.
+pub trait PrimeCurveArithmetic:
+    PrimeCurve + ProjectiveArithmetic<ProjectivePoint = Self::CurveGroup>
+{
+    /// Prime order elliptic curve group.
+    type CurveGroup: group::prime::PrimeCurve<Affine = <Self as AffineArithmetic>::AffinePoint>;
 }
 
 /// Elliptic curve with projective arithmetic implementation.
