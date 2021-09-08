@@ -23,7 +23,7 @@ use zeroize::Zeroize;
 #[cfg(feature = "arithmetic")]
 use crate::{
     rand_core::{CryptoRng, RngCore},
-    NonZeroScalar, ProjectiveArithmetic, PublicKey, Scalar,
+    NonZeroScalar, ProjectiveArithmetic, PublicKey,
 };
 
 #[cfg(feature = "jwk")]
@@ -87,7 +87,6 @@ where
     pub fn random(rng: impl CryptoRng + RngCore) -> Self
     where
         C: ProjectiveArithmetic,
-        Scalar<C>: Zeroize,
     {
         Self {
             inner: NonZeroScalar::<C>::random(rng).into(),
@@ -139,7 +138,6 @@ where
     pub fn to_secret_scalar(&self) -> NonZeroScalar<C>
     where
         C: Curve + ProjectiveArithmetic,
-        Scalar<C>: Zeroize,
     {
         self.into()
     }
@@ -150,7 +148,6 @@ where
     pub fn public_key(&self) -> PublicKey<C>
     where
         C: Curve + ProjectiveArithmetic,
-        Scalar<C>: Zeroize,
     {
         PublicKey::from_secret_scalar(&self.to_secret_scalar())
     }
@@ -187,7 +184,7 @@ where
     where
         C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        Scalar<C>: Zeroize,
+
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
@@ -202,7 +199,7 @@ where
     where
         C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        Scalar<C>: Zeroize,
+
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {

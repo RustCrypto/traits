@@ -7,7 +7,7 @@ use crate::{
     rand_core::RngCore,
     sec1::{FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeLess, CtOption},
-    zeroize::Zeroize,
+    zeroize::DefaultIsZeroes,
     AffineArithmetic, AlgorithmParameters, Curve, PrimeCurve, ProjectiveArithmetic,
     ScalarArithmetic,
 };
@@ -209,6 +209,8 @@ impl ConstantTimeEq for Scalar {
     }
 }
 
+impl DefaultIsZeroes for Scalar {}
+
 impl Add<Scalar> for Scalar {
     type Output = Scalar;
 
@@ -319,12 +321,6 @@ impl From<&Scalar> for FieldBytes {
     }
 }
 
-impl Zeroize for Scalar {
-    fn zeroize(&mut self) {
-        self.0.as_mut().zeroize();
-    }
-}
-
 /// Example affine point type
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum AffinePoint {
@@ -358,6 +354,8 @@ impl Default for AffinePoint {
         Self::Identity
     }
 }
+
+impl DefaultIsZeroes for AffinePoint {}
 
 impl FromEncodedPoint<MockCurve> for AffinePoint {
     fn from_encoded_point(point: &EncodedPoint) -> Option<Self> {
@@ -430,6 +428,8 @@ impl Default for ProjectivePoint {
         Self::Identity
     }
 }
+
+impl DefaultIsZeroes for ProjectivePoint {}
 
 impl From<AffinePoint> for ProjectivePoint {
     fn from(point: AffinePoint) -> ProjectivePoint {

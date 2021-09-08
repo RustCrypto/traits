@@ -31,7 +31,7 @@ use zeroize::Zeroize;
 use crate::{
     public_key::PublicKey,
     sec1::{FromEncodedPoint, ToEncodedPoint},
-    AffinePoint, ProjectiveArithmetic, Scalar,
+    AffinePoint, ProjectiveArithmetic,
 };
 
 /// Key Type (`kty`) for elliptic curve keys.
@@ -270,7 +270,6 @@ impl<C> From<SecretKey<C>> for JwkEcKey
 where
     C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -286,7 +285,6 @@ impl<C> From<&SecretKey<C>> for JwkEcKey
 where
     C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
