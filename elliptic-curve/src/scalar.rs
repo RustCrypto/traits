@@ -79,9 +79,29 @@ where
         Self::new(C::UInt::from_le_byte_array(bytes))
     }
 
+    /// Borrow the inner [`UInt`].
+    pub fn as_uint(&self) -> &C::UInt {
+        &self.inner
+    }
+
+    /// Borrow the inner limbs as a slice.
+    pub fn as_limbs(&self) -> &[Limb] {
+        self.inner.as_ref()
+    }
+
     /// Is this [`ScalarCore`] value equal to zero?
     pub fn is_zero(&self) -> Choice {
         self.inner.is_zero()
+    }
+
+    /// Is this [`ScalarCore`] value even?
+    pub fn is_even(&self) -> Choice {
+        self.inner.is_even()
+    }
+
+    /// Is this [`ScalarCore`] value odd?
+    pub fn is_odd(&self) -> Choice {
+        self.inner.is_odd()
     }
 
     /// Encode [`ScalarCore`] as big endian bytes.
@@ -113,7 +133,7 @@ where
     C: Curve,
 {
     fn as_ref(&self) -> &[Limb] {
-        self.inner.as_ref()
+        self.as_limbs()
     }
 }
 
@@ -173,7 +193,16 @@ where
     C: Curve,
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.inner.cmp(&other.inner))
+        Some(self.cmp(other))
+    }
+}
+
+impl<C> Ord for ScalarCore<C>
+where
+    C: Curve,
+{
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.inner.cmp(&other.inner)
     }
 }
 
