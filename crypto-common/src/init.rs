@@ -165,6 +165,28 @@ where
     }
 }
 
+// Unfortunately this blanket impl is impossible without mutually
+// exclusive traits, see: https://github.com/rust-lang/rfcs/issues/1053
+/*
+impl<T> KeyIvInit for T
+where
+    T: InnerInit,
+    T::Inner: KeyIvInit,
+{
+    #[inline]
+    fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self {
+        Self::inner_init(T::Inner::new(key, iv))
+    }
+
+    #[inline]
+    fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidLength> {
+        T::Inner::new_from_slice(key)
+            .map_err(|_| InvalidLength)
+            .map(Self::inner_init)
+    }
+}
+*/
+
 /// The error type returned when key and/or IV used in the [`KeyInit`],
 /// [`KeyIvInit`], and [`InnerIvInit`] slice-based methods had
 /// an invalid length.
