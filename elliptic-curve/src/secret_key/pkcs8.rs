@@ -17,7 +17,6 @@ use pkcs8::{
 #[cfg(all(feature = "arithmetic", feature = "pem"))]
 use {
     crate::{
-        scalar::Scalar,
         sec1::{FromEncodedPoint, ToEncodedPoint},
         AffinePoint, ProjectiveArithmetic,
     },
@@ -97,7 +96,6 @@ impl<C> ToPrivateKey for SecretKey<C>
 where
     C: PrimeCurve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {

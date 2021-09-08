@@ -21,10 +21,7 @@ use alloc::boxed::Box;
 use crate::{point::DecompressPoint, AffinePoint, ProjectiveArithmetic};
 
 #[cfg(all(feature = "arithmetic"))]
-use crate::{
-    group::{Curve as _, Group},
-    Scalar,
-};
+use crate::group::{Curve as _, Group};
 
 /// Size of a compressed point for the given elliptic curve when encoded
 /// using the SEC1 `Elliptic-Curve-Point-to-Octet-String` algorithm
@@ -123,7 +120,6 @@ where
     where
         C: PrimeCurve + ProjectiveArithmetic,
         AffinePoint<C>: ToEncodedPoint<C>,
-        Scalar<C>: Zeroize,
     {
         (C::ProjectivePoint::generator() * secret_key.to_secret_scalar().as_ref())
             .to_affine()
@@ -552,7 +548,6 @@ impl<C> ValidatePublicKey for C
 where
     C: PrimeCurve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    Scalar<C>: Zeroize,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {

@@ -188,7 +188,6 @@ where
 impl<C> Zeroize for NonZeroScalar<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: Zeroize,
 {
     fn zeroize(&mut self) {
         self.scalar.zeroize();

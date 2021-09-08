@@ -3,21 +3,23 @@
 use crate::{Curve, FieldBytes};
 use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq};
+use zeroize::DefaultIsZeroes;
 
 /// Elliptic curve with affine arithmetic implementation.
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub trait AffineArithmetic: Curve + ScalarArithmetic {
     /// Elliptic curve point in affine coordinates.
-    type AffinePoint: Copy
+    type AffinePoint: 'static
+        + Copy
         + Clone
         + ConditionallySelectable
         + ConstantTimeEq
         + Debug
         + Default
+        + DefaultIsZeroes
         + Sized
         + Send
-        + Sync
-        + 'static;
+        + Sync;
 }
 
 /// Elliptic curve with projective arithmetic implementation.
@@ -37,6 +39,7 @@ pub trait ProjectiveArithmetic: Curve + AffineArithmetic {
     type ProjectivePoint: ConditionallySelectable
         + ConstantTimeEq
         + Default
+        + DefaultIsZeroes
         + From<Self::AffinePoint>
         + Into<Self::AffinePoint>
         + group::Curve<AffineRepr = Self::AffinePoint>
@@ -59,5 +62,5 @@ pub trait ScalarArithmetic: Curve {
     /// - [`Default`]
     /// - [`Send`]
     /// - [`Sync`]
-    type Scalar: ff::Field + ff::PrimeField<Repr = FieldBytes<Self>>;
+    type Scalar: DefaultIsZeroes + ff::Field + ff::PrimeField<Repr = FieldBytes<Self>>;
 }
