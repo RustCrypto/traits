@@ -58,7 +58,7 @@ mod jwk;
 pub use crate::{
     error::{Error, Result},
     point::{DecompactPoint, DecompressPoint, PointCompaction, PointCompression},
-    scalar::ScalarCore,
+    scalar::core::ScalarCore,
     secret_key::SecretKey,
 };
 pub use crypto_bigint as bigint;
