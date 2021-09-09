@@ -1,18 +1,19 @@
 //! Generic scalar type with core functionality.
 
 use crate::{
-    bigint::{AddMod, ArrayEncoding, Integer, Limb, NegMod, RandomMod, SubMod},
+    bigint::{AddMod, ArrayEncoding, Encoding, Integer, Limb, NegMod, RandomMod, SubMod},
     rand_core::{CryptoRng, RngCore},
     subtle::{
         Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
         CtOption,
     },
-    Curve, FieldBytes,
+    Curve, Error, FieldBytes, Result,
 };
 use core::{
     cmp::Ordering,
     ops::{Add, AddAssign, Neg, Sub, SubAssign},
 };
+use generic_array::GenericArray;
 use zeroize::DefaultIsZeroes;
 
 #[cfg(feature = "arithmetic")]
@@ -68,9 +69,27 @@ where
         Self::new(C::UInt::from_be_byte_array(bytes))
     }
 
+    /// Decode [`ScalarCore`] from a big endian byte slice.
+    pub fn from_be_slice(slice: &[u8]) -> Result<Self> {
+        if slice.len() == C::UInt::BYTE_SIZE {
+            Option::from(Self::from_be_bytes(GenericArray::clone_from_slice(slice))).ok_or(Error)
+        } else {
+            Err(Error)
+        }
+    }
+
     /// Decode [`ScalarCore`] from little endian bytes.
     pub fn from_le_bytes(bytes: FieldBytes<C>) -> CtOption<Self> {
         Self::new(C::UInt::from_le_byte_array(bytes))
+    }
+
+    /// Decode [`ScalarCore`] from a little endian byte slice.
+    pub fn from_le_slice(slice: &[u8]) -> Result<Self> {
+        if slice.len() == C::UInt::BYTE_SIZE {
+            Option::from(Self::from_le_bytes(GenericArray::clone_from_slice(slice))).ok_or(Error)
+        } else {
+            Err(Error)
+        }
     }
 
     /// Borrow the inner `C::UInt`.
