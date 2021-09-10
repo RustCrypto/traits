@@ -276,10 +276,10 @@ impl<'a> fmt::Display for PasswordHash<'a> {
 
         if let Some(salt) = &self.salt {
             write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, salt)?;
-        }
 
-        if let Some(hash) = &self.hash {
-            write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, hash)?;
+            if let Some(hash) = &self.hash {
+                write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, hash)?;
+            }
         }
 
         Ok(())
