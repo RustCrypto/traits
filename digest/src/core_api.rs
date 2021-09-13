@@ -7,7 +7,7 @@ use crate::{ExtendableOutput, InvalidOutputSize};
 use generic_array::ArrayLength;
 
 pub use crypto_common::{
-    AlgorithmName, Block, BlockUser, BufferUser, CoreWrapper, FixedOutputCore, OutputSizeUser,
+    AlgorithmName, Block, BlockSizeUser, BufferUser, CoreWrapper, FixedOutputCore, OutputSizeUser,
     Reset, UpdateCore,
 };
 
@@ -30,7 +30,7 @@ pub trait ExtendableOutputCore: UpdateCore + BufferUser {
 }
 
 /// Core reader trait for extendable-output function (XOF) result.
-pub trait XofReaderCore: BlockUser {
+pub trait XofReaderCore: BlockSizeUser {
     /// Read next XOF block.
     fn read_block(&mut self) -> Block<Self>;
 }

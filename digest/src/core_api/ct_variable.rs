@@ -1,6 +1,6 @@
 use super::{AlgorithmName, FixedOutputCore, Reset, UpdateCore, VariableOutputCore};
 use core::{fmt, marker::PhantomData};
-use crypto_common::{Block, BlockUser, BufferUser, OutputSizeUser};
+use crypto_common::{Block, BlockSizeUser, BufferUser, OutputSizeUser};
 use generic_array::{
     typenum::{IsLessOrEqual, LeEq, NonZero},
     ArrayLength, GenericArray,
@@ -19,7 +19,7 @@ where
     _out: PhantomData<OutSize>,
 }
 
-impl<T, OutSize> BlockUser for CtVariableCoreWrapper<T, OutSize>
+impl<T, OutSize> BlockSizeUser for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
