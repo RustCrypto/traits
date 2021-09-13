@@ -1,4 +1,4 @@
-use super::{FixedOutput, Output};
+use super::{OutputSizeUser, Output};
 use subtle::{Choice, ConstantTimeEq};
 
 /// Fixed size output value which provides a safe [`Eq`] implementation that
@@ -11,7 +11,7 @@ pub struct CtOutput<T: OutputSizeUser> {
     bytes: Output<T>,
 }
 
-impl<T: FixedOutput> CtOutput<T> {
+impl<T: OutputSizeUser> CtOutput<T> {
     /// Create a new [`CtOutput`] value.
     pub fn new(bytes: Output<T>) -> Self {
         Self { bytes }
@@ -23,28 +23,28 @@ impl<T: FixedOutput> CtOutput<T> {
     }
 }
 
-impl<T: FixedOutput> From<Output<T>> for CtOutput<T> {
+impl<T: OutputSizeUser> From<Output<T>> for CtOutput<T> {
     fn from(bytes: Output<T>) -> Self {
         Self { bytes }
     }
 }
 
-impl<'a, T: FixedOutput> From<&'a Output<T>> for CtOutput<T> {
+impl<'a, T: OutputSizeUser> From<&'a Output<T>> for CtOutput<T> {
     fn from(bytes: &'a Output<T>) -> Self {
         bytes.clone().into()
     }
 }
 
-impl<T: FixedOutput> ConstantTimeEq for CtOutput<T> {
+impl<T: OutputSizeUser> ConstantTimeEq for CtOutput<T> {
     fn ct_eq(&self, other: &Self) -> Choice {
         self.bytes.ct_eq(&other.bytes)
     }
 }
 
-impl<T: FixedOutput> PartialEq for CtOutput<T> {
+impl<T: OutputSizeUser> PartialEq for CtOutput<T> {
     fn eq(&self, x: &CtOutput<T>) -> bool {
         self.ct_eq(x).unwrap_u8() == 1
     }
 }
 
-impl<T: FixedOutput> Eq for CtOutput<T> {}
+impl<T: OutputSizeUser> Eq for CtOutput<T> {}
