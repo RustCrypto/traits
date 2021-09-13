@@ -34,8 +34,8 @@ use core::slice;
 use generic_array::{typenum::Unsigned, GenericArray};
 
 pub use crypto_common::{
-    Block, BlockUser, CtOutput, FixedOutput, FixedOutputReset, Key, KeyInit, KeyUser, Output,
-    Reset, UpdateCore,
+    Block, BlockSizeUser, CtOutput, FixedOutput, FixedOutputReset, Key, KeyInit, KeySizeUser,
+    Output, Reset, UpdateCore,
 };
 
 /// The [`UniversalHash`] trait defines a generic interface for universal hash
