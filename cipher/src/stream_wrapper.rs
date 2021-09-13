@@ -3,7 +3,7 @@ use crate::{
     StreamCipher, StreamCipherCore, StreamCipherSeek, StreamCipherSeekCore,
 };
 use block_buffer::{inout::InOutBuf, BlockBuffer};
-use crypto_common::{BlockSizeUser, KeyIvInit, Key, Iv, KeySizeUser, IvSizeUser, KeyInit};
+use crypto_common::{BlockSizeUser, Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser};
 use generic_array::typenum::Unsigned;
 
 /// Wrapper around [`StreamCipherCore`] implementations.
