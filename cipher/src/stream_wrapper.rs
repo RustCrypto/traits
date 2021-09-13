@@ -97,9 +97,10 @@ impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
     }
 }
 
-// ideally we would only implement the InitInner trait and everythin else
-// would be handled by blanket impls, but unfortunately it will not work
-// properly without mutually exclusive traits
+// Note: ideally we would only implement the InitInner trait and everything
+// else would be handled by blanket impls, but unfortunately it will
+// not work properly without mutually exclusive traits, see:
+// https://github.com/rust-lang/rfcs/issues/1053
 
 impl<T: KeySizeUser + BlockSizeUser> KeySizeUser for StreamCipherCoreWrapper<T> {
     type KeySize = T::KeySize;
