@@ -11,7 +11,7 @@ macro_rules! block_cipher_test {
         fn $name() {
             use cipher::generic_array::{typenum::Unsigned, GenericArray};
             use cipher::{
-                blobby::Blob3Iterator, BlockDecryptMut, BlockEncryptMut, BlockUser, KeyInit,
+                blobby::Blob3Iterator, BlockDecryptMut, BlockEncryptMut, BlockSizeUser, KeyInit,
             };
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
