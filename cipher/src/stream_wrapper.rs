@@ -3,19 +3,19 @@ use crate::{
     StreamCipher, StreamCipherCore, StreamCipherSeek, StreamCipherSeekCore,
 };
 use block_buffer::{inout::InOutBuf, BlockBuffer};
-use crypto_common::{BlockUser, KeyIvInit, Key, Iv, KeyUser, IvUser, KeyInit};
+use crypto_common::{BlockSizeUser, KeyIvInit, Key, Iv, KeySizeUser, IvSizeUser, KeyInit};
 use generic_array::typenum::Unsigned;
 
 /// Wrapper around [`StreamCipherCore`] implementations.
 ///
 /// It handles data buffering and implements the slice-based traits.
 #[derive(Clone, Default)]
-pub struct StreamCipherCoreWrapper<T: BlockUser> {
+pub struct StreamCipherCoreWrapper<T: BlockSizeUser> {
     core: T,
     buffer: BlockBuffer<T::BlockSize>,
 }
 
-impl<T: BlockUser> StreamCipherCoreWrapper<T> {
+impl<T: BlockSizeUser> StreamCipherCoreWrapper<T> {
     /// Get reference to core.
     pub fn get_core(&self) -> &T {
         &self.core
@@ -101,15 +101,15 @@ impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
 // would be handled by blanket impls, but unfortunately it will not work
 // properly without mutually exclusive traits
 
-impl<T: KeyUser + BlockUser> KeyUser for StreamCipherCoreWrapper<T> {
+impl<T: KeySizeUser + BlockSizeUser> KeySizeUser for StreamCipherCoreWrapper<T> {
     type KeySize = T::KeySize;
 }
 
-impl<T: IvUser + BlockUser> IvUser for StreamCipherCoreWrapper<T> {
+impl<T: IvSizeUser + BlockSizeUser> IvSizeUser for StreamCipherCoreWrapper<T> {
     type IvSize = T::IvSize;
 }
 
-impl<T: KeyIvInit + BlockUser> KeyIvInit for StreamCipherCoreWrapper<T> {
+impl<T: KeyIvInit + BlockSizeUser> KeyIvInit for StreamCipherCoreWrapper<T> {
     #[inline]
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self {
         Self {
@@ -119,7 +119,7 @@ impl<T: KeyIvInit + BlockUser> KeyIvInit for StreamCipherCoreWrapper<T> {
     }
 }
 
-impl<T: KeyInit + BlockUser> KeyInit for StreamCipherCoreWrapper<T> {
+impl<T: KeyInit + BlockSizeUser> KeyInit for StreamCipherCoreWrapper<T> {
     #[inline]
     fn new(key: &Key<Self>) -> Self {
         Self {

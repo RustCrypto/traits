@@ -1,13 +1,13 @@
 use crate::{BlockDecryptMut, BlockEncryptMut};
 use block_buffer::{generic_array::typenum::Unsigned, inout::InOutBuf};
 use core::convert::{TryFrom, TryInto};
-use crypto_common::{Block, BlockUser};
+use crypto_common::{Block, BlockSizeUser};
 
 /// Marker trait for block-level asynchronous stream ciphers
 pub trait AsyncStreamCipherCore: BlockEncryptMut + BlockDecryptMut {}
 
 /// Block-level synchronous stream ciphers.
-pub trait StreamCipherCore: BlockUser + Sized {
+pub trait StreamCipherCore: BlockSizeUser + Sized {
     /// Return number of remaining blocks before cipher wraps around.
     ///
     /// Returns `None` if number of remaining blocks can not be computed
@@ -50,10 +50,16 @@ pub trait StreamCipherCore: BlockUser + Sized {
     }
 }
 
-// note: unfortunately currently we can not write blanket impls of
-// `BlockEncryptMut` and `BlockDecryptMut` for `StreamCipherCore`
+// note: unfortunately, currently we can not write blanket impls of
+// `BlockEncryptMut` and `BlockDecryptMut` for `T: StreamCipherCore`
+// since it requires mutually exlusive traits, see:
+// https://github.com/rust-lang/rfcs/issues/1053
 
 /// Counter type usable with [`StreamCipherCore`].
+///
+/// This trait is implemented for `i32`, `u32`, `u64`, `u128`, and `usize`.
+/// It's not intended to be implemented in third-party crates, but doing so
+/// is not forbidden.
 pub trait Counter:
     TryFrom<i32>
     + TryFrom<u32>

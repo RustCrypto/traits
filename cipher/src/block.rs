@@ -13,13 +13,13 @@
 use block_buffer::inout::{InOut, InOutBuf, InSrc, InTmpOutBuf, NotEqualError};
 use generic_array::typenum::U1;
 
-pub use crypto_common::{Block, BlockUser};
+pub use crypto_common::{Block, BlockSizeUser};
 
 /// Marker trait for block ciphers.
-pub trait BlockCipher: BlockUser {}
+pub trait BlockCipher: BlockSizeUser {}
 
 /// Encrypt-only functionality for block ciphers.
-pub trait BlockEncrypt: BlockUser {
+pub trait BlockEncrypt: BlockSizeUser {
     /// Encrypt single `inout` block.
     fn encrypt_block_inout(&self, block: InOut<'_, Block<Self>>);
 
@@ -96,7 +96,7 @@ pub trait BlockEncrypt: BlockUser {
 }
 
 /// Decrypt-only functionality for block ciphers.
-pub trait BlockDecrypt: BlockUser {
+pub trait BlockDecrypt: BlockSizeUser {
     /// Decrypt single `inout` block.
     fn decrypt_block_inout(&self, block: InOut<'_, Block<Self>>);
 
@@ -177,7 +177,7 @@ pub trait BlockDecrypt: BlockUser {
 /// The main use case for this trait is blocks modes, but it also can be used
 /// for hardware cryptographic engines which require `&mut self` access to an
 /// underlying hardware peripheral.
-pub trait BlockEncryptMut: BlockUser {
+pub trait BlockEncryptMut: BlockSizeUser {
     /// Encrypt single `inout` block.
     fn encrypt_block_inout_mut(&mut self, block: InOut<'_, Block<Self>>);
 
@@ -262,7 +262,7 @@ pub trait BlockEncryptMut: BlockUser {
 /// The main use case for this trait is blocks modes, but it also can be used
 /// for hardware cryptographic engines which require `&mut self` access to an
 /// underlying hardware peripheral.
-pub trait BlockDecryptMut: BlockUser {
+pub trait BlockDecryptMut: BlockSizeUser {
     /// Decrypt single `inout` block.
     fn decrypt_block_inout_mut(&mut self, block: InOut<'_, Block<Self>>);
 

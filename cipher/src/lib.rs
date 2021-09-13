@@ -34,12 +34,12 @@ mod stream_wrapper;
 
 pub use crate::{block::*, errors::*, stream::*, stream_core::*, stream_wrapper::*};
 pub use crypto_common::{
-    Block, InnerIvInit, InvalidLength, Iv, IvUser, Key, KeyInit, KeyIvInit, KeyUser,
+    Block, InnerIvInit, InvalidLength, Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser,
 };
 pub use generic_array::{self, typenum::consts};
 
 /// Trait for loading current IV state.
-pub trait IvState: crypto_common::IvUser {
+pub trait IvState: IvSizeUser {
     /// Returns current IV state.
     fn iv_state(&self) -> Iv<Self>;
 }
