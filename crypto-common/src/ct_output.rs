@@ -7,7 +7,7 @@ use subtle::{Choice, ConstantTimeEq};
 /// It is useful for implementing Message Authentication Codes (MACs).
 #[derive(Clone)]
 #[cfg_attr(docsrs, doc(cfg(feature = "subtle")))]
-pub struct CtOutput<T: FixedOutput> {
+pub struct CtOutput<T: OutputSizeUser> {
     bytes: Output<T>,
 }
 

@@ -1,61 +1,13 @@
 //! Traits related to types initialization.
 
+use crate::users::{InnerUser, Iv, IvSizeUser, Key, KeySizeUser};
 use core::fmt;
-use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+use generic_array::typenum::Unsigned;
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, RngCore};
 
-/// Key used by [`KeyUser`] implementors.
-pub type Key<B> = GenericArray<u8, <B as KeyUser>::KeySize>;
-/// Initialization vector (nonce) used by [`IvUser`] implementors.
-pub type Iv<B> = GenericArray<u8, <B as IvUser>::IvSize>;
-
-/// Types which use key for initialization.
-///
-/// Generally it's used indirectly via [`KeyInit`] or [`KeyIvInit`].
-pub trait KeyUser {
-    /// Key size in bytes.
-    type KeySize: ArrayLength<u8>;
-
-    /// Generate random key using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-    #[inline]
-    fn generate_key(mut rng: impl CryptoRng + RngCore) -> Key<Self> {
-        let mut key = Key::<Self>::default();
-        rng.fill_bytes(&mut key);
-        key
-    }
-}
-
-/// Types which use initialization vector (nonce) for initialization.
-///
-/// Generally it's used indirectly via [`KeyIvInit`] or [`InnerIvInit`].
-pub trait IvUser {
-    /// Initialization vector size in bytes.
-    type IvSize: ArrayLength<u8>;
-
-    /// Generate random IV using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-    #[inline]
-    fn generate_iv(mut rng: impl CryptoRng + RngCore) -> Iv<Self> {
-        let mut iv = Iv::<Self>::default();
-        rng.fill_bytes(&mut iv);
-        iv
-    }
-}
-
-/// Types which use another type for initialization.
-///
-/// Generally it's used indirectly via [`InnerInit`] or [`InnerIvInit`].
-pub trait InnerUser {
-    /// Inner type.
-    type Inner;
-}
-
 /// Types which can be initialized from key.
-pub trait KeyInit: KeyUser + Sized {
+pub trait KeyInit: KeySizeUser + Sized {
     /// Create new value from fixed size key.
     fn new(key: &Key<Self>) -> Self;
 
@@ -64,27 +16,28 @@ pub trait KeyInit: KeyUser + Sized {
         if key.len() != Self::KeySize::to_usize() {
             Err(InvalidLength)
         } else {
-            Ok(Self::new(GenericArray::from_slice(key)))
+            Ok(Self::new(Key::<Self>::from_slice(key)))
         }
     }
 }
 
 /// Types which can be initialized from key and initialization vector (nonce).
-pub trait KeyIvInit: KeyUser + IvUser + Sized {
+pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     /// Create new value from fixed length key and nonce.
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self;
 
     /// Create new value from variable length key and nonce.
     #[inline]
     fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidLength> {
-        let kl = Self::KeySize::to_usize();
-        let nl = Self::IvSize::to_usize();
-        if key.len() != kl || iv.len() != nl {
+        let key_len = Self::KeySize::USIZE;
+        let iv_len = Self::IvSize::USIZE;
+        if key.len() != key_len || iv.len() != iv_len {
             Err(InvalidLength)
         } else {
-            let key = GenericArray::from_slice(key);
-            let iv = GenericArray::from_slice(iv);
-            Ok(Self::new(key, iv))
+            Ok(Self::new(
+                Key::<Self>::from_slice(key),
+                Iv::<Self>::from_slice(iv),
+            ))
         }
     }
 
@@ -109,26 +62,26 @@ pub trait InnerInit: InnerUser + Sized {
 /// vector/nonce.
 ///
 /// Usually used for initializing types from block ciphers.
-pub trait InnerIvInit: InnerUser + IvUser + Sized {
+pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     /// Initialize value using `inner` and `iv` array.
-    fn inner_iv_init(inner: Self::Inner, iv: &GenericArray<u8, Self::IvSize>) -> Self;
+    fn inner_iv_init(inner: Self::Inner, iv: &Iv<Self>) -> Self;
 
     /// Initialize value using `inner` and `iv` slice.
     fn inner_iv_slice_init(inner: Self::Inner, iv: &[u8]) -> Result<Self, InvalidLength> {
         if iv.len() != Self::IvSize::to_usize() {
             Err(InvalidLength)
         } else {
-            Ok(Self::inner_iv_init(inner, GenericArray::from_slice(iv)))
+            Ok(Self::inner_iv_init(inner, Iv::<Self>::from_slice(iv)))
         }
     }
 }
 
-impl<T> KeyUser for T
+impl<T> KeySizeUser for T
 where
     T: InnerUser,
-    T::Inner: KeyUser,
+    T::Inner: KeySizeUser,
 {
-    type KeySize = <T::Inner as KeyUser>::KeySize;
+    type KeySize = <T::Inner as KeySizeUser>::KeySize;
 }
 
 impl<T> KeyIvInit for T
@@ -167,6 +120,7 @@ where
 
 // Unfortunately this blanket impl is impossible without mutually
 // exclusive traits, see: https://github.com/rust-lang/rfcs/issues/1053
+// ot at the very least without: https://github.com/rust-lang/rust/issues/20400
 /*
 impl<T> KeyIvInit for T
 where

@@ -1,13 +1,13 @@
 //! Low-level core API traits.
 use super::{
-    AlgorithmName, BufferUser, FixedOutput, FixedOutputCore, FixedOutputReset, KeyInit, KeyUser,
-    OutputSizeUser, Reset, Update, UpdateCore,
+    AlgorithmName, BufferUser, FixedOutput, FixedOutputCore, FixedOutputReset, KeyInit,
+    KeySizeUser, OutputSizeUser, Reset, Update, UpdateCore,
 };
 use block_buffer::DigestBuffer;
 use core::fmt;
 use generic_array::GenericArray;
 
-/// Wrapper around [`UpdateCore`] implementations.
+/// Wrapper around [`BufferUser`].
 ///
 /// It handles data buffering and implements the slice-based traits.
 #[derive(Clone, Default)]
@@ -16,7 +16,7 @@ pub struct CoreWrapper<T: BufferUser> {
     buffer: T::Buffer,
 }
 
-impl<T: UpdateCore + BufferUser> CoreWrapper<T> {
+impl<T: BufferUser> CoreWrapper<T> {
     /// Create new wrapper from `core`.
     #[inline]
     pub fn from_core(core: T) -> Self {
@@ -32,7 +32,7 @@ impl<T: UpdateCore + BufferUser> CoreWrapper<T> {
     }
 }
 
-impl<T: UpdateCore + BufferUser + Reset> CoreWrapper<T> {
+impl<T: BufferUser + Reset> CoreWrapper<T> {
     /// Apply function to core and buffer, return its result,
     /// and reset core and buffer.
     pub fn apply_reset<V>(&mut self, mut f: impl FnMut(&mut T, &mut T::Buffer) -> V) -> V {
@@ -44,11 +44,11 @@ impl<T: UpdateCore + BufferUser + Reset> CoreWrapper<T> {
     }
 }
 
-impl<T: KeyUser + BufferUser + UpdateCore> KeyUser for CoreWrapper<T> {
+impl<T: KeySizeUser + BufferUser> KeySizeUser for CoreWrapper<T> {
     type KeySize = T::KeySize;
 }
 
-impl<T: UpdateCore + BufferUser + KeyInit> KeyInit for CoreWrapper<T> {
+impl<T: BufferUser + KeyInit> KeyInit for CoreWrapper<T> {
     fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
         Self {
             core: T::new(key),
@@ -57,14 +57,14 @@ impl<T: UpdateCore + BufferUser + KeyInit> KeyInit for CoreWrapper<T> {
     }
 }
 
-impl<T: UpdateCore + BufferUser + AlgorithmName> fmt::Debug for CoreWrapper<T> {
+impl<T: BufferUser + AlgorithmName> fmt::Debug for CoreWrapper<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         T::write_alg_name(f)?;
         f.write_str(" { .. }")
     }
 }
 
-impl<D: Reset + BufferUser + UpdateCore> Reset for CoreWrapper<D> {
+impl<D: Reset + BufferUser> Reset for CoreWrapper<D> {
     #[inline]
     fn reset(&mut self) {
         self.core.reset();
