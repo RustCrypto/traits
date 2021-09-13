@@ -1,4 +1,4 @@
-use super::{OutputSizeUser, Output};
+use super::{Output, OutputSizeUser};
 use subtle::{Choice, ConstantTimeEq};
 
 /// Fixed size output value which provides a safe [`Eq`] implementation that
