@@ -1,4 +1,35 @@
-//! PKCS#8 encoding/decoding support
+//! PKCS#8 encoding/decoding support.
+//!
+//! This module implements the `ECPrivateKey` schema as described in
+//! [RFC5915 Section 3](https://datatracker.ietf.org/doc/html/rfc5915#section-3):
+//!
+//! ```text
+//! ECPrivateKey ::= SEQUENCE {
+//!   version        INTEGER { ecPrivkeyVer1(1) } (ecPrivkeyVer1),
+//!   privateKey     OCTET STRING,
+//!   parameters [0] ECParameters {{ NamedCurve }} OPTIONAL,
+//!   publicKey  [1] BIT STRING OPTIONAL
+//! }
+//! ```
+//!
+//! It is presently only supported for use with PKCS#8, i.e. keys which begin
+//! with the following:
+//!
+//! ```text
+//! -----BEGIN PRIVATE KEY-----
+//! ```
+//!
+//! The following format is *NOT* presently supported:
+//!
+//! ```text
+//! -----BEGIN EC PRIVATE KEY-----
+//! ```
+//!
+//! Supporting the above format (the "SECG" format as described in RFC5919)
+//! would be fairly simple, as it's a PEM encoding of the aforementioned
+//! ASN.1 data structure. Please open an issue if you are interested.
+//!
+//! That said, we recommend using PKCS#8 in new applications.
 
 use super::SecretKey;
 use crate::{
