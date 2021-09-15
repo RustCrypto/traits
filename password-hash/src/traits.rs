@@ -13,7 +13,7 @@ pub trait PasswordHasher {
         + Debug
         + Default
         + for<'a> TryFrom<&'a PasswordHash<'a>, Error = Error>
-        + for<'a> TryInto<ParamsString, Error = Error>;
+        + TryInto<ParamsString, Error = Error>;
 
     /// Compute a [`PasswordHash`] from the provided password using an
     /// explicit set of customized algorithm parameters as opposed to the
