@@ -44,9 +44,8 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-#[cfg(all(feature = "alloc", test))]
+#[cfg(feature = "alloc")]
 extern crate alloc;
-
 #[cfg(feature = "std")]
 extern crate std;
 
@@ -78,6 +77,12 @@ pub use crate::{
 use core::{
     convert::{TryFrom, TryInto},
     fmt::{self, Debug},
+};
+
+#[cfg(feature = "alloc")]
+use alloc::{
+    str::FromStr,
+    string::{String, ToString},
 };
 
 /// Separator character used in password hashes (e.g. `$6$...`).
@@ -250,6 +255,13 @@ impl<'a> PasswordHash<'a> {
     pub fn encoding(&self) -> Encoding {
         self.hash.map(|h| h.encoding()).unwrap_or_default()
     }
+
+    /// Serialize this [`PasswordHash`] as a [`PasswordHashString`].
+    #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+    pub fn serialize(&self) -> PasswordHashString {
+        self.into()
+    }
 }
 
 // Note: this uses `TryFrom` instead of `FromStr` to support a lifetime on
@@ -283,5 +295,125 @@ impl<'a> fmt::Display for PasswordHash<'a> {
         }
 
         Ok(())
+    }
+}
+
+/// Serialized [`PasswordHash`].
+///
+/// This type contains a serialized password hash string which is ensured to
+/// parse successfully.
+// TODO(tarcieri): cached parsed representations? or at least structural data
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct PasswordHashString {
+    /// String value
+    string: String,
+
+    /// String encoding
+    encoding: Encoding,
+}
+
+#[cfg(feature = "alloc")]
+#[allow(clippy::len_without_is_empty)]
+impl PasswordHashString {
+    /// Parse a password hash from a string in the PHC string format.
+    pub fn new(s: &str) -> Result<Self> {
+        Self::parse(s, Encoding::B64)
+    }
+
+    /// Parse a password hash from the given [`Encoding`].
+    pub fn parse(s: &str, encoding: Encoding) -> Result<Self> {
+        Ok(PasswordHash::parse(s, encoding)?.into())
+    }
+
+    /// Parse this owned string as a [`PasswordHash`].
+    pub fn password_hash(&self) -> PasswordHash<'_> {
+        PasswordHash::parse(&self.string, self.encoding).expect("malformed password hash")
+    }
+
+    /// Get the [`Encoding`] that this [`PasswordHashString`] is serialized with.
+    pub fn encoding(&self) -> Encoding {
+        self.encoding
+    }
+
+    /// Borrow this value as a `str`.
+    pub fn as_str(&self) -> &str {
+        self.string.as_str()
+    }
+
+    /// Borrow this value as bytes.
+    pub fn as_bytes(&self) -> &[u8] {
+        self.as_str().as_bytes()
+    }
+
+    /// Get the length of this value in ASCII characters.
+    pub fn len(&self) -> usize {
+        self.as_str().len()
+    }
+
+    /// Password hashing algorithm identifier.
+    pub fn algorithm(&self) -> Ident<'_> {
+        self.password_hash().algorithm
+    }
+
+    /// Optional version field.
+    pub fn version(&self) -> Option<Decimal> {
+        self.password_hash().version
+    }
+
+    /// Algorithm-specific parameters.
+    pub fn params(&self) -> ParamsString {
+        self.password_hash().params
+    }
+
+    /// [`Salt`] string for personalizing a password hash output.
+    pub fn salt(&self) -> Option<Salt<'_>> {
+        self.password_hash().salt
+    }
+
+    /// Password hashing function [`Output`], a.k.a. hash/digest.
+    pub fn hash(&self) -> Option<Output> {
+        self.password_hash().hash
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl AsRef<str> for PasswordHashString {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl From<PasswordHash<'_>> for PasswordHashString {
+    fn from(hash: PasswordHash<'_>) -> PasswordHashString {
+        PasswordHashString::from(&hash)
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl From<&PasswordHash<'_>> for PasswordHashString {
+    fn from(hash: &PasswordHash<'_>) -> PasswordHashString {
+        PasswordHashString {
+            string: hash.to_string(),
+            encoding: hash.encoding(),
+        }
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl FromStr for PasswordHashString {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Self::new(s)
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<'a> fmt::Display for PasswordHashString {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
     }
 }
