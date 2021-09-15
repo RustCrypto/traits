@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.1 (2021-09-14)
+### Added
+- `PasswordHashString` ([#758])
+
+### Fixed
+- Handling of empty salts in `fmt::Display` impl for PasswordHash ([#748])
+- MSRV regression from `base64ct` ([#757])
+
+[#748]: https://github.com/RustCrypto/traits/pull/748
+[#757]: https://github.com/RustCrypto/traits/pull/757
+[#758]: https://github.com/RustCrypto/traits/pull/758
+
 ## 0.3.0 (2021-08-27)
 ### Added
 - More details to `ParamValueInvalid` ([#713])
