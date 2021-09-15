@@ -18,7 +18,7 @@ macro_rules! stream_cipher_test {
                     let mut mode = <$cipher>::new_from_slices(key, iv).unwrap();
                     let mut pt = pt.to_vec();
                     for chunk in pt.chunks_mut(chunk_n) {
-                        mode.apply_keystream_inplace(chunk);
+                        mode.apply_keystream(chunk);
                     }
                     if pt != &ct[..] {
                         panic!(
@@ -53,7 +53,7 @@ macro_rules! stream_cipher_seek_test {
             const MAX_SEEK: usize = 512;
 
             let mut ct = [0u8; MAX_SEEK];
-            get_cipher().apply_keystream_inplace(&mut ct[..]);
+            get_cipher().apply_keystream(&mut ct[..]);
 
             for n in 0..MAX_SEEK {
                 let mut cipher = get_cipher();
@@ -61,7 +61,7 @@ macro_rules! stream_cipher_seek_test {
                 cipher.seek(n);
                 assert_eq!(cipher.current_pos::<usize>(), n);
                 let mut buf = [0u8; MAX_SEEK];
-                cipher.apply_keystream_inplace(&mut buf[n..]);
+                cipher.apply_keystream(&mut buf[n..]);
                 assert_eq!(cipher.current_pos::<usize>(), MAX_SEEK);
                 assert_eq!(&buf[n..], &ct[n..]);
             }
@@ -72,12 +72,12 @@ macro_rules! stream_cipher_seek_test {
             let mut buf = [0u8; MAX_CHUNK];
             let mut cipher = get_cipher();
             assert_eq!(cipher.current_pos::<usize>(), 0);
-            cipher.apply_keystream_inplace(&mut []);
+            cipher.apply_keystream(&mut []);
             assert_eq!(cipher.current_pos::<usize>(), 0);
             for n in 1..MAX_CHUNK {
                 assert_eq!(cipher.current_pos::<usize>(), 0);
                 for m in 1.. {
-                    cipher.apply_keystream_inplace(&mut buf[..n]);
+                    cipher.apply_keystream(&mut buf[..n]);
                     assert_eq!(cipher.current_pos::<usize>(), n * m);
                     if n * m > MAX_LEN {
                         break;
