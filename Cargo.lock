@@ -188,9 +188,9 @@ dependencies = [
 
 [[package]]
 name = "der"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7044a442ff01698f9ba0b8c3282057eaa04bdc85a1d8bd72627761f19ff080a"
+checksum = "2adca118c71ecd9ae094d4b68257b3fdfcb711a612b9eec7b5a0d27a5a70a5b4"
 dependencies = [
  "const-oid",
 ]
@@ -219,10 +219,12 @@ version = "0.11.0-pre"
 dependencies = [
  "base64ct",
  "crypto-bigint",
+ "der",
  "ff",
  "generic-array",
  "group",
  "hex-literal",
+ "pem-rfc7468",
  "pkcs8",
  "rand_core",
  "serde",

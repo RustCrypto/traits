@@ -1,47 +1,13 @@
 //! PKCS#8 encoding/decoding support.
-//!
-//! This module implements the `ECPrivateKey` schema as described in
-//! [RFC5915 Section 3](https://datatracker.ietf.org/doc/html/rfc5915#section-3):
-//!
-//! ```text
-//! ECPrivateKey ::= SEQUENCE {
-//!   version        INTEGER { ecPrivkeyVer1(1) } (ecPrivkeyVer1),
-//!   privateKey     OCTET STRING,
-//!   parameters [0] ECParameters {{ NamedCurve }} OPTIONAL,
-//!   publicKey  [1] BIT STRING OPTIONAL
-//! }
-//! ```
-//!
-//! It is presently only supported for use with PKCS#8, i.e. keys which begin
-//! with the following:
-//!
-//! ```text
-//! -----BEGIN PRIVATE KEY-----
-//! ```
-//!
-//! The following format is *NOT* presently supported:
-//!
-//! ```text
-//! -----BEGIN EC PRIVATE KEY-----
-//! ```
-//!
-//! Supporting the above format (the "SECG" format as described in RFC5919)
-//! would be fairly simple, as it's a PEM encoding of the aforementioned
-//! ASN.1 data structure. Please open an issue if you are interested.
-//!
-//! That said, we recommend using PKCS#8 in new applications.
 
 use super::SecretKey;
 use crate::{
-    sec1::{self, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
-    AlgorithmParameters, Curve, ALGORITHM_OID,
+    sec1::{EcPrivateKey, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
+    AlgorithmParameters, PrimeCurve, ALGORITHM_OID,
 };
-use core::ops::Add;
+use core::{convert::TryFrom, ops::Add};
 use generic_array::{typenum::U1, ArrayLength};
-use pkcs8::{
-    der::{self, TagNumber},
-    FromPrivateKey,
-};
+use pkcs8::{der::Decodable, FromPrivateKey};
 
 // Imports for the `ToPrivateKey` impl
 // TODO(tarcieri): use weak activation of `pkcs8/alloc` for gating `ToPrivateKey` impl
@@ -51,34 +17,20 @@ use {
         sec1::{FromEncodedPoint, ToEncodedPoint},
         AffinePoint, ProjectiveArithmetic,
     },
-    core::convert::TryInto,
-    pkcs8::{
-        der::{
-            asn1::{BitString, ContextSpecific, OctetString},
-            Encodable,
-        },
-        ToPrivateKey,
-    },
-    zeroize::{Zeroize, Zeroizing},
+    pkcs8::ToPrivateKey,
 };
 
 // Imports for actual PEM support
 #[cfg(feature = "pem")]
 use {
-    crate::{error::Error, PrimeCurve, Result},
+    crate::{error::Error, Result},
     core::str::FromStr,
 };
-
-/// Version
-const VERSION: u8 = 1;
-
-/// Context-specific tag number for the public key.
-const PUBLIC_KEY_TAG: TagNumber = TagNumber::new(1);
 
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 impl<C> FromPrivateKey for SecretKey<C>
 where
-    C: Curve + AlgorithmParameters + ValidatePublicKey,
+    C: PrimeCurve + AlgorithmParameters + ValidatePublicKey,
     UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
@@ -89,31 +41,8 @@ where
             .algorithm
             .assert_oids(ALGORITHM_OID, C::OID)?;
 
-        let mut decoder = der::Decoder::new(private_key_info.private_key);
-
-        let result = decoder.sequence(|decoder| {
-            if decoder.uint8()? != VERSION {
-                return Err(der::Tag::Integer.value_error());
-            }
-
-            let secret_key = Self::from_be_bytes(decoder.octet_string()?.as_ref())
-                .map_err(|_| der::Tag::Sequence.value_error())?;
-
-            let public_key = decoder
-                .context_specific(PUBLIC_KEY_TAG)?
-                .ok_or_else(|| der::Tag::ContextSpecific(PUBLIC_KEY_TAG).value_error())?
-                .bit_string()?;
-
-            if let Ok(pk) = sec1::EncodedPoint::<C>::from_bytes(public_key.as_ref()) {
-                if C::validate_public_key(&secret_key, &pk).is_ok() {
-                    return Ok(secret_key);
-                }
-            }
-
-            Err(der::Tag::BitString.value_error())
-        })?;
-
-        Ok(decoder.finish(result)?)
+        let ec_private_key = EcPrivateKey::from_der(private_key_info.private_key)?;
+        Ok(Self::try_from(ec_private_key)?)
     }
 }
 
@@ -131,28 +60,8 @@ where
     UncompressedPointSize<C>: ArrayLength<u8>,
 {
     fn to_pkcs8_der(&self) -> pkcs8::Result<pkcs8::PrivateKeyDocument> {
-        // TODO(tarcieri): wrap `secret_key_bytes` in `Zeroizing`
-        let mut secret_key_bytes = self.to_be_bytes();
-        let secret_key_field = OctetString::new(&secret_key_bytes)?;
-        let public_key_bytes = self.public_key().to_encoded_point(false);
-        let public_key_field = ContextSpecific {
-            tag_number: PUBLIC_KEY_TAG,
-            value: BitString::new(public_key_bytes.as_ref())?.into(),
-        };
-
-        let der_message_fields: &[&dyn Encodable] =
-            &[&VERSION, &secret_key_field, &public_key_field];
-
-        let encoded_len = der::message::encoded_len(der_message_fields)?.try_into()?;
-        let mut der_message = Zeroizing::new(vec![0u8; encoded_len]);
-        let mut encoder = der::Encoder::new(&mut der_message);
-        encoder.message(der_message_fields)?;
-        encoder.finish()?;
-
-        // TODO(tarcieri): wrap `secret_key_bytes` in `Zeroizing`
-        secret_key_bytes.zeroize();
-
-        Ok(pkcs8::PrivateKeyInfo::new(C::algorithm_identifier(), &der_message).to_der())
+        let ec_private_key = self.to_sec1_der()?;
+        Ok(pkcs8::PrivateKeyInfo::new(C::algorithm_identifier(), &ec_private_key).to_der())
     }
 }
 
