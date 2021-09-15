@@ -42,7 +42,7 @@
     html_root_url = "https://docs.rs/password-hash/0.3.1"
 )]
 #![forbid(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms)]
+#![warn(missing_docs, rust_2018_idioms, unused_lifetimes)]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -412,7 +412,7 @@ impl FromStr for PasswordHashString {
 }
 
 #[cfg(feature = "alloc")]
-impl<'a> fmt::Display for PasswordHashString {
+impl fmt::Display for PasswordHashString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
     }
