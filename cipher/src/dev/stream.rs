@@ -172,7 +172,7 @@ macro_rules! stream_cipher_sync_bench {
     ($cipher:path) => {
         extern crate test;
 
-        use cipher::{generic_array::GenericArray, NewCipher, StreamCipher};
+        use cipher::{generic_array::GenericArray, KeyIvInit, StreamCipher};
         use test::Bencher;
 
         #[inline(never)]
@@ -224,7 +224,7 @@ macro_rules! stream_cipher_async_bench {
     ($cipher:path) => {
         extern crate test;
 
-        use cipher::{generic_array::GenericArray, AsyncStreamCipher, NewCipher};
+        use cipher::{generic_array::GenericArray, AsyncStreamCipher, KeyIvInit};
         use test::Bencher;
 
         #[inline(never)]
