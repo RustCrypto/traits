@@ -10,15 +10,32 @@
 #[cfg(feature = "pkcs8")]
 mod pkcs8;
 
-use crate::{Curve, Error, FieldBytes, Result, ScalarCore};
+use crate::{
+    sec1::{self, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
+    Curve, Error, FieldBytes, PrimeCurve, Result, ScalarCore,
+};
 use core::{
-    convert::TryFrom,
+    convert::{TryFrom, TryInto},
     fmt::{self, Debug},
+    ops::Add,
 };
 use crypto_bigint::Encoding;
+use der::Decodable;
 use generic_array::GenericArray;
+use generic_array::{typenum::U1, ArrayLength};
 use subtle::{Choice, ConstantTimeEq};
 use zeroize::Zeroize;
+
+#[cfg(all(feature = "alloc", feature = "arithmetic"))]
+use {
+    crate::{
+        sec1::{FromEncodedPoint, ToEncodedPoint},
+        AffinePoint,
+    },
+    alloc::vec::Vec,
+    der::Encodable,
+    zeroize::Zeroizing,
+};
 
 #[cfg(feature = "arithmetic")]
 use crate::{
@@ -27,25 +44,23 @@ use crate::{
 };
 
 #[cfg(feature = "jwk")]
-use crate::{
-    generic_array::{typenum::U1, ArrayLength},
-    jwk::{JwkEcKey, JwkParameters},
-    ops::Add,
-    sec1::{UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
-};
+use crate::jwk::{JwkEcKey, JwkParameters};
+
+#[cfg(all(feature = "arithmetic", any(feature = "jwk", feature = "pem")))]
+use alloc::string::String;
 
 #[cfg(all(feature = "arithmetic", feature = "jwk"))]
-use {
-    crate::{
-        sec1::{FromEncodedPoint, ToEncodedPoint},
-        AffinePoint, PrimeCurve,
-    },
-    alloc::string::{String, ToString},
-    zeroize::Zeroizing,
-};
+use alloc::string::ToString;
+
+#[cfg(feature = "pem")]
+use pem_rfc7468 as pem;
 
 #[cfg(all(docsrs, feature = "pkcs8"))]
 use {crate::pkcs8::FromPrivateKey, core::str::FromStr};
+
+/// Type label for PEM-encoded SEC1 private keys.
+#[cfg(feature = "pem")]
+pub(crate) const SEC1_PEM_TYPE_LABEL: &str = "EC PRIVATE KEY";
 
 /// Elliptic curve secret keys.
 ///
@@ -99,29 +114,6 @@ where
         Self { inner: scalar }
     }
 
-    /// Deserialize raw private scalar as a big endian integer.
-    pub fn from_be_bytes(bytes: &[u8]) -> Result<Self> {
-        if bytes.len() != C::UInt::BYTE_SIZE {
-            return Err(Error);
-        }
-
-        let inner: ScalarCore<C> = Option::from(ScalarCore::from_be_bytes(
-            GenericArray::clone_from_slice(bytes),
-        ))
-        .ok_or(Error)?;
-
-        if inner.is_zero().into() {
-            return Err(Error);
-        }
-
-        Ok(Self { inner })
-    }
-
-    /// Expose the byte serialization of the value this [`SecretKey`] wraps.
-    pub fn to_be_bytes(&self) -> FieldBytes<C> {
-        self.inner.to_be_bytes()
-    }
-
     /// Borrow the inner secret [`ScalarCore`] value.
     ///
     /// # ⚠️ Warning
@@ -157,6 +149,113 @@ where
         C: Curve + ProjectiveArithmetic,
     {
         PublicKey::from_secret_scalar(&self.to_nonzero_scalar())
+    }
+
+    /// Deserialize raw secret scalar as a big endian integer.
+    pub fn from_be_bytes(bytes: &[u8]) -> Result<Self> {
+        if bytes.len() != C::UInt::BYTE_SIZE {
+            return Err(Error);
+        }
+
+        let inner: ScalarCore<C> = Option::from(ScalarCore::from_be_bytes(
+            GenericArray::clone_from_slice(bytes),
+        ))
+        .ok_or(Error)?;
+
+        if inner.is_zero().into() {
+            return Err(Error);
+        }
+
+        Ok(Self { inner })
+    }
+
+    /// Serialize raw secret scalar as a big endian integer.
+    pub fn to_be_bytes(&self) -> FieldBytes<C> {
+        self.inner.to_be_bytes()
+    }
+
+    /// Deserialize secret key encoded in the SEC1 ASN.1 DER `ECPrivateKey` format.
+    pub fn from_sec1_der(der_bytes: &[u8]) -> Result<Self>
+    where
+        C: PrimeCurve + ValidatePublicKey,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        sec1::EcPrivateKey::from_der(der_bytes)
+            .and_then(TryInto::try_into)
+            .map_err(|_| Error)
+    }
+
+    /// Serialize secret key in the SEC1 ASN.1 DER `ECPrivateKey` format.
+    #[cfg(all(feature = "alloc", feature = "arithmetic"))]
+    pub fn to_sec1_der(&self) -> der::Result<Zeroizing<Vec<u8>>>
+    where
+        C: PrimeCurve + ProjectiveArithmetic,
+        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        // TODO(tarcieri): wrap `secret_key_bytes` in `Zeroizing`
+        let mut private_key_bytes = self.to_be_bytes();
+        let public_key_bytes = self.public_key().to_encoded_point(false);
+
+        let ec_private_key = Zeroizing::new(
+            sec1::EcPrivateKey {
+                private_key: &private_key_bytes,
+                parameters: None,
+                public_key: Some(public_key_bytes.as_bytes()),
+            }
+            .to_vec()?,
+        );
+
+        // TODO(tarcieri): wrap `private_key_bytes` in `Zeroizing`
+        private_key_bytes.zeroize();
+
+        Ok(ec_private_key)
+    }
+
+    /// Parse [`SecretKey`] from PEM-encoded SEC1 `ECPrivateKey` format.
+    ///
+    /// PEM-encoded SEC1 keys can be identified by the leading delimiter:
+    ///
+    /// ```text
+    /// -----BEGIN EC PRIVATE KEY-----
+    /// ```
+    #[cfg(feature = "pem")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
+    pub fn from_sec1_pem(s: &str) -> Result<Self>
+    where
+        C: PrimeCurve + ValidatePublicKey,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        let (label, der_bytes) = pem::decode_vec(s.as_bytes()).map_err(|_| Error)?;
+
+        if label != SEC1_PEM_TYPE_LABEL {
+            return Err(Error);
+        }
+
+        Self::from_sec1_der(&*der_bytes).map_err(|_| Error)
+    }
+
+    /// Serialize private key as self-zeroizing PEM-encoded SEC1 `ECPrivateKey`
+    /// with the given [`pem::LineEnding`].
+    ///
+    /// Pass `Default::default()` to use the OS's native line endings.
+    #[cfg(feature = "pem")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
+    pub fn to_pem(&self, line_ending: pem::LineEnding) -> Result<Zeroizing<String>>
+    where
+        C: PrimeCurve + ProjectiveArithmetic,
+        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+        UncompressedPointSize<C>: ArrayLength<u8>,
+    {
+        self.to_sec1_der()
+            .ok()
+            .and_then(|der| pem::encode_string(SEC1_PEM_TYPE_LABEL, line_ending, &der).ok())
+            .map(Zeroizing::new)
+            .ok_or(Error)
     }
 
     /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`SecretKey`].
@@ -251,14 +350,29 @@ where
     }
 }
 
-impl<C> TryFrom<&[u8]> for SecretKey<C>
+impl<C> TryFrom<sec1::EcPrivateKey<'_>> for SecretKey<C>
 where
-    C: Curve,
+    C: PrimeCurve + ValidatePublicKey,
+    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
+    UncompressedPointSize<C>: ArrayLength<u8>,
 {
-    type Error = Error;
+    type Error = der::Error;
 
-    fn try_from(slice: &[u8]) -> Result<Self> {
-        Self::from_be_bytes(slice)
+    fn try_from(sec1_private_key: sec1::EcPrivateKey<'_>) -> der::Result<Self> {
+        let secret_key = Self::from_be_bytes(sec1_private_key.private_key)
+            .map_err(|_| der::Tag::Sequence.value_error())?;
+
+        // TODO(tarcieri): validate `sec1_private_key.params`?
+        if let Some(pk_bytes) = sec1_private_key.public_key {
+            let pk = sec1::EncodedPoint::<C>::from_bytes(pk_bytes)
+                .map_err(|_| der::Tag::BitString.value_error())?;
+
+            if C::validate_public_key(&secret_key, &pk).is_err() {
+                return Err(der::Tag::BitString.value_error());
+            }
+        }
+
+        Ok(secret_key)
     }
 }
 

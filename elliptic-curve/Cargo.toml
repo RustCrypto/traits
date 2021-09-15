@@ -16,6 +16,7 @@ keywords   = ["crypto", "ecc", "elliptic", "weierstrass"]
 
 [dependencies]
 crypto-bigint = { version = "0.2.7", features = ["generic-array", "zeroize"] }
+der = { version = "0.4.3", default-features = false, features = ["oid"] }
 generic-array = { version = "0.14", default-features = false }
 rand_core = { version = "0.6", default-features = false }
 subtle = { version = ">=2, <2.5", default-features = false }
@@ -26,6 +27,7 @@ base64ct = { version = "1", optional = true, default-features = false }
 ff = { version = "0.11", optional = true, default-features = false }
 group = { version = "0.11", optional = true, default-features = false }
 hex-literal = { version = "0.3", optional = true }
+pem-rfc7468 = { version = "0.2", optional = true }
 pkcs8 = { version = "0.7", optional = true }
 serde = { version = "1", optional = true, default-features = false }
 serde_json = { version = "1", optional = true, default-features = false, features = ["alloc"] }
@@ -35,14 +37,14 @@ hex-literal = "0.3"
 
 [features]
 default = ["arithmetic"]
-alloc = [] # todo: activate `group/alloc` when weak feature activation is available
+alloc = ["der/alloc", "zeroize/alloc"] # todo: activate `group/alloc` when weak feature activation is available
 arithmetic = ["ff", "group"]
 bits = ["arithmetic", "ff/bits"]
 dev = ["arithmetic", "hex-literal", "pem"]
 ecdh = ["arithmetic"]
 hazmat = []
 jwk = ["alloc", "base64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
-pem = ["alloc", "pkcs8/pem"]
+pem = ["alloc", "arithmetic", "pem-rfc7468/alloc", "pkcs8/pem"]
 std = ["alloc", "rand_core/std"]
 
 [package.metadata.docs.rs]

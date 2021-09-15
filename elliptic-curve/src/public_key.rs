@@ -323,7 +323,7 @@ where
 {
     fn from_spki(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> pkcs8::Result<Self> {
         if spki.algorithm.oid != ALGORITHM_OID {
-            return Err(pkcs8::der::ErrorKind::UnknownOid {
+            return Err(der::ErrorKind::UnknownOid {
                 oid: spki.algorithm.oid,
             }
             .into());
@@ -332,11 +332,11 @@ where
         let params_oid = spki.algorithm.parameters_oid()?;
 
         if params_oid != C::OID {
-            return Err(pkcs8::der::ErrorKind::UnknownOid { oid: params_oid }.into());
+            return Err(der::ErrorKind::UnknownOid { oid: params_oid }.into());
         }
 
         Self::from_sec1_bytes(spki.subject_public_key)
-            .map_err(|_| pkcs8::der::Tag::BitString.value_error().into())
+            .map_err(|_| der::Tag::BitString.value_error().into())
     }
 }
 
