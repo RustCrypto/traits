@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.3.1 (2021-09-14)
+## 0.3.2 (2021-09-15)
+### Fixed
+- Remove unused lifetimes ([#760])
+
+[#760]: https://github.com/RustCrypto/traits/pull/760
+
+## 0.3.1 (2021-09-14) [YANKED]
 ### Added
 - `PasswordHashString` ([#758])
 
@@ -17,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#757]: https://github.com/RustCrypto/traits/pull/757
 [#758]: https://github.com/RustCrypto/traits/pull/758
 
-## 0.3.0 (2021-08-27)
+## 0.3.0 (2021-08-27) [YANKED]
 ### Added
 - More details to `ParamValueInvalid` ([#713])
 - `SaltInvalid` error ([#713])
