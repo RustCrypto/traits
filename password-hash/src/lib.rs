@@ -39,7 +39,7 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_root_url = "https://docs.rs/password-hash/0.3.0"
+    html_root_url = "https://docs.rs/password-hash/0.3.1"
 )]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
@@ -153,7 +153,7 @@ pub struct PasswordHash<'a> {
 impl<'a> PasswordHash<'a> {
     /// Parse a password hash from a string in the PHC string format.
     pub fn new(s: &'a str) -> Result<Self> {
-        Self::parse(s, Encoding::B64)
+        Self::parse(s, Encoding::default())
     }
 
     /// Parse a password hash from the given [`Encoding`].
@@ -319,7 +319,7 @@ pub struct PasswordHashString {
 impl PasswordHashString {
     /// Parse a password hash from a string in the PHC string format.
     pub fn new(s: &str) -> Result<Self> {
-        Self::parse(s, Encoding::B64)
+        Self::parse(s, Encoding::default())
     }
 
     /// Parse a password hash from the given [`Encoding`].
