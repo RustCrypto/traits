@@ -6,7 +6,7 @@ mod ec_private_key;
 mod encoded_point;
 
 pub use self::encoded_point::{
-    CompressedPointSize, Coordinates, EncodedPoint, UncompressedPointSize, UntaggedPointSize,
+    CompressedPointSize, Coordinates, EncodedPoint, Tag, UncompressedPointSize, UntaggedPointSize,
 };
 
 pub(crate) use self::ec_private_key::EcPrivateKey;
