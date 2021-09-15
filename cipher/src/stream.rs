@@ -149,7 +149,10 @@ macro_rules! impl_seek_num {
             impl SeekNum for $t {
                 fn from_block_byte<T: Counter>(block: T, byte: usize, bs: usize) -> Result<Self, OverflowError> {
                     debug_assert!(byte < bs);
-                    let block: Self = block.try_into().map_err(|_| OverflowError)?;
+                    let mut block: Self = block.try_into().map_err(|_| OverflowError)?;
+                    if byte != 0 {
+                        block -= 1;
+                    }
                     let pos = block.checked_mul(bs as Self).ok_or(OverflowError)? + (byte as Self);
                     Ok(pos)
                 }
