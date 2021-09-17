@@ -4,6 +4,7 @@
 use crate::{
     bigint::U256,
     error::{Error, Result},
+    ops::Reduce,
     rand_core::RngCore,
     sec1::{FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
@@ -307,6 +308,12 @@ impl Neg for Scalar {
 
     fn neg(self) -> Scalar {
         Self(self.0.neg())
+    }
+}
+
+impl Reduce<U256> for Scalar {
+    fn from_uint_reduced(_: U256) -> Self {
+        unimplemented!();
     }
 }
 
