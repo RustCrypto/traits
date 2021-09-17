@@ -335,9 +335,9 @@ dependencies = [
 
 [[package]]
 name = "pem-rfc7468"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ca8e0557253e074b4b42a32959384bca4fa69e40680032dba133baeed6cafd5"
+checksum = "e71fb2d401a15271d52aade6d9410fb4ead603a86da5503f92e872e1df790265"
 dependencies = [
  "base64ct",
 ]
