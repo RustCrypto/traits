@@ -22,5 +22,12 @@ impl From<pkcs8::Error> for Error {
     }
 }
 
+#[cfg(feature = "sec1")]
+impl From<sec1::Error> for Error {
+    fn from(_: sec1::Error) -> Error {
+        Error
+    }
+}
+
 #[cfg(feature = "std")]
 impl std::error::Error for Error {}

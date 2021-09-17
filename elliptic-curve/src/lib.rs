@@ -93,7 +93,7 @@ use core::fmt::Debug;
 use generic_array::GenericArray;
 
 /// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic
-/// curve public key cryptography.
+/// curve public key cryptography (`id-ecPublicKey`).
 ///
 /// <http://oid-info.com/get/1.2.840.10045.2.1>
 #[cfg(feature = "pkcs8")]

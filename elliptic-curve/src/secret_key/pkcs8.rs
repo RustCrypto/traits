@@ -2,12 +2,14 @@
 
 use super::SecretKey;
 use crate::{
-    sec1::{EcPrivateKey, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
+    sec1::{UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
     AlgorithmParameters, PrimeCurve, ALGORITHM_OID,
 };
 use core::{convert::TryFrom, ops::Add};
+use der::Decodable;
 use generic_array::{typenum::U1, ArrayLength};
-use pkcs8::{der::Decodable, FromPrivateKey};
+use pkcs8::FromPrivateKey;
+use sec1::EcPrivateKey;
 
 // Imports for the `ToPrivateKey` impl
 // TODO(tarcieri): use weak activation of `pkcs8/alloc` for gating `ToPrivateKey` impl
