@@ -2,14 +2,11 @@
 //!
 //! <https://www.secg.org/sec1-v2.pdf>
 
-mod ec_private_key;
 mod encoded_point;
 
 pub use self::encoded_point::{
     CompressedPointSize, Coordinates, EncodedPoint, Tag, UncompressedPointSize, UntaggedPointSize,
 };
-
-pub(crate) use self::ec_private_key::EcPrivateKey;
 
 use crate::{PrimeCurve, Result, SecretKey};
 use core::ops::Add;

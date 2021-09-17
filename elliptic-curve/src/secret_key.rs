@@ -7,22 +7,13 @@
 //! When the `zeroize` feature of this crate is enabled, it also handles
 //! zeroing it out of memory securely on drop.
 
-#[cfg(feature = "pkcs8")]
+#[cfg(all(feature = "pkcs8", feature = "sec1"))]
 mod pkcs8;
 
-use crate::{
-    sec1::{self, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
-    Curve, Error, FieldBytes, PrimeCurve, Result, ScalarCore,
-};
-use core::{
-    convert::{TryFrom, TryInto},
-    fmt::{self, Debug},
-    ops::Add,
-};
+use crate::{Curve, Error, FieldBytes, Result, ScalarCore};
+use core::fmt::{self, Debug};
 use crypto_bigint::Encoding;
-use der::Decodable;
 use generic_array::GenericArray;
-use generic_array::{typenum::U1, ArrayLength};
 use subtle::{Choice, ConstantTimeEq};
 use zeroize::Zeroize;
 
@@ -54,6 +45,19 @@ use alloc::string::ToString;
 
 #[cfg(feature = "pem")]
 use pem_rfc7468 as pem;
+
+#[cfg(feature = "sec1")]
+use {
+    crate::{
+        sec1::{EncodedPoint, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
+        PrimeCurve,
+    },
+    core::{
+        convert::{TryFrom, TryInto},
+        ops::Add,
+    },
+    generic_array::{typenum::U1, ArrayLength},
+};
 
 #[cfg(all(docsrs, feature = "pkcs8"))]
 use {crate::pkcs8::FromPrivateKey, core::str::FromStr};
@@ -175,19 +179,25 @@ where
     }
 
     /// Deserialize secret key encoded in the SEC1 ASN.1 DER `ECPrivateKey` format.
+    #[cfg(all(feature = "sec1"))]
+    #[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
     pub fn from_sec1_der(der_bytes: &[u8]) -> Result<Self>
     where
         C: PrimeCurve + ValidatePublicKey,
         UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
         UncompressedPointSize<C>: ArrayLength<u8>,
     {
-        sec1::EcPrivateKey::from_der(der_bytes)
-            .and_then(TryInto::try_into)
+        sec1::EcPrivateKey::try_from(der_bytes)?
+            .try_into()
             .map_err(|_| Error)
     }
 
     /// Serialize secret key in the SEC1 ASN.1 DER `ECPrivateKey` format.
-    #[cfg(all(feature = "alloc", feature = "arithmetic"))]
+    #[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(feature = "alloc", feature = "arithmetic", feature = "sec1"))
+    )]
     pub fn to_sec1_der(&self) -> der::Result<Zeroizing<Vec<u8>>>
     where
         C: PrimeCurve + ProjectiveArithmetic,
@@ -350,6 +360,8 @@ where
     }
 }
 
+#[cfg(all(feature = "sec1"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> TryFrom<sec1::EcPrivateKey<'_>> for SecretKey<C>
 where
     C: PrimeCurve + ValidatePublicKey,
@@ -364,7 +376,7 @@ where
 
         // TODO(tarcieri): validate `sec1_private_key.params`?
         if let Some(pk_bytes) = sec1_private_key.public_key {
-            let pk = sec1::EncodedPoint::<C>::from_bytes(pk_bytes)
+            let pk = EncodedPoint::<C>::from_bytes(pk_bytes)
                 .map_err(|_| der::Tag::BitString.value_error())?;
 
             if C::validate_public_key(&secret_key, &pk).is_err() {
