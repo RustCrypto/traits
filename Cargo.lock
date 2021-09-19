@@ -400,6 +400,7 @@ source = "git+https://github.com/rustcrypto/formats#77564c368c60486dbbdfb6e8ab6b
 dependencies = [
  "der",
  "generic-array",
+ "subtle",
  "zeroize",
 ]
 
