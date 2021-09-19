@@ -2,12 +2,11 @@
 
 use super::SecretKey;
 use crate::{
-    sec1::{UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
-    AlgorithmParameters, PrimeCurve, ALGORITHM_OID,
+    sec1::{ModulusSize, ValidatePublicKey},
+    AlgorithmParameters, FieldSize, PrimeCurve, ALGORITHM_OID,
 };
-use core::{convert::TryFrom, ops::Add};
+use core::convert::TryFrom;
 use der::Decodable;
-use generic_array::{typenum::U1, ArrayLength};
 use pkcs8::FromPrivateKey;
 use sec1::EcPrivateKey;
 
@@ -33,8 +32,7 @@ use {
 impl<C> FromPrivateKey for SecretKey<C>
 where
     C: PrimeCurve + AlgorithmParameters + ValidatePublicKey,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     fn from_pkcs8_private_key_info(
         private_key_info: pkcs8::PrivateKeyInfo<'_>,
@@ -58,8 +56,7 @@ impl<C> ToPrivateKey for SecretKey<C>
 where
     C: PrimeCurve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     fn to_pkcs8_der(&self) -> pkcs8::Result<pkcs8::PrivateKeyDocument> {
         let ec_private_key = self.to_sec1_der()?;
@@ -72,8 +69,7 @@ where
 impl<C> FromStr for SecretKey<C>
 where
     C: PrimeCurve + AlgorithmParameters + ValidatePublicKey,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     type Err = Error;
 

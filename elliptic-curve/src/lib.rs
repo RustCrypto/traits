@@ -32,6 +32,8 @@ extern crate std;
 pub use rand_core;
 
 pub mod ops;
+
+#[cfg(feature = "sec1")]
 pub mod sec1;
 
 mod error;
