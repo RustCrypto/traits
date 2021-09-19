@@ -118,7 +118,7 @@ dependencies = [
 [[package]]
 name = "const-oid"
 version = "0.6.1"
-source = "git+https://github.com/rustcrypto/formats#46a02c5e43a213e20e07af1e6bc19512c6a5fd97"
+source = "git+https://github.com/rustcrypto/formats#77564c368c60486dbbdfb6e8ab6b1ec9f79aba62"
 
 [[package]]
 name = "cpufeatures"
@@ -188,7 +188,7 @@ dependencies = [
 [[package]]
 name = "der"
 version = "0.4.3"
-source = "git+https://github.com/rustcrypto/formats#46a02c5e43a213e20e07af1e6bc19512c6a5fd97"
+source = "git+https://github.com/rustcrypto/formats#77564c368c60486dbbdfb6e8ab6b1ec9f79aba62"
 dependencies = [
  "const-oid",
 ]
@@ -396,9 +396,10 @@ checksum = "71d301d4193d031abdd79ff7e3dd721168a9572ef3fe51a1517aba235bd8f86e"
 [[package]]
 name = "sec1"
 version = "0.0.0"
-source = "git+https://github.com/rustcrypto/formats#46a02c5e43a213e20e07af1e6bc19512c6a5fd97"
+source = "git+https://github.com/rustcrypto/formats#77564c368c60486dbbdfb6e8ab6b1ec9f79aba62"
 dependencies = [
  "der",
+ "generic-array",
  "zeroize",
 ]
 

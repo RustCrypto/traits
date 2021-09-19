@@ -49,14 +49,10 @@ use pem_rfc7468 as pem;
 #[cfg(feature = "sec1")]
 use {
     crate::{
-        sec1::{EncodedPoint, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey},
-        PrimeCurve,
+        sec1::{EncodedPoint, ModulusSize, ValidatePublicKey},
+        FieldSize, PrimeCurve,
     },
-    core::{
-        convert::{TryFrom, TryInto},
-        ops::Add,
-    },
-    generic_array::{typenum::U1, ArrayLength},
+    core::convert::{TryFrom, TryInto},
 };
 
 #[cfg(all(docsrs, feature = "pkcs8"))]
@@ -184,8 +180,7 @@ where
     pub fn from_sec1_der(der_bytes: &[u8]) -> Result<Self>
     where
         C: PrimeCurve + ValidatePublicKey,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
         sec1::EcPrivateKey::try_from(der_bytes)?
             .try_into()
@@ -202,8 +197,7 @@ where
     where
         C: PrimeCurve + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
         // TODO(tarcieri): wrap `secret_key_bytes` in `Zeroizing`
         let mut private_key_bytes = self.to_be_bytes();
@@ -236,8 +230,7 @@ where
     pub fn from_sec1_pem(s: &str) -> Result<Self>
     where
         C: PrimeCurve + ValidatePublicKey,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
         let (label, der_bytes) = pem::decode_vec(s.as_bytes()).map_err(|_| Error)?;
 
@@ -258,8 +251,7 @@ where
     where
         C: PrimeCurve + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
         self.to_sec1_der()
             .ok()
@@ -274,8 +266,7 @@ where
     pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
     where
         C: JwkParameters + ValidatePublicKey,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
         Self::try_from(jwk)
     }
@@ -286,8 +277,7 @@ where
     pub fn from_jwk_str(jwk: &str) -> Result<Self>
     where
         C: JwkParameters + ValidatePublicKey,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
         jwk.parse::<JwkEcKey>().and_then(|jwk| Self::from_jwk(&jwk))
     }
@@ -300,8 +290,7 @@ where
     where
         C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
         self.into()
     }
@@ -314,8 +303,7 @@ where
     where
         C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
         Zeroizing::new(self.to_jwk().to_string())
     }
@@ -365,8 +353,7 @@ where
 impl<C> TryFrom<sec1::EcPrivateKey<'_>> for SecretKey<C>
 where
     C: PrimeCurve + ValidatePublicKey,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     type Error = der::Error;
 

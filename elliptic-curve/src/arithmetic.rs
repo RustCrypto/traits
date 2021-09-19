@@ -17,6 +17,8 @@ pub trait AffineArithmetic: Curve + ScalarArithmetic {
         + Debug
         + Default
         + DefaultIsZeroes
+        + Eq
+        + PartialEq
         + Sized
         + Send
         + Sync;
