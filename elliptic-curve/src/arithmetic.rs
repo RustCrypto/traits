@@ -1,6 +1,6 @@
 //! Elliptic curve arithmetic traits.
 
-use crate::{ops::Reduce, Curve, FieldBytes, PrimeCurve, ScalarCore};
+use crate::{Curve, FieldBytes, PrimeCurve, ScalarCore};
 use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq};
 use zeroize::DefaultIsZeroes;
@@ -77,7 +77,6 @@ pub trait ScalarArithmetic: Curve {
         + From<ScalarCore<Self>>
         + Into<FieldBytes<Self>>
         + Into<Self::UInt>
-        + Reduce<Self::UInt>
         + ff::Field
         + ff::PrimeField<Repr = FieldBytes<Self>>;
 }
