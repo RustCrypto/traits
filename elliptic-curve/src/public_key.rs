@@ -22,7 +22,7 @@ use {core::str::FromStr, pkcs8::ToPublicKey};
 use {
     crate::{
         sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
-        FieldSize, PrimeCurve,
+        FieldSize, PointCompression, PrimeCurve,
     },
     core::cmp::Ordering,
 };
@@ -203,6 +203,32 @@ where
     /// point compression
     fn to_encoded_point(&self, compress: bool) -> EncodedPoint<C> {
         self.point.to_encoded_point(compress)
+    }
+}
+
+#[cfg(feature = "sec1")]
+#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
+impl<C> From<PublicKey<C>> for EncodedPoint<C>
+where
+    C: PrimeCurve + ProjectiveArithmetic + PointCompression,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldSize<C>: ModulusSize,
+{
+    fn from(public_key: PublicKey<C>) -> EncodedPoint<C> {
+        EncodedPoint::<C>::from(&public_key)
+    }
+}
+
+#[cfg(feature = "sec1")]
+#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
+impl<C> From<&PublicKey<C>> for EncodedPoint<C>
+where
+    C: PrimeCurve + ProjectiveArithmetic + PointCompression,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldSize<C>: ModulusSize,
+{
+    fn from(public_key: &PublicKey<C>) -> EncodedPoint<C> {
+        public_key.to_encoded_point(C::COMPRESS_POINTS)
     }
 }
 
