@@ -97,11 +97,21 @@ pub trait StreamCipherSeek {
 
 /// Asynchronous stream cipher.
 pub trait AsyncStreamCipher {
-    /// Encrypt data in place.
+    /// Encrypt data using `InOutBuf`.
     fn encrypt_inout(&mut self, buf: InOutBuf<'_, u8>);
 
-    /// Decrypt data in place.
+    /// Decrypt data using `InOutBuf`.
     fn decrypt_inout(&mut self, buf: InOutBuf<'_, u8>);
+
+    /// Encrypt data in place.
+    fn encrypt(&mut self, buf: &mut [u8]) {
+        self.encrypt_inout(buf.into());
+    }
+
+    /// Decrypt data in place.
+    fn decrypt(&mut self, buf: &mut [u8]) {
+        self.decrypt_inout(buf.into());
+    }
 }
 
 impl<C: StreamCipher> StreamCipher for &mut C {
