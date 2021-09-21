@@ -118,7 +118,7 @@ dependencies = [
 [[package]]
 name = "const-oid"
 version = "0.6.1"
-source = "git+https://github.com/rustcrypto/formats#77564c368c60486dbbdfb6e8ab6b1ec9f79aba62"
+source = "git+https://github.com/rustcrypto/formats#85322893dc6038d91027599fcf6b19489acd1f7d"
 
 [[package]]
 name = "cpufeatures"
@@ -145,9 +145,9 @@ dependencies = [
 
 [[package]]
 name = "crypto-bigint"
-version = "0.2.9"
+version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51e7ef8604ba15f1ea2cef61e17577e630ee39aef7f94305d138dbf1a216ada3"
+checksum = "d12477e115c0d570c12a2dfd859f80b55b60ddb5075df210d3af06d133a69f45"
 dependencies = [
  "generic-array",
  "rand_core",
@@ -188,7 +188,7 @@ dependencies = [
 [[package]]
 name = "der"
 version = "0.4.3"
-source = "git+https://github.com/rustcrypto/formats#77564c368c60486dbbdfb6e8ab6b1ec9f79aba62"
+source = "git+https://github.com/rustcrypto/formats#85322893dc6038d91027599fcf6b19489acd1f7d"
 dependencies = [
  "const-oid",
 ]
@@ -292,11 +292,12 @@ dependencies = [
 
 [[package]]
 name = "heapless"
-version = "0.7.5"
+version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50530280e9a947b192e3a30a9d7bcead527b22da30ff7cbd334233d820aaf82a"
+checksum = "14db22a3fec113074342010bb85a75ba17789244649af8a3178594e0dc97c381"
 dependencies = [
  "hash32",
+ "spin",
  "stable_deref_trait",
 ]
 
@@ -314,9 +315,18 @@ checksum = "b71991ff56294aa922b450139ee08b3bfc70982c6b2c7562771375cf73542dd4"
 
 [[package]]
 name = "libc"
-version = "0.2.101"
+version = "0.2.102"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3cb00336871be5ed2c8ed44b60ae9959dc5b9f08539422ed43f09e34ecaeba21"
+checksum = "a2a5ac8f984bfcf3a823267e5fde638acc3325f6496633a5da6bb6eb2171e103"
+
+[[package]]
+name = "lock_api"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "712a4d093c9976e24e7dbca41db895dabcbac38eb5f4045393d17a95bdfb1109"
+dependencies = [
+ "scopeguard",
+]
 
 [[package]]
 name = "opaque-debug"
@@ -394,9 +404,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "71d301d4193d031abdd79ff7e3dd721168a9572ef3fe51a1517aba235bd8f86e"
 
 [[package]]
+name = "scopeguard"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
+
+[[package]]
 name = "sec1"
 version = "0.0.0"
-source = "git+https://github.com/rustcrypto/formats#77564c368c60486dbbdfb6e8ab6b1ec9f79aba62"
+source = "git+https://github.com/rustcrypto/formats#85322893dc6038d91027599fcf6b19489acd1f7d"
 dependencies = [
  "der",
  "generic-array",
@@ -453,6 +469,15 @@ dependencies = [
  "quote",
  "syn",
  "synstructure",
+]
+
+[[package]]
+name = "spin"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "511254be0c5bcf062b019a6c89c01a664aa359ded62f78aa72c6fc137c0590e5"
+dependencies = [
+ "lock_api",
 ]
 
 [[package]]
@@ -548,6 +573,6 @@ dependencies = [
 
 [[package]]
 name = "zeroize"
-version = "1.4.1"
+version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "377db0846015f7ae377174787dd452e1c5f5a9050bc6f954911d01f116daa0cd"
+checksum = "bf68b08513768deaa790264a7fac27a58cbf2705cfcdc9448362229217d7e970"
