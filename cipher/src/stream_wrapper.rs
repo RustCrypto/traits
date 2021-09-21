@@ -1,5 +1,5 @@
 use crate::{
-    errors::StreamCipherError, AsyncStreamCipher, AsyncStreamCipherCore, OverflowError, SeekNum,
+    errors::StreamCipherError, OverflowError, SeekNum,
     StreamCipher, StreamCipherCore, StreamCipherSeek, StreamCipherSeekCore,
 };
 use block_buffer::{inout::InOutBuf, BlockBuffer};
@@ -74,20 +74,6 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
         });
 
         Ok(())
-    }
-}
-
-impl<T: AsyncStreamCipherCore> AsyncStreamCipher for StreamCipherCoreWrapper<T> {
-    #[inline]
-    fn encrypt_inout(&mut self, data: InOutBuf<'_, u8>) {
-        let Self { core, buffer } = self;
-        buffer.xor_data(data, |blocks| core.encrypt_blocks_inout_mut(blocks, |_| {}));
-    }
-
-    #[inline]
-    fn decrypt_inout(&mut self, data: InOutBuf<'_, u8>) {
-        let Self { core, buffer } = self;
-        buffer.xor_data(data, |blocks| core.decrypt_blocks_inout_mut(blocks, |_| {}));
     }
 }
 

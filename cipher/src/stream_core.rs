@@ -1,10 +1,6 @@
-use crate::{BlockDecryptMut, BlockEncryptMut};
 use block_buffer::{generic_array::typenum::Unsigned, inout::InOutBuf};
 use core::convert::{TryFrom, TryInto};
 use crypto_common::{Block, BlockSizeUser};
-
-/// Marker trait for block-level asynchronous stream ciphers
-pub trait AsyncStreamCipherCore: BlockEncryptMut + BlockDecryptMut {}
 
 /// Block-level synchronous stream ciphers.
 pub trait StreamCipherCore: BlockSizeUser + Sized {

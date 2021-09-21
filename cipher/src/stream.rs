@@ -5,7 +5,43 @@
 
 use crate::errors::{OverflowError, StreamCipherError};
 use crate::stream_core::Counter;
+use crate::{Block, BlockDecryptMut, BlockEncryptMut};
 use block_buffer::inout::InOutBuf;
+
+/// Marker trait for block-level asynchronous stream ciphers
+pub trait AsyncStreamCipher: BlockEncryptMut + BlockDecryptMut + Sized {
+    /// Encrypt data using `InOutBuf`.
+    fn encrypt_inout(mut self, data: InOutBuf<'_, u8>) {
+        let (blocks, tail) = data.into_chunks();
+        self.encrypt_blocks_inout_mut(blocks, |_| {});
+        let mut block = Block::<Self>::default();
+        let n = tail.len();
+        block[..n].copy_from_slice(tail.get_in());
+        self.encrypt_block_mut(&mut block);
+        tail.get_out().copy_from_slice(&block[..n]);
+    }
+
+    /// Decrypt data using `InOutBuf`.
+    fn decrypt_inout(mut self, data: InOutBuf<'_, u8>) {
+        let (blocks, tail) = data.into_chunks();
+        self.decrypt_blocks_inout_mut(blocks, |_| {});
+        let mut block = Block::<Self>::default();
+        let n = tail.len();
+        block[..n].copy_from_slice(tail.get_in());
+        self.decrypt_block_mut(&mut block);
+        tail.get_out().copy_from_slice(&block[..n]);
+    }
+
+    /// Encrypt data in place.
+    fn encrypt(self, buf: &mut [u8]) {
+        self.encrypt_inout(buf.into());
+    }
+
+    /// Decrypt data in place.
+    fn decrypt(self, buf: &mut [u8]) {
+        self.decrypt_inout(buf.into());
+    }
+}
 
 /// Synchronous stream cipher core trait.
 pub trait StreamCipher {
@@ -95,25 +131,6 @@ pub trait StreamCipherSeek {
     }
 }
 
-/// Asynchronous stream cipher.
-pub trait AsyncStreamCipher {
-    /// Encrypt data using `InOutBuf`.
-    fn encrypt_inout(&mut self, buf: InOutBuf<'_, u8>);
-
-    /// Decrypt data using `InOutBuf`.
-    fn decrypt_inout(&mut self, buf: InOutBuf<'_, u8>);
-
-    /// Encrypt data in place.
-    fn encrypt(&mut self, buf: &mut [u8]) {
-        self.encrypt_inout(buf.into());
-    }
-
-    /// Decrypt data in place.
-    fn decrypt(&mut self, buf: &mut [u8]) {
-        self.decrypt_inout(buf.into());
-    }
-}
-
 impl<C: StreamCipher> StreamCipher for &mut C {
     #[inline]
     fn apply_keystream_inout(&mut self, buf: InOutBuf<'_, u8>) {
@@ -123,18 +140,6 @@ impl<C: StreamCipher> StreamCipher for &mut C {
     #[inline]
     fn try_apply_keystream(&mut self, buf: InOutBuf<'_, u8>) -> Result<(), StreamCipherError> {
         C::try_apply_keystream(self, buf)
-    }
-}
-
-impl<C: AsyncStreamCipher> AsyncStreamCipher for &mut C {
-    #[inline]
-    fn encrypt_inout(&mut self, buf: InOutBuf<'_, u8>) {
-        C::encrypt_inout(self, buf);
-    }
-
-    #[inline]
-    fn decrypt_inout(&mut self, buf: InOutBuf<'_, u8>) {
-        C::decrypt_inout(self, buf);
     }
 }
 
