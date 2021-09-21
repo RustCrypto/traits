@@ -11,35 +11,59 @@ use block_buffer::inout::InOutBuf;
 /// Marker trait for block-level asynchronous stream ciphers
 pub trait AsyncStreamCipher: BlockEncryptMut + BlockDecryptMut + Sized {
     /// Encrypt data using `InOutBuf`.
-    fn encrypt_inout(mut self, data: InOutBuf<'_, u8>) {
+    fn encrypt_inout(
+        mut self,
+        data: InOutBuf<'_, u8>,
+        mut post_fn: impl FnMut(&[Block<Self>]),
+    ) {
         let (blocks, tail) = data.into_chunks();
-        self.encrypt_blocks_inout_mut(blocks, |_| {});
+        self.encrypt_blocks_inout_mut(
+            blocks,
+            |mut buf| {
+                buf.copy_tmp2out();
+                post_fn(buf.get_out());
+            },
+        );
         let mut block = Block::<Self>::default();
         let n = tail.len();
-        block[..n].copy_from_slice(tail.get_in());
-        self.encrypt_block_mut(&mut block);
-        tail.get_out().copy_from_slice(&block[..n]);
+        if n != 0 {
+            block[..n].copy_from_slice(tail.get_in());
+            self.encrypt_block_mut(&mut block);
+            tail.get_out().copy_from_slice(&block[..n]);
+        }
     }
 
     /// Decrypt data using `InOutBuf`.
-    fn decrypt_inout(mut self, data: InOutBuf<'_, u8>) {
+    fn decrypt_inout(
+        mut self,
+        data: InOutBuf<'_, u8>,
+        mut post_fn: impl FnMut(&[Block<Self>]),
+    ) {
         let (blocks, tail) = data.into_chunks();
-        self.decrypt_blocks_inout_mut(blocks, |_| {});
+        self.decrypt_blocks_inout_mut(
+            blocks,
+            |mut buf| {
+                buf.copy_tmp2out();
+                post_fn(buf.get_out());
+            },
+        );
         let mut block = Block::<Self>::default();
         let n = tail.len();
-        block[..n].copy_from_slice(tail.get_in());
-        self.decrypt_block_mut(&mut block);
-        tail.get_out().copy_from_slice(&block[..n]);
+        if n != 0 {
+            block[..n].copy_from_slice(tail.get_in());
+            self.decrypt_block_mut(&mut block);
+            tail.get_out().copy_from_slice(&block[..n]);
+        }
     }
 
     /// Encrypt data in place.
     fn encrypt(self, buf: &mut [u8]) {
-        self.encrypt_inout(buf.into());
+        self.encrypt_inout(buf.into(), |_| {});
     }
 
     /// Decrypt data in place.
     fn decrypt(self, buf: &mut [u8]) {
-        self.decrypt_inout(buf.into());
+        self.decrypt_inout(buf.into(), |_| {});
     }
 }
 
