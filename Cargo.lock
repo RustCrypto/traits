@@ -67,7 +67,7 @@ dependencies = [
 [[package]]
 name = "block-buffer"
 version = "0.10.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#6b7199fb78dba025deb1e4f46bdaf10ee812341e"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#6bd6ade2bc6db1f168f853e2c4a7ed16d623df41"
 dependencies = [
  "block-padding",
  "generic-array",
@@ -77,7 +77,7 @@ dependencies = [
 [[package]]
 name = "block-padding"
 version = "0.3.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#6b7199fb78dba025deb1e4f46bdaf10ee812341e"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#6bd6ade2bc6db1f168f853e2c4a7ed16d623df41"
 dependencies = [
  "generic-array",
 ]
@@ -307,7 +307,7 @@ checksum = "21e4590e13640f19f249fe3e4eca5113bc4289f2497710378190e7f4bd96f45b"
 [[package]]
 name = "inout"
 version = "0.1.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#6b7199fb78dba025deb1e4f46bdaf10ee812341e"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#6bd6ade2bc6db1f168f853e2c4a7ed16d623df41"
 dependencies = [
  "generic-array",
 ]

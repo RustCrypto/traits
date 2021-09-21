@@ -32,25 +32,41 @@ impl<T: BlockSizeUser> StreamCipherCoreWrapper<T> {
     }
 }
 
+impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
+    fn check_remaining(&self, dlen: usize) -> Result<(), StreamCipherError> {
+        let rem_blocks = match self.core.remaining_blocks() {
+            Some(v) => v,
+            None => return Ok(()),
+        };
+
+        let bytes = if self.buffer.get_pos() == 0 {
+            dlen
+        } else {
+            let rem = self.buffer.remaining();
+            if dlen > rem {
+                dlen - rem
+            } else {
+                return Ok(());
+            }
+        };
+        let bs = T::BlockSize::USIZE;
+        let blocks = if bytes % bs == 0 {
+            bytes / bs
+        } else {
+            bytes / bs + 1
+        };
+        if blocks > rem_blocks {
+            Err(StreamCipherError)
+        } else {
+            Ok(())
+        }
+    }
+}
+
 impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
     #[inline]
     fn try_apply_keystream(&mut self, data: InOutBuf<'_, u8>) -> Result<(), StreamCipherError> {
-        if let Some(rem_blocks) = self.core.remaining_blocks() {
-            let bytes = if self.buffer.get_pos() == 0 {
-                data.len()
-            } else {
-                data.len() - self.buffer.remaining()
-            };
-            let bs = T::BlockSize::USIZE;
-            let blocks = if bytes % bs == 0 {
-                bytes / bs
-            } else {
-                bytes / bs + 1
-            };
-            if blocks > rem_blocks {
-                return Err(StreamCipherError);
-            }
-        }
+        self.check_remaining(data.len())?;
 
         let Self { core, buffer } = self;
         buffer.xor_data(data, |blocks| {
