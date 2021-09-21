@@ -1,8 +1,5 @@
 use block_buffer::DigestBuffer;
-use generic_array::{
-    typenum::{type_operators::IsLess, U256},
-    ArrayLength, GenericArray,
-};
+use generic_array::{ArrayLength, GenericArray};
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, RngCore};
 
@@ -18,7 +15,7 @@ pub type Iv<B> = GenericArray<u8, <B as IvSizeUser>::IvSize>;
 /// Types which process data in blocks.
 pub trait BlockSizeUser {
     /// Size of the block in bytes.
-    type BlockSize: ArrayLength<u8> + IsLess<U256> + 'static;
+    type BlockSize: ArrayLength<u8> + 'static;
 }
 
 impl<T: BlockSizeUser> BlockSizeUser for &T {
