@@ -118,7 +118,8 @@ dependencies = [
 [[package]]
 name = "const-oid"
 version = "0.6.1"
-source = "git+https://github.com/rustcrypto/formats#85322893dc6038d91027599fcf6b19489acd1f7d"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fdab415d6744056100f40250a66bc430c1a46f7a02e20bc11c94c79a0f0464df"
 
 [[package]]
 name = "cpufeatures"
@@ -188,7 +189,8 @@ dependencies = [
 [[package]]
 name = "der"
 version = "0.4.3"
-source = "git+https://github.com/rustcrypto/formats#85322893dc6038d91027599fcf6b19489acd1f7d"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2adca118c71ecd9ae094d4b68257b3fdfcb711a612b9eec7b5a0d27a5a70a5b4"
 dependencies = [
  "const-oid",
 ]
@@ -411,8 +413,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "sec1"
-version = "0.0.0"
-source = "git+https://github.com/rustcrypto/formats#85322893dc6038d91027599fcf6b19489acd1f7d"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "821f61b502d21d297a599436b55d03fff2340961a13bfd0a2c010380b8435823"
 dependencies = [
  "der",
  "generic-array",
