@@ -12,7 +12,3 @@ members = [
     "signature/async",
     "universal-hash",
 ]
-
-[patch.crates-io]
-der = { git = "https://github.com/rustcrypto/formats" }
-sec1 = { git = "https://github.com/rustcrypto/formats" }
