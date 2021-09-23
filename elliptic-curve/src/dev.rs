@@ -2,7 +2,7 @@
 //! against concrete implementations of the traits in this crate.
 
 use crate::{
-    bigint::U256,
+    bigint::{Encoding, Limb, U256},
     error::{Error, Result},
     ops::Reduce,
     rand_core::RngCore,
@@ -312,8 +312,11 @@ impl Neg for Scalar {
 }
 
 impl Reduce<U256> for Scalar {
-    fn from_uint_reduced(_: U256) -> Self {
-        unimplemented!();
+    fn from_uint_reduced(w: U256) -> Self {
+        let (r, underflow) = w.sbb(&MockCurve::ORDER, Limb::ZERO);
+        let underflow = Choice::from((underflow.0 >> (Limb::BIT_SIZE - 1)) as u8);
+        let reduced = U256::conditional_select(&w, &r, !underflow);
+        Self(ScalarCore::new(reduced).unwrap())
     }
 }
 
