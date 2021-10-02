@@ -50,7 +50,7 @@ use pem_rfc7468 as pem;
 use {
     crate::{
         sec1::{EncodedPoint, ModulusSize, ValidatePublicKey},
-        FieldSize, PrimeCurve,
+        FieldSize,
     },
     core::convert::{TryFrom, TryInto},
 };
@@ -179,7 +179,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
     pub fn from_sec1_der(der_bytes: &[u8]) -> Result<Self>
     where
-        C: PrimeCurve + ValidatePublicKey,
+        C: Curve + ValidatePublicKey,
         FieldSize<C>: ModulusSize,
     {
         sec1::EcPrivateKey::try_from(der_bytes)?
@@ -195,7 +195,7 @@ where
     )]
     pub fn to_sec1_der(&self) -> der::Result<Zeroizing<Vec<u8>>>
     where
-        C: PrimeCurve + ProjectiveArithmetic,
+        C: Curve + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -229,7 +229,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
     pub fn from_sec1_pem(s: &str) -> Result<Self>
     where
-        C: PrimeCurve + ValidatePublicKey,
+        C: Curve + ValidatePublicKey,
         FieldSize<C>: ModulusSize,
     {
         let (label, der_bytes) = pem::decode_vec(s.as_bytes()).map_err(|_| Error)?;
@@ -249,7 +249,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
     pub fn to_pem(&self, line_ending: pem::LineEnding) -> Result<Zeroizing<String>>
     where
-        C: PrimeCurve + ProjectiveArithmetic,
+        C: Curve + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -288,7 +288,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk(&self) -> JwkEcKey
     where
-        C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
+        C: Curve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -301,7 +301,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk_string(&self) -> Zeroizing<String>
     where
-        C: PrimeCurve + JwkParameters + ProjectiveArithmetic,
+        C: Curve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -352,7 +352,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> TryFrom<sec1::EcPrivateKey<'_>> for SecretKey<C>
 where
-    C: PrimeCurve + ValidatePublicKey,
+    C: Curve + ValidatePublicKey,
     FieldSize<C>: ModulusSize,
 {
     type Error = der::Error;
