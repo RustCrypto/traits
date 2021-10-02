@@ -22,9 +22,10 @@ use {core::str::FromStr, pkcs8::ToPublicKey};
 use {
     crate::{
         sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
-        FieldSize, PointCompression, PrimeCurve,
+        FieldSize, PointCompression,
     },
     core::cmp::Ordering,
+    subtle::CtOption,
 };
 
 #[cfg(any(feature = "jwk", feature = "pem"))]
@@ -96,12 +97,12 @@ where
     #[cfg(feature = "sec1")]
     pub fn from_sec1_bytes(bytes: &[u8]) -> Result<Self>
     where
-        C: PrimeCurve,
+        C: Curve,
         FieldSize<C>: ModulusSize,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     {
         let point = EncodedPoint::<C>::from_bytes(bytes).map_err(|_| Error)?;
-        Self::from_encoded_point(&point).ok_or(Error)
+        Option::from(Self::from_encoded_point(&point)).ok_or(Error)
     }
 
     /// Borrow the inner [`AffinePoint`] from this [`PublicKey`].
@@ -121,7 +122,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
     where
-        C: PrimeCurve + JwkParameters,
+        C: Curve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -133,7 +134,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn from_jwk_str(jwk: &str) -> Result<Self>
     where
-        C: PrimeCurve + JwkParameters,
+        C: Curve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -145,7 +146,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk(&self) -> JwkEcKey
     where
-        C: PrimeCurve + JwkParameters,
+        C: Curve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -157,7 +158,7 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk_string(&self) -> String
     where
-        C: PrimeCurve + JwkParameters,
+        C: Curve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -180,14 +181,16 @@ impl<C> Copy for PublicKey<C> where C: Curve + ProjectiveArithmetic {}
 #[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> FromEncodedPoint<C> for PublicKey<C>
 where
-    C: PrimeCurve + ProjectiveArithmetic,
+    C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
     /// Initialize [`PublicKey`] from an [`EncodedPoint`]
-    fn from_encoded_point(encoded_point: &EncodedPoint<C>) -> Option<Self> {
-        AffinePoint::<C>::from_encoded_point(encoded_point)
-            .and_then(|point| PublicKey::from_affine(point).ok())
+    fn from_encoded_point(encoded_point: &EncodedPoint<C>) -> CtOption<Self> {
+        AffinePoint::<C>::from_encoded_point(encoded_point).and_then(|point| {
+            let is_identity = ProjectivePoint::<C>::from(point).is_identity();
+            CtOption::new(PublicKey { point }, !is_identity)
+        })
     }
 }
 
@@ -195,7 +198,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> ToEncodedPoint<C> for PublicKey<C>
 where
-    C: PrimeCurve + ProjectiveArithmetic,
+    C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -210,7 +213,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> From<PublicKey<C>> for EncodedPoint<C>
 where
-    C: PrimeCurve + ProjectiveArithmetic + PointCompression,
+    C: Curve + ProjectiveArithmetic + PointCompression,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -223,7 +226,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> From<&PublicKey<C>> for EncodedPoint<C>
 where
-    C: PrimeCurve + ProjectiveArithmetic + PointCompression,
+    C: Curve + ProjectiveArithmetic + PointCompression,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -236,7 +239,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> PartialOrd for PublicKey<C>
 where
-    C: PrimeCurve + ProjectiveArithmetic,
+    C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -249,7 +252,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> Ord for PublicKey<C>
 where
-    C: PrimeCurve + ProjectiveArithmetic,
+    C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -265,7 +268,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(all(feature = "pkcs8", feature = "sec1"))))]
 impl<C> FromPublicKey for PublicKey<C>
 where
-    C: PrimeCurve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -292,7 +295,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> ToPublicKey for PublicKey<C>
 where
-    C: PrimeCurve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -311,7 +314,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for PublicKey<C>
 where
-    C: PrimeCurve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -326,7 +329,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> ToString for PublicKey<C>
 where
-    C: PrimeCurve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -345,6 +348,8 @@ mod tests {
     #[test]
     fn from_encoded_point_rejects_identity() {
         let identity = EncodedPoint::identity();
-        assert_eq!(PublicKey::from_encoded_point(&identity), None);
+        assert!(bool::from(
+            PublicKey::from_encoded_point(&identity).is_none()
+        ));
     }
 }

@@ -367,8 +367,13 @@ impl ConstantTimeEq for AffinePoint {
 }
 
 impl ConditionallySelectable for AffinePoint {
-    fn conditional_select(_a: &Self, _b: &Self, _choice: Choice) -> Self {
-        unimplemented!();
+    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
+        // Not really constant time, but this is dev code
+        if choice.into() {
+            *b
+        } else {
+            *a
+        }
     }
 }
 
@@ -381,12 +386,14 @@ impl Default for AffinePoint {
 impl DefaultIsZeroes for AffinePoint {}
 
 impl FromEncodedPoint<MockCurve> for AffinePoint {
-    fn from_encoded_point(point: &EncodedPoint) -> Option<Self> {
-        if point.is_identity() {
-            Some(Self::Identity)
+    fn from_encoded_point(encoded_point: &EncodedPoint) -> CtOption<Self> {
+        let point = if encoded_point.is_identity() {
+            Self::Identity
         } else {
-            Some(Self::Other(*point))
-        }
+            Self::Other(*encoded_point)
+        };
+
+        CtOption::new(point, Choice::from(1))
     }
 }
 
@@ -472,7 +479,7 @@ impl From<ProjectivePoint> for AffinePoint {
 }
 
 impl FromEncodedPoint<MockCurve> for ProjectivePoint {
-    fn from_encoded_point(_point: &EncodedPoint) -> Option<Self> {
+    fn from_encoded_point(_point: &EncodedPoint) -> CtOption<Self> {
         unimplemented!();
     }
 }

@@ -4,7 +4,8 @@
 
 pub use sec1::point::{Coordinates, ModulusSize, Tag};
 
-use crate::{FieldSize, PrimeCurve, Result, SecretKey};
+use crate::{Curve, FieldSize, Result, SecretKey};
+use subtle::CtOption;
 
 #[cfg(feature = "arithmetic")]
 use crate::{AffinePoint, Error, ProjectiveArithmetic};
@@ -18,15 +19,11 @@ pub type EncodedPoint<C> = sec1::point::EncodedPoint<FieldSize<C>>;
 pub trait FromEncodedPoint<C>
 where
     Self: Sized,
-    C: PrimeCurve,
+    C: Curve,
     FieldSize<C>: ModulusSize,
 {
     /// Deserialize the type this trait is impl'd on from an [`EncodedPoint`].
-    ///
-    /// # Returns
-    ///
-    /// `None` if the [`EncodedPoint`] is invalid.
-    fn from_encoded_point(point: &EncodedPoint<C>) -> Option<Self>;
+    fn from_encoded_point(point: &EncodedPoint<C>) -> CtOption<Self>;
 }
 
 /// Trait for serializing a value to a SEC1 encoded curve point.
@@ -34,7 +31,7 @@ where
 /// This is intended for use with the `AffinePoint` type for a given elliptic curve.
 pub trait ToEncodedPoint<C>
 where
-    C: PrimeCurve,
+    C: Curve,
     FieldSize<C>: ModulusSize,
 {
     /// Serialize this value as a SEC1 [`EncodedPoint`], optionally applying
@@ -47,7 +44,7 @@ where
 /// This is intended for use with the `AffinePoint` type for a given elliptic curve.
 pub trait ToCompactEncodedPoint<C>
 where
-    C: PrimeCurve,
+    C: Curve,
     FieldSize<C>: ModulusSize,
 {
     /// Serialize this value as a SEC1 [`EncodedPoint`], optionally applying
@@ -62,7 +59,7 @@ where
 /// a blanket default impl of this trait.
 pub trait ValidatePublicKey
 where
-    Self: PrimeCurve,
+    Self: Curve,
     FieldSize<Self>: ModulusSize,
 {
     /// Validate that the given [`EncodedPoint`] is a valid public key for the
@@ -86,7 +83,7 @@ where
 #[cfg(all(feature = "arithmetic"))]
 impl<C> ValidatePublicKey for C
 where
-    C: PrimeCurve + ProjectiveArithmetic,
+    C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
