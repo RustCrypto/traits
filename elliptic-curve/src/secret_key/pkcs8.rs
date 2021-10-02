@@ -3,7 +3,7 @@
 use super::SecretKey;
 use crate::{
     sec1::{ModulusSize, ValidatePublicKey},
-    AlgorithmParameters, FieldSize, PrimeCurve, ALGORITHM_OID,
+    AlgorithmParameters, Curve, FieldSize, ALGORITHM_OID,
 };
 use core::convert::TryFrom;
 use der::Decodable;
@@ -31,7 +31,7 @@ use {
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 impl<C> FromPrivateKey for SecretKey<C>
 where
-    C: PrimeCurve + AlgorithmParameters + ValidatePublicKey,
+    C: Curve + AlgorithmParameters + ValidatePublicKey,
     FieldSize<C>: ModulusSize,
 {
     fn from_pkcs8_private_key_info(
@@ -54,7 +54,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> ToPrivateKey for SecretKey<C>
 where
-    C: PrimeCurve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -68,7 +68,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for SecretKey<C>
 where
-    C: PrimeCurve + AlgorithmParameters + ValidatePublicKey,
+    C: Curve + AlgorithmParameters + ValidatePublicKey,
     FieldSize<C>: ModulusSize,
 {
     type Err = Error;
