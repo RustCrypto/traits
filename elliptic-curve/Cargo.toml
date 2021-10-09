@@ -16,7 +16,7 @@ keywords   = ["crypto", "ecc", "elliptic", "weierstrass"]
 
 [dependencies]
 crypto-bigint = { version = "0.2.9", features = ["generic-array", "zeroize"] }
-der = { version = "0.4.4", default-features = false, features = ["oid"] }
+der = { version = "0.5.0-pre", default-features = false, features = ["oid"] }
 generic-array = { version = "0.14", default-features = false }
 rand_core = { version = "0.6", default-features = false }
 subtle = { version = ">=2, <2.5", default-features = false }
@@ -28,8 +28,8 @@ ff = { version = "0.11", optional = true, default-features = false }
 group = { version = "0.11", optional = true, default-features = false }
 hex-literal = { version = "0.3", optional = true }
 pem-rfc7468 = { version = "0.2", optional = true }
-pkcs8 = { version = "0.7", optional = true }
-sec1 = { version = "0.1", optional = true, features = ["subtle", "zeroize"] }
+pkcs8 = { version = "0.8.0-pre", optional = true }
+sec1 = { version = "0.2.0-pre", optional = true, features = ["subtle", "zeroize"] }
 serde = { version = "1", optional = true, default-features = false }
 serde_json = { version = "1", optional = true, default-features = false, features = ["alloc"] }
 
