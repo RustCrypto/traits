@@ -68,7 +68,7 @@ impl<T: PasswordHasher> PasswordVerifier for T {
                 password,
                 Some(hash.algorithm),
                 hash.version,
-                T::Params::try_from(&hash)?,
+                T::Params::try_from(hash)?,
                 *salt,
             )?;
 

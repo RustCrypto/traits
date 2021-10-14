@@ -47,7 +47,7 @@ where
     S: Signature,
 {
     fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error> {
-        T::try_sign(&self, msg)
+        T::try_sign(self, msg)
     }
 }
 
