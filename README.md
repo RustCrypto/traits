@@ -1,4 +1,4 @@
-# RustCrypto: Traits ![Rust Version][rustc-image] [![Project Chat][chat-image]][chat-link] [![dependency status][deps-image]][deps-link]
+# RustCrypto: Traits [![Project Chat][chat-image]][chat-link] [![dependency status][deps-image]][deps-link]
 
 Collection of traits which describe functionality of cryptographic primitives.
 
@@ -46,7 +46,6 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/
 [deps-image]: https://deps.rs/repo/github/RustCrypto/traits/status.svg

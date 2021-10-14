@@ -39,8 +39,8 @@ checksum = "8a32fd6af2b5827bce66c29053ba0e7c42b9dcab01835835058558c10851a46b"
 
 [[package]]
 name = "base64ct"
-version = "1.1.0"
-source = "git+https://github.com/RustCrypto/formats.git#8df9765ec9ca6fa728c797051e780997052b0bb2"
+version = "1.1.1"
+source = "git+https://github.com/RustCrypto/formats.git#98d7a2896d671169453f43ee57b43cee17b18b89"
 
 [[package]]
 name = "bitvec"
@@ -122,8 +122,8 @@ dependencies = [
 
 [[package]]
 name = "const-oid"
-version = "0.6.1"
-source = "git+https://github.com/RustCrypto/formats.git#8df9765ec9ca6fa728c797051e780997052b0bb2"
+version = "0.6.2"
+source = "git+https://github.com/RustCrypto/formats.git#98d7a2896d671169453f43ee57b43cee17b18b89"
 
 [[package]]
 name = "cpufeatures"
@@ -192,8 +192,8 @@ dependencies = [
 
 [[package]]
 name = "der"
-version = "0.5.0-pre"
-source = "git+https://github.com/RustCrypto/formats.git#8df9765ec9ca6fa728c797051e780997052b0bb2"
+version = "0.5.0-pre.1"
+source = "git+https://github.com/RustCrypto/formats.git#98d7a2896d671169453f43ee57b43cee17b18b89"
 dependencies = [
  "const-oid",
 ]
@@ -320,9 +320,9 @@ checksum = "b71991ff56294aa922b450139ee08b3bfc70982c6b2c7562771375cf73542dd4"
 
 [[package]]
 name = "libc"
-version = "0.2.102"
+version = "0.2.103"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2a5ac8f984bfcf3a823267e5fde638acc3325f6496633a5da6bb6eb2171e103"
+checksum = "dd8f7255a17a627354f321ef0055d63b898c6fb27eff628af4d1b66b7331edf6"
 
 [[package]]
 name = "lock_api"
@@ -360,15 +360,15 @@ dependencies = [
 [[package]]
 name = "pem-rfc7468"
 version = "0.2.2"
-source = "git+https://github.com/RustCrypto/formats.git#8df9765ec9ca6fa728c797051e780997052b0bb2"
+source = "git+https://github.com/RustCrypto/formats.git#98d7a2896d671169453f43ee57b43cee17b18b89"
 dependencies = [
- "base64ct 1.1.0",
+ "base64ct 1.1.1",
 ]
 
 [[package]]
 name = "pkcs8"
 version = "0.8.0-pre"
-source = "git+https://github.com/RustCrypto/formats.git#8df9765ec9ca6fa728c797051e780997052b0bb2"
+source = "git+https://github.com/RustCrypto/formats.git#98d7a2896d671169453f43ee57b43cee17b18b89"
 dependencies = [
  "der",
  "pem-rfc7468 0.2.2 (git+https://github.com/RustCrypto/formats.git)",
@@ -378,18 +378,18 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.29"
+version = "1.0.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9f5105d4fdaab20335ca9565e106a5d9b82b6219b5ba735731124ac6711d23d"
+checksum = "edc3358ebc67bc8b7fa0c007f945b0b18226f78437d61bec735a9eb96b61ee70"
 dependencies = [
  "unicode-xid",
 ]
 
 [[package]]
 name = "quote"
-version = "1.0.9"
+version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3d0b9745dc2debf507c8422de05d7226cc1f0644216dfdfead988f9b1ab32a7"
+checksum = "38bc8cc6a5f2e3655e0899c1b848643b2562f853f114bfec7be120678e3ace05"
 dependencies = [
  "proc-macro2",
 ]
@@ -424,7 +424,7 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 [[package]]
 name = "sec1"
 version = "0.2.0"
-source = "git+https://github.com/RustCrypto/formats.git#8df9765ec9ca6fa728c797051e780997052b0bb2"
+source = "git+https://github.com/RustCrypto/formats.git#98d7a2896d671169453f43ee57b43cee17b18b89"
 dependencies = [
  "der",
  "generic-array",
@@ -495,7 +495,7 @@ dependencies = [
 [[package]]
 name = "spki"
 version = "0.5.0-pre"
-source = "git+https://github.com/RustCrypto/formats.git#8df9765ec9ca6fa728c797051e780997052b0bb2"
+source = "git+https://github.com/RustCrypto/formats.git#98d7a2896d671169453f43ee57b43cee17b18b89"
 dependencies = [
  "der",
 ]
@@ -514,9 +514,9 @@ checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 
 [[package]]
 name = "syn"
-version = "1.0.76"
+version = "1.0.80"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6f107db402c2c2055242dbf4d2af0e69197202e9faacbef9571bbe47f5a1b84"
+checksum = "d010a1623fbd906d51d650a9916aaefc05ffa0e4053ff7fe601167f3e715d194"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -525,9 +525,9 @@ dependencies = [
 
 [[package]]
 name = "synstructure"
-version = "0.12.5"
+version = "0.12.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "474aaa926faa1603c40b7885a9eaea29b444d1cb2850cb7c0e37bb1a4182f4fa"
+checksum = "f36bdaa60a83aca3921b5259d5400cbf5e90fc51931376a9bd4a0eb79aa7210f"
 dependencies = [
  "proc-macro2",
  "quote",
