@@ -33,14 +33,14 @@ dependencies = [
 
 [[package]]
 name = "base64ct"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a32fd6af2b5827bce66c29053ba0e7c42b9dcab01835835058558c10851a46b"
+version = "1.1.0"
+source = "git+https://github.com/RustCrypto/formats.git#8df9765ec9ca6fa728c797051e780997052b0bb2"
 
 [[package]]
 name = "base64ct"
-version = "1.1.0"
-source = "git+https://github.com/RustCrypto/formats.git#8df9765ec9ca6fa728c797051e780997052b0bb2"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6b4d9b1225d28d360ec6a231d65af1fd99a2a095154c8040689617290569c5c"
 
 [[package]]
 name = "bitvec"
@@ -220,7 +220,7 @@ dependencies = [
 name = "elliptic-curve"
 version = "0.11.0-pre"
 dependencies = [
- "base64ct 1.0.1",
+ "base64ct 1.1.1",
  "crypto-bigint",
  "der",
  "ff",
@@ -343,7 +343,7 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 name = "password-hash"
 version = "0.3.2"
 dependencies = [
- "base64ct 1.0.1",
+ "base64ct 1.1.1",
  "rand_core",
  "subtle",
 ]
@@ -354,7 +354,7 @@ version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e71fb2d401a15271d52aade6d9410fb4ead603a86da5503f92e872e1df790265"
 dependencies = [
- "base64ct 1.0.1",
+ "base64ct 1.1.1",
 ]
 
 [[package]]
