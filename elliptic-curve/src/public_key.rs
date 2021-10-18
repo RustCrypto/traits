@@ -12,11 +12,14 @@ use crate::{JwkEcKey, JwkParameters};
 #[cfg(all(feature = "sec1", feature = "pkcs8"))]
 use {
     crate::{AlgorithmParameters, ALGORITHM_OID},
-    pkcs8::FromPublicKey,
+    pkcs8::DecodePublicKey,
 };
 
 #[cfg(feature = "pem")]
-use {core::str::FromStr, pkcs8::ToPublicKey};
+use {
+    core::{convert::TryInto, str::FromStr},
+    pkcs8::EncodePublicKey,
+};
 
 #[cfg(feature = "sec1")]
 use {
@@ -52,7 +55,7 @@ use alloc::string::{String, ToString};
 /// To decode an elliptic curve public key from SPKI, enable the `pkcs8`
 /// feature of this crate (or the `pkcs8` feature of a specific RustCrypto
 /// elliptic curve crate) and use the
-/// [`elliptic_curve::pkcs8::FromPublicKey`][`pkcs8::FromPublicKey`]
+/// [`elliptic_curve::pkcs8::DecodePublicKey`][`pkcs8::DecodePublicKey`]
 /// trait to parse it.
 ///
 /// When the `pem` feature of this crate (or a specific RustCrypto elliptic
@@ -266,13 +269,13 @@ where
 
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
 #[cfg_attr(docsrs, doc(cfg(all(feature = "pkcs8", feature = "sec1"))))]
-impl<C> FromPublicKey for PublicKey<C>
+impl<C> DecodePublicKey for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
-    fn from_spki(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> pkcs8::Result<Self> {
+    fn from_spki(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> der::Result<Self> {
         if spki.algorithm.oid != ALGORITHM_OID {
             return Err(der::ErrorKind::UnknownOid {
                 oid: spki.algorithm.oid,
@@ -287,26 +290,26 @@ where
         }
 
         Self::from_sec1_bytes(spki.subject_public_key)
-            .map_err(|_| der::Tag::BitString.value_error().into())
+            .map_err(|_| der::Tag::BitString.value_error())
     }
 }
 
 #[cfg(feature = "pem")]
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
-impl<C> ToPublicKey for PublicKey<C>
+impl<C> EncodePublicKey for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
-    fn to_public_key_der(&self) -> pkcs8::Result<pkcs8::PublicKeyDocument> {
+    fn to_public_key_der(&self) -> der::Result<pkcs8::PublicKeyDocument> {
         let public_key_bytes = self.to_encoded_point(false);
 
-        Ok(pkcs8::SubjectPublicKeyInfo {
+        pkcs8::SubjectPublicKeyInfo {
             algorithm: C::algorithm_identifier(),
             subject_public_key: public_key_bytes.as_ref(),
         }
-        .into())
+        .try_into()
     }
 }
 
@@ -334,7 +337,8 @@ where
     FieldSize<C>: ModulusSize,
 {
     fn to_string(&self) -> String {
-        self.to_public_key_pem().expect("PEM encoding error")
+        self.to_public_key_pem(Default::default())
+            .expect("PEM encoding error")
     }
 }
 

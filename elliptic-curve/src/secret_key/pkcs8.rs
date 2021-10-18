@@ -7,18 +7,18 @@ use crate::{
 };
 use core::convert::TryFrom;
 use der::Decodable;
-use pkcs8::FromPrivateKey;
+use pkcs8::DecodePrivateKey;
 use sec1::EcPrivateKey;
 
-// Imports for the `ToPrivateKey` impl
-// TODO(tarcieri): use weak activation of `pkcs8/alloc` for gating `ToPrivateKey` impl
+// Imports for the `EncodePrivateKey` impl
+// TODO(tarcieri): use weak activation of `pkcs8/alloc` for gating `EncodePrivateKey` impl
 #[cfg(all(feature = "arithmetic", feature = "pem"))]
 use {
     crate::{
         sec1::{FromEncodedPoint, ToEncodedPoint},
         AffinePoint, ProjectiveArithmetic,
     },
-    pkcs8::ToPrivateKey,
+    pkcs8::EncodePrivateKey,
 };
 
 // Imports for actual PEM support
@@ -29,7 +29,7 @@ use {
 };
 
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
-impl<C> FromPrivateKey for SecretKey<C>
+impl<C> DecodePrivateKey for SecretKey<C>
 where
     C: Curve + AlgorithmParameters + ValidatePublicKey,
     FieldSize<C>: ModulusSize,
@@ -52,7 +52,7 @@ where
 #[cfg(all(feature = "arithmetic", feature = "pem"))]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
-impl<C> ToPrivateKey for SecretKey<C>
+impl<C> EncodePrivateKey for SecretKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
@@ -60,7 +60,7 @@ where
 {
     fn to_pkcs8_der(&self) -> pkcs8::Result<pkcs8::PrivateKeyDocument> {
         let ec_private_key = self.to_sec1_der()?;
-        Ok(pkcs8::PrivateKeyInfo::new(C::algorithm_identifier(), &ec_private_key).to_der())
+        pkcs8::PrivateKeyInfo::new(C::algorithm_identifier(), &ec_private_key).to_der()
     }
 }
 
