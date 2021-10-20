@@ -17,20 +17,24 @@ extern crate std;
 #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
 pub use rand_core;
 
+pub use crypto_common;
+pub use generic_array;
+
 #[cfg(feature = "dev")]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
 pub mod core_api;
 
-use core::fmt;
 pub use crypto_common::{
-    subtle::ConstantTimeEq, CtOutput, FixedOutput, FixedOutputReset, InvalidLength, Key, KeyInit,
-    Output, Reset, Update,
+    CtOutput, InvalidLength, Key, KeyInit, Reset, Update,
 };
-pub use generic_array::{
-    self,
-    typenum::{consts, Unsigned},
+pub use generic_array::typenum::consts;
+
+use core::fmt;
+use generic_array::typenum::Unsigned;
+use crypto_common::{
+    subtle::ConstantTimeEq, FixedOutput, FixedOutputReset, Output,
 };
 
 /// Convinience super-trait covering functionality of Message Authentication algorithms.
