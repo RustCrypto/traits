@@ -78,7 +78,16 @@ impl Debug for Error {
 
 impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("signature error")
+        f.write_str("signature error")?;
+
+        #[cfg(feature = "std")]
+        {
+            if let Some(source) = &self.source {
+                write!(f, ": {}", source)?;
+            }
+        }
+
+        Ok(())
     }
 }
 
