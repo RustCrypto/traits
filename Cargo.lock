@@ -179,7 +179,6 @@ name = "crypto-mac"
 version = "0.12.0-pre"
 dependencies = [
  "blobby",
- "cipher 0.4.0",
  "crypto-common",
  "generic-array",
  "rand_core",
