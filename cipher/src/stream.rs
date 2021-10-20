@@ -6,7 +6,7 @@
 use crate::errors::{OverflowError, StreamCipherError};
 use crate::stream_core::Counter;
 use crate::{Block, BlockDecryptMut, BlockEncryptMut};
-use block_buffer::inout::InOutBuf;
+use inout::InOutBuf;
 
 /// Marker trait for block-level asynchronous stream ciphers
 pub trait AsyncStreamCipher: BlockEncryptMut + BlockDecryptMut + Sized {

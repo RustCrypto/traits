@@ -10,7 +10,7 @@
 //! [2]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
 //! [3]: https://en.wikipedia.org/wiki/Symmetric-key_algorithm
 
-use block_buffer::inout::{InOut, InOutBuf, InSrc, InTmpOutBuf, NotEqualError};
+use inout::{InOut, InOutBuf, InSrc, InTmpOutBuf, NotEqualError};
 use generic_array::typenum::U1;
 
 pub use crypto_common::{Block, BlockSizeUser};

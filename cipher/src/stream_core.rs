@@ -1,4 +1,5 @@
-use block_buffer::{generic_array::typenum::Unsigned, inout::InOutBuf};
+use block_buffer::{generic_array::typenum::Unsigned};
+use inout::InOutBuf;
 use core::convert::{TryFrom, TryInto};
 use crypto_common::{Block, BlockSizeUser};
 
