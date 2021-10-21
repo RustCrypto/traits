@@ -78,7 +78,7 @@ pub use {
         public_key::PublicKey,
         scalar::{non_zero::NonZeroScalar, Scalar},
     },
-    ff::Field,
+    ff::{self, Field, PrimeField},
     group::{self, Group},
 };
 
