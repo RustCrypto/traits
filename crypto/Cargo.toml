@@ -1,6 +1,6 @@
 [package]
 name = "crypto"
-version = "0.3.0" # Also update html_root_url in lib.rs when bumping this
+version = "0.4.0-pre" # Also update html_root_url in lib.rs when bumping this
 description = """
 Resources for building cryptosystems in Rust using the RustCrypto project's ecosystem.
 """
@@ -11,7 +11,12 @@ repository = "https://github.com/RustCrypto/traits"
 keywords = ["crypto", "encryption", "rustcrypto"]
 categories = ["cryptography", "no-std"]
 readme = "README.md"
-edition = "2018"
+edition = "2021"
+rust-version = "1.56"
+
+# Hack to allow this crate to coexist with pre-2021 edition crates
+[workspace]
+members = ["."]
 
 [dependencies]
 aead = { version = "0.4", optional = true, path = "../aead" }
@@ -37,3 +42,7 @@ std = [
 
 [package.metadata.docs.rs]
 all-features = true
+
+[patch.crates-io]
+der = { git = "https://github.com/RustCrypto/formats.git" }
+sec1 = { git = "https://github.com/RustCrypto/formats.git" }
