@@ -160,7 +160,7 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_root_url = "https://docs.rs/signature/1.3.1"
+    html_root_url = "https://docs.rs/signature/1.4.0"
 )]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms, unused_qualifications)]
@@ -193,7 +193,7 @@ pub use signature_derive::{Signer, Verifier};
 #[cfg(feature = "digest-preview")]
 pub use digest;
 
-#[cfg(feature = "rand_core")]
+#[cfg(feature = "rand-preview")]
 #[cfg_attr(docsrs, doc(cfg(feature = "rand-preview")))]
 pub use rand_core;
 
