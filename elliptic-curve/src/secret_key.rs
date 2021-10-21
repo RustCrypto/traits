@@ -47,12 +47,9 @@ use alloc::string::ToString;
 use pem_rfc7468 as pem;
 
 #[cfg(feature = "sec1")]
-use {
-    crate::{
-        sec1::{EncodedPoint, ModulusSize, ValidatePublicKey},
-        FieldSize,
-    },
-    core::convert::{TryFrom, TryInto},
+use crate::{
+    sec1::{EncodedPoint, ModulusSize, ValidatePublicKey},
+    FieldSize,
 };
 
 #[cfg(all(docsrs, feature = "pkcs8"))]

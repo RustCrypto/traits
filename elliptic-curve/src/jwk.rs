@@ -15,7 +15,6 @@ use alloc::{
 };
 use base64ct::{Base64UrlUnpadded as Base64Url, Encoding};
 use core::{
-    convert::{TryFrom, TryInto},
     fmt::{self, Debug},
     marker::PhantomData,
     str::{self, FromStr},

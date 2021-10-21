@@ -5,7 +5,6 @@ use crate::{
     sec1::{ModulusSize, ValidatePublicKey},
     AlgorithmParameters, Curve, FieldSize, ALGORITHM_OID,
 };
-use core::convert::TryFrom;
 use der::Decodable;
 use pkcs8::DecodePrivateKey;
 use sec1::EcPrivateKey;
