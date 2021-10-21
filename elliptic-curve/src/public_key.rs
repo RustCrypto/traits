@@ -16,10 +16,7 @@ use {
 };
 
 #[cfg(feature = "pem")]
-use {
-    core::{convert::TryInto, str::FromStr},
-    pkcs8::EncodePublicKey,
-};
+use {core::str::FromStr, pkcs8::EncodePublicKey};
 
 #[cfg(feature = "sec1")]
 use {

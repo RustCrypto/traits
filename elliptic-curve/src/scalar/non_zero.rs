@@ -7,7 +7,7 @@ use crate::{
     rand_core::{CryptoRng, RngCore},
     Curve, Error, FieldBytes, ProjectiveArithmetic, Result, Scalar, ScalarCore, SecretKey,
 };
-use core::{convert::TryFrom, ops::Deref};
+use core::ops::Deref;
 use ff::{Field, PrimeField};
 use generic_array::GenericArray;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
