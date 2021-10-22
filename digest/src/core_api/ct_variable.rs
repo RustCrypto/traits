@@ -1,6 +1,9 @@
-use super::{AlgorithmName, FixedOutputCore, Reset, UpdateCore, VariableOutputCore};
+use super::{AlgorithmName, BufferUser, FixedOutputCore, Reset, UpdateCore, VariableOutputCore};
+use crate::HashMarker;
+#[cfg(feature = "mac")]
+use crate::MacMarker;
 use core::{fmt, marker::PhantomData};
-use crypto_common::{Block, BlockSizeUser, BufferUser, OutputSizeUser};
+use crypto_common::{Block, BlockSizeUser, OutputSizeUser};
 use generic_array::{
     typenum::{IsLessOrEqual, LeEq, NonZero},
     ArrayLength, GenericArray,
@@ -17,6 +20,23 @@ where
 {
     inner: T,
     _out: PhantomData<OutSize>,
+}
+
+impl<T, OutSize> HashMarker for CtVariableCoreWrapper<T, OutSize>
+where
+    T: VariableOutputCore + HashMarker,
+    OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
+    LeEq<OutSize, T::MaxOutputSize>: NonZero,
+{
+}
+
+#[cfg(feature = "mac")]
+impl<T, OutSize> MacMarker for CtVariableCoreWrapper<T, OutSize>
+where
+    T: VariableOutputCore + MacMarker,
+    OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
+    LeEq<OutSize, T::MaxOutputSize>: NonZero,
+{
 }
 
 impl<T, OutSize> BlockSizeUser for CtVariableCoreWrapper<T, OutSize>

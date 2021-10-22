@@ -1,11 +1,14 @@
-//! Low-level core API traits.
 use super::{
-    AlgorithmName, BufferUser, FixedOutput, FixedOutputCore, FixedOutputReset, KeyInit,
-    KeySizeUser, OutputSizeUser, Reset, Update, UpdateCore,
+    AlgorithmName, BufferUser, ExtendableOutputCore, FixedOutputCore, OutputSizeUser, Reset,
+    UpdateCore, XofReaderCoreWrapper,
 };
+use crate::{ExtendableOutput, FixedOutput, FixedOutputReset, HashMarker, Update};
 use block_buffer::DigestBuffer;
 use core::fmt;
-use generic_array::GenericArray;
+use crypto_common::{Key, KeyInit, KeySizeUser, Output};
+
+#[cfg(feature = "mac")]
+use crate::MacMarker;
 
 /// Wrapper around [`BufferUser`].
 ///
@@ -15,6 +18,11 @@ pub struct CoreWrapper<T: BufferUser> {
     core: T,
     buffer: T::Buffer,
 }
+
+impl<T: HashMarker + BufferUser> HashMarker for CoreWrapper<T> {}
+
+#[cfg(feature = "mac")]
+impl<T: MacMarker + BufferUser> MacMarker for CoreWrapper<T> {}
 
 impl<T: BufferUser> CoreWrapper<T> {
     /// Create new wrapper from `core`.
@@ -32,24 +40,12 @@ impl<T: BufferUser> CoreWrapper<T> {
     }
 }
 
-impl<T: BufferUser + Reset> CoreWrapper<T> {
-    /// Apply function to core and buffer, return its result,
-    /// and reset core and buffer.
-    pub fn apply_reset<V>(&mut self, mut f: impl FnMut(&mut T, &mut T::Buffer) -> V) -> V {
-        let Self { core, buffer } = self;
-        let res = f(core, buffer);
-        core.reset();
-        buffer.reset();
-        res
-    }
-}
-
 impl<T: KeySizeUser + BufferUser> KeySizeUser for CoreWrapper<T> {
     type KeySize = T::KeySize;
 }
 
 impl<T: BufferUser + KeyInit> KeyInit for CoreWrapper<T> {
-    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
+    fn new(key: &Key<Self>) -> Self {
         Self {
             core: T::new(key),
             buffer: Default::default(),
@@ -86,7 +82,7 @@ impl<D: OutputSizeUser + BufferUser> OutputSizeUser for CoreWrapper<D> {
 
 impl<D: FixedOutputCore> FixedOutput for CoreWrapper<D> {
     #[inline]
-    fn finalize_into(mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
+    fn finalize_into(mut self, out: &mut Output<Self>) {
         let Self { core, buffer } = &mut self;
         core.finalize_fixed_core(buffer, out);
     }
@@ -94,8 +90,31 @@ impl<D: FixedOutputCore> FixedOutput for CoreWrapper<D> {
 
 impl<D: FixedOutputCore + Reset> FixedOutputReset for CoreWrapper<D> {
     #[inline]
-    fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
-        self.apply_reset(|core, buffer| core.finalize_fixed_core(buffer, out));
+    fn finalize_into_reset(&mut self, out: &mut Output<Self>) {
+        let Self { core, buffer } = self;
+        core.finalize_fixed_core(buffer, out);
+        core.reset();
+        buffer.reset();
+    }
+}
+
+impl<D: ExtendableOutputCore + Reset> ExtendableOutput for CoreWrapper<D> {
+    type Reader = XofReaderCoreWrapper<D::ReaderCore>;
+
+    #[inline]
+    fn finalize_xof(self) -> Self::Reader {
+        let (mut core, mut buffer) = self.decompose();
+        let core = core.finalize_xof_core(&mut buffer);
+        let buffer = Default::default();
+        Self::Reader { core, buffer }
+    }
+
+    #[inline]
+    fn finalize_xof_reset(&mut self) -> Self::Reader {
+        let Self { core, buffer } = self;
+        let core = core.finalize_xof_core(buffer);
+        let buffer = Default::default();
+        Self::Reader { core, buffer }
     }
 }
 

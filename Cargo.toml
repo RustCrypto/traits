@@ -3,14 +3,12 @@ members = [
     "aead",
     "cipher",
     "crypto-common",
-    "crypto-mac",
     "crypto",
     "digest",
     "elliptic-curve",
     "password-hash",
     "signature",
     "signature/async",
-    "universal-hash",
 ]
 
 [patch.crates-io]

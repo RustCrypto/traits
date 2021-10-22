@@ -134,12 +134,12 @@ version = "0.3.0"
 dependencies = [
  "aead",
  "cipher 0.3.0",
- "crypto-mac 0.11.1",
+ "crypto-mac",
  "digest 0.9.0",
  "elliptic-curve",
  "password-hash",
  "signature",
- "universal-hash 0.4.1",
+ "universal-hash",
 ]
 
 [[package]]
@@ -158,10 +158,8 @@ dependencies = [
 name = "crypto-common"
 version = "0.1.0"
 dependencies = [
- "block-buffer 0.10.0",
  "generic-array",
  "rand_core",
- "subtle",
 ]
 
 [[package]]
@@ -172,16 +170,6 @@ checksum = "b1d1a86f49236c215f271d40892d5fc950490551400b02ef360692c29815c714"
 dependencies = [
  "generic-array",
  "subtle",
-]
-
-[[package]]
-name = "crypto-mac"
-version = "0.12.0-pre"
-dependencies = [
- "blobby",
- "crypto-common",
- "generic-array",
- "rand_core",
 ]
 
 [[package]]
@@ -207,8 +195,10 @@ name = "digest"
 version = "0.10.0"
 dependencies = [
  "blobby",
+ "block-buffer 0.10.0",
  "crypto-common",
  "generic-array",
+ "subtle",
 ]
 
 [[package]]
@@ -544,14 +534,6 @@ checksum = "9f214e8f697e925001e66ec2c6e37a4ef93f0f78c2eed7814394e10c62025b05"
 dependencies = [
  "generic-array",
  "subtle",
-]
-
-[[package]]
-name = "universal-hash"
-version = "0.5.0"
-dependencies = [
- "crypto-common",
- "generic-array",
 ]
 
 [[package]]

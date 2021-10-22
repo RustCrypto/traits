@@ -1,15 +1,15 @@
 //! This crate provides traits which describe functionality of cryptographic hash
-//! functions.
+//! functions and Message Authentication algorithms.
 //!
-//! Traits in this repository are organized into high-level convenience traits,
-//! mid-level traits which expose more fine-grained functionality, and
-//! low-level traits intended to only be used by algorithm implementations:
+//! Traits in this repository are organized into the following levels:
 //!
-//! - **High-level convenience traits**: [`Digest`], [`DynDigest`]. They are wrappers
-//!   around lower-level traits for most common hash-function use-cases.
-//! - **Mid-level traits**: [`Update`], [`FixedOutput`], [`ExtendableOutput`], [`Reset`].
-//!   These traits atomically describe available functionality of hash function
-//!   implementations.
+//! - **High-level convenience traits**: [`Digest`], [`DynDigest`], [`Mac`].
+//!   Wrappers around lower-level traits for most common use-cases.
+//! - **Mid-level traits**: [`Update`], [`FixedOutput`], [`ExtendableOutput`],
+//!   [`VariableOutput`], [`Reset`], [`XofReader`]. These traits atomically
+//!   describe available functionality of an algorithm.
+//! - **Marker traits**: [`HashMarker`], [`MacMarker`]. Used to distinguish
+//!   different algorithm classes.
 //! - **Low-level traits** defined in the [`core_api`] module. These traits
 //!   operate at a block-level and do not contain any built-in buffering.
 //!   They are intended to be implemented by low-level algorithm providers only
@@ -17,11 +17,11 @@
 //!   usually shouldn't be used in application-level code.
 //!
 //! Additionally hash functions implement traits from the standard library:
-//! [`Default`], [`Clone`], [`Write`][std::io::Write]. The latter is
+//! [`Default`], [`Clone`], [`Write`]. The latter is
 //! feature-gated behind `std` feature, which is usually enabled by default
 //! by hash implementation crates.
 //!
-//! The [`Digest`] trait is the most commonly used trait.
+//! [`Write`]: https://doc.rust-lang.org/std/io/trait.Write.html
 
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg))]
@@ -48,15 +48,54 @@ pub mod dev;
 
 pub mod core_api;
 mod digest;
-mod dyn_digest;
+#[cfg(feature = "mac")]
+mod mac;
 
 use core::fmt;
 
-pub use crate::digest::{Digest, Output};
-pub use crypto_common::block_buffer;
-pub use crypto_common::{FixedOutput, FixedOutputReset, Reset, Update};
-pub use dyn_digest::{DynDigest, InvalidBufferLength};
-pub use generic_array::{self, typenum::consts, GenericArray};
+pub use crypto_common;
+#[cfg(feature = "mac")]
+pub use crypto_common::{InnerInit, InvalidLength, Key, KeyInit};
+pub use crypto_common::{Output, OutputSizeUser, Reset};
+pub use digest::{Digest, DynDigest, HashMarker, InvalidBufferLength};
+pub use generic_array::{self, typenum::consts};
+#[cfg(feature = "mac")]
+pub use mac::{CtOutput, Mac, MacError, MacMarker};
+
+/// Types which consume data with byte granularity.
+pub trait Update {
+    /// Update state using the provided data.
+    fn update(&mut self, data: &[u8]);
+}
+
+/// Types which return fixed-sized result after finalization.
+pub trait FixedOutput: OutputSizeUser + Sized {
+    /// Consume value and write result into provided array.
+    fn finalize_into(self, out: &mut Output<Self>);
+
+    /// Retrieve result and consume the hasher instance.
+    #[inline]
+    fn finalize_fixed(self) -> Output<Self> {
+        let mut out = Default::default();
+        self.finalize_into(&mut out);
+        out
+    }
+}
+
+/// Types which return fixed-sized result after finalization and reset
+/// values into its initial state.
+pub trait FixedOutputReset: FixedOutput + Reset {
+    /// Write result into provided array and reset value to its initial state.
+    fn finalize_into_reset(&mut self, out: &mut Output<Self>);
+
+    /// Retrieve result and reset the hasher instance.
+    #[inline]
+    fn finalize_fixed_reset(&mut self) -> Output<Self> {
+        let mut out = Default::default();
+        self.finalize_into_reset(&mut out);
+        out
+    }
+}
 
 /// Trait for describing readers which are used to extract extendable output
 /// from XOF (extendable-output function) result.
@@ -80,7 +119,7 @@ pub trait XofReader {
 }
 
 /// Trait which describes extendable-output functions (XOF).
-pub trait ExtendableOutput: Sized + Update + Default + Reset {
+pub trait ExtendableOutput: Sized + Update + Reset {
     /// Reader
     type Reader: XofReader;
 
@@ -91,7 +130,10 @@ pub trait ExtendableOutput: Sized + Update + Default + Reset {
     fn finalize_xof_reset(&mut self) -> Self::Reader;
 
     /// Compute hash of `data` and write it to `output`.
-    fn digest_xof(input: impl AsRef<[u8]>, output: &mut [u8]) {
+    fn digest_xof(input: impl AsRef<[u8]>, output: &mut [u8])
+    where
+        Self: Default,
+    {
         let mut hasher = Self::default();
         hasher.update(input.as_ref());
         hasher.finalize_xof().read(output);

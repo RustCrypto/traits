@@ -1,23 +1,44 @@
-//! Low-level core API traits.
+//! Low-level traits operating on blocks and wrappers around them.
 //!
 //! Usage of traits in this module in user code is discouraged. Instead use
 //! core algorithm wrapped by the wrapper types, which implement the
 //! higher-level traits.
-use crate::{ExtendableOutput, InvalidOutputSize};
+use crate::InvalidOutputSize;
 use generic_array::ArrayLength;
 
-pub use crypto_common::{
-    AlgorithmName, Block, BlockSizeUser, BufferUser, CoreWrapper, FixedOutputCore, OutputSizeUser,
-    Reset, UpdateCore,
-};
+pub use crypto_common::{AlgorithmName, Block, BlockSizeUser, OutputSizeUser, Reset};
+
+use block_buffer::DigestBuffer;
+use crypto_common::Output;
 
 mod ct_variable;
 mod rt_variable;
+mod wrapper;
 mod xof_reader;
 
 pub use ct_variable::CtVariableCoreWrapper;
 pub use rt_variable::RtVariableCoreWrapper;
+pub use wrapper::CoreWrapper;
 pub use xof_reader::XofReaderCoreWrapper;
+
+/// Types which consume data in blocks.
+pub trait UpdateCore: BlockSizeUser {
+    /// Update state using the provided data blocks.
+    fn update_blocks(&mut self, blocks: &[Block<Self>]);
+}
+
+/// Types which use [`DigestBuffer`] functionality.
+pub trait BufferUser: BlockSizeUser {
+    /// Block buffer type over which value operates.
+    type Buffer: DigestBuffer<Self::BlockSize>;
+}
+
+/// Core trait for hash functions with fixed output size.
+pub trait FixedOutputCore: UpdateCore + BufferUser + OutputSizeUser {
+    /// Finalize state using remaining data stored in the provided block buffer,
+    /// write result into provided array and leave `self` in a dirty state.
+    fn finalize_fixed_core(&mut self, buffer: &mut Self::Buffer, out: &mut Output<Self>);
+}
 
 /// Core trait for hash functions with extendable (XOF) output size.
 pub trait ExtendableOutputCore: UpdateCore + BufferUser {
@@ -55,25 +76,4 @@ pub trait VariableOutputCore: UpdateCore + BufferUser + Sized {
         output_size: usize,
         f: impl FnOnce(&[u8]),
     );
-}
-
-impl<D: ExtendableOutputCore + Default + Reset> ExtendableOutput for CoreWrapper<D> {
-    type Reader = XofReaderCoreWrapper<D::ReaderCore>;
-
-    #[inline]
-    fn finalize_xof(self) -> Self::Reader {
-        let (mut core, mut buffer) = self.decompose();
-        let core = core.finalize_xof_core(&mut buffer);
-        let buffer = Default::default();
-        Self::Reader { core, buffer }
-    }
-
-    #[inline]
-    fn finalize_xof_reset(&mut self) -> Self::Reader {
-        self.apply_reset(|core, buffer| {
-            let core = core.finalize_xof_core(buffer);
-            let buffer = Default::default();
-            Self::Reader { core, buffer }
-        })
-    }
 }

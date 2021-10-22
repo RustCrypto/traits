@@ -1,7 +1,10 @@
 use super::{AlgorithmName, UpdateCore, VariableOutputCore};
+use crate::HashMarker;
+#[cfg(feature = "mac")]
+use crate::MacMarker;
 use crate::{InvalidOutputSize, Reset, Update, VariableOutput};
+use block_buffer::DigestBuffer;
 use core::fmt;
-use crypto_common::block_buffer::DigestBuffer;
 use generic_array::typenum::Unsigned;
 
 /// Wrapper around [`VariableOutputCore`] which selects output size
@@ -15,6 +18,11 @@ where
     buffer: T::Buffer,
     output_size: usize,
 }
+
+impl<T> HashMarker for RtVariableCoreWrapper<T> where T: VariableOutputCore + HashMarker {}
+
+#[cfg(feature = "mac")]
+impl<T> MacMarker for RtVariableCoreWrapper<T> where T: VariableOutputCore + MacMarker {}
 
 impl<T> Reset for RtVariableCoreWrapper<T>
 where

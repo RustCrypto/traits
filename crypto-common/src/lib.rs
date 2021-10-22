@@ -13,61 +13,61 @@
 extern crate std;
 
 use core::fmt;
+use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+#[cfg(feature = "rand_core")]
+use rand_core::{CryptoRng, RngCore};
 
-pub use block_buffer;
-#[cfg(feature = "subtle")]
-#[cfg_attr(docsrs, doc(cfg(feature = "subtle")))]
-pub use subtle;
+/// Block on which [`BlockSizeUser`] implementors operate.
+pub type Block<B> = GenericArray<u8, <B as BlockSizeUser>::BlockSize>;
+/// Output array of [`OutputSizeUser`] implementors.
+pub type Output<T> = GenericArray<u8, <T as OutputSizeUser>::OutputSize>;
+/// Key used by [`KeySizeUser`] implementors.
+pub type Key<B> = GenericArray<u8, <B as KeySizeUser>::KeySize>;
+/// Initialization vector (nonce) used by [`IvSizeUser`] implementors.
+pub type Iv<B> = GenericArray<u8, <B as IvSizeUser>::IvSize>;
 
-mod core_wrapper;
-mod init;
-mod users;
-
-pub use core_wrapper::CoreWrapper;
-pub use init::{InnerInit, InnerIvInit, InvalidLength, KeyInit, KeyIvInit};
-pub use users::{
-    Block, BlockSizeUser, BufferUser, InnerUser, Iv, IvSizeUser, Key, KeySizeUser, Output,
-    OutputSizeUser,
-};
-
-#[cfg(feature = "subtle")]
-mod ct_output;
-#[cfg(feature = "subtle")]
-pub use ct_output::CtOutput;
-
-/// Types which consume data with byte granularity.
-pub trait Update {
-    /// Update state using the provided data.
-    fn update(&mut self, data: &[u8]);
+/// Types which process data in blocks.
+pub trait BlockSizeUser {
+    /// Size of the block in bytes.
+    type BlockSize: ArrayLength<u8> + 'static;
 }
 
-/// Types which return fixed-sized result after finalization.
-pub trait FixedOutput: OutputSizeUser + Sized {
-    /// Consume value and write result into provided array.
-    fn finalize_into(self, out: &mut Output<Self>);
-
-    /// Retrieve result and consume the hasher instance.
-    #[inline]
-    fn finalize_fixed(self) -> Output<Self> {
-        let mut out = Default::default();
-        self.finalize_into(&mut out);
-        out
-    }
+impl<T: BlockSizeUser> BlockSizeUser for &T {
+    type BlockSize = T::BlockSize;
 }
 
-/// Types which return fixed-sized result after finalization and reset
-/// state into its initial value.
-pub trait FixedOutputReset: FixedOutput + Reset {
-    /// Write result into provided array and reset value to its initial state.
-    fn finalize_into_reset(&mut self, out: &mut Output<Self>);
+impl<T: BlockSizeUser> BlockSizeUser for &mut T {
+    type BlockSize = T::BlockSize;
+}
 
-    /// Retrieve result and reset the hasher instance.
-    #[inline]
-    fn finalize_fixed_reset(&mut self) -> Output<Self> {
-        let mut out = Default::default();
-        self.finalize_into_reset(&mut out);
-        out
-    }
+/// Types which return data with the given size.
+pub trait OutputSizeUser {
+    /// Size of the output in bytes.
+    type OutputSize: ArrayLength<u8> + 'static;
+}
+
+/// Types which use key for initialization.
+///
+/// Generally it's used indirectly via [`KeyInit`] or [`KeyIvInit`].
+pub trait KeySizeUser {
+    /// Key size in bytes.
+    type KeySize: ArrayLength<u8> + 'static;
+}
+
+/// Types which use initialization vector (nonce) for initialization.
+///
+/// Generally it's used indirectly via [`KeyIvInit`] or [`InnerIvInit`].
+pub trait IvSizeUser {
+    /// Initialization vector size in bytes.
+    type IvSize: ArrayLength<u8> + 'static;
+}
+
+/// Types which use another type for initialization.
+///
+/// Generally it's used indirectly via [`InnerInit`] or [`InnerIvInit`].
+pub trait InnerUser {
+    /// Inner type.
+    type Inner;
 }
 
 /// Resettable types.
@@ -76,21 +76,198 @@ pub trait Reset {
     fn reset(&mut self);
 }
 
-/// Types which consume data in blocks.
-pub trait UpdateCore: BlockSizeUser {
-    /// Update state using the provided data blocks.
-    fn update_blocks(&mut self, blocks: &[Block<Self>]);
-}
-
-/// Core trait for hash functions with fixed output size.
-pub trait FixedOutputCore: UpdateCore + BufferUser + OutputSizeUser {
-    /// Finalize state using remaining data stored in the provided block buffer,
-    /// write result into provided array and leave `self` in a dirty state.
-    fn finalize_fixed_core(&mut self, buffer: &mut Self::Buffer, out: &mut Output<Self>);
-}
-
 /// Trait which stores algorithm name constant, used in `Debug` implementations.
 pub trait AlgorithmName {
     /// Write algorithm name into `f`.
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result;
 }
+
+/// Types which can be initialized from key.
+pub trait KeyInit: KeySizeUser + Sized {
+    /// Create new value from fixed size key.
+    fn new(key: &Key<Self>) -> Self;
+
+    /// Create new value from variable size key.
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
+        if key.len() != Self::KeySize::to_usize() {
+            Err(InvalidLength)
+        } else {
+            Ok(Self::new(Key::<Self>::from_slice(key)))
+        }
+    }
+
+    /// Generate random key using the provided [`CryptoRng`].
+    #[cfg(feature = "rand_core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    #[inline]
+    fn generate_key(mut rng: impl CryptoRng + RngCore) -> Key<Self> {
+        let mut key = Key::<Self>::default();
+        rng.fill_bytes(&mut key);
+        key
+    }
+}
+
+/// Types which can be initialized from key and initialization vector (nonce).
+pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
+    /// Create new value from fixed length key and nonce.
+    fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self;
+
+    /// Create new value from variable length key and nonce.
+    #[inline]
+    fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidLength> {
+        let key_len = Self::KeySize::USIZE;
+        let iv_len = Self::IvSize::USIZE;
+        if key.len() != key_len || iv.len() != iv_len {
+            Err(InvalidLength)
+        } else {
+            Ok(Self::new(
+                Key::<Self>::from_slice(key),
+                Iv::<Self>::from_slice(iv),
+            ))
+        }
+    }
+
+    /// Generate random key using the provided [`CryptoRng`].
+    #[cfg(feature = "rand_core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    #[inline]
+    fn generate_key(mut rng: impl CryptoRng + RngCore) -> Key<Self> {
+        let mut key = Key::<Self>::default();
+        rng.fill_bytes(&mut key);
+        key
+    }
+
+    /// Generate random IV using the provided [`CryptoRng`].
+    #[cfg(feature = "rand_core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    #[inline]
+    fn generate_iv(mut rng: impl CryptoRng + RngCore) -> Iv<Self> {
+        let mut iv = Iv::<Self>::default();
+        rng.fill_bytes(&mut iv);
+        iv
+    }
+
+    /// Generate random key and nonce using the provided [`CryptoRng`].
+    #[cfg(feature = "rand_core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    #[inline]
+    fn generate_key_iv(mut rng: impl CryptoRng + RngCore) -> (Key<Self>, Iv<Self>) {
+        (Self::generate_key(&mut rng), Self::generate_iv(&mut rng))
+    }
+}
+
+/// Types which can be initialized from another type (usually block ciphers).
+///
+/// Usually used for initializing types from block ciphers.
+pub trait InnerInit: InnerUser + Sized {
+    /// Initialize value from the `inner`.
+    fn inner_init(inner: Self::Inner) -> Self;
+}
+
+/// Types which can be initialized from another type and additional initialization
+/// vector/nonce.
+///
+/// Usually used for initializing types from block ciphers.
+pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
+    /// Initialize value using `inner` and `iv` array.
+    fn inner_iv_init(inner: Self::Inner, iv: &Iv<Self>) -> Self;
+
+    /// Initialize value using `inner` and `iv` slice.
+    fn inner_iv_slice_init(inner: Self::Inner, iv: &[u8]) -> Result<Self, InvalidLength> {
+        if iv.len() != Self::IvSize::to_usize() {
+            Err(InvalidLength)
+        } else {
+            Ok(Self::inner_iv_init(inner, Iv::<Self>::from_slice(iv)))
+        }
+    }
+
+    /// Generate random IV using the provided [`CryptoRng`].
+    #[cfg(feature = "rand_core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    #[inline]
+    fn generate_iv(mut rng: impl CryptoRng + RngCore) -> Iv<Self> {
+        let mut iv = Iv::<Self>::default();
+        rng.fill_bytes(&mut iv);
+        iv
+    }
+}
+
+impl<T> KeySizeUser for T
+where
+    T: InnerUser,
+    T::Inner: KeySizeUser,
+{
+    type KeySize = <T::Inner as KeySizeUser>::KeySize;
+}
+
+impl<T> KeyIvInit for T
+where
+    T: InnerIvInit,
+    T::Inner: KeyInit,
+{
+    #[inline]
+    fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self {
+        Self::inner_iv_init(T::Inner::new(key), iv)
+    }
+
+    #[inline]
+    fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidLength> {
+        T::Inner::new_from_slice(key).and_then(|i| T::inner_iv_slice_init(i, iv))
+    }
+}
+
+impl<T> KeyInit for T
+where
+    T: InnerInit,
+    T::Inner: KeyInit,
+{
+    #[inline]
+    fn new(key: &Key<Self>) -> Self {
+        Self::inner_init(T::Inner::new(key))
+    }
+
+    #[inline]
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
+        T::Inner::new_from_slice(key)
+            .map_err(|_| InvalidLength)
+            .map(Self::inner_init)
+    }
+}
+
+// Unfortunately this blanket impl is impossible without mutually
+// exclusive traits, see: https://github.com/rust-lang/rfcs/issues/1053
+// or at the very least without: https://github.com/rust-lang/rust/issues/20400
+/*
+impl<T> KeyIvInit for T
+where
+    T: InnerInit,
+    T::Inner: KeyIvInit,
+{
+    #[inline]
+    fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self {
+        Self::inner_init(T::Inner::new(key, iv))
+    }
+
+    #[inline]
+    fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidLength> {
+        T::Inner::new_from_slice(key)
+            .map_err(|_| InvalidLength)
+            .map(Self::inner_init)
+    }
+}
+*/
+
+/// The error type returned when key and/or IV used in the [`KeyInit`],
+/// [`KeyIvInit`], and [`InnerIvInit`] slice-based methods had
+/// an invalid length.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct InvalidLength;
+
+impl fmt::Display for InvalidLength {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("Invalid Length")
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for InvalidLength {}

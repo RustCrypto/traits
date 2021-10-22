@@ -1,7 +1,7 @@
 use super::{AlgorithmName, XofReaderCore};
 use crate::XofReader;
+use block_buffer::BlockBuffer;
 use core::fmt;
-use crypto_common::block_buffer::BlockBuffer;
 
 /// Wrapper around [`XofReaderCore`] implementations.
 ///

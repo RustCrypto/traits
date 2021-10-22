@@ -13,16 +13,19 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = "0.14"
-crypto-common = { version = "0.1", path = "../crypto-common" }
+block-buffer = "0.10"
+crypto-common = { version = "0.1", path = "../crypto-common", default-features = false }
 
+subtle = { version = "=2.4", default-features = false, optional = true }
 blobby = { version = "0.3", optional = true }
 
 [features]
-default = ["block-padding"]
+default = ["block-padding", "mac"]
+mac = ["subtle"] # Enable MAC and UHF traits
 alloc = []
 std = ["alloc", "crypto-common/std"]
 dev = ["blobby"]
-block-padding = ["crypto-common/block-padding"]
+block-padding = ["block-buffer/block-padding"]
 
 [package.metadata.docs.rs]
 all-features = true
