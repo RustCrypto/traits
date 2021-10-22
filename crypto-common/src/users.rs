@@ -1,7 +1,5 @@
 use block_buffer::DigestBuffer;
 use generic_array::{ArrayLength, GenericArray};
-#[cfg(feature = "rand_core")]
-use rand_core::{CryptoRng, RngCore};
 
 /// Block on which [`BlockUser`] implementors operate.
 pub type Block<B> = GenericArray<u8, <B as BlockSizeUser>::BlockSize>;
@@ -38,16 +36,6 @@ pub trait OutputSizeUser {
 pub trait KeySizeUser {
     /// Key size in bytes.
     type KeySize: ArrayLength<u8> + 'static;
-
-    /// Generate random key using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-    #[inline]
-    fn generate_key(mut rng: impl CryptoRng + RngCore) -> Key<Self> {
-        let mut key = Key::<Self>::default();
-        rng.fill_bytes(&mut key);
-        key
-    }
 }
 
 /// Types which use initialization vector (nonce) for initialization.
@@ -56,16 +44,6 @@ pub trait KeySizeUser {
 pub trait IvSizeUser {
     /// Initialization vector size in bytes.
     type IvSize: ArrayLength<u8> + 'static;
-
-    /// Generate random IV using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-    #[inline]
-    fn generate_iv(mut rng: impl CryptoRng + RngCore) -> Iv<Self> {
-        let mut iv = Iv::<Self>::default();
-        rng.fill_bytes(&mut iv);
-        iv
-    }
 }
 
 /// Types which use another type for initialization.
