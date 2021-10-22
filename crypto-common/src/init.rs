@@ -120,7 +120,7 @@ where
 
 // Unfortunately this blanket impl is impossible without mutually
 // exclusive traits, see: https://github.com/rust-lang/rfcs/issues/1053
-// ot at the very least without: https://github.com/rust-lang/rust/issues/20400
+// or at the very least without: https://github.com/rust-lang/rust/issues/20400
 /*
 impl<T> KeyIvInit for T
 where
