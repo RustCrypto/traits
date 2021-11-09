@@ -22,7 +22,7 @@ impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
     fn get_pos(&self) -> usize {
         if self.pos >= T::BlockSize::USIZE {
             // SAFETY: `pos` is set only to values smaller than block size
-            // unsafe { core::hint::unreachable_unchecked() }
+            unsafe { core::hint::unreachable_unchecked() }
         }
         self.pos as usize
     }
