@@ -1,8 +1,8 @@
 use crate::{
-    errors::StreamCipherError, OverflowError, SeekNum,
+    errors::StreamCipherError, OverflowError, SeekNum, Block,
     StreamCipher, StreamCipherCore, StreamCipherSeek, StreamCipherSeekCore,
 };
-use block_buffer::{inout::InOutBuf, BlockBuffer};
+use inout::InOutBuf;
 use crypto_common::{BlockSizeUser, Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser};
 use generic_array::typenum::Unsigned;
 
@@ -12,37 +12,49 @@ use generic_array::typenum::Unsigned;
 #[derive(Clone, Default)]
 pub struct StreamCipherCoreWrapper<T: BlockSizeUser> {
     core: T,
-    buffer: BlockBuffer<T::BlockSize>,
-}
-
-impl<T: BlockSizeUser> StreamCipherCoreWrapper<T> {
-    /// Get reference to core.
-    pub fn get_core(&self) -> &T {
-        &self.core
-    }
-
-    /// Split wrapper into core and buffer.
-    pub fn into_inner(self) -> (T, BlockBuffer<T::BlockSize>) {
-        (self.core, self.buffer)
-    }
-
-    /// Create wrapper from core and buffer.
-    pub fn from_inner(core: T, buffer: BlockBuffer<T::BlockSize>) -> Self {
-        Self { core, buffer }
-    }
+    buffer: Block<T>,
+    pos: usize,
 }
 
 impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
+    /// Return current cursor position.
+    #[inline]
+    fn get_pos(&self) -> usize {
+        if self.pos >= T::BlockSize::USIZE {
+            // SAFETY: `pos` is set only to values smaller than block size
+            // unsafe { core::hint::unreachable_unchecked() }
+        }
+        self.pos as usize
+    }
+
+    /// Return size of the internall buffer in bytes.
+    #[inline]
+    fn size(&self) -> usize {
+        T::BlockSize::USIZE
+    }
+
+    #[inline]
+    fn set_pos_unchecked(&mut self, pos: usize) {
+        debug_assert!(pos < T::BlockSize::USIZE);
+        self.pos = pos;
+    }
+
+    /// Return number of remaining bytes in the internall buffer.
+    #[inline]
+    fn remaining(&self) -> usize {
+        self.size() - self.get_pos()
+    }
+
     fn check_remaining(&self, dlen: usize) -> Result<(), StreamCipherError> {
         let rem_blocks = match self.core.remaining_blocks() {
             Some(v) => v,
             None => return Ok(()),
         };
 
-        let bytes = if self.buffer.get_pos() == 0 {
+        let bytes = if self.pos == 0 {
             dlen
         } else {
-            let rem = self.buffer.remaining();
+            let rem = self.remaining();
             if dlen > rem {
                 dlen - rem
             } else {
@@ -65,13 +77,39 @@ impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
 
 impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
     #[inline]
-    fn try_apply_keystream(&mut self, data: InOutBuf<'_, u8>) -> Result<(), StreamCipherError> {
+    fn try_apply_keystream(&mut self, mut data: InOutBuf<'_, u8>) -> Result<(), StreamCipherError> {
         self.check_remaining(data.len())?;
 
-        let Self { core, buffer } = self;
-        buffer.xor_data(data, |blocks| {
-            core.apply_keystream_blocks(blocks, |_| {}, |_| {})
-        });
+        let pos = self.get_pos();
+        let r = self.remaining();
+        let n = data.len();
+        if pos != 0 {
+            if n < r {
+                // double slicing allows to remove panic branches
+                data.xor(&self.buffer[pos..][..n]);
+                self.set_pos_unchecked(pos + n);
+                return Ok(());
+            }
+            let (mut left, right) = data.split_at(r);
+            data = right;
+            left.xor(&self.buffer[pos..]);
+        }
+
+        let (blocks, mut leftover) = data.into_chunks();
+        self.core.apply_keystream_blocks(blocks, |_| {}, |_| {});
+
+        let n = leftover.len();
+        if n != 0 {
+            let mut block = Default::default();
+            self.core.apply_keystream_blocks(
+                InOutBuf::from_mut(&mut block),
+                |_| {},
+                |_| {},
+            );
+            leftover.xor(&block[..n]);
+            self.buffer = block;
+        }
+        self.set_pos_unchecked(n);
 
         Ok(())
     }
@@ -79,22 +117,23 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
 
 impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
     fn try_current_pos<SN: SeekNum>(&self) -> Result<SN, OverflowError> {
-        let Self { core, buffer } = self;
+        let Self { core, pos, .. } = self;
         let bs = T::BlockSize::USIZE;
-        SN::from_block_byte(core.get_block_pos(), buffer.get_pos(), bs)
+        SN::from_block_byte(core.get_block_pos(), *pos, bs)
     }
 
-    fn try_seek<SN: SeekNum>(&mut self, pos: SN) -> Result<(), StreamCipherError> {
-        let Self { core, buffer } = self;
+    fn try_seek<SN: SeekNum>(&mut self, new_pos: SN) -> Result<(), StreamCipherError> {
+        let Self { core, buffer, pos } = self;
         let bs = T::BlockSize::USIZE;
-        let (block_pos, byte_pos) = pos.into_block_byte(bs)?;
+        let (block_pos, byte_pos) = new_pos.into_block_byte(bs)?;
         core.set_block_pos(block_pos);
-        let mut block = Default::default();
         if byte_pos != 0 {
+            let mut block = Default::default();
             let buf = InOutBuf::from_mut(&mut block);
             core.apply_keystream_blocks(buf, |_| {}, |_| {});
+            *buffer = block;
         }
-        buffer.set(block, byte_pos);
+        *pos = byte_pos;
         Ok(())
     }
 }
@@ -118,6 +157,7 @@ impl<T: KeyIvInit + BlockSizeUser> KeyIvInit for StreamCipherCoreWrapper<T> {
         Self {
             core: T::new(key, iv),
             buffer: Default::default(),
+            pos: 0,
         }
     }
 }
@@ -128,6 +168,7 @@ impl<T: KeyInit + BlockSizeUser> KeyInit for StreamCipherCoreWrapper<T> {
         Self {
             core: T::new(key),
             buffer: Default::default(),
+            pos: 0,
         }
     }
 }

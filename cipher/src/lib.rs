@@ -24,7 +24,6 @@ extern crate std;
 pub use blobby;
 
 pub use block_buffer;
-// pub use block_buffer::inout;
 
 mod block;
 #[cfg(feature = "dev")]
@@ -32,9 +31,9 @@ mod dev;
 mod errors;
 mod stream;
 mod stream_core;
-// mod stream_wrapper;
+mod stream_wrapper;
 
-pub use crate::{block::*, errors::*, stream::*, stream_core::*};//, stream_wrapper::*};
+pub use crate::{block::*, errors::*, stream::*, stream_core::*, stream_wrapper::*};
 pub use crypto_common::{
     Block, InnerIvInit, InvalidLength, Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser,
 };
