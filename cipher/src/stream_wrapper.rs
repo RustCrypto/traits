@@ -17,6 +17,11 @@ pub struct StreamCipherCoreWrapper<T: BlockSizeUser> {
 }
 
 impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
+    /// Return reference to the core type.
+    pub fn get_core(&self) -> &T {
+        &self.core
+    }
+
     /// Return current cursor position.
     #[inline]
     fn get_pos(&self) -> usize {
