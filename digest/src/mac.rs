@@ -34,17 +34,17 @@ pub trait Mac: KeySizeUser + OutputSizeUser + Sized {
     /// Check if tag/code value is correct for the processed input.
     fn verify(self, other: &Output<Self>) -> Result<(), MacError>;
 
-    /// Check if a tag/code truncated from right side (i.e. `tag[..n]`)
-    /// is correct for the processed input.
-    ///
-    /// Returns `Error` if `tag` is empty.
-    fn verify_truncated_right(self, tag: &[u8]) -> Result<(), MacError>;
-
-    /// Check if a tag/code truncated from left side (i.e. `tag[n..]`)
-    /// is correct for the processed input.
+    /// Check truncated tag correctness using left side bytes
+    /// (i.e. `tag[..n]`) of calculated tag.
     ///
     /// Returns `Error` if `tag` is not valid or empty.
     fn verify_truncated_left(self, tag: &[u8]) -> Result<(), MacError>;
+
+    /// Check truncated tag correctness using right side bytes
+    /// (i.e. `tag[n..]`) of calculated tag.
+    ///
+    /// Returns `Error` if `tag` is not valid or empty.
+    fn verify_truncated_right(self, tag: &[u8]) -> Result<(), MacError>;
 }
 
 impl<T: KeyInit + Update + FixedOutput + MacMarker> Mac for T {
@@ -81,7 +81,7 @@ impl<T: KeyInit + Update + FixedOutput + MacMarker> Mac for T {
         }
     }
 
-    fn verify_truncated_right(self, tag: &[u8]) -> Result<(), MacError> {
+    fn verify_truncated_left(self, tag: &[u8]) -> Result<(), MacError> {
         let n = tag.len();
         if n == 0 || n > Self::OutputSize::USIZE {
             return Err(MacError);
@@ -95,7 +95,7 @@ impl<T: KeyInit + Update + FixedOutput + MacMarker> Mac for T {
         }
     }
 
-    fn verify_truncated_left(self, tag: &[u8]) -> Result<(), MacError> {
+    fn verify_truncated_right(self, tag: &[u8]) -> Result<(), MacError> {
         let n = tag.len();
         if n == 0 || n > Self::OutputSize::USIZE {
             return Err(MacError);
