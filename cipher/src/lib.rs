@@ -15,6 +15,7 @@
 #![warn(missing_docs, rust_2018_idioms)]
 
 pub use crypto_common;
+pub use inout;
 
 #[cfg(feature = "std")]
 extern crate std;
