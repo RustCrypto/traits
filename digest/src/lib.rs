@@ -51,9 +51,9 @@ mod digest;
 #[cfg(feature = "mac")]
 mod mac;
 
-use core::fmt;
-
+pub use block_buffer;
 pub use crypto_common;
+
 #[cfg(feature = "mac")]
 pub use crypto_common::{InnerInit, InvalidLength, Key, KeyInit};
 pub use crypto_common::{Output, OutputSizeUser, Reset};
@@ -61,6 +61,8 @@ pub use digest::{Digest, DynDigest, HashMarker, InvalidBufferLength};
 pub use generic_array::{self, typenum::consts};
 #[cfg(feature = "mac")]
 pub use mac::{CtOutput, Mac, MacError, MacMarker};
+
+use core::fmt;
 
 /// Types which consume data with byte granularity.
 pub trait Update {
