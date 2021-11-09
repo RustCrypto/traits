@@ -21,7 +21,7 @@ blobby = { version = "0.3", optional = true }
 
 [features]
 default = ["block-padding", "mac"]
-mac = ["subtle"] # Enable MAC and UHF traits
+mac = ["subtle"] # Enable MAC traits
 alloc = []
 std = ["alloc", "crypto-common/std"]
 dev = ["blobby"]

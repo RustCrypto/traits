@@ -3,6 +3,9 @@ use core::fmt;
 use crypto_common::{Output, OutputSizeUser};
 use generic_array::typenum::Unsigned;
 
+#[cfg(feature = "alloc")]
+use alloc::boxed::Box;
+
 /// Marker trait for cryptographic hash functions.
 pub trait HashMarker {}
 
@@ -162,7 +165,7 @@ impl<D: Update + FixedOutputReset + Reset + Clone + 'static> DynDigest for D {
 
     #[cfg(feature = "alloc")]
     fn finalize(self: Box<Self>) -> Box<[u8]> {
-        FixedOutput::finalize_fixed(self)
+        FixedOutput::finalize_fixed(*self)
             .to_vec()
             .into_boxed_slice()
     }

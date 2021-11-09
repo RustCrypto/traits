@@ -10,8 +10,6 @@ use subtle::{Choice, ConstantTimeEq};
 pub trait MacMarker {}
 
 /// Convinience wrapper trait covering functionality of Message Authentication algorithms.
-/// Convinience wrapper trait covering functionality of cryptographic hash
-/// functions with fixed output size.
 ///
 /// This trait wraps [`KeyInit`], [`Update`], [`FixedOutput`], and [`MacMarker`]
 /// traits and provides additional convenience methods.
