@@ -1,10 +1,10 @@
 use crate::{
-    errors::StreamCipherError, OverflowError, SeekNum, Block,
-    StreamCipher, StreamCipherCore, StreamCipherSeek, StreamCipherSeekCore,
+    errors::StreamCipherError, Block, OverflowError, SeekNum, StreamCipher, StreamCipherCore,
+    StreamCipherSeek, StreamCipherSeekCore,
 };
-use inout::InOutBuf;
 use crypto_common::{BlockSizeUser, Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser};
 use generic_array::typenum::Unsigned;
+use inout::InOutBuf;
 
 /// Wrapper around [`StreamCipherCore`] implementations.
 ///
@@ -106,11 +106,8 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
         let n = leftover.len();
         if n != 0 {
             let mut block = Default::default();
-            self.core.apply_keystream_blocks(
-                InOutBuf::from_mut(&mut block),
-                |_| {},
-                |_| {},
-            );
+            self.core
+                .apply_keystream_blocks(InOutBuf::from_mut(&mut block), |_| {}, |_| {});
             leftover.xor(&block[..n]);
             self.buffer = block;
         }

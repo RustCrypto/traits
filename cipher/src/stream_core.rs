@@ -1,7 +1,8 @@
-use block_buffer::{generic_array::typenum::Unsigned};
-use inout::InOutBuf;
+use crate::errors::StreamCipherError;
+use block_buffer::generic_array::typenum::Unsigned;
 use core::convert::{TryFrom, TryInto};
 use crypto_common::{Block, BlockSizeUser};
+use inout::InOutBuf;
 
 /// Block-level synchronous stream ciphers.
 pub trait StreamCipherCore: BlockSizeUser + Sized {
@@ -9,7 +10,7 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
     ///
     /// Returns `None` if number of remaining blocks can not be computed
     /// (e.g. in ciphers based on the sponge construction) or it's too big
-    /// to fit to `usize`.
+    /// to fit into `usize`.
     fn remaining_blocks(&self) -> Option<usize>;
 
     /// Apply keystream blocks with pre and post callbacks using
@@ -23,13 +24,28 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
         post_fn: impl FnMut(&[Block<Self>]),
     );
 
-    /// Apply keystream to data not divided into blocks.
+    /// Try to apply keystream to data not divided into blocks.
     ///
     /// Consumes cipher since it may consume final keystream block only
     /// partially.
     ///
-    /// WARNING: this method does not check number of remaining blocks!
-    fn apply_keystream_partial(mut self, mut buf: InOutBuf<'_, u8>) {
+    /// Returns an error if number of remaining blocks is not sufficient
+    /// for processing the input data.
+    fn try_apply_keystream_partial(
+        mut self,
+        mut buf: InOutBuf<'_, u8>,
+    ) -> Result<(), StreamCipherError> {
+        if let Some(rem) = self.remaining_blocks() {
+            let blocks = if buf.len() % Self::BlockSize::USIZE == 0 {
+                buf.len() % Self::BlockSize::USIZE
+            } else {
+                buf.len() % Self::BlockSize::USIZE + 1
+            };
+            if blocks > rem {
+                return Err(StreamCipherError);
+            }
+        }
+
         if buf.len() > Self::BlockSize::USIZE {
             let (blocks, tail) = buf.into_chunks();
             self.apply_keystream_blocks(blocks, |_| {}, |_| {});
@@ -37,13 +53,26 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
         }
         let n = buf.len();
         if n == 0 {
-            return;
+            return Ok(());
         }
         let mut block = Block::<Self>::default();
         block[..n].copy_from_slice(buf.get_in());
         let mut t = InOutBuf::from_mut(&mut block);
         self.apply_keystream_blocks(t.reborrow(), |_| {}, |_| {});
         buf.get_out().copy_from_slice(&block[..n]);
+        Ok(())
+    }
+
+    /// Try to apply keystream to data not divided into blocks.
+    ///
+    /// Consumes cipher since it may consume final keystream block only
+    /// partially.
+    ///
+    /// # Panics
+    /// If number of remaining blocks is not sufficient for processing the
+    /// input data.
+    fn apply_keystream_partial(self, buf: InOutBuf<'_, u8>) {
+        self.try_apply_keystream_partial(buf).unwrap()
     }
 }
 

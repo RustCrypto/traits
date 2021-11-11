@@ -11,19 +11,12 @@ use inout::InOutBuf;
 /// Marker trait for block-level asynchronous stream ciphers
 pub trait AsyncStreamCipher: BlockEncryptMut + BlockDecryptMut + Sized {
     /// Encrypt data using `InOutBuf`.
-    fn encrypt_inout(
-        mut self,
-        data: InOutBuf<'_, u8>,
-        mut post_fn: impl FnMut(&[Block<Self>]),
-    ) {
+    fn encrypt_inout(mut self, data: InOutBuf<'_, u8>, mut post_fn: impl FnMut(&[Block<Self>])) {
         let (blocks, tail) = data.into_chunks();
-        self.encrypt_blocks_inout_mut(
-            blocks,
-            |mut buf| {
-                buf.copy_tmp2out();
-                post_fn(buf.get_out());
-            },
-        );
+        self.encrypt_blocks_inout_mut(blocks, |mut buf| {
+            buf.copy_tmp2out();
+            post_fn(buf.get_out());
+        });
         let mut block = Block::<Self>::default();
         let n = tail.len();
         if n != 0 {
@@ -34,19 +27,12 @@ pub trait AsyncStreamCipher: BlockEncryptMut + BlockDecryptMut + Sized {
     }
 
     /// Decrypt data using `InOutBuf`.
-    fn decrypt_inout(
-        mut self,
-        data: InOutBuf<'_, u8>,
-        mut post_fn: impl FnMut(&[Block<Self>]),
-    ) {
+    fn decrypt_inout(mut self, data: InOutBuf<'_, u8>, mut post_fn: impl FnMut(&[Block<Self>])) {
         let (blocks, tail) = data.into_chunks();
-        self.decrypt_blocks_inout_mut(
-            blocks,
-            |mut buf| {
-                buf.copy_tmp2out();
-                post_fn(buf.get_out());
-            },
-        );
+        self.decrypt_blocks_inout_mut(blocks, |mut buf| {
+            buf.copy_tmp2out();
+            post_fn(buf.get_out());
+        });
         let mut block = Block::<Self>::default();
         let n = tail.len();
         if n != 0 {
