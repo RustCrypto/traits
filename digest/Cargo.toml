@@ -20,7 +20,6 @@ subtle = { version = "=2.4", default-features = false, optional = true }
 blobby = { version = "0.3", optional = true }
 
 [features]
-default = ["block-padding", "mac"]
 mac = ["subtle"] # Enable MAC traits
 alloc = []
 std = ["alloc", "crypto-common/std"]
