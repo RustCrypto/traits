@@ -2,7 +2,7 @@
 
 use core::fmt::{self, Display};
 
-/// Result type.
+/// Result type with the `elliptic-curve` crate's [`Error`] type.
 pub type Result<T> = core::result::Result<T, Error>;
 
 /// Elliptic curve errors.
@@ -18,6 +18,13 @@ impl Display for Error {
 #[cfg(feature = "pkcs8")]
 impl From<pkcs8::Error> for Error {
     fn from(_: pkcs8::Error) -> Error {
+        Error
+    }
+}
+
+#[cfg(feature = "sec1")]
+impl From<sec1::Error> for Error {
+    fn from(_: sec1::Error) -> Error {
         Error
     }
 }

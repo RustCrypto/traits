@@ -4,7 +4,7 @@
 //!
 //! ## Minimum Supported Rust Version
 //!
-//! Rust **1.51** or higher.
+//! Rust **1.56** or higher.
 //!
 //! Minimum supported Rust version can be changed in the future, but it will be
 //! done with a minor version bump.
@@ -16,7 +16,7 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_root_url = "https://docs.rs/elliptic-curve/0.10.6"
+    html_root_url = "https://docs.rs/elliptic-curve/0.11.0-pre"
 )]
 
 #[cfg(feature = "alloc")]
@@ -32,11 +32,14 @@ extern crate std;
 pub use rand_core;
 
 pub mod ops;
+
+#[cfg(feature = "sec1")]
 pub mod sec1;
-pub mod weierstrass;
 
 mod error;
+mod point;
 mod scalar;
+mod secret_key;
 
 #[cfg(feature = "arithmetic")]
 mod arithmetic;
@@ -54,26 +57,28 @@ pub mod ecdh;
 #[cfg(feature = "jwk")]
 mod jwk;
 
-#[cfg(feature = "zeroize")]
-mod secret_key;
-
-pub use self::{
+pub use crate::{
     error::{Error, Result},
-    scalar::bytes::ScalarBytes,
+    point::{DecompactPoint, DecompressPoint, PointCompaction, PointCompression},
+    scalar::core::ScalarCore,
+    secret_key::SecretKey,
 };
 pub use crypto_bigint as bigint;
 pub use generic_array::{self, typenum::consts};
 pub use rand_core;
 pub use subtle;
+pub use zeroize;
 
 #[cfg(feature = "arithmetic")]
 pub use {
     crate::{
-        arithmetic::{AffineArithmetic, ProjectiveArithmetic, ScalarArithmetic},
+        arithmetic::{
+            AffineArithmetic, PrimeCurveArithmetic, ProjectiveArithmetic, ScalarArithmetic,
+        },
         public_key::PublicKey,
         scalar::{non_zero::NonZeroScalar, Scalar},
     },
-    ff::Field,
+    ff::{self, Field, PrimeField},
     group::{self, Group},
 };
 
@@ -86,17 +91,11 @@ pub use crate::jwk::{JwkEcKey, JwkParameters};
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;
 
-#[cfg(feature = "zeroize")]
-pub use secret_key::SecretKey;
-#[cfg(feature = "zeroize")]
-pub use zeroize;
-
 use core::fmt::Debug;
 use generic_array::GenericArray;
-use subtle::{ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess};
 
 /// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic
-/// curve public key cryptography.
+/// curve public key cryptography (`id-ecPublicKey`).
 ///
 /// <http://oid-info.com/get/1.2.840.10045.2.1>
 #[cfg(feature = "pkcs8")]
@@ -112,19 +111,18 @@ pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
 /// Other traits in this crate which are bounded by [`Curve`] are intended to
 /// be impl'd by these ZSTs, facilitating types which are generic over elliptic
 /// curves (e.g. [`SecretKey`]).
-pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
+pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sync {
     /// Integer type used to represent field elements of this elliptic curve.
     // TODO(tarcieri): replace this with an e.g. `const Curve::MODULUS: uint`.
     // Requires rust-lang/rust#60551, i.e. `const_evaluatable_checked`
-    type UInt: AsRef<[bigint::Limb]>
+    type UInt: bigint::AddMod<Output = Self::UInt>
         + bigint::ArrayEncoding
-        + bigint::Encoding
-        + Copy
-        + Debug
-        + Default
-        + ConstantTimeEq
-        + ConstantTimeGreater
-        + ConstantTimeLess;
+        + bigint::Integer
+        + bigint::NegMod<Output = Self::UInt>
+        + bigint::Random
+        + bigint::RandomMod
+        + bigint::SubMod<Output = Self::UInt>
+        + zeroize::Zeroize;
 
     /// Order constant.
     ///
@@ -132,6 +130,9 @@ pub trait Curve: Clone + Debug + Default + Eq + Ord + Send + Sync {
     /// target CPU's word size), specified from least to most significant.
     const ORDER: Self::UInt;
 }
+
+/// Marker trait for elliptic curves with prime order.
+pub trait PrimeCurve: Curve {}
 
 /// Size of field elements of this elliptic curve.
 pub type FieldSize<C> = <<C as Curve>::UInt as bigint::ArrayEncoding>::ByteSize;

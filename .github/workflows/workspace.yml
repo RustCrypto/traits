@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: 1.51.0 # Highest MSRV in repo
+        toolchain: 1.56.0
         components: clippy
         override: true
         profile: minimal
@@ -25,19 +25,14 @@ jobs:
   rustfmt:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v1
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           components: rustfmt
           override: true
           profile: minimal
-
-      - name: Run cargo fmt
-        uses: actions-rs/cargo@v1
+      - uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check

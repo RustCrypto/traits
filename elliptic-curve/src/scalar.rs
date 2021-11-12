@@ -1,12 +1,12 @@
 //! Scalar types.
 
-pub(crate) mod bytes;
-
-#[cfg(feature = "arithmetic")]
-use crate::ScalarArithmetic;
+pub(crate) mod core;
 
 #[cfg(feature = "arithmetic")]
 pub(crate) mod non_zero;
+
+#[cfg(feature = "arithmetic")]
+use crate::ScalarArithmetic;
 
 /// Scalar field element for a particular elliptic curve.
 #[cfg(feature = "arithmetic")]

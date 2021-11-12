@@ -58,6 +58,7 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
+      - run: cargo check --all-features
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features heapless
 
   test:
@@ -71,9 +72,9 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions-rs/toolchain@v1
       with:
-        profile: minimal
         toolchain: ${{ matrix.rust }}
-    - run: cargo check --all-features
+        override: true
+        profile: minimal
     - run: cargo test --release --no-default-features
     - run: cargo test --release
     - run: cargo test --release --features dev,rand_core,stream,std

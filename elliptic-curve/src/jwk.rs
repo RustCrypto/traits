@@ -4,12 +4,9 @@
 //! <https://tools.ietf.org/html/rfc7518#section-6>
 
 use crate::{
-    sec1::{
-        Coordinates, EncodedPoint, UncompressedPointSize, UntaggedPointSize, ValidatePublicKey,
-    },
+    sec1::{Coordinates, EncodedPoint, ModulusSize, ValidatePublicKey},
     secret_key::SecretKey,
-    weierstrass::Curve,
-    Error, FieldBytes,
+    Curve, Error, FieldBytes, FieldSize, Result,
 };
 use alloc::{
     borrow::ToOwned,
@@ -18,13 +15,10 @@ use alloc::{
 };
 use base64ct::{Base64UrlUnpadded as Base64Url, Encoding};
 use core::{
-    convert::{TryFrom, TryInto},
     fmt::{self, Debug},
     marker::PhantomData,
-    ops::Add,
     str::{self, FromStr},
 };
-use generic_array::{typenum::U1, ArrayLength};
 use serde::{de, ser, Deserialize, Serialize};
 use zeroize::Zeroize;
 
@@ -32,7 +26,7 @@ use zeroize::Zeroize;
 use crate::{
     public_key::PublicKey,
     sec1::{FromEncodedPoint, ToEncodedPoint},
-    AffinePoint, ProjectiveArithmetic, Scalar,
+    AffinePoint, ProjectiveArithmetic,
 };
 
 /// Key Type (`kty`) for elliptic curve keys.
@@ -117,24 +111,54 @@ impl JwkEcKey {
     /// Decode a JWK into a [`PublicKey`].
     #[cfg(feature = "arithmetic")]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-    pub fn to_public_key<C>(&self) -> Result<PublicKey<C>, Error>
+    pub fn to_public_key<C>(&self) -> Result<PublicKey<C>>
     where
         C: Curve + JwkParameters + ProjectiveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
-        self.try_into()
+        PublicKey::from_sec1_bytes(self.to_encoded_point::<C>()?.as_bytes())
+    }
+
+    /// Create a JWK from a SEC1 [`EncodedPoint`].
+    pub fn from_encoded_point<C>(point: &EncodedPoint<C>) -> Option<Self>
+    where
+        C: Curve + JwkParameters,
+        FieldSize<C>: ModulusSize,
+    {
+        match point.coordinates() {
+            Coordinates::Uncompressed { x, y } => Some(JwkEcKey {
+                crv: C::CRV.to_owned(),
+                x: Base64Url::encode_string(x),
+                y: Base64Url::encode_string(y),
+                d: None,
+            }),
+            _ => None,
+        }
+    }
+
+    /// Get the public key component of this JWK as a SEC1 [`EncodedPoint`].
+    pub fn to_encoded_point<C>(&self) -> Result<EncodedPoint<C>>
+    where
+        C: Curve + JwkParameters,
+        FieldSize<C>: ModulusSize,
+    {
+        if self.crv != C::CRV {
+            return Err(Error);
+        }
+
+        let x = decode_base64url_fe::<C>(&self.x)?;
+        let y = decode_base64url_fe::<C>(&self.y)?;
+        Ok(EncodedPoint::<C>::from_affine_coordinates(&x, &y, false))
     }
 
     /// Decode a JWK into a [`SecretKey`].
     #[cfg(feature = "arithmetic")]
     #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-    pub fn to_secret_key<C>(&self) -> Result<SecretKey<C>, Error>
+    pub fn to_secret_key<C>(&self) -> Result<SecretKey<C>>
     where
         C: Curve + JwkParameters + ValidatePublicKey,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
         self.try_into()
     }
@@ -143,7 +167,7 @@ impl JwkEcKey {
 impl FromStr for JwkEcKey {
     type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self, Error> {
+    fn from_str(s: &str) -> Result<Self> {
         serde_json::from_str(s).map_err(|_| Error)
     }
 }
@@ -155,85 +179,14 @@ impl ToString for JwkEcKey {
 }
 
 #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
-impl<C> TryFrom<JwkEcKey> for EncodedPoint<C>
-where
-    C: Curve + JwkParameters,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    type Error = Error;
-
-    fn try_from(jwk: JwkEcKey) -> Result<EncodedPoint<C>, Error> {
-        (&jwk).try_into()
-    }
-}
-
-#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
-impl<C> TryFrom<&JwkEcKey> for EncodedPoint<C>
-where
-    C: Curve + JwkParameters,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    type Error = Error;
-
-    fn try_from(jwk: &JwkEcKey) -> Result<EncodedPoint<C>, Error> {
-        if jwk.crv != C::CRV {
-            return Err(Error);
-        }
-
-        let x = decode_base64url_fe::<C>(&jwk.x)?;
-        let y = decode_base64url_fe::<C>(&jwk.y)?;
-        Ok(EncodedPoint::from_affine_coordinates(&x, &y, false))
-    }
-}
-
-#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
-impl<C> TryFrom<EncodedPoint<C>> for JwkEcKey
-where
-    C: Curve + JwkParameters,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    type Error = Error;
-
-    fn try_from(point: EncodedPoint<C>) -> Result<JwkEcKey, Error> {
-        (&point).try_into()
-    }
-}
-
-#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
-impl<C> TryFrom<&EncodedPoint<C>> for JwkEcKey
-where
-    C: Curve + JwkParameters,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    type Error = Error;
-
-    fn try_from(point: &EncodedPoint<C>) -> Result<JwkEcKey, Error> {
-        match point.coordinates() {
-            Coordinates::Uncompressed { x, y } => Ok(JwkEcKey {
-                crv: C::CRV.to_owned(),
-                x: Base64Url::encode_string(x),
-                y: Base64Url::encode_string(y),
-                d: None,
-            }),
-            _ => Err(Error),
-        }
-    }
-}
-
-#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl<C> TryFrom<JwkEcKey> for SecretKey<C>
 where
     C: Curve + JwkParameters + ValidatePublicKey,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     type Error = Error;
 
-    fn try_from(jwk: JwkEcKey) -> Result<SecretKey<C>, Error> {
+    fn try_from(jwk: JwkEcKey) -> Result<SecretKey<C>> {
         (&jwk).try_into()
     }
 }
@@ -242,16 +195,15 @@ where
 impl<C> TryFrom<&JwkEcKey> for SecretKey<C>
 where
     C: Curve + JwkParameters + ValidatePublicKey,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     type Error = Error;
 
-    fn try_from(jwk: &JwkEcKey) -> Result<SecretKey<C>, Error> {
+    fn try_from(jwk: &JwkEcKey) -> Result<SecretKey<C>> {
         if let Some(d_base64) = &jwk.d {
-            let pk = EncodedPoint::<C>::try_from(jwk)?;
+            let pk = jwk.to_encoded_point::<C>()?;
             let mut d_bytes = decode_base64url_fe::<C>(d_base64)?;
-            let result = SecretKey::from_bytes(&d_bytes);
+            let result = SecretKey::from_be_bytes(&d_bytes);
             d_bytes.zeroize();
 
             result.and_then(|secret_key| {
@@ -271,9 +223,7 @@ impl<C> From<SecretKey<C>> for JwkEcKey
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    Scalar<C>: Zeroize,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     fn from(sk: SecretKey<C>) -> JwkEcKey {
         (&sk).into()
@@ -287,13 +237,11 @@ impl<C> From<&SecretKey<C>> for JwkEcKey
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    Scalar<C>: Zeroize,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     fn from(sk: &SecretKey<C>) -> JwkEcKey {
         let mut jwk = sk.public_key().to_jwk();
-        let mut d = sk.to_bytes();
+        let mut d = sk.to_be_bytes();
         jwk.d = Some(Base64Url::encode_string(&d));
         d.zeroize();
         jwk
@@ -307,12 +255,11 @@ impl<C> TryFrom<JwkEcKey> for PublicKey<C>
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     type Error = Error;
 
-    fn try_from(jwk: JwkEcKey) -> Result<PublicKey<C>, Error> {
+    fn try_from(jwk: JwkEcKey) -> Result<PublicKey<C>> {
         (&jwk).try_into()
     }
 }
@@ -324,13 +271,12 @@ impl<C> TryFrom<&JwkEcKey> for PublicKey<C>
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     type Error = Error;
 
-    fn try_from(jwk: &JwkEcKey) -> Result<PublicKey<C>, Error> {
-        EncodedPoint::<C>::try_from(jwk).and_then(PublicKey::try_from)
+    fn try_from(jwk: &JwkEcKey) -> Result<PublicKey<C>> {
+        PublicKey::from_sec1_bytes(jwk.to_encoded_point::<C>()?.as_bytes())
     }
 }
 
@@ -341,8 +287,7 @@ impl<C> From<PublicKey<C>> for JwkEcKey
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     fn from(pk: PublicKey<C>) -> JwkEcKey {
         (&pk).into()
@@ -356,13 +301,10 @@ impl<C> From<&PublicKey<C>> for JwkEcKey
 where
     C: Curve + JwkParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     fn from(pk: &PublicKey<C>) -> JwkEcKey {
-        pk.to_encoded_point(false)
-            .try_into()
-            .expect("JWK encoding error")
+        Self::from_encoded_point::<C>(&pk.to_encoded_point(false)).expect("JWK encoding error")
     }
 }
 
@@ -418,7 +360,7 @@ impl Zeroize for JwkEcKey {
 }
 
 impl<'de> Deserialize<'de> for JwkEcKey {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
     where
         D: de::Deserializer<'de>,
     {
@@ -441,7 +383,7 @@ impl<'de> Deserialize<'de> for JwkEcKey {
                 fmt::Formatter::write_str(formatter, "field identifier")
             }
 
-            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+            fn visit_u64<E>(self, value: u64) -> core::result::Result<Self::Value, E>
             where
                 E: de::Error,
             {
@@ -458,14 +400,14 @@ impl<'de> Deserialize<'de> for JwkEcKey {
                 }
             }
 
-            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+            fn visit_str<E>(self, value: &str) -> core::result::Result<Self::Value, E>
             where
                 E: de::Error,
             {
                 self.visit_bytes(value.as_bytes())
             }
 
-            fn visit_bytes<E>(self, value: &[u8]) -> Result<Self::Value, E>
+            fn visit_bytes<E>(self, value: &[u8]) -> core::result::Result<Self::Value, E>
             where
                 E: de::Error,
             {
@@ -485,7 +427,7 @@ impl<'de> Deserialize<'de> for JwkEcKey {
 
         impl<'de> Deserialize<'de> for Field {
             #[inline]
-            fn deserialize<D>(__deserializer: D) -> Result<Self, D::Error>
+            fn deserialize<D>(__deserializer: D) -> core::result::Result<Self, D::Error>
             where
                 D: de::Deserializer<'de>,
             {
@@ -506,7 +448,7 @@ impl<'de> Deserialize<'de> for JwkEcKey {
             }
 
             #[inline]
-            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            fn visit_seq<A>(self, mut seq: A) -> core::result::Result<Self::Value, A::Error>
             where
                 A: de::SeqAccess<'de>,
             {
@@ -533,7 +475,7 @@ impl<'de> Deserialize<'de> for JwkEcKey {
             }
 
             #[inline]
-            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+            fn visit_map<A>(self, mut map: A) -> core::result::Result<Self::Value, A::Error>
             where
                 A: de::MapAccess<'de>,
             {
@@ -610,7 +552,7 @@ impl<'de> Deserialize<'de> for JwkEcKey {
 }
 
 impl Serialize for JwkEcKey {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
     where
         S: ser::Serializer,
     {
@@ -631,7 +573,7 @@ impl Serialize for JwkEcKey {
 }
 
 /// Decode a Base64url-encoded field element
-fn decode_base64url_fe<C: Curve>(s: &str) -> Result<FieldBytes<C>, Error> {
+fn decode_base64url_fe<C: Curve>(s: &str) -> Result<FieldBytes<C>> {
     let mut result = FieldBytes::<C>::default();
     Base64Url::decode(s, &mut result).map_err(|_| Error)?;
     Ok(result)
@@ -727,7 +669,7 @@ mod tests {
     #[test]
     fn jwk_into_encoded_point() {
         let jwk = JwkEcKey::from_str(JWK_PUBLIC_KEY).unwrap();
-        let point = EncodedPoint::<MockCurve>::try_from(&jwk).unwrap();
+        let point = jwk.to_encoded_point::<MockCurve>().unwrap();
         let (x, y) = match point.coordinates() {
             Coordinates::Uncompressed { x, y } => (x, y),
             other => panic!("unexpected coordinates: {:?}", other),
@@ -741,8 +683,8 @@ mod tests {
     #[test]
     fn encoded_point_into_jwk() {
         let jwk = JwkEcKey::from_str(JWK_PUBLIC_KEY).unwrap();
-        let point = EncodedPoint::<MockCurve>::try_from(&jwk).unwrap();
-        let jwk2 = JwkEcKey::try_from(point).unwrap();
+        let point = jwk.to_encoded_point::<MockCurve>().unwrap();
+        let jwk2 = JwkEcKey::from_encoded_point::<MockCurve>(&point).unwrap();
         assert_eq!(jwk, jwk2);
     }
 }

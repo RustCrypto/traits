@@ -27,8 +27,7 @@
 //! [SIGMA]: https://webee.technion.ac.il/~hugo/sigma-pdf.pdf
 
 use crate::{
-    weierstrass::Curve, AffinePoint, FieldBytes, NonZeroScalar, ProjectiveArithmetic,
-    ProjectivePoint, PublicKey, Scalar,
+    AffinePoint, Curve, FieldBytes, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, PublicKey,
 };
 use core::borrow::Borrow;
 use group::Curve as _;
@@ -61,8 +60,6 @@ pub fn diffie_hellman<C>(
 ) -> SharedSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Zeroize,
-    Scalar<C>: Zeroize,
     SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     let public_point = ProjectivePoint::<C>::from(*public_key.borrow());
@@ -96,7 +93,6 @@ where
 pub struct EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: Zeroize,
 {
     scalar: NonZeroScalar<C>,
 }
@@ -104,8 +100,6 @@ where
 impl<C> EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Zeroize,
-    Scalar<C>: Zeroize,
     SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     /// Generate a cryptographically random [`EphemeralSecret`].
@@ -132,8 +126,6 @@ where
 impl<C> From<&EphemeralSecret<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: Zeroize,
-    Scalar<C>: Zeroize,
     SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     fn from(ephemeral_secret: &EphemeralSecret<C>) -> Self {
@@ -144,7 +136,6 @@ where
 impl<C> Zeroize for EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: Zeroize,
 {
     fn zeroize(&mut self) {
         self.scalar.zeroize()
@@ -154,7 +145,6 @@ where
 impl<C> Drop for EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    Scalar<C>: Zeroize,
 {
     fn drop(&mut self) {
         self.zeroize();

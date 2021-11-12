@@ -14,7 +14,7 @@ access compatible versions of all traits from the Rust Crypto project.
 
 ## Minimum Supported Rust Version
 
-Rust **1.51** or higher.
+Rust **1.56** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
@@ -46,7 +46,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/crypto/badge.svg
 [docs-link]: https://docs.rs/crypto/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.51+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260050-Traits
 [build-image]: https://github.com/RustCrypto/traits/workflows/crypto/badge.svg?branch=master&event=push

@@ -1,50 +1,63 @@
 [package]
 name = "elliptic-curve"
+version = "0.11.0-pre" # Also update html_root_url in lib.rs when bumping this
 description = """
 General purpose Elliptic Curve Cryptography (ECC) support, including types
 and traits for representing various elliptic curve forms, scalars, points,
 and public/secret keys composed thereof.
 """
-version    = "0.10.6" # Also update html_root_url in lib.rs when bumping this
-authors    = ["RustCrypto Developers"]
-license    = "Apache-2.0 OR MIT"
+authors = ["RustCrypto Developers"]
+license = "Apache-2.0 OR MIT"
 repository = "https://github.com/RustCrypto/traits/tree/master/elliptic-curve"
-readme     = "README.md"
-edition    = "2018"
+readme = "README.md"
 categories = ["cryptography", "no-std"]
-keywords   = ["crypto", "ecc", "elliptic", "weierstrass"]
+keywords = ["crypto", "ecc", "elliptic", "weierstrass"]
+edition = "2021"
+rust-version = "1.56"
+
+# Hack to allow this crate to coexist with pre-2021 edition crates
+[workspace]
+members = ["."]
 
 [dependencies]
-crypto-bigint = { version = "0.2.4", features = ["generic-array"] }
+crypto-bigint = { version = "0.2.9", features = ["generic-array", "zeroize"] }
+der = { version = "=0.5.0-pre.1", default-features = false, features = ["oid"] }
 generic-array = { version = "0.14", default-features = false }
 rand_core = { version = "0.6", default-features = false }
-subtle = { version = "=2.4", default-features = false }
+subtle = { version = ">=2, <2.5", default-features = false }
+zeroize = { version = ">=1, <1.5", default-features = false }
 
 # optional dependencies
 base64ct = { version = "1", optional = true, default-features = false }
-ff = { version = "0.10", optional = true, default-features = false }
-group = { version = "0.10", optional = true, default-features = false }
+ff = { version = "0.11", optional = true, default-features = false }
+group = { version = "0.11", optional = true, default-features = false }
 hex-literal = { version = "0.3", optional = true }
-pkcs8 = { version = "0.7", optional = true }
+pem-rfc7468 = { version = "0.2", optional = true }
+pkcs8 = { version = "0.8.0-pre", optional = true }
+sec1 = { version = "0.2.0-pre", optional = true, features = ["subtle", "zeroize"] }
 serde = { version = "1", optional = true, default-features = false }
 serde_json = { version = "1", optional = true, default-features = false, features = ["alloc"] }
-zeroize = { version = ">=1, <1.5", optional = true,  default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.3"
 
 [features]
 default = ["arithmetic"]
-alloc = [] # todo: activate `group/alloc` when weak feature activation is available
-arithmetic = ["crypto-bigint/zeroize", "ff", "group", "zeroize"]
+alloc = ["der/alloc", "sec1/alloc", "zeroize/alloc"] # todo: use weak activation for `group`/`sec1` alloc when available
+arithmetic = ["ff", "group"]
 bits = ["arithmetic", "ff/bits"]
-dev = ["arithmetic", "hex-literal", "pem", "zeroize"]
-ecdh = ["arithmetic", "zeroize"]
+dev = ["arithmetic", "hex-literal", "pem"]
+ecdh = ["arithmetic"]
 hazmat = []
 jwk = ["alloc", "base64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
-pem = ["alloc", "pkcs8/pem"]
+pem = ["alloc", "arithmetic", "pem-rfc7468/alloc", "pkcs8/pem", "sec1/alloc"]
 std = ["alloc", "rand_core/std"]
 
 [package.metadata.docs.rs]
 features = ["arithmetic", "ecdh", "jwk", "pem", "std"]
 rustdoc-args = ["--cfg", "docsrs"]
+
+[patch.crates-io]
+der = { git = "https://github.com/RustCrypto/formats.git" }
+pkcs8 = { git = "https://github.com/RustCrypto/formats.git" }
+sec1 = { git = "https://github.com/RustCrypto/formats.git" }

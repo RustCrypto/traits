@@ -1,33 +1,32 @@
 //! Elliptic curve public keys.
 
 use crate::{
-    consts::U1,
-    sec1::{
-        EncodedPoint, FromEncodedPoint, ToEncodedPoint, UncompressedPointSize, UntaggedPointSize,
-    },
-    weierstrass::{Curve, PointCompression},
-    AffinePoint, Error, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, Result,
+    AffinePoint, Curve, Error, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, Result,
 };
-use core::{
-    cmp::Ordering,
-    convert::{TryFrom, TryInto},
-    fmt::Debug,
-    ops::Add,
-};
-use generic_array::ArrayLength;
+use core::fmt::Debug;
 use group::{Curve as _, Group};
 
 #[cfg(feature = "jwk")]
 use crate::{JwkEcKey, JwkParameters};
 
-#[cfg(feature = "pkcs8")]
+#[cfg(all(feature = "sec1", feature = "pkcs8"))]
 use {
     crate::{AlgorithmParameters, ALGORITHM_OID},
-    pkcs8::FromPublicKey,
+    pkcs8::DecodePublicKey,
 };
 
 #[cfg(feature = "pem")]
-use {core::str::FromStr, pkcs8::ToPublicKey};
+use {core::str::FromStr, pkcs8::EncodePublicKey};
+
+#[cfg(feature = "sec1")]
+use {
+    crate::{
+        sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
+        FieldSize, PointCompression,
+    },
+    core::cmp::Ordering,
+    subtle::CtOption,
+};
 
 #[cfg(any(feature = "jwk", feature = "pem"))]
 use alloc::string::{String, ToString};
@@ -53,13 +52,13 @@ use alloc::string::{String, ToString};
 /// To decode an elliptic curve public key from SPKI, enable the `pkcs8`
 /// feature of this crate (or the `pkcs8` feature of a specific RustCrypto
 /// elliptic curve crate) and use the
-/// [`elliptic_curve::pkcs8::FromPublicKey`][`pkcs8::FromPublicKey`]
+/// [`elliptic_curve::pkcs8::DecodePublicKey`][`pkcs8::DecodePublicKey`]
 /// trait to parse it.
 ///
 /// When the `pem` feature of this crate (or a specific RustCrypto elliptic
 /// curve crate) is enabled, a [`FromStr`] impl is also available.
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
@@ -95,15 +94,15 @@ where
     /// 2.3.3 (page 10).
     ///
     /// <http://www.secg.org/sec1-v2.pdf>
+    #[cfg(feature = "sec1")]
     pub fn from_sec1_bytes(bytes: &[u8]) -> Result<Self>
     where
-        Self: TryFrom<EncodedPoint<C>, Error = Error>,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        C: Curve,
+        FieldSize<C>: ModulusSize,
+        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     {
-        EncodedPoint::from_bytes(bytes)
-            .map_err(|_| Error)
-            .and_then(TryInto::try_into)
+        let point = EncodedPoint::<C>::from_bytes(bytes).map_err(|_| Error)?;
+        Option::from(Self::from_encoded_point(&point)).ok_or(Error)
     }
 
     /// Borrow the inner [`AffinePoint`] from this [`PublicKey`].
@@ -115,7 +114,7 @@ where
 
     /// Convert this [`PublicKey`] to a [`ProjectivePoint`] for the given curve
     pub fn to_projective(&self) -> ProjectivePoint<C> {
-        self.point.clone().into()
+        self.point.into()
     }
 
     /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`PublicKey`].
@@ -123,12 +122,11 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
     where
-        C: JwkParameters,
+        C: Curve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
-        jwk.try_into()
+        jwk.to_public_key::<C>()
     }
 
     /// Parse a string containing a JSON Web Key (JWK) into a [`PublicKey`].
@@ -136,10 +134,9 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn from_jwk_str(jwk: &str) -> Result<Self>
     where
-        C: JwkParameters,
+        C: Curve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
         jwk.parse::<JwkEcKey>().and_then(|jwk| Self::from_jwk(&jwk))
     }
@@ -149,10 +146,9 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk(&self) -> JwkEcKey
     where
-        C: JwkParameters,
+        C: Curve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
         self.into()
     }
@@ -162,10 +158,9 @@ where
     #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk_string(&self) -> String
     where
-        C: JwkParameters,
+        C: Curve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-        UncompressedPointSize<C>: ArrayLength<u8>,
+        FieldSize<C>: ModulusSize,
     {
         self.to_jwk().to_string()
     }
@@ -182,78 +177,30 @@ where
 
 impl<C> Copy for PublicKey<C> where C: Curve + ProjectiveArithmetic {}
 
-impl<C> TryFrom<EncodedPoint<C>> for PublicKey<C>
-where
-    C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    type Error = Error;
-
-    fn try_from(encoded_point: EncodedPoint<C>) -> Result<Self> {
-        encoded_point.decode()
-    }
-}
-
-impl<C> TryFrom<&EncodedPoint<C>> for PublicKey<C>
-where
-    C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    type Error = Error;
-
-    fn try_from(encoded_point: &EncodedPoint<C>) -> Result<Self> {
-        encoded_point.decode()
-    }
-}
-
-impl<C> From<PublicKey<C>> for EncodedPoint<C>
-where
-    C: Curve + ProjectiveArithmetic + PointCompression,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    fn from(public_key: PublicKey<C>) -> EncodedPoint<C> {
-        EncodedPoint::<C>::from(&public_key)
-    }
-}
-
-impl<C> From<&PublicKey<C>> for EncodedPoint<C>
-where
-    C: Curve + ProjectiveArithmetic + PointCompression,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    fn from(public_key: &PublicKey<C>) -> EncodedPoint<C> {
-        public_key.to_encoded_point(C::COMPRESS_POINTS)
-    }
-}
-
+#[cfg(feature = "sec1")]
+#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> FromEncodedPoint<C> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     /// Initialize [`PublicKey`] from an [`EncodedPoint`]
-    fn from_encoded_point(encoded_point: &EncodedPoint<C>) -> Option<Self> {
-        AffinePoint::<C>::from_encoded_point(encoded_point)
-            .and_then(|point| PublicKey::from_affine(point).ok())
+    fn from_encoded_point(encoded_point: &EncodedPoint<C>) -> CtOption<Self> {
+        AffinePoint::<C>::from_encoded_point(encoded_point).and_then(|point| {
+            let is_identity = ProjectivePoint::<C>::from(point).is_identity();
+            CtOption::new(PublicKey { point }, !is_identity)
+        })
     }
 }
 
+#[cfg(feature = "sec1")]
+#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> ToEncodedPoint<C> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     /// Serialize this [`PublicKey`] as a SEC1 [`EncodedPoint`], optionally applying
     /// point compression
@@ -262,45 +209,52 @@ where
     }
 }
 
-impl<C> Eq for PublicKey<C>
+#[cfg(feature = "sec1")]
+#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
+impl<C> From<PublicKey<C>> for EncodedPoint<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ProjectiveArithmetic + PointCompression,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
-}
-
-impl<C> PartialEq for PublicKey<C>
-where
-    C: Curve + ProjectiveArithmetic,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
-{
-    fn eq(&self, other: &Self) -> bool {
-        self.cmp(other) == Ordering::Equal
+    fn from(public_key: PublicKey<C>) -> EncodedPoint<C> {
+        EncodedPoint::<C>::from(&public_key)
     }
 }
 
+#[cfg(feature = "sec1")]
+#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
+impl<C> From<&PublicKey<C>> for EncodedPoint<C>
+where
+    C: Curve + ProjectiveArithmetic + PointCompression,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldSize<C>: ModulusSize,
+{
+    fn from(public_key: &PublicKey<C>) -> EncodedPoint<C> {
+        public_key.to_encoded_point(C::COMPRESS_POINTS)
+    }
+}
+
+#[cfg(feature = "sec1")]
+#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> PartialOrd for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
+#[cfg(feature = "sec1")]
+#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> Ord for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     fn cmp(&self, other: &Self) -> Ordering {
         // TODO(tarcieri): more efficient implementation?
@@ -310,18 +264,17 @@ where
     }
 }
 
-#[cfg(feature = "pkcs8")]
-#[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
-impl<C> FromPublicKey for PublicKey<C>
+#[cfg(all(feature = "pkcs8", feature = "sec1"))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "pkcs8", feature = "sec1"))))]
+impl<C> DecodePublicKey for PublicKey<C>
 where
-    Self: TryFrom<EncodedPoint<C>, Error = Error>,
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldSize<C>: ModulusSize,
 {
-    fn from_spki(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> pkcs8::Result<Self> {
+    fn from_spki(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> der::Result<Self> {
         if spki.algorithm.oid != ALGORITHM_OID {
-            return Err(pkcs8::der::ErrorKind::UnknownOid {
+            return Err(der::ErrorKind::UnknownOid {
                 oid: spki.algorithm.oid,
             }
             .into());
@@ -330,31 +283,30 @@ where
         let params_oid = spki.algorithm.parameters_oid()?;
 
         if params_oid != C::OID {
-            return Err(pkcs8::der::ErrorKind::UnknownOid { oid: params_oid }.into());
+            return Err(der::ErrorKind::UnknownOid { oid: params_oid }.into());
         }
 
-        Self::from_sec1_bytes(&spki.subject_public_key)
-            .map_err(|_| pkcs8::der::Tag::BitString.value_error().into())
+        Self::from_sec1_bytes(spki.subject_public_key)
+            .map_err(|_| der::Tag::BitString.value_error())
     }
 }
 
 #[cfg(feature = "pem")]
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
-impl<C> ToPublicKey for PublicKey<C>
+impl<C> EncodePublicKey for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
-    fn to_public_key_der(&self) -> pkcs8::Result<pkcs8::PublicKeyDocument> {
+    fn to_public_key_der(&self) -> der::Result<pkcs8::PublicKeyDocument> {
         let public_key_bytes = self.to_encoded_point(false);
 
-        Ok(pkcs8::SubjectPublicKeyInfo {
+        pkcs8::SubjectPublicKeyInfo {
             algorithm: C::algorithm_identifier(),
             subject_public_key: public_key_bytes.as_ref(),
         }
-        .into())
+        .try_into()
     }
 }
 
@@ -362,10 +314,9 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for PublicKey<C>
 where
-    Self: TryFrom<EncodedPoint<C>, Error = Error>,
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldSize<C>: ModulusSize,
 {
     type Err = Error;
 
@@ -380,11 +331,11 @@ impl<C> ToString for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    UntaggedPointSize<C>: Add<U1> + ArrayLength<u8>,
-    UncompressedPointSize<C>: ArrayLength<u8>,
+    FieldSize<C>: ModulusSize,
 {
     fn to_string(&self) -> String {
-        self.to_public_key_pem().expect("PEM encoding error")
+        self.to_public_key_pem(Default::default())
+            .expect("PEM encoding error")
     }
 }
 
@@ -398,6 +349,8 @@ mod tests {
     #[test]
     fn from_encoded_point_rejects_identity() {
         let identity = EncodedPoint::identity();
-        assert_eq!(PublicKey::from_encoded_point(&identity), None);
+        assert!(bool::from(
+            PublicKey::from_encoded_point(&identity).is_none()
+        ));
     }
 }

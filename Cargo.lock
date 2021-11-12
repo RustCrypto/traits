@@ -33,9 +33,9 @@ dependencies = [
 
 [[package]]
 name = "base64ct"
-version = "1.1.1"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6b4d9b1225d28d360ec6a231d65af1fd99a2a095154c8040689617290569c5c"
+checksum = "392c772b012d685a640cdad68a5a21f4a45e696f85a2c2c907aab2fe49a91e19"
 
 [[package]]
 name = "bitvec"
@@ -67,7 +67,7 @@ dependencies = [
 [[package]]
 name = "block-buffer"
 version = "0.10.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#c3b7bf938b88f227b4a9349373f4657c457306aa"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#f207c0b0017d4f7bd4845058f1e3597d36dfad60"
 dependencies = [
  "block-padding",
  "generic-array",
@@ -76,7 +76,7 @@ dependencies = [
 [[package]]
 name = "block-padding"
 version = "0.3.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#c3b7bf938b88f227b4a9349373f4657c457306aa"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#f207c0b0017d4f7bd4845058f1e3597d36dfad60"
 dependencies = [
  "generic-array",
 ]
@@ -279,9 +279,9 @@ dependencies = [
 
 [[package]]
 name = "heapless"
-version = "0.7.7"
+version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe65ef062f1af5b1b189842b0bc45bd671c38e1d22c6aa22e6ada03d01026d53"
+checksum = "9c1ad878e07405df82b695089e63d278244344f80e764074d0bdfe99b89460f3"
 dependencies = [
  "hash32",
  "spin",
@@ -290,14 +290,14 @@ dependencies = [
 
 [[package]]
 name = "hex-literal"
-version = "0.3.3"
+version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21e4590e13640f19f249fe3e4eca5113bc4289f2497710378190e7f4bd96f45b"
+checksum = "7ebdb29d2ea9ed0083cd8cece49bbd968021bd99b0849edb4a9a7ee0fdf6a4e0"
 
 [[package]]
 name = "inout"
 version = "0.1.0"
-source = "git+https://github.com/RustCrypto/utils?branch=pad_error#c3b7bf938b88f227b4a9349373f4657c457306aa"
+source = "git+https://github.com/RustCrypto/utils?branch=pad_error#f207c0b0017d4f7bd4845058f1e3597d36dfad60"
 dependencies = [
  "generic-array",
 ]
@@ -310,9 +310,9 @@ checksum = "b71991ff56294aa922b450139ee08b3bfc70982c6b2c7562771375cf73542dd4"
 
 [[package]]
 name = "libc"
-version = "0.2.104"
+version = "0.2.107"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b2f96d100e1cf1929e7719b7edb3b90ab5298072638fccd77be9ce942ecdfce"
+checksum = "fbe5e23404da5b4f555ef85ebed98fb4083e55a00c317800bc2a50ede9f3d219"
 
 [[package]]
 name = "lock_api"
@@ -361,9 +361,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.30"
+version = "1.0.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edc3358ebc67bc8b7fa0c007f945b0b18226f78437d61bec735a9eb96b61ee70"
+checksum = "ba508cc11742c0dc5c1659771673afbab7a0efab23aa17e854cbab0837ed0b43"
 dependencies = [
  "unicode-xid",
 ]
@@ -412,9 +412,9 @@ checksum = "f12d06de37cf59146fbdecab66aa99f9fe4f78722e3607577a5375d66bd0c913"
 
 [[package]]
 name = "serde_json"
-version = "1.0.68"
+version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f690853975602e1bfe1ccbf50504d67174e3bcf340f23b5ea9992e0587a52d8"
+checksum = "e466864e431129c7e0d3476b92f20458e5879919a0596c6472738d9fa2d342f8"
 dependencies = [
  "itoa",
  "ryu",
@@ -487,9 +487,9 @@ checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 
 [[package]]
 name = "syn"
-version = "1.0.80"
+version = "1.0.81"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d010a1623fbd906d51d650a9916aaefc05ffa0e4053ff7fe601167f3e715d194"
+checksum = "f2afee18b8beb5a596ecb4a2dce128c719b4ba399d34126b9e4396e3f9860966"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -559,6 +559,6 @@ dependencies = [
 
 [[package]]
 name = "zeroize"
-version = "1.4.2"
+version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf68b08513768deaa790264a7fac27a58cbf2705cfcdc9448362229217d7e970"
+checksum = "d68d9dcec5f9b43a30d38c49f91dfedfaac384cb8f085faca366c26207dd1619"

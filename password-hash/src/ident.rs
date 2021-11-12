@@ -126,14 +126,14 @@ impl<'a> TryFrom<&'a str> for Ident<'a> {
         let bytes = s.as_bytes();
         let too_long = bytes.len() > Self::MAX_LENGTH;
 
+        if too_long {
+            return Err(Error::ParamNameInvalid);
+        }
+
         for &c in bytes {
             if !is_char_valid(c) {
                 return Err(Error::ParamNameInvalid);
             }
-        }
-
-        if too_long {
-            return Err(Error::ParamNameInvalid);
         }
 
         Ok(Self::new(s))
