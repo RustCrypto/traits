@@ -21,6 +21,9 @@ pub trait Mac: KeySizeUser + OutputSizeUser + Sized {
     /// Create new value from variable size key.
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength>;
 
+    /// Update state using the provided data.
+    fn update(&mut self, data: &[u8]);
+
     /// Obtain the result of a [`Mac`] computation as a [`CtOutput`] and consume
     /// [`Mac`] instance.
     fn finalize(self) -> CtOutput<Self>;
@@ -56,6 +59,11 @@ impl<T: KeyInit + Update + FixedOutput + MacMarker> Mac for T {
     #[inline(always)]
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
         KeyInit::new_from_slice(key)
+    }
+
+    #[inline]
+    fn update(&mut self, data: &[u8]) {
+        Update::update(self, data);
     }
 
     #[inline]
