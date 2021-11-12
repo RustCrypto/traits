@@ -1,6 +1,6 @@
 use super::{AlgorithmName, XofReaderCore};
 use crate::XofReader;
-use block_buffer::BlockBuffer;
+use block_buffer::EagerBuffer;
 use core::fmt;
 
 /// Wrapper around [`XofReaderCore`] implementations.
@@ -9,7 +9,7 @@ use core::fmt;
 #[derive(Clone, Default)]
 pub struct XofReaderCoreWrapper<T: XofReaderCore> {
     pub(super) core: T,
-    pub(super) buffer: BlockBuffer<T::BlockSize>,
+    pub(super) buffer: EagerBuffer<T::BlockSize>,
 }
 
 impl<T: XofReaderCore + AlgorithmName> fmt::Debug for XofReaderCoreWrapper<T> {

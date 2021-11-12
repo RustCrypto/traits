@@ -8,7 +8,7 @@ use generic_array::ArrayLength;
 
 pub use crypto_common::{AlgorithmName, Block, BlockSizeUser, OutputSizeUser, Reset};
 
-use block_buffer::DigestBuffer;
+use block_buffer::{BlockBuffer, BufferKind};
 use crypto_common::Output;
 
 mod ct_variable;
@@ -21,33 +21,37 @@ pub use rt_variable::RtVariableCoreWrapper;
 pub use wrapper::CoreWrapper;
 pub use xof_reader::XofReaderCoreWrapper;
 
+/// Buffer type used by type which implements [`BufferKindUser`].
+pub type Buffer<S> =
+    BlockBuffer<<S as BlockSizeUser>::BlockSize, <S as BufferKindUser>::BufferKind>;
+
 /// Types which consume data in blocks.
 pub trait UpdateCore: BlockSizeUser {
     /// Update state using the provided data blocks.
     fn update_blocks(&mut self, blocks: &[Block<Self>]);
 }
 
-/// Types which use [`DigestBuffer`] functionality.
-pub trait BufferUser: BlockSizeUser {
-    /// Block buffer type over which value operates.
-    type Buffer: DigestBuffer<Self::BlockSize>;
+/// Types which use [`BlockBuffer`] functionality.
+pub trait BufferKindUser: BlockSizeUser {
+    /// Block buffer kind over which type operates.
+    type BufferKind: BufferKind;
 }
 
 /// Core trait for hash functions with fixed output size.
-pub trait FixedOutputCore: UpdateCore + BufferUser + OutputSizeUser {
+pub trait FixedOutputCore: UpdateCore + BufferKindUser + OutputSizeUser {
     /// Finalize state using remaining data stored in the provided block buffer,
     /// write result into provided array and leave `self` in a dirty state.
-    fn finalize_fixed_core(&mut self, buffer: &mut Self::Buffer, out: &mut Output<Self>);
+    fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>);
 }
 
 /// Core trait for hash functions with extendable (XOF) output size.
-pub trait ExtendableOutputCore: UpdateCore + BufferUser {
+pub trait ExtendableOutputCore: UpdateCore + BufferKindUser {
     /// XOF reader core state.
     type ReaderCore: XofReaderCore;
 
     /// Retrieve XOF reader using remaining data stored in the block buffer
     /// and leave hasher in a dirty state.
-    fn finalize_xof_core(&mut self, buffer: &mut Self::Buffer) -> Self::ReaderCore;
+    fn finalize_xof_core(&mut self, buffer: &mut Buffer<Self>) -> Self::ReaderCore;
 }
 
 /// Core reader trait for extendable-output function (XOF) result.
@@ -57,7 +61,7 @@ pub trait XofReaderCore: BlockSizeUser {
 }
 
 /// Core trait for hash functions with variable output size.
-pub trait VariableOutputCore: UpdateCore + BufferUser + Sized {
+pub trait VariableOutputCore: UpdateCore + BufferKindUser + Sized {
     /// Maximum output size.
     type MaxOutputSize: ArrayLength<u8>;
 
@@ -72,7 +76,7 @@ pub trait VariableOutputCore: UpdateCore + BufferUser + Sized {
     /// `output_size` must be equal to `output_size` used during construction.
     fn finalize_variable_core(
         &mut self,
-        buffer: &mut Self::Buffer,
+        buffer: &mut Buffer<Self>,
         output_size: usize,
         f: impl FnOnce(&[u8]),
     );

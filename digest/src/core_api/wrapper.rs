@@ -1,30 +1,30 @@
 use super::{
-    AlgorithmName, BufferUser, ExtendableOutputCore, FixedOutputCore, OutputSizeUser, Reset,
-    UpdateCore, XofReaderCoreWrapper,
+    AlgorithmName, Buffer, BufferKindUser, ExtendableOutputCore, FixedOutputCore, OutputSizeUser,
+    Reset, UpdateCore, XofReaderCoreWrapper,
 };
 use crate::{ExtendableOutput, FixedOutput, FixedOutputReset, HashMarker, Update};
-use block_buffer::DigestBuffer;
+use block_buffer::BlockBuffer;
 use core::fmt;
 use crypto_common::{Key, KeyInit, KeySizeUser, Output};
 
 #[cfg(feature = "mac")]
 use crate::MacMarker;
 
-/// Wrapper around [`BufferUser`].
+/// Wrapper around [`BufferKindUser`].
 ///
 /// It handles data buffering and implements the slice-based traits.
 #[derive(Clone, Default)]
-pub struct CoreWrapper<T: BufferUser> {
+pub struct CoreWrapper<T: BufferKindUser> {
     core: T,
-    buffer: T::Buffer,
+    buffer: BlockBuffer<T::BlockSize, T::BufferKind>,
 }
 
-impl<T: HashMarker + BufferUser> HashMarker for CoreWrapper<T> {}
+impl<T: HashMarker + BufferKindUser> HashMarker for CoreWrapper<T> {}
 
 #[cfg(feature = "mac")]
-impl<T: MacMarker + BufferUser> MacMarker for CoreWrapper<T> {}
+impl<T: MacMarker + BufferKindUser> MacMarker for CoreWrapper<T> {}
 
-impl<T: BufferUser> CoreWrapper<T> {
+impl<T: BufferKindUser> CoreWrapper<T> {
     /// Create new wrapper from `core`.
     #[inline]
     pub fn from_core(core: T) -> Self {
@@ -34,17 +34,17 @@ impl<T: BufferUser> CoreWrapper<T> {
 
     /// Decompose wrapper into inner parts.
     #[inline]
-    pub fn decompose(self) -> (T, T::Buffer) {
+    pub fn decompose(self) -> (T, Buffer<T>) {
         let Self { core, buffer } = self;
         (core, buffer)
     }
 }
 
-impl<T: KeySizeUser + BufferUser> KeySizeUser for CoreWrapper<T> {
+impl<T: KeySizeUser + BufferKindUser> KeySizeUser for CoreWrapper<T> {
     type KeySize = T::KeySize;
 }
 
-impl<T: BufferUser + KeyInit> KeyInit for CoreWrapper<T> {
+impl<T: BufferKindUser + KeyInit> KeyInit for CoreWrapper<T> {
     fn new(key: &Key<Self>) -> Self {
         Self {
             core: T::new(key),
@@ -53,14 +53,14 @@ impl<T: BufferUser + KeyInit> KeyInit for CoreWrapper<T> {
     }
 }
 
-impl<T: BufferUser + AlgorithmName> fmt::Debug for CoreWrapper<T> {
+impl<T: BufferKindUser + AlgorithmName> fmt::Debug for CoreWrapper<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         T::write_alg_name(f)?;
         f.write_str(" { .. }")
     }
 }
 
-impl<D: Reset + BufferUser> Reset for CoreWrapper<D> {
+impl<D: Reset + BufferKindUser> Reset for CoreWrapper<D> {
     #[inline]
     fn reset(&mut self) {
         self.core.reset();
@@ -68,7 +68,7 @@ impl<D: Reset + BufferUser> Reset for CoreWrapper<D> {
     }
 }
 
-impl<D: UpdateCore + BufferUser> Update for CoreWrapper<D> {
+impl<D: UpdateCore + BufferKindUser> Update for CoreWrapper<D> {
     #[inline]
     fn update(&mut self, input: &[u8]) {
         let Self { core, buffer } = self;
@@ -76,7 +76,7 @@ impl<D: UpdateCore + BufferUser> Update for CoreWrapper<D> {
     }
 }
 
-impl<D: OutputSizeUser + BufferUser> OutputSizeUser for CoreWrapper<D> {
+impl<D: OutputSizeUser + BufferKindUser> OutputSizeUser for CoreWrapper<D> {
     type OutputSize = D::OutputSize;
 }
 
@@ -120,7 +120,7 @@ impl<D: ExtendableOutputCore + Reset> ExtendableOutput for CoreWrapper<D> {
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<D: UpdateCore + BufferUser> std::io::Write for CoreWrapper<D> {
+impl<D: UpdateCore + BufferKindUser> std::io::Write for CoreWrapper<D> {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         Update::update(self, buf);

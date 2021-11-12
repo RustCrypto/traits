@@ -1,4 +1,6 @@
-use super::{AlgorithmName, BufferUser, FixedOutputCore, Reset, UpdateCore, VariableOutputCore};
+use super::{
+    AlgorithmName, Buffer, BufferKindUser, FixedOutputCore, Reset, UpdateCore, VariableOutputCore,
+};
 use crate::HashMarker;
 #[cfg(feature = "mac")]
 use crate::MacMarker;
@@ -69,13 +71,13 @@ where
     type OutputSize = OutSize;
 }
 
-impl<T, OutSize> BufferUser for CtVariableCoreWrapper<T, OutSize>
+impl<T, OutSize> BufferKindUser for CtVariableCoreWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::MaxOutputSize>,
     LeEq<OutSize, T::MaxOutputSize>: NonZero,
 {
-    type Buffer = T::Buffer;
+    type BufferKind = T::BufferKind;
 }
 
 impl<T, OutSize> FixedOutputCore for CtVariableCoreWrapper<T, OutSize>
@@ -87,7 +89,7 @@ where
     #[inline]
     fn finalize_fixed_core(
         &mut self,
-        buffer: &mut Self::Buffer,
+        buffer: &mut Buffer<Self>,
         out: &mut GenericArray<u8, Self::OutputSize>,
     ) {
         self.inner

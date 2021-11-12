@@ -245,7 +245,6 @@ macro_rules! bench {
     };
 }
 
-
 /// Define MAC test
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]

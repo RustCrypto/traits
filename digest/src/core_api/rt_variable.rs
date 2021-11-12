@@ -3,7 +3,7 @@ use crate::HashMarker;
 #[cfg(feature = "mac")]
 use crate::MacMarker;
 use crate::{InvalidOutputSize, Reset, Update, VariableOutput};
-use block_buffer::DigestBuffer;
+use block_buffer::BlockBuffer;
 use core::fmt;
 use generic_array::typenum::Unsigned;
 
@@ -15,7 +15,7 @@ where
     T: VariableOutputCore + UpdateCore,
 {
     core: T,
-    buffer: T::Buffer,
+    buffer: BlockBuffer<T::BlockSize, T::BufferKind>,
     output_size: usize,
 }
 
