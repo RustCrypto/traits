@@ -1,7 +1,7 @@
 //! Generic scalar type with core functionality.
 
 use crate::{
-    bigint::{AddMod, ArrayEncoding, Encoding, Integer, Limb, NegMod, RandomMod, SubMod},
+    bigint::{prelude::*, Limb, NonZero},
     rand_core::{CryptoRng, RngCore},
     subtle::{
         Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
@@ -55,7 +55,7 @@ where
     /// Generate a random [`ScalarCore`].
     pub fn random(rng: impl CryptoRng + RngCore) -> Self {
         Self {
-            inner: C::UInt::random_mod(rng, &Self::MODULUS),
+            inner: C::UInt::random_mod(rng, &NonZero::new(Self::MODULUS).unwrap()),
         }
     }
 

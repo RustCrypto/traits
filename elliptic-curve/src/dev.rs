@@ -2,7 +2,7 @@
 //! against concrete implementations of the traits in this crate.
 
 use crate::{
-    bigint::{Encoding, Limb, U256},
+    bigint::{Limb, U256},
     error::{Error, Result},
     ops::Reduce,
     rand_core::RngCore,

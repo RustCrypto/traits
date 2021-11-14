@@ -38,9 +38,9 @@ source = "git+https://github.com/RustCrypto/formats.git#4ec825666bcd552a87359674
 
 [[package]]
 name = "crypto-bigint"
-version = "0.2.11"
+version = "0.3.0-pre.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f83bd3bb4314701c568e340cd8cf78c975aa0ca79e03d3f6d1677d5b0c9c0c03"
+checksum = "d174cafe51590ef0e0a6e540b9ffc8b35a1ff47fb3adda3ab272bcc9f5bfc86c"
 dependencies = [
  "generic-array",
  "rand_core",
