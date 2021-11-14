@@ -272,22 +272,11 @@ where
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
-    fn from_spki(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> der::Result<Self> {
-        if spki.algorithm.oid != ALGORITHM_OID {
-            return Err(der::ErrorKind::UnknownOid {
-                oid: spki.algorithm.oid,
-            }
-            .into());
-        }
-
-        let params_oid = spki.algorithm.parameters_oid()?;
-
-        if params_oid != C::OID {
-            return Err(der::ErrorKind::UnknownOid { oid: params_oid }.into());
-        }
+    fn from_spki(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> pkcs8::spki::Result<Self> {
+        spki.algorithm.assert_oids(ALGORITHM_OID, C::OID)?;
 
         Self::from_sec1_bytes(spki.subject_public_key)
-            .map_err(|_| der::Tag::BitString.value_error())
+            .map_err(|_| der::Tag::BitString.value_error().into())
     }
 }
 
@@ -299,7 +288,7 @@ where
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
-    fn to_public_key_der(&self) -> der::Result<pkcs8::PublicKeyDocument> {
+    fn to_public_key_der(&self) -> pkcs8::spki::Result<pkcs8::PublicKeyDocument> {
         let public_key_bytes = self.to_encoded_point(false);
 
         pkcs8::SubjectPublicKeyInfo {
