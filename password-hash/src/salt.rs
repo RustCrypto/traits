@@ -160,12 +160,12 @@ impl<'a> fmt::Display for Salt<'a> {
 
 impl<'a> fmt::Debug for Salt<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Salt({:?})", self.as_ref())
+        write!(f, "Salt({:?})", self.as_str())
     }
 }
 
 /// Owned stack-allocated equivalent of [`Salt`].
-#[derive(Clone, Debug, Eq)]
+#[derive(Clone, Eq)]
 pub struct SaltString {
     /// Byte array containing an ASCiI-encoded string.
     bytes: [u8; Salt::MAX_LENGTH],
@@ -255,6 +255,18 @@ impl PartialEq for SaltString {
 impl<'a> From<&'a SaltString> for Salt<'a> {
     fn from(salt_string: &'a SaltString) -> Salt<'a> {
         salt_string.as_salt()
+    }
+}
+
+impl fmt::Display for SaltString {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl fmt::Debug for SaltString {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "SaltString({:?})", self.as_str())
     }
 }
 
