@@ -2,11 +2,11 @@
 
 use super::SecretKey;
 use crate::{
+    pkcs8::{self, DecodePrivateKey},
     sec1::{ModulusSize, ValidatePublicKey},
     AlgorithmParameters, Curve, FieldSize, ALGORITHM_OID,
 };
 use der::Decodable;
-use pkcs8::DecodePrivateKey;
 use sec1::EcPrivateKey;
 
 // Imports for the `EncodePrivateKey` impl
@@ -28,14 +28,14 @@ use {
 };
 
 #[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
-impl<C> DecodePrivateKey for SecretKey<C>
+impl<C> TryFrom<pkcs8::PrivateKeyInfo<'_>> for SecretKey<C>
 where
     C: Curve + AlgorithmParameters + ValidatePublicKey,
     FieldSize<C>: ModulusSize,
 {
-    fn from_pkcs8_private_key_info(
-        private_key_info: pkcs8::PrivateKeyInfo<'_>,
-    ) -> pkcs8::Result<Self> {
+    type Error = pkcs8::Error;
+
+    fn try_from(private_key_info: pkcs8::PrivateKeyInfo<'_>) -> pkcs8::Result<Self> {
         private_key_info
             .algorithm
             .assert_oids(ALGORITHM_OID, C::OID)?;
@@ -43,6 +43,14 @@ where
         let ec_private_key = EcPrivateKey::from_der(private_key_info.private_key)?;
         Ok(Self::try_from(ec_private_key)?)
     }
+}
+
+#[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
+impl<C> DecodePrivateKey for SecretKey<C>
+where
+    C: Curve + AlgorithmParameters + ValidatePublicKey,
+    FieldSize<C>: ModulusSize,
+{
 }
 
 // TODO(tarcieri): use weak activation of `pkcs8/alloc` for this when possible

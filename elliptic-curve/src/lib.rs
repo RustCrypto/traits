@@ -89,7 +89,7 @@ pub use crate::scalar::ScalarBits;
 pub use crate::jwk::{JwkEcKey, JwkParameters};
 
 #[cfg(feature = "pkcs8")]
-pub use pkcs8;
+pub use ::sec1::pkcs8;
 
 use core::fmt::Debug;
 use generic_array::GenericArray;

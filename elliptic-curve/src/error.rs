@@ -2,6 +2,9 @@
 
 use core::fmt::{self, Display};
 
+#[cfg(feature = "pkcs8")]
+use crate::pkcs8;
+
 /// Result type with the `elliptic-curve` crate's [`Error`] type.
 pub type Result<T> = core::result::Result<T, Error>;
 
