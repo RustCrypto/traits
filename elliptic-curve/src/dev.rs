@@ -5,6 +5,7 @@ use crate::{
     bigint::{Limb, U256},
     error::{Error, Result},
     ops::Reduce,
+    pkcs8,
     rand_core::RngCore,
     sec1::{FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},

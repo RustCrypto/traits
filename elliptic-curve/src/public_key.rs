@@ -10,9 +10,9 @@ use group::{Curve as _, Group};
 use crate::{JwkEcKey, JwkParameters};
 
 #[cfg(all(feature = "sec1", feature = "pkcs8"))]
-use {
-    crate::{AlgorithmParameters, ALGORITHM_OID},
-    pkcs8::DecodePublicKey,
+use crate::{
+    pkcs8::{self, DecodePublicKey},
+    AlgorithmParameters, ALGORITHM_OID,
 };
 
 #[cfg(feature = "pem")]
@@ -266,18 +266,29 @@ where
 
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
 #[cfg_attr(docsrs, doc(cfg(all(feature = "pkcs8", feature = "sec1"))))]
+impl<C> TryFrom<pkcs8::SubjectPublicKeyInfo<'_>> for PublicKey<C>
+where
+    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldSize<C>: ModulusSize,
+{
+    type Error = pkcs8::spki::Error;
+
+    fn try_from(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> pkcs8::spki::Result<Self> {
+        spki.algorithm.assert_oids(ALGORITHM_OID, C::OID)?;
+        Self::from_sec1_bytes(spki.subject_public_key)
+            .map_err(|_| der::Tag::BitString.value_error().into())
+    }
+}
+
+#[cfg(all(feature = "pkcs8", feature = "sec1"))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "pkcs8", feature = "sec1"))))]
 impl<C> DecodePublicKey for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
-    fn from_spki(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> pkcs8::spki::Result<Self> {
-        spki.algorithm.assert_oids(ALGORITHM_OID, C::OID)?;
-
-        Self::from_sec1_bytes(spki.subject_public_key)
-            .map_err(|_| der::Tag::BitString.value_error().into())
-    }
 }
 
 #[cfg(feature = "pem")]
