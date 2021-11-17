@@ -27,7 +27,8 @@
 //! [SIGMA]: https://webee.technion.ac.il/~hugo/sigma-pdf.pdf
 
 use crate::{
-    AffinePoint, Curve, FieldBytes, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, PublicKey,
+    AffineArithmetic, AffinePoint, AffineXCoordinate, Curve, FieldBytes, NonZeroScalar,
+    ProjectiveArithmetic, ProjectivePoint, PublicKey,
 };
 use core::borrow::Borrow;
 use group::Curve as _;
@@ -60,13 +61,10 @@ pub fn diffie_hellman<C>(
 ) -> SharedSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     let public_point = ProjectivePoint::<C>::from(*public_key.borrow());
-    let mut secret_point = (public_point * secret_key.borrow().as_ref()).to_affine();
-    let shared_secret = SharedSecret::from(&secret_point);
-    secret_point.zeroize();
-    shared_secret
+    let secret_point = (public_point * secret_key.borrow().as_ref()).to_affine();
+    SharedSecret::new(secret_point)
 }
 
 /// Ephemeral Diffie-Hellman Secret.
@@ -100,7 +98,6 @@ where
 impl<C> EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
-    SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     /// Generate a cryptographically random [`EphemeralSecret`].
     pub fn random(rng: impl CryptoRng + RngCore) -> Self {
@@ -126,7 +123,6 @@ where
 impl<C> From<&EphemeralSecret<C>> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
-    SharedSecret<C>: for<'a> From<&'a AffinePoint<C>>,
 {
     fn from(ephemeral_secret: &EphemeralSecret<C>) -> Self {
         ephemeral_secret.public_key()
@@ -172,6 +168,17 @@ pub struct SharedSecret<C: Curve> {
 }
 
 impl<C: Curve> SharedSecret<C> {
+    /// Create a new [`SharedSecret`] from an [`AffinePoint`] for this curve.
+    #[inline]
+    fn new(point: AffinePoint<C>) -> Self
+    where
+        C: AffineArithmetic,
+    {
+        Self {
+            secret_bytes: point.x(),
+        }
+    }
+
     /// Shared secret value, serialized as bytes.
     ///
     /// As noted in the comments for this struct, this value is non-uniform and
