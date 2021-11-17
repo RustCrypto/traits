@@ -12,7 +12,7 @@ use crate::{
     sec1::{FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     zeroize::DefaultIsZeroes,
-    AffineArithmetic, AlgorithmParameters, Curve, PrimeCurve, ProjectiveArithmetic,
+    AffineArithmetic, AlgorithmParameters, Curve, IsHigh, PrimeCurve, ProjectiveArithmetic,
     ScalarArithmetic,
 };
 use core::{
@@ -343,6 +343,12 @@ impl From<Scalar> for FieldBytes {
 impl From<&Scalar> for FieldBytes {
     fn from(scalar: &Scalar) -> Self {
         scalar.to_repr()
+    }
+}
+
+impl IsHigh for Scalar {
+    fn is_high(&self) -> Choice {
+        self.0.is_high()
     }
 }
 

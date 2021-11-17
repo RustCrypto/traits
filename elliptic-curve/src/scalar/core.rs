@@ -7,7 +7,7 @@ use crate::{
         Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
         CtOption,
     },
-    Curve, Error, FieldBytes, Result,
+    Curve, Error, FieldBytes, IsHigh, Result,
 };
 use core::{
     cmp::Ordering,
@@ -335,5 +335,15 @@ where
 
     fn neg(self) -> ScalarCore<C> {
         -*self
+    }
+}
+
+impl<C> IsHigh for ScalarCore<C>
+where
+    C: Curve,
+{
+    fn is_high(&self) -> Choice {
+        let n_2 = C::ORDER >> 1;
+        self.inner.ct_gt(&n_2)
     }
 }
