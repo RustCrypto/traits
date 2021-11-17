@@ -6,7 +6,7 @@ use crate::{
     rand_core::{CryptoRng, RngCore},
     Curve, Error, FieldBytes, IsHigh, Result, Scalar, ScalarArithmetic, ScalarCore, SecretKey,
 };
-use core::ops::Deref;
+use core::ops::{Deref, Neg};
 use ff::{Field, PrimeField};
 use generic_array::GenericArray;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
@@ -172,6 +172,19 @@ where
 {
     fn is_high(&self) -> Choice {
         self.scalar.is_high()
+    }
+}
+
+impl<C> Neg for NonZeroScalar<C>
+where
+    C: Curve + ScalarArithmetic,
+{
+    type Output = NonZeroScalar<C>;
+
+    fn neg(self) -> NonZeroScalar<C> {
+        let scalar = -self.scalar;
+        debug_assert!(!bool::from(scalar.is_zero()));
+        NonZeroScalar { scalar }
     }
 }
 
