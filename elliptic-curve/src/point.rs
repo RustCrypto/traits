@@ -3,16 +3,10 @@
 use crate::{Curve, FieldBytes};
 use subtle::{Choice, CtOption};
 
-/// Point compression settings.
-pub trait PointCompression {
-    /// Should point compression be applied by default?
-    const COMPRESS_POINTS: bool;
-}
-
-/// Point compaction settings.
-pub trait PointCompaction {
-    /// Should point compaction be applied by default?
-    const COMPACT_POINTS: bool;
+/// Obtain the affine x-coordinate of an elliptic curve point.
+pub trait AffineXCoordinate<C: Curve> {
+    /// Get the affine x-coordinate as a serialized field element.
+    fn x(&self) -> FieldBytes<C>;
 }
 
 /// Attempt to decompress an elliptic curve point from its x-coordinate and
@@ -26,4 +20,16 @@ pub trait DecompressPoint<C: Curve>: Sized {
 pub trait DecompactPoint<C: Curve>: Sized {
     /// Attempt to decompact an elliptic curve point
     fn decompact(x: &FieldBytes<C>) -> CtOption<Self>;
+}
+
+/// Point compression settings.
+pub trait PointCompression {
+    /// Should point compression be applied by default?
+    const COMPRESS_POINTS: bool;
+}
+
+/// Point compaction settings.
+pub trait PointCompaction {
+    /// Should point compaction be applied by default?
+    const COMPACT_POINTS: bool;
 }

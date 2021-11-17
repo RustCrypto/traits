@@ -1,6 +1,6 @@
 //! Elliptic curve arithmetic traits.
 
-use crate::{Curve, FieldBytes, IsHigh, PrimeCurve, ScalarCore};
+use crate::{AffineXCoordinate, Curve, FieldBytes, IsHigh, PrimeCurve, ScalarCore};
 use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq};
 use zeroize::DefaultIsZeroes;
@@ -10,6 +10,7 @@ use zeroize::DefaultIsZeroes;
 pub trait AffineArithmetic: Curve + ScalarArithmetic {
     /// Elliptic curve point in affine coordinates.
     type AffinePoint: 'static
+        + AffineXCoordinate<Self>
         + Copy
         + Clone
         + ConditionallySelectable

@@ -12,8 +12,8 @@ use crate::{
     sec1::{FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     zeroize::DefaultIsZeroes,
-    AffineArithmetic, AlgorithmParameters, Curve, IsHigh, PrimeCurve, ProjectiveArithmetic,
-    ScalarArithmetic,
+    AffineArithmetic, AffineXCoordinate, AlgorithmParameters, Curve, IsHigh, PrimeCurve,
+    ProjectiveArithmetic, ScalarArithmetic,
 };
 use core::{
     iter::Sum,
@@ -366,6 +366,12 @@ pub enum AffinePoint {
 
     /// Point corresponding to a given [`EncodedPoint`].
     Other(EncodedPoint),
+}
+
+impl AffineXCoordinate<MockCurve> for AffinePoint {
+    fn x(&self) -> FieldBytes {
+        unimplemented!();
+    }
 }
 
 impl ConstantTimeEq for AffinePoint {
