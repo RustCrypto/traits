@@ -53,7 +53,7 @@ use crate::{
 };
 
 #[cfg(all(docsrs, feature = "pkcs8"))]
-use {crate::pkcs8::FromPrivateKey, core::str::FromStr};
+use {crate::pkcs8::DecodePrivateKey, core::str::FromStr};
 
 /// Type label for PEM-encoded SEC1 private keys.
 #[cfg(feature = "pem")]
@@ -79,7 +79,7 @@ pub(crate) const SEC1_PEM_TYPE_LABEL: &str = "EC PRIVATE KEY";
 /// To decode an elliptic curve private key from PKCS#8, enable the `pkcs8`
 /// feature of this crate (or the `pkcs8` feature of a specific RustCrypto
 /// elliptic curve crate) and use the
-/// [`elliptic_curve::pkcs8::FromPrivateKey`][`FromPrivateKey`]
+/// [`elliptic_curve::pkcs8::DecodePrivateKey`][`DecodePrivateKey`]
 /// trait to parse it.
 ///
 /// When the `pem` feature of this crate (or a specific RustCrypto elliptic
@@ -188,7 +188,7 @@ where
     #[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
     #[cfg_attr(
         docsrs,
-        doc(cfg(feature = "alloc", feature = "arithmetic", feature = "sec1"))
+        doc(cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1")))
     )]
     pub fn to_sec1_der(&self) -> der::Result<Zeroizing<Vec<u8>>>
     where

@@ -1,5 +1,7 @@
-//! Development-related functionality: helpers and types for writing tests
-//! against concrete implementations of the traits in this crate.
+//! Development-related functionality.
+//!
+//! Helpers and types for writing tests against concrete implementations of
+//! the traits in this crate.
 
 use crate::{
     bigint::{Limb, U256},
