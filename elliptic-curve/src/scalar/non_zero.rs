@@ -1,11 +1,10 @@
 //! Non-zero scalar type.
-// TODO(tarcieri): change bounds to `ScalarArithmetic` instead of `ProjectiveArithmetic`
 
 use crate::{
     bigint::Encoding as _,
     ops::Invert,
     rand_core::{CryptoRng, RngCore},
-    Curve, Error, FieldBytes, ProjectiveArithmetic, Result, Scalar, ScalarCore, SecretKey,
+    Curve, Error, FieldBytes, Result, Scalar, ScalarArithmetic, ScalarCore, SecretKey,
 };
 use core::ops::Deref;
 use ff::{Field, PrimeField};
@@ -25,14 +24,14 @@ use zeroize::Zeroize;
 #[derive(Clone)]
 pub struct NonZeroScalar<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     scalar: Scalar<C>,
 }
 
 impl<C> NonZeroScalar<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     /// Generate a random `NonZeroScalar`.
     pub fn random(mut rng: impl CryptoRng + RngCore) -> Self {
@@ -59,7 +58,7 @@ where
 
 impl<C> AsRef<Scalar<C>> for NonZeroScalar<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     fn as_ref(&self) -> &Scalar<C> {
         &self.scalar
@@ -68,7 +67,7 @@ where
 
 impl<C> ConditionallySelectable for NonZeroScalar<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         Self {
@@ -79,18 +78,18 @@ where
 
 impl<C> ConstantTimeEq for NonZeroScalar<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     fn ct_eq(&self, other: &Self) -> Choice {
         self.scalar.ct_eq(&other.scalar)
     }
 }
 
-impl<C> Copy for NonZeroScalar<C> where C: Curve + ProjectiveArithmetic {}
+impl<C> Copy for NonZeroScalar<C> where C: Curve + ScalarArithmetic {}
 
 impl<C> Deref for NonZeroScalar<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     type Target = Scalar<C>;
 
@@ -101,7 +100,7 @@ where
 
 impl<C> From<NonZeroScalar<C>> for FieldBytes<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     fn from(scalar: NonZeroScalar<C>) -> FieldBytes<C> {
         Self::from(&scalar)
@@ -110,7 +109,7 @@ where
 
 impl<C> From<&NonZeroScalar<C>> for FieldBytes<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     fn from(scalar: &NonZeroScalar<C>) -> FieldBytes<C> {
         scalar.to_repr()
@@ -119,7 +118,7 @@ where
 
 impl<C> From<NonZeroScalar<C>> for ScalarCore<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     fn from(scalar: NonZeroScalar<C>) -> ScalarCore<C> {
         ScalarCore::from_be_bytes(scalar.to_repr()).unwrap()
@@ -128,7 +127,7 @@ where
 
 impl<C> From<&NonZeroScalar<C>> for ScalarCore<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     fn from(scalar: &NonZeroScalar<C>) -> ScalarCore<C> {
         ScalarCore::from_be_bytes(scalar.to_repr()).unwrap()
@@ -137,7 +136,7 @@ where
 
 impl<C> From<SecretKey<C>> for NonZeroScalar<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     fn from(sk: SecretKey<C>) -> NonZeroScalar<C> {
         Self::from(&sk)
@@ -146,7 +145,7 @@ where
 
 impl<C> From<&SecretKey<C>> for NonZeroScalar<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     fn from(sk: &SecretKey<C>) -> NonZeroScalar<C> {
         let scalar = sk.as_scalar_core().to_scalar();
@@ -157,7 +156,7 @@ where
 
 impl<C> Invert for NonZeroScalar<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     type Output = Scalar<C>;
 
@@ -169,7 +168,7 @@ where
 
 impl<C> TryFrom<&[u8]> for NonZeroScalar<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     type Error = Error;
 
@@ -187,7 +186,7 @@ where
 
 impl<C> Zeroize for NonZeroScalar<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + ScalarArithmetic,
 {
     fn zeroize(&mut self) {
         // Use zeroize's volatile writes to ensure value is cleared.
