@@ -4,7 +4,7 @@ use crate::{
     bigint::Encoding as _,
     ops::Invert,
     rand_core::{CryptoRng, RngCore},
-    Curve, Error, FieldBytes, Result, Scalar, ScalarArithmetic, ScalarCore, SecretKey,
+    Curve, Error, FieldBytes, IsHigh, Result, Scalar, ScalarArithmetic, ScalarCore, SecretKey,
 };
 use core::ops::Deref;
 use ff::{Field, PrimeField};
@@ -163,6 +163,15 @@ where
     /// Perform a scalar inversion
     fn invert(&self) -> CtOption<Self::Output> {
         ff::Field::invert(&self.scalar)
+    }
+}
+
+impl<C> IsHigh for NonZeroScalar<C>
+where
+    C: Curve + ScalarArithmetic,
+{
+    fn is_high(&self) -> Choice {
+        self.scalar.is_high()
     }
 }
 
