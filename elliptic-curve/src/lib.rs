@@ -1,13 +1,32 @@
-//! General purpose Elliptic Curve Cryptography (ECC) support, including types
-//! and traits for representing various elliptic curve forms, scalars, points,
-//! and public/secret keys composed thereof.
+#![doc = include_str!("../README.md")]
+
+//! ## Usage
 //!
-//! ## Minimum Supported Rust Version
+//! This crate provides traits for describing elliptic curves, along with
+//! types which are generic over elliptic curves which can be used as the
+//! basis of curve-agnostic code.
 //!
-//! Rust **1.56** or higher.
+//! It's intended to be used with the following concrete elliptic curve
+//! implementations from the [`RustCrypto/elliptic-curves`] project:
 //!
-//! Minimum supported Rust version can be changed in the future, but it will be
-//! done with a minor version bump.
+//! - [`bp256`]: brainpoolP256r1 and brainpoolP256t1
+//! - [`bp384`]: brainpoolP384r1 and brainpoolP384t1
+//! - [`k256`]: secp256k1 a.k.a. K-256
+//! - [`p256`]: NIST P-256 a.k.a secp256r1, prime256v1
+//! - [`p384`]: NIST P-384 a.k.a. secp384r1
+//!
+//! The [`ecdsa`] crate provides a generic implementation of the
+//! Elliptic Curve Digital Signature Algorithm which can be used with any of
+//! the above crates, either via an external ECDSA implementation, or
+//! using native curve arithmetic where applicable.
+//!
+//! [`RustCrypto/elliptic-curves`]: https://github.com/RustCrypto/elliptic-curves
+//! [`bp256`]: https://github.com/RustCrypto/elliptic-curves/tree/master/bp256
+//! [`bp384`]: https://github.com/RustCrypto/elliptic-curves/tree/master/bp384
+//! [`k256`]: https://github.com/RustCrypto/elliptic-curves/tree/master/k256
+//! [`p256`]: https://github.com/RustCrypto/elliptic-curves/tree/master/p256
+//! [`p384`]: https://github.com/RustCrypto/elliptic-curves/tree/master/p384
+//! [`ecdsa`]: https://github.com/RustCrypto/signatures/tree/master/ecdsa
 
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg))]
