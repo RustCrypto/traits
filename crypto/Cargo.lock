@@ -17,6 +17,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a32fd6af2b5827bce66c29053ba0e7c42b9dcab01835835058558c10851a46b"
 
 [[package]]
+name = "base64ct"
+version = "1.2.0"
+source = "git+https://github.com/RustCrypto/formats.git#271163d6c48d930190cc434c155574b1281385cf"
+
+[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -33,8 +38,8 @@ dependencies = [
 
 [[package]]
 name = "const-oid"
-version = "0.7.0-pre"
-source = "git+https://github.com/RustCrypto/formats.git#4ec825666bcd552a873596743d9fead3bdc898e5"
+version = "0.7.0"
+source = "git+https://github.com/RustCrypto/formats.git#271163d6c48d930190cc434c155574b1281385cf"
 
 [[package]]
 name = "crypto"
@@ -52,9 +57,9 @@ dependencies = [
 
 [[package]]
 name = "crypto-bigint"
-version = "0.2.11"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f83bd3bb4314701c568e340cd8cf78c975aa0ca79e03d3f6d1677d5b0c9c0c03"
+checksum = "476ecdba12db8402a1664482de8c37fff7dc96241258bd0de1f0d70e760a45fd"
 dependencies = [
  "generic-array",
  "rand_core",
@@ -74,8 +79,8 @@ dependencies = [
 
 [[package]]
 name = "der"
-version = "0.5.0-pre.1"
-source = "git+https://github.com/RustCrypto/formats.git#4ec825666bcd552a873596743d9fead3bdc898e5"
+version = "0.5.1"
+source = "git+https://github.com/RustCrypto/formats.git#271163d6c48d930190cc434c155574b1281385cf"
 dependencies = [
  "const-oid",
 ]
@@ -148,17 +153,27 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.104"
+version = "0.2.107"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b2f96d100e1cf1929e7719b7edb3b90ab5298072638fccd77be9ce942ecdfce"
+checksum = "fbe5e23404da5b4f555ef85ebed98fb4083e55a00c317800bc2a50ede9f3d219"
 
 [[package]]
 name = "password-hash"
 version = "0.3.2"
 dependencies = [
- "base64ct",
+ "base64ct 1.0.1",
  "rand_core",
  "subtle",
+]
+
+[[package]]
+name = "pkcs8"
+version = "0.8.0"
+source = "git+https://github.com/RustCrypto/formats.git#271163d6c48d930190cc434c155574b1281385cf"
+dependencies = [
+ "der",
+ "spki",
+ "zeroize",
 ]
 
 [[package]]
@@ -172,11 +187,12 @@ dependencies = [
 
 [[package]]
 name = "sec1"
-version = "0.2.0-pre"
-source = "git+https://github.com/RustCrypto/formats.git#4ec825666bcd552a873596743d9fead3bdc898e5"
+version = "0.2.0"
+source = "git+https://github.com/RustCrypto/formats.git#271163d6c48d930190cc434c155574b1281385cf"
 dependencies = [
  "der",
  "generic-array",
+ "pkcs8",
  "subtle",
  "zeroize",
 ]
@@ -184,6 +200,15 @@ dependencies = [
 [[package]]
 name = "signature"
 version = "1.4.0"
+
+[[package]]
+name = "spki"
+version = "0.5.2"
+source = "git+https://github.com/RustCrypto/formats.git#271163d6c48d930190cc434c155574b1281385cf"
+dependencies = [
+ "base64ct 1.2.0",
+ "der",
+]
 
 [[package]]
 name = "subtle"
@@ -219,6 +244,6 @@ checksum = "fd6fbd9a79829dd1ad0cc20627bf1ed606756a7f77edff7b66b7064f9cb327c6"
 
 [[package]]
 name = "zeroize"
-version = "1.4.2"
+version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf68b08513768deaa790264a7fac27a58cbf2705cfcdc9448362229217d7e970"
+checksum = "d68d9dcec5f9b43a30d38c49f91dfedfaac384cb8f085faca366c26207dd1619"

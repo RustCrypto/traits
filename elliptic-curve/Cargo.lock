@@ -51,7 +51,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6919815d73839e7ad218de758883aae3a257ba6759ce7a9992501efbb53d705c"
 dependencies = [
  "const-oid",
- "pem-rfc7468 0.3.0",
+ "pem-rfc7468 0.3.1",
 ]
 
 [[package]]
@@ -152,9 +152,9 @@ dependencies = [
 
 [[package]]
 name = "pem-rfc7468"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af1254538022fc9aaf1db9f36f315f7a622dc4d46bedc42f8f8220ee23f932ee"
+checksum = "01de5d978f34aa4b2296576379fcc416034702fd94117c56ffd8a1a767cefb30"
 dependencies = [
  "base64ct",
 ]
@@ -223,9 +223,9 @@ dependencies = [
 
 [[package]]
 name = "spki"
-version = "0.5.1"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "707c346225adc965b02243d87a3951bb6f8cbd039947cd99430ee2b2fdad09a3"
+checksum = "c8a277a21925310de1d31bb6b021da3550b00e9127096ef84ee38f44609925c4"
 dependencies = [
  "base64ct",
  "der",
