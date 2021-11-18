@@ -35,7 +35,14 @@ pub trait Mac: KeySizeUser + OutputSizeUser + Sized {
         Self: FixedOutputReset;
 
     /// Check if tag/code value is correct for the processed input.
-    fn verify(self, other: &Output<Self>) -> Result<(), MacError>;
+    fn verify(self, tag: &Output<Self>) -> Result<(), MacError>;
+
+    /// Check truncated tag correctness using all bytes
+    /// of calculated tag.
+    ///
+    /// Returns `Error` if `tag` is not valid or not equal in length
+    /// to MAC's output.
+    fn verify_slice(self, tag: &[u8]) -> Result<(), MacError>;
 
     /// Check truncated tag correctness using left side bytes
     /// (i.e. `tag[..n]`) of calculated tag.
@@ -79,10 +86,23 @@ impl<T: KeyInit + Update + FixedOutput + MacMarker> Mac for T {
         CtOutput::new(self.finalize_fixed_reset())
     }
 
-    /// Check if tag/code value is correct for the processed input.
     #[inline]
-    fn verify(self, other: &Output<Self>) -> Result<(), MacError> {
-        if self.finalize() == other.into() {
+    fn verify(self, tag: &Output<Self>) -> Result<(), MacError> {
+        if self.finalize() == tag.into() {
+            Ok(())
+        } else {
+            Err(MacError)
+        }
+    }
+
+    #[inline]
+    fn verify_slice(self, tag: &[u8]) -> Result<(), MacError> {
+        let n = tag.len();
+        if n != Self::OutputSize::USIZE {
+            return Err(MacError);
+        }
+        let choice = self.finalize_fixed().ct_eq(&tag);
+        if choice.unwrap_u8() == 1 {
             Ok(())
         } else {
             Err(MacError)

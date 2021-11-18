@@ -247,9 +247,19 @@ macro_rules! bench {
 
 /// Define MAC test
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
+#[cfg(feature = "mac")]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "dev", feature = "mac"))))]
 macro_rules! new_mac_test {
     ($name:ident, $test_name:expr, $mac:ty) => {
+        new_mac_test!($name, $test_name, $mac, "");
+    };
+    ($name:ident, $test_name:expr, $mac:ty, trunc_left) => {
+        new_mac_test!($name, $test_name, $mac, "left");
+    };
+    ($name:ident, $test_name:expr, $mac:ty, trunc_right) => {
+        new_mac_test!($name, $test_name, $mac, "right");
+    };
+    ($name:ident, $test_name:expr, $mac:ty, $reset:expr) => {
         #[test]
         fn $name() {
             use core::cmp::min;
@@ -262,10 +272,15 @@ macro_rules! new_mac_test {
                 let mut mac = mac0.clone();
                 mac.update(input);
                 let result = mac.finalize();
-                if &result.into_bytes()[..] != tag {
+                let n = tag.len();
+                let result_bytes = match $reset {
+                    "left" => &result[..n],
+                    "right" => &result[result.len() - n..],
+                    _ => &result[..],
+                }
+                if result_bytes != tag {
                     return Some("whole message");
                 }
-                let tag = tag.into();
 
                 // test reading different chunk sizes
                 for chunk_size in 1..min(64, input.len()) {
@@ -273,7 +288,12 @@ macro_rules! new_mac_test {
                     for chunk in input.chunks(chunk_size) {
                         mac.update(chunk);
                     }
-                    if let Err(_) = mac.verify(tag) {
+                    let res = match $reset {
+                        "left" => mac.verify_truncated_left(tag),
+                        "right" => mac.verify_truncated_right(tag),
+                        _ => mac.verify_slice(tag),
+                    };
+                    if res.is_err() {
                         return Some("chunked message");
                     }
                 }
@@ -302,9 +322,19 @@ macro_rules! new_mac_test {
 
 /// Define new test for a resettable MAC
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
+#[cfg(feature = "mac")]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "dev", feature = "mac"))))]
 macro_rules! new_resettable_mac_test {
     ($name:ident, $test_name:expr, $mac:ty) => {
+        new_resettable_mac_test!($name, $test_name, $mac, "");
+    };
+    ($name:ident, $test_name:expr, $mac:ty, trunc_left) => {
+        new_resettable_mac_test!($name, $test_name, $mac, "left");
+    };
+    ($name:ident, $test_name:expr, $mac:ty, trunc_right) => {
+        new_resettable_mac_test!($name, $test_name, $mac, "right");
+    };
+    ($name:ident, $test_name:expr, $mac:ty, $trunc:expr) => {
         #[test]
         fn $name() {
             use core::cmp::min;
@@ -316,15 +346,25 @@ macro_rules! new_resettable_mac_test {
 
                 let mut mac = mac0.clone();
                 mac.update(input);
-                let result = mac.finalize_reset();
-                if &result.into_bytes()[..] != tag {
+                let result = mac.finalize();
+                let n = tag.len();
+                let result_bytes = match $reset {
+                    "left" => &result[..n],
+                    "right" => &result[result.len() - n..],
+                    _ => &result[..],
+                }
+                if result_bytes != tag {
                     return Some("whole message");
                 }
-                let tag = tag.into();
 
                 // test if reset worked correctly
                 mac.update(input);
-                if mac.verify(tag).is_err() {
+                let res = match $reset {
+                    "left" => mac.verify_truncated_left(tag),
+                    "right" => mac.verify_truncated_right(tag),
+                    _ => mac.verify_slice(tag),
+                };
+                if res.is_err() {
                     return Some("after reset");
                 }
 
@@ -334,7 +374,12 @@ macro_rules! new_resettable_mac_test {
                     for chunk in input.chunks(chunk_size) {
                         mac.update(chunk);
                     }
-                    if let Err(_) = mac.verify(tag) {
+                    let res = match $reset {
+                        "left" => mac.verify_truncated_left(tag),
+                        "right" => mac.verify_truncated_right(tag),
+                        _ => mac.verify_slice(tag),
+                    };
+                    if res.is_err() {
                         return Some("chunked message");
                     }
                 }

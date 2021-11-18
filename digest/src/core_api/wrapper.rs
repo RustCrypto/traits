@@ -144,6 +144,7 @@ impl<D: UpdateCore + BufferKindUser> std::io::Write for CoreWrapper<D> {
 // TODO: replace with an inherent associated type on stabilization:
 // https://github.com/rust-lang/rust/issues/8995
 pub trait CoreProxy: sealed::Sealed {
+    /// Type wrapped by [`CoreWrapper`].
     type Core;
 }
 
