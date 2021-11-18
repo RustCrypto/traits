@@ -307,6 +307,7 @@ macro_rules! new_resettable_mac_test {
     ($name:ident, $test_name:expr, $mac:ty) => {
         #[test]
         fn $name() {
+            use core::cmp::min;
             use digest::dev::blobby::Blob3Iterator;
             use digest::Mac;
 
