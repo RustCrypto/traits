@@ -9,7 +9,7 @@ use core::fmt::Debug;
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! new_test {
-    ($name:ident, $test_name:expr, $hasher:ty, $test_func:ident) => {
+    ($name:ident, $test_name:expr, $hasher:ty, $test_func:ident $(,)?) => {
         #[test]
         fn $name() {
             use digest::dev::blobby::Blob2Iterator;
@@ -250,16 +250,16 @@ macro_rules! bench {
 #[cfg(feature = "mac")]
 #[cfg_attr(docsrs, doc(cfg(all(feature = "dev", feature = "mac"))))]
 macro_rules! new_mac_test {
-    ($name:ident, $test_name:expr, $mac:ty) => {
+    ($name:ident, $test_name:expr, $mac:ty $(,)?) => {
         digest::new_mac_test!($name, $test_name, $mac, "");
     };
-    ($name:ident, $test_name:expr, $mac:ty, trunc_left) => {
+    ($name:ident, $test_name:expr, $mac:ty, trunc_left $(,)?) => {
         digest::new_mac_test!($name, $test_name, $mac, "left");
     };
-    ($name:ident, $test_name:expr, $mac:ty, trunc_right) => {
+    ($name:ident, $test_name:expr, $mac:ty, trunc_right $(,)?) => {
         digest::new_mac_test!($name, $test_name, $mac, "right");
     };
-    ($name:ident, $test_name:expr, $mac:ty, $trunc:expr) => {
+    ($name:ident, $test_name:expr, $mac:ty, $trunc:expr $(,)?) => {
         #[test]
         fn $name() {
             use core::cmp::min;
@@ -325,16 +325,16 @@ macro_rules! new_mac_test {
 #[cfg(feature = "mac")]
 #[cfg_attr(docsrs, doc(cfg(all(feature = "dev", feature = "mac"))))]
 macro_rules! new_resettable_mac_test {
-    ($name:ident, $test_name:expr, $mac:ty) => {
+    ($name:ident, $test_name:expr, $mac:ty $(,)?) => {
         digest::new_resettable_mac_test!($name, $test_name, $mac, "");
     };
-    ($name:ident, $test_name:expr, $mac:ty, trunc_left) => {
+    ($name:ident, $test_name:expr, $mac:ty, trunc_left $(,)?) => {
         digest::new_resettable_mac_test!($name, $test_name, $mac, "left");
     };
-    ($name:ident, $test_name:expr, $mac:ty, trunc_right) => {
+    ($name:ident, $test_name:expr, $mac:ty, trunc_right $(,)?) => {
         digest::new_resettable_mac_test!($name, $test_name, $mac, "right");
     };
-    ($name:ident, $test_name:expr, $mac:ty, $trunc:expr) => {
+    ($name:ident, $test_name:expr, $mac:ty, $trunc:expr $(,)?) => {
         #[test]
         fn $name() {
             use core::cmp::min;
