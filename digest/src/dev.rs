@@ -251,13 +251,13 @@ macro_rules! bench {
 #[cfg_attr(docsrs, doc(cfg(all(feature = "dev", feature = "mac"))))]
 macro_rules! new_mac_test {
     ($name:ident, $test_name:expr, $mac:ty) => {
-        new_mac_test!($name, $test_name, $mac, "");
+        digest::new_mac_test!($name, $test_name, $mac, "");
     };
     ($name:ident, $test_name:expr, $mac:ty, trunc_left) => {
-        new_mac_test!($name, $test_name, $mac, "left");
+        digest::new_mac_test!($name, $test_name, $mac, "left");
     };
     ($name:ident, $test_name:expr, $mac:ty, trunc_right) => {
-        new_mac_test!($name, $test_name, $mac, "right");
+        digest::new_mac_test!($name, $test_name, $mac, "right");
     };
     ($name:ident, $test_name:expr, $mac:ty, $trunc:expr) => {
         #[test]
@@ -326,13 +326,13 @@ macro_rules! new_mac_test {
 #[cfg_attr(docsrs, doc(cfg(all(feature = "dev", feature = "mac"))))]
 macro_rules! new_resettable_mac_test {
     ($name:ident, $test_name:expr, $mac:ty) => {
-        new_resettable_mac_test!($name, $test_name, $mac, "");
+        digest::new_resettable_mac_test!($name, $test_name, $mac, "");
     };
     ($name:ident, $test_name:expr, $mac:ty, trunc_left) => {
-        new_resettable_mac_test!($name, $test_name, $mac, "left");
+        digest::new_resettable_mac_test!($name, $test_name, $mac, "left");
     };
     ($name:ident, $test_name:expr, $mac:ty, trunc_right) => {
-        new_resettable_mac_test!($name, $test_name, $mac, "right");
+        digest::new_resettable_mac_test!($name, $test_name, $mac, "right");
     };
     ($name:ident, $test_name:expr, $mac:ty, $trunc:expr) => {
         #[test]
