@@ -5,7 +5,7 @@ use super::{
 use crate::{ExtendableOutput, FixedOutput, FixedOutputReset, HashMarker, Update};
 use block_buffer::BlockBuffer;
 use core::fmt;
-use crypto_common::{Key, KeyInit, KeySizeUser, Output};
+use crypto_common::{InvalidLength, Key, KeyInit, KeySizeUser, Output};
 
 #[cfg(feature = "mac")]
 use crate::MacMarker;
@@ -50,6 +50,13 @@ impl<T: BufferKindUser + KeyInit> KeyInit for CoreWrapper<T> {
             core: T::new(key),
             buffer: Default::default(),
         }
+    }
+
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
+        Ok(Self {
+            core: T::new_from_slice(key)?,
+            buffer: Default::default(),
+        })
     }
 }
 
