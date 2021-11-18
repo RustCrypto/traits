@@ -54,10 +54,10 @@ mod mac;
 pub use block_buffer;
 pub use crypto_common;
 
+pub use crate::digest::{Digest, DynDigest, HashMarker, InvalidBufferLength};
 #[cfg(feature = "mac")]
 pub use crypto_common::{InnerInit, InvalidLength, Key, KeyInit};
 pub use crypto_common::{Output, OutputSizeUser, Reset};
-pub use digest::{Digest, DynDigest, HashMarker, InvalidBufferLength};
 pub use generic_array::{self, typenum::consts};
 #[cfg(feature = "mac")]
 pub use mac::{CtOutput, Mac, MacError, MacMarker};
