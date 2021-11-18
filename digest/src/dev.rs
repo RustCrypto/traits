@@ -259,7 +259,7 @@ macro_rules! new_mac_test {
     ($name:ident, $test_name:expr, $mac:ty, trunc_right) => {
         new_mac_test!($name, $test_name, $mac, "right");
     };
-    ($name:ident, $test_name:expr, $mac:ty, $reset:expr) => {
+    ($name:ident, $test_name:expr, $mac:ty, $trunc:expr) => {
         #[test]
         fn $name() {
             use core::cmp::min;
@@ -271,13 +271,13 @@ macro_rules! new_mac_test {
 
                 let mut mac = mac0.clone();
                 mac.update(input);
-                let result = mac.finalize();
+                let result = mac.finalize().into_bytes();
                 let n = tag.len();
-                let result_bytes = match $reset {
+                let result_bytes = match $trunc {
                     "left" => &result[..n],
                     "right" => &result[result.len() - n..],
                     _ => &result[..],
-                }
+                };
                 if result_bytes != tag {
                     return Some("whole message");
                 }
@@ -288,7 +288,7 @@ macro_rules! new_mac_test {
                     for chunk in input.chunks(chunk_size) {
                         mac.update(chunk);
                     }
-                    let res = match $reset {
+                    let res = match $trunc {
                         "left" => mac.verify_truncated_left(tag),
                         "right" => mac.verify_truncated_right(tag),
                         _ => mac.verify_slice(tag),
@@ -346,20 +346,20 @@ macro_rules! new_resettable_mac_test {
 
                 let mut mac = mac0.clone();
                 mac.update(input);
-                let result = mac.finalize();
+                let result = mac.finalize_reset().into_bytes();
                 let n = tag.len();
-                let result_bytes = match $reset {
+                let result_bytes = match $trunc {
                     "left" => &result[..n],
                     "right" => &result[result.len() - n..],
                     _ => &result[..],
-                }
+                };
                 if result_bytes != tag {
                     return Some("whole message");
                 }
 
                 // test if reset worked correctly
                 mac.update(input);
-                let res = match $reset {
+                let res = match $trunc {
                     "left" => mac.verify_truncated_left(tag),
                     "right" => mac.verify_truncated_right(tag),
                     _ => mac.verify_slice(tag),
@@ -374,7 +374,7 @@ macro_rules! new_resettable_mac_test {
                     for chunk in input.chunks(chunk_size) {
                         mac.update(chunk);
                     }
-                    let res = match $reset {
+                    let res = match $trunc {
                         "left" => mac.verify_truncated_left(tag),
                         "right" => mac.verify_truncated_right(tag),
                         _ => mac.verify_slice(tag),
