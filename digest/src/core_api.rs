@@ -18,7 +18,7 @@ mod xof_reader;
 
 pub use ct_variable::CtVariableCoreWrapper;
 pub use rt_variable::RtVariableCoreWrapper;
-pub use wrapper::CoreWrapper;
+pub use wrapper::{CoreProxy, CoreWrapper};
 pub use xof_reader::XofReaderCoreWrapper;
 
 /// Buffer type used by type which implements [`BufferKindUser`].
