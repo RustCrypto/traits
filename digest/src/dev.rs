@@ -254,9 +254,66 @@ macro_rules! new_mac_test {
         fn $name() {
             use digest::dev::blobby::Blob3Iterator;
             use digest::Mac;
+            use core::cmp::min;
 
             fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> Option<&'static str> {
-                let mut mac = <$mac as Mac>::new_from_slice(key).unwrap();
+                let mac0 = <$mac as Mac>::new_from_slice(key).unwrap();
+
+                let mut mac = mac0.clone();
+                mac.update(input);
+                let result = mac.finalize();
+                if &result.into_bytes()[..] != tag {
+                    return Some("whole message");
+                }
+                let tag = tag.into();
+
+                // test reading different chunk sizes
+                for chunk_size in 1..min(64, input.len()) {
+                    let mut mac = mac0.clone();
+                    for chunk in input.chunks(chunk_size) {
+                        mac.update(chunk);
+                    }
+                    if let Err(_) = mac.verify(tag) {
+                        return Some("chunked message");
+                    }
+                }
+
+                None
+            }
+
+            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
+
+            for (i, row) in Blob3Iterator::new(data).unwrap().enumerate() {
+                let [key, input, tag] = row.unwrap();
+                if let Some(desc) = run_test(key, input, tag) {
+                    panic!(
+                        "\n\
+                         Failed test №{}: {}\n\
+                         key:\t{:?}\n\
+                         input:\t{:?}\n\
+                         tag:\t{:?}\n",
+                        i, desc, key, input, tag,
+                    );
+                }
+            }
+        }
+    };
+}
+
+/// Define new test for a resettable MAC
+#[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
+macro_rules! new_resettable_mac_test {
+    ($name:ident, $test_name:expr, $mac:ty) => {
+        #[test]
+        fn $name() {
+            use digest::dev::blobby::Blob3Iterator;
+            use digest::Mac;
+
+            fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> Option<&'static str> {
+                let mac0 = <$mac as Mac>::new_from_slice(key).unwrap();
+
+                let mut mac = mac0.clone();
                 mac.update(input);
                 let result = mac.finalize_reset();
                 if &result.into_bytes()[..] != tag {
@@ -270,13 +327,15 @@ macro_rules! new_mac_test {
                     return Some("after reset");
                 }
 
-                let mut mac = <$mac as Mac>::new_from_slice(key).unwrap();
-                // test reading byte by byte
-                for i in 0..input.len() {
-                    mac.update(&input[i..i + 1]);
-                }
-                if let Err(_) = mac.verify(tag) {
-                    return Some("message byte-by-byte");
+                // test reading different chunk sizes
+                for chunk_size in 1..min(64, input.len()) {
+                    let mut mac = mac0.clone();
+                    for chunk in input.chunks(chunk_size) {
+                        mac.update(chunk);
+                    }
+                    if let Err(_) = mac.verify(tag) {
+                        return Some("chunked message");
+                    }
                 }
                 None
             }
