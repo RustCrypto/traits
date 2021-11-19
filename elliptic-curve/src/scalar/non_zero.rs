@@ -2,11 +2,16 @@
 
 use crate::{
     bigint::Encoding as _,
+    hex,
     ops::Invert,
     rand_core::{CryptoRng, RngCore},
     Curve, Error, FieldBytes, IsHigh, Result, Scalar, ScalarArithmetic, ScalarCore, SecretKey,
 };
-use core::ops::{Deref, Neg};
+use core::{
+    fmt,
+    ops::{Deref, Neg},
+    str,
+};
 use ff::{Field, PrimeField};
 use generic_array::GenericArray;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
@@ -217,6 +222,46 @@ where
         // Write a 1 instead of a 0 to ensure this type's non-zero invariant
         // is upheld.
         self.scalar = Scalar::<C>::one();
+    }
+}
+
+impl<C> fmt::Display for NonZeroScalar<C>
+where
+    C: Curve + ScalarArithmetic,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:X}", self)
+    }
+}
+
+impl<C> fmt::LowerHex for NonZeroScalar<C>
+where
+    C: Curve + ScalarArithmetic,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        hex::write_lower(&self.to_repr(), f)
+    }
+}
+
+impl<C> fmt::UpperHex for NonZeroScalar<C>
+where
+    C: Curve + ScalarArithmetic,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        hex::write_upper(&self.to_repr(), f)
+    }
+}
+
+impl<C> str::FromStr for NonZeroScalar<C>
+where
+    C: Curve + ScalarArithmetic,
+{
+    type Err = Error;
+
+    fn from_str(hex: &str) -> Result<Self> {
+        let mut bytes = FieldBytes::<C>::default();
+        hex::decode(hex, &mut bytes)?;
+        Option::from(Self::from_repr(bytes)).ok_or(Error)
     }
 }
 
