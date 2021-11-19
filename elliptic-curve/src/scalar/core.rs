@@ -2,6 +2,7 @@
 
 use crate::{
     bigint::{prelude::*, Limb, NonZero},
+    hex,
     rand_core::{CryptoRng, RngCore},
     subtle::{
         Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
@@ -11,7 +12,9 @@ use crate::{
 };
 use core::{
     cmp::Ordering,
+    fmt,
     ops::{Add, AddAssign, Neg, Sub, SubAssign},
+    str,
 };
 use generic_array::GenericArray;
 use zeroize::DefaultIsZeroes;
@@ -21,6 +24,9 @@ use {
     super::{Scalar, ScalarArithmetic},
     group::ff::PrimeField,
 };
+
+#[cfg(feature = "serde")]
+use serde::{de, ser, Deserialize, Serialize};
 
 /// Generic scalar type with core functionality.
 ///
@@ -123,7 +129,7 @@ where
     }
 
     /// Encode [`ScalarCore`] as little endian bytes.
-    pub fn to_bytes_le(self) -> FieldBytes<C> {
+    pub fn to_le_bytes(self) -> FieldBytes<C> {
         self.inner.to_le_byte_array()
     }
 }
@@ -345,5 +351,106 @@ where
     fn is_high(&self) -> Choice {
         let n_2 = C::ORDER >> 1;
         self.inner.ct_gt(&n_2)
+    }
+}
+
+impl<C> fmt::Display for ScalarCore<C>
+where
+    C: Curve,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:X}", self)
+    }
+}
+
+impl<C> fmt::LowerHex for ScalarCore<C>
+where
+    C: Curve,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        hex::write_lower(&self.to_be_bytes(), f)
+    }
+}
+
+impl<C> fmt::UpperHex for ScalarCore<C>
+where
+    C: Curve,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        hex::write_upper(&self.to_be_bytes(), f)
+    }
+}
+
+impl<C> str::FromStr for ScalarCore<C>
+where
+    C: Curve,
+{
+    type Err = Error;
+
+    fn from_str(hex: &str) -> Result<Self> {
+        let mut bytes = FieldBytes::<C>::default();
+        hex::decode(hex, &mut bytes)?;
+        Option::from(Self::from_be_bytes(bytes)).ok_or(Error)
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+impl<C> Serialize for ScalarCore<C>
+where
+    C: Curve,
+{
+    #[cfg(not(feature = "alloc"))]
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: ser::Serializer,
+    {
+        self.to_be_bytes().as_slice().serialize(serializer)
+    }
+
+    #[cfg(feature = "alloc")]
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: ser::Serializer,
+    {
+        use alloc::string::ToString;
+        if serializer.is_human_readable() {
+            self.to_string().serialize(serializer)
+        } else {
+            self.to_be_bytes().as_slice().serialize(serializer)
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+impl<'de, C> Deserialize<'de> for ScalarCore<C>
+where
+    C: Curve,
+{
+    #[cfg(not(feature = "alloc"))]
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        use de::Error;
+        <&[u8]>::deserialize(deserializer)
+            .and_then(|slice| Self::from_be_slice(slice).map_err(D::Error::custom))
+    }
+
+    #[cfg(feature = "alloc")]
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        use de::Error;
+        if deserializer.is_human_readable() {
+            <&str>::deserialize(deserializer)?
+                .parse()
+                .map_err(D::Error::custom)
+        } else {
+            <&[u8]>::deserialize(deserializer)
+                .and_then(|slice| Self::from_be_slice(slice).map_err(D::Error::custom))
+        }
     }
 }

@@ -31,6 +31,10 @@ use {
 #[cfg(any(feature = "jwk", feature = "pem"))]
 use alloc::string::{String, ToString};
 
+#[cfg(all(feature = "pem", feature = "serde"))]
+#[cfg_attr(docsrs, doc(all(feature = "pem", feature = "serde")))]
+use serde::{de, ser, Deserialize, Serialize};
+
 /// Elliptic curve public keys.
 ///
 /// This is a wrapper type for [`AffinePoint`] which ensures an inner
@@ -336,6 +340,44 @@ where
     fn to_string(&self) -> String {
         self.to_public_key_pem(Default::default())
             .expect("PEM encoding error")
+    }
+}
+
+#[cfg(all(feature = "pem", feature = "serde"))]
+#[cfg_attr(docsrs, doc(all(feature = "pem", feature = "serde")))]
+impl<C> Serialize for PublicKey<C>
+where
+    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldSize<C>: ModulusSize,
+{
+    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
+    where
+        S: ser::Serializer,
+    {
+        self.to_public_key_der()
+            .map_err(ser::Error::custom)?
+            .as_ref()
+            .serialize(serializer)
+    }
+}
+
+#[cfg(all(feature = "pem", feature = "serde"))]
+#[cfg_attr(docsrs, doc(all(feature = "pem", feature = "serde")))]
+impl<'de, C> Deserialize<'de> for PublicKey<C>
+where
+    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldSize<C>: ModulusSize,
+{
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        use de::Error;
+
+        <&[u8]>::deserialize(deserializer)
+            .and_then(|bytes| Self::from_public_key_der(bytes).map_err(D::Error::custom))
     }
 }
 

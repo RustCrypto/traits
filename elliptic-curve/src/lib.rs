@@ -56,6 +56,7 @@ pub mod ops;
 pub mod sec1;
 
 mod error;
+mod hex;
 mod point;
 mod scalar;
 mod secret_key;
@@ -111,6 +112,9 @@ pub use crate::jwk::{JwkEcKey, JwkParameters};
 
 #[cfg(feature = "pkcs8")]
 pub use ::sec1::pkcs8;
+
+#[cfg(feature = "serde")]
+pub use serde;
 
 use core::fmt::Debug;
 use generic_array::GenericArray;
