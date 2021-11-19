@@ -86,7 +86,6 @@ name = "cipher"
 version = "0.4.0"
 dependencies = [
  "blobby",
- "block-buffer 0.10.0",
  "crypto-common",
  "generic-array",
  "inout",

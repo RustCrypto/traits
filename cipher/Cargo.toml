@@ -14,7 +14,7 @@ categories = ["cryptography", "no-std"]
 [dependencies]
 generic-array = "0.14"
 crypto-common = { version = "0.1", path = "../crypto-common" }
-block-buffer = { version = "0.10.0", features = ["block-padding"] }
+#block-buffer = { version = "0.10.0", features = ["block-padding"] }
 # TODO: remove and use re-import from block-buffer
 inout = "0.1"
 

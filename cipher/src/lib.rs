@@ -23,7 +23,7 @@ extern crate std;
 #[cfg(feature = "dev")]
 pub use blobby;
 
-pub use block_buffer;
+//pub use block_buffer;
 
 mod block;
 #[cfg(feature = "dev")]

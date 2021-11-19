@@ -1,7 +1,7 @@
 use crate::errors::StreamCipherError;
-use block_buffer::generic_array::typenum::Unsigned;
 use core::convert::{TryFrom, TryInto};
 use crypto_common::{Block, BlockSizeUser};
+use generic_array::typenum::Unsigned;
 use inout::InOutBuf;
 
 /// Block-level synchronous stream ciphers.
