@@ -32,7 +32,7 @@ use {
 use alloc::string::{String, ToString};
 
 #[cfg(all(feature = "pem", feature = "serde"))]
-#[cfg_attr(docsrs, doc(all(feature = "pem", feature = "serde")))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "pem", feature = "serde"))))]
 use serde::{de, ser, Deserialize, Serialize};
 
 /// Elliptic curve public keys.
@@ -344,7 +344,7 @@ where
 }
 
 #[cfg(all(feature = "pem", feature = "serde"))]
-#[cfg_attr(docsrs, doc(all(feature = "pem", feature = "serde")))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "pem", feature = "serde"))))]
 impl<C> Serialize for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
@@ -363,7 +363,7 @@ where
 }
 
 #[cfg(all(feature = "pem", feature = "serde"))]
-#[cfg_attr(docsrs, doc(all(feature = "pem", feature = "serde")))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "pem", feature = "serde"))))]
 impl<'de, C> Deserialize<'de> for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
