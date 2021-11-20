@@ -56,7 +56,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.11.0-pre"
+version = "0.11.0"
 dependencies = [
  "base64ct",
  "crypto-bigint",

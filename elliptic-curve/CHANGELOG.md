@@ -4,6 +4,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.11.0 (2021-11-19)
+### Added
+- `ScalarCore<C>` type ([#732])
+- `PrimeCurveArithmetic` trait ([#739])
+- SEC1 private key support ([#762])
+- `Reduce` trait ([#768])
+- Re-export `ff` and `PrimeField` ([#796])
+- `Encoding` bound on `Curve::UInt` ([#806])
+- `scalar::IsHigh` trait ([#814], [#815])
+- `Neg` impl for `NonZeroScalar<C>` ([#816])
+- `AffineXCoordinate` trait ([#817])
+- `serde` support for scalar and `PublicKey` types ([#818])
+
+### Changed
+- Bump `ff` + `group` to v0.11 ([#730])
+- Make `SecretKey::to_jwk_string` self-zeroizing ([#742])
+- Use `sec1` crate's `EncodedPoint` ([#771])
+- Make `FromEncodedPoint` return a `CtOption` ([#782])
+- Rust 2021 edition upgrade; MSRV to 1.56 ([#795])
+- Bump `crypto-bigint` dependency to v0.3 ([#807])
+- Use `sec1` crate for `pkcs8` support ([#809])
+- Bump `spki` dependency to v0.5 release ([#810])
+- `NonZeroScalar` is now bounded on `ScalarArithmetic` instead of
+  `ProjectiveArithmetic` ([#812])
+
+### Fixed
+- `Zeroize` impl on `NonZeroScalar` ([#785])
+
+[#730]: https://github.com/RustCrypto/traits/pull/730
+[#732]: https://github.com/RustCrypto/traits/pull/732
+[#739]: https://github.com/RustCrypto/traits/pull/739
+[#742]: https://github.com/RustCrypto/traits/pull/742
+[#762]: https://github.com/RustCrypto/traits/pull/762
+[#768]: https://github.com/RustCrypto/traits/pull/768
+[#771]: https://github.com/RustCrypto/traits/pull/771
+[#782]: https://github.com/RustCrypto/traits/pull/782
+[#785]: https://github.com/RustCrypto/traits/pull/785
+[#795]: https://github.com/RustCrypto/traits/pull/795
+[#796]: https://github.com/RustCrypto/traits/pull/796
+[#806]: https://github.com/RustCrypto/traits/pull/806
+[#807]: https://github.com/RustCrypto/traits/pull/807
+[#809]: https://github.com/RustCrypto/traits/pull/809
+[#810]: https://github.com/RustCrypto/traits/pull/810
+[#812]: https://github.com/RustCrypto/traits/pull/812
+[#814]: https://github.com/RustCrypto/traits/pull/814
+[#815]: https://github.com/RustCrypto/traits/pull/815
+[#816]: https://github.com/RustCrypto/traits/pull/816
+[#817]: https://github.com/RustCrypto/traits/pull/817
+[#818]: https://github.com/RustCrypto/traits/pull/818
+
 ## 0.10.6 (2021-08-23)
 ### Changed
 - Bump `crypto-bigint` dependency to v0.2.4 ([#710])
@@ -12,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.10.5 (2021-07-20)
 ### Changed
-- Pin `zeroize` dependency to v1.4 and `subtle` to v2.4 ([#349])
+- Pin `zeroize` dependency to v1.4 and `subtle` to v2.4 ([#689])
 
 [#689]: https://github.com/RustCrypto/traits/pull/689
 
