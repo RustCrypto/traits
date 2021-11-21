@@ -59,6 +59,11 @@ where
     pub fn from_repr(repr: FieldBytes<C>) -> CtOption<Self> {
         Scalar::<C>::from_repr(repr).and_then(Self::new)
     }
+
+    /// Create a [`NonZeroScalar`] from a [`UInt`].
+    pub fn from_uint(uint: C::UInt) -> CtOption<Self> {
+        ScalarCore::new(uint).and_then(|scalar| Self::new(scalar.into()))
+    }
 }
 
 impl<C> AsRef<Scalar<C>> for NonZeroScalar<C>
