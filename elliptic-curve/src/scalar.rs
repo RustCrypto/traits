@@ -5,7 +5,7 @@ use subtle::Choice;
 pub(crate) mod core;
 
 #[cfg(feature = "arithmetic")]
-pub(crate) mod non_zero;
+pub(crate) mod nonzero;
 
 #[cfg(feature = "arithmetic")]
 use crate::ScalarArithmetic;
