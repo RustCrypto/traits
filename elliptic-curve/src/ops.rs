@@ -40,3 +40,13 @@ pub trait Reduce<UInt: Integer + ArrayEncoding>: Sized {
         Self::from_uint_reduced(UInt::from_le_byte_array(bytes))
     }
 }
+
+/// Modular reduction to a non-zero output.
+///
+/// This trait is primarily intended for use by curve implementations.
+///
+/// End users can use the `Reduce` impl on `NonZeroScalar` instead.
+pub trait ReduceNonZero<UInt: Integer + ArrayEncoding>: Sized {
+    /// Perform a modular reduction, returning a field element.
+    fn from_uint_reduced_non_zero(n: UInt) -> Self;
+}

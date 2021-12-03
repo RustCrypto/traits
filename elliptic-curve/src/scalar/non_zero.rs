@@ -3,7 +3,7 @@
 use crate::{
     bigint::Encoding as _,
     hex,
-    ops::Invert,
+    ops::{Invert, Reduce, ReduceNonZero},
     rand_core::{CryptoRng, RngCore},
     Curve, Error, FieldBytes, IsHigh, Result, Scalar, ScalarArithmetic, ScalarCore, SecretKey,
 };
@@ -12,6 +12,7 @@ use core::{
     ops::{Deref, Neg},
     str,
 };
+use crypto_bigint::{ArrayEncoding, Integer};
 use ff::{Field, PrimeField};
 use generic_array::GenericArray;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
@@ -195,6 +196,31 @@ where
         let scalar = -self.scalar;
         debug_assert!(!bool::from(scalar.is_zero()));
         NonZeroScalar { scalar }
+    }
+}
+
+/// Note: implementation is the same as `ReduceNonZero`
+impl<C, I> Reduce<I> for NonZeroScalar<C>
+where
+    C: Curve + ScalarArithmetic,
+    I: Integer + ArrayEncoding,
+    Scalar<C>: ReduceNonZero<I>,
+{
+    fn from_uint_reduced(n: I) -> Self {
+        Self::from_uint_reduced_non_zero(n)
+    }
+}
+
+impl<C, I> ReduceNonZero<I> for NonZeroScalar<C>
+where
+    C: Curve + ScalarArithmetic,
+    I: Integer + ArrayEncoding,
+    Scalar<C>: ReduceNonZero<I>,
+{
+    fn from_uint_reduced_non_zero(n: I) -> Self {
+        let scalar = Scalar::<C>::from_uint_reduced_non_zero(n);
+        debug_assert!(!bool::from(scalar.is_zero()));
+        Self::new(scalar).unwrap()
     }
 }
 
