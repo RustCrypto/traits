@@ -48,5 +48,5 @@ pub trait Reduce<UInt: Integer + ArrayEncoding>: Sized {
 /// End users can use the `Reduce` impl on `NonZeroScalar` instead.
 pub trait ReduceNonZero<UInt: Integer + ArrayEncoding>: Sized {
     /// Perform a modular reduction, returning a field element.
-    fn from_uint_reduced_non_zero(n: UInt) -> Self;
+    fn from_uint_reduced_nonzero(n: UInt) -> Self;
 }

@@ -98,7 +98,7 @@ pub use {
             AffineArithmetic, PrimeCurveArithmetic, ProjectiveArithmetic, ScalarArithmetic,
         },
         public_key::PublicKey,
-        scalar::{non_zero::NonZeroScalar, Scalar},
+        scalar::{nonzero::NonZeroScalar, Scalar},
     },
     ff::{self, Field, PrimeField},
     group::{self, Group},
