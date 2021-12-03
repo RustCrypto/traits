@@ -51,7 +51,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6919815d73839e7ad218de758883aae3a257ba6759ce7a9992501efbb53d705c"
 dependencies = [
  "const-oid",
- "pem-rfc7468 0.3.1",
+ "pem-rfc7468",
 ]
 
 [[package]]
@@ -65,7 +65,7 @@ dependencies = [
  "generic-array",
  "group",
  "hex-literal",
- "pem-rfc7468 0.2.3",
+ "pem-rfc7468",
  "rand_core",
  "sec1",
  "serde",
@@ -140,15 +140,6 @@ name = "libc"
 version = "0.2.107"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fbe5e23404da5b4f555ef85ebed98fb4083e55a00c317800bc2a50ede9f3d219"
-
-[[package]]
-name = "pem-rfc7468"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f22eb0e3c593294a99e9ff4b24cf6b752d43f193aa4415fe5077c159996d497"
-dependencies = [
- "base64ct",
-]
 
 [[package]]
 name = "pem-rfc7468"
