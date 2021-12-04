@@ -33,6 +33,14 @@ use serde::{de, ser, Deserialize, Serialize};
 /// This type provides a baseline level of scalar arithmetic functionality
 /// which is always available for all curves, regardless of if they implement
 /// any arithmetic traits.
+///
+/// # `serde` support
+///
+/// When the optional `serde` feature of this create is enabled, [`Serialize`]
+/// and [`Deserialize`] impls are provided for this type.
+///
+/// The serialization is a fixed-width big endian encoding. When used with
+/// textual formats, the binary data is encoded as hexadecimal.
 // TODO(tarcieri): make this a fully generic `Scalar` type and use it for `ScalarArithmetic`
 #[derive(Copy, Clone, Debug, Default)]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
