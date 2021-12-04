@@ -1,6 +1,8 @@
 //! Elliptic curve arithmetic traits.
 
-use crate::{AffineXCoordinate, Curve, FieldBytes, IsHigh, PrimeCurve, ScalarCore};
+use crate::{
+    ops::LinearCombination, AffineXCoordinate, Curve, FieldBytes, IsHigh, PrimeCurve, ScalarCore,
+};
 use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq};
 use zeroize::DefaultIsZeroes;
@@ -54,6 +56,7 @@ pub trait ProjectiveArithmetic: Curve + AffineArithmetic {
         + DefaultIsZeroes
         + From<Self::AffinePoint>
         + Into<Self::AffinePoint>
+        + LinearCombination
         + group::Curve<AffineRepr = Self::AffinePoint>
         + group::Group<Scalar = Self::Scalar>;
 }

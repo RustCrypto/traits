@@ -6,7 +6,7 @@ use crypto_bigint::{ArrayEncoding, ByteArray, Integer};
 use subtle::CtOption;
 
 #[cfg(feature = "arithmetic")]
-use crate::ProjectiveArithmetic;
+use group::Group;
 
 /// Perform an inversion on a field element (i.e. base field element or scalar)
 pub trait Invert {
@@ -34,14 +34,9 @@ impl<F: ff::Field> Invert for F {
 // TODO(tarcieri): replace this with a trait from the `group` crate? (see zkcrypto/group#25)
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-pub trait LinearCombination: ProjectiveArithmetic {
+pub trait LinearCombination: Group {
     /// Calculates `x * k + y * l`.
-    fn lincomb(
-        x: &Self::ProjectivePoint,
-        k: &Self::Scalar,
-        y: &Self::ProjectivePoint,
-        l: &Self::Scalar,
-    ) -> Self::ProjectivePoint {
+    fn lincomb(x: &Self, k: &Self::Scalar, y: &Self, l: &Self::Scalar) -> Self {
         (*x * k) + (*y * l)
     }
 }
