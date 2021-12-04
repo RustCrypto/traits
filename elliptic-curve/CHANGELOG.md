@@ -4,19 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.11.4 (2021-12-04)
+## 0.11.5 (2021-12-05)
+### Changed
+- Revised `LinearCombination` trait ([#835])
+
+[#835]: https://github.com/RustCrypto/traits/pull/835
+
+## 0.11.4 (2021-12-04) [YANKED]
 ### Added
 - `LinearCombination` trait ([#832])
 
 [#832]: https://github.com/RustCrypto/traits/pull/832
 
-## 0.11.3 (2021-12-03)
+## 0.11.3 (2021-12-03) [YANKED]
 ### Added
 - `ReduceNonZero` trait ([#827])
 
 [#827]: https://github.com/RustCrypto/traits/pull/827
 
-## 0.11.2 (2021-12-03)
+## 0.11.2 (2021-12-03) [YANKED]
 ### Changed
 - Bump `pem-rfc7468` dependency to v0.3 ([#825])
 
