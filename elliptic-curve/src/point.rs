@@ -9,14 +9,19 @@ pub trait AffineXCoordinate<C: Curve> {
     fn x(&self) -> FieldBytes<C>;
 }
 
-/// Attempt to decompress an elliptic curve point from its x-coordinate and
-/// a boolean flag indicating whether or not the y-coordinate is odd.
+/// Decompress an elliptic curve point.
+///
+/// Point decompression recovers an original curve point from its x-coordinate
+/// and a boolean flag indicating whether or not the y-coordinate is odd.
 pub trait DecompressPoint<C: Curve>: Sized {
     /// Attempt to decompress an elliptic curve point.
     fn decompress(x: &FieldBytes<C>, y_is_odd: Choice) -> CtOption<Self>;
 }
 
-/// Attempt to decompact an elliptic curve point from an x-coordinate.
+/// Decompact an elliptic curve point from an x-coordinate.
+///
+/// Decompaction relies on properties of specially-generated keys but provides
+/// a more compact representation than standard point compression.
 pub trait DecompactPoint<C: Curve>: Sized {
     /// Attempt to decompact an elliptic curve point
     fn decompact(x: &FieldBytes<C>) -> CtOption<Self>;

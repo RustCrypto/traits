@@ -61,7 +61,7 @@ where
         Scalar::<C>::from_repr(repr).and_then(Self::new)
     }
 
-    /// Create a [`NonZeroScalar`] from a [`UInt`].
+    /// Create a [`NonZeroScalar`] from a `C::UInt`.
     pub fn from_uint(uint: C::UInt) -> CtOption<Self> {
         ScalarCore::new(uint).and_then(|scalar| Self::new(scalar.into()))
     }

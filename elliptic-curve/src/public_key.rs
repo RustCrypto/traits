@@ -61,6 +61,16 @@ use serde::{de, ser, Deserialize, Serialize};
 ///
 /// When the `pem` feature of this crate (or a specific RustCrypto elliptic
 /// curve crate) is enabled, a [`FromStr`] impl is also available.
+///
+/// # `serde` support
+///
+/// When the optional `serde` feature of this create is enabled, [`Serialize`]
+/// and [`Deserialize`] impls are provided for this type.
+///
+/// The serialization is binary-oriented and supports ASN.1 DER
+/// Subject Public Key Info (SPKI) as the encoding format.
+///
+/// For a more text-friendly encoding of public keys, use [`JwkEcKey`] instead.
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PublicKey<C>
