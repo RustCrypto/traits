@@ -20,6 +20,17 @@
 //! the above crates, either via an external ECDSA implementation, or
 //! using native curve arithmetic where applicable.
 //!
+//! ## `serde` support
+//!
+//! When the `serde` feature of this crate is enabled, `Serialize` and
+//! `Deserialize` impls are provided for the following types:
+//!
+//! - [`JwkEcKey`]
+//! - [`PublicKey`]
+//! - [`ScalarCore`]
+//!
+//! Please see type-specific documentation for more information.
+//!
 //! [`RustCrypto/elliptic-curves`]: https://github.com/RustCrypto/elliptic-curves
 //! [`bp256`]: https://github.com/RustCrypto/elliptic-curves/tree/master/bp256
 //! [`bp384`]: https://github.com/RustCrypto/elliptic-curves/tree/master/bp384
@@ -35,7 +46,7 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_root_url = "https://docs.rs/elliptic-curve/0.11.3"
+    html_root_url = "https://docs.rs/elliptic-curve/0.11.4"
 )]
 
 #[cfg(feature = "alloc")]
