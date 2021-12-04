@@ -5,6 +5,9 @@ pub use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 use crypto_bigint::{ArrayEncoding, ByteArray, Integer};
 use subtle::CtOption;
 
+#[cfg(feature = "arithmetic")]
+use crate::ProjectiveArithmetic;
+
 /// Perform an inversion on a field element (i.e. base field element or scalar)
 pub trait Invert {
     /// Field element type
@@ -20,6 +23,26 @@ impl<F: ff::Field> Invert for F {
 
     fn invert(&self) -> CtOption<F> {
         ff::Field::invert(self)
+    }
+}
+
+/// Linear combination.
+///
+/// This trait enables crates to provide an optimized implementation of
+/// linear combinations (e.g. Shamir's Trick), or otherwise provides a default
+/// non-optimized implementation.
+// TODO(tarcieri): replace this with a trait from the `group` crate? (see zkcrypto/group#25)
+#[cfg(feature = "arithmetic")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+pub trait LinearCombination: ProjectiveArithmetic {
+    /// Calculates `x * k + y * l`.
+    fn lincomb(
+        x: &Self::ProjectivePoint,
+        k: &Self::Scalar,
+        y: &Self::ProjectivePoint,
+        l: &Self::Scalar,
+    ) -> Self::ProjectivePoint {
+        (*x * k) + (*y * l)
     }
 }
 
