@@ -51,7 +51,7 @@ use zeroize::Zeroize;
 ///
 /// ```ignore
 /// let shared_secret = elliptic_curve::ecdh::diffie_hellman(
-///     secret_key.secret_scalar(),
+///     secret_key.to_nonzero_scalar(),
 ///     public_key.as_affine()
 /// );
 /// ```
