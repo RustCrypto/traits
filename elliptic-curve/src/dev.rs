@@ -6,7 +6,7 @@
 use crate::{
     bigint::{Limb, U256},
     error::{Error, Result},
-    ops::Reduce,
+    ops::{LinearCombination, Reduce},
     pkcs8,
     rand_core::RngCore,
     sec1::{FromEncodedPoint, ToEncodedPoint},
@@ -540,6 +540,8 @@ impl group::Curve for ProjectivePoint {
         }
     }
 }
+
+impl LinearCombination for ProjectivePoint {}
 
 impl Add<ProjectivePoint> for ProjectivePoint {
     type Output = ProjectivePoint;
