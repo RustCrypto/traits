@@ -1,8 +1,11 @@
-use super::{AlgorithmName, UpdateCore, VariableOutputCore};
-use crate::{InvalidOutputSize, Reset, Update, VariableOutput};
+use super::{AlgorithmName, TruncSide, UpdateCore, VariableOutputCore};
+#[cfg(feature = "mac")]
+use crate::MacMarker;
+use crate::{HashMarker, InvalidBufferSize};
+use crate::{InvalidOutputSize, Reset, Update, VariableOutput, VariableOutputReset};
+use block_buffer::BlockBuffer;
 use core::fmt;
-use crypto_common::block_buffer::DigestBuffer;
-use generic_array::typenum::Unsigned;
+use generic_array::typenum::{IsLess, Le, NonZero, Unsigned, U256};
 
 /// Wrapper around [`VariableOutputCore`] which selects output size
 /// at run time.
@@ -10,32 +13,78 @@ use generic_array::typenum::Unsigned;
 pub struct RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
 {
     core: T,
-    buffer: T::Buffer,
+    buffer: BlockBuffer<T::BlockSize, T::BufferKind>,
     output_size: usize,
+}
+
+impl<T> RtVariableCoreWrapper<T>
+where
+    T: VariableOutputCore,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
+{
+    #[inline]
+    fn finalize_dirty(&mut self, out: &mut [u8]) -> Result<(), InvalidBufferSize> {
+        let Self {
+            core,
+            buffer,
+            output_size,
+        } = self;
+        if out.len() != *output_size || out.len() > Self::MAX_OUTPUT_SIZE {
+            return Err(InvalidBufferSize);
+        }
+        let mut full_res = Default::default();
+        core.finalize_variable_core(buffer, &mut full_res);
+        let n = out.len();
+        let m = full_res.len() - n;
+        match T::TRUNC_SIDE {
+            TruncSide::Left => out.copy_from_slice(&full_res[..n]),
+            TruncSide::Right => out.copy_from_slice(&full_res[m..]),
+        }
+        Ok(())
+    }
+}
+
+impl<T> HashMarker for RtVariableCoreWrapper<T>
+where
+    T: VariableOutputCore + HashMarker,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
+{
+}
+
+#[cfg(feature = "mac")]
+#[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
+impl<T> MacMarker for RtVariableCoreWrapper<T>
+where
+    T: VariableOutputCore + MacMarker,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
+{
 }
 
 impl<T> Reset for RtVariableCoreWrapper<T>
 where
-    T: VariableOutputCore + UpdateCore,
+    T: VariableOutputCore + UpdateCore + Reset,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn reset(&mut self) {
-        // For correct implementations `new` should always return `Ok`
-        // since wrapper can be only created with valid `output_size`
-        if let Ok(v) = T::new(self.output_size) {
-            self.core = v;
-        } else {
-            debug_assert!(false);
-        }
         self.buffer.reset();
+        self.core.reset();
     }
 }
 
 impl<T> Update for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn update(&mut self, input: &[u8]) {
@@ -47,8 +96,10 @@ where
 impl<T> VariableOutput for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
 {
-    const MAX_OUTPUT_SIZE: usize = T::MaxOutputSize::USIZE;
+    const MAX_OUTPUT_SIZE: usize = T::OutputSize::USIZE;
 
     fn new(output_size: usize) -> Result<Self, InvalidOutputSize> {
         let buffer = Default::default();
@@ -63,29 +114,30 @@ where
         self.output_size
     }
 
-    fn finalize_variable(mut self, f: impl FnOnce(&[u8])) {
-        let Self {
-            core,
-            buffer,
-            output_size,
-        } = &mut self;
-        core.finalize_variable_core(buffer, *output_size, f);
+    fn finalize_variable(mut self, out: &mut [u8]) -> Result<(), InvalidBufferSize> {
+        self.finalize_dirty(out)
     }
+}
 
-    fn finalize_variable_reset(&mut self, f: impl FnOnce(&[u8])) {
-        let Self {
-            core,
-            buffer,
-            output_size,
-        } = self;
-        core.finalize_variable_core(buffer, *output_size, f);
-        self.reset()
+impl<T> VariableOutputReset for RtVariableCoreWrapper<T>
+where
+    T: VariableOutputCore + UpdateCore + Reset,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
+{
+    fn finalize_variable_reset(&mut self, out: &mut [u8]) -> Result<(), InvalidBufferSize> {
+        self.finalize_dirty(out)?;
+        self.core.reset();
+        self.buffer.reset();
+        Ok(())
     }
 }
 
 impl<T> fmt::Debug for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore + AlgorithmName,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         T::write_alg_name(f)?;
@@ -98,6 +150,8 @@ where
 impl<T> std::io::Write for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {

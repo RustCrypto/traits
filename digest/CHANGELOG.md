@@ -5,13 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.10.0 (2021-01-18)
-### Breaking changes
+## 0.10.0 (2021-12-07)
+### Changed
 - Dirty traits are removed and instead block-level traits are introduced.
-Variable output traits are removed as well in favor of fixed output tratis,
-implementors of variable output hashes are expected to be generic over 
-output size. ([#380])
+Variable output traits reworked and now support both run and compile time selection of output size. ([#380], [#819])
+- The `crypto-mac` traits are reworked and merged in. ([#819])
 
+[#819]: https://github.com/RustCrypto/traits/pull/819
 [#380]: https://github.com/RustCrypto/traits/pull/380
 
 ## 0.9.0 (2020-06-09)

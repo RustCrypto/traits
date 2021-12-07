@@ -3,7 +3,6 @@ members = [
     "aead",
     "cipher",
     "crypto-common",
-    "crypto-mac",
     "digest",
     "password-hash",
     "signature",
