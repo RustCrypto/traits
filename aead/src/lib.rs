@@ -43,6 +43,10 @@ pub use generic_array::{self, typenum::consts};
 #[cfg_attr(docsrs, doc(cfg(feature = "heapless")))]
 pub use heapless;
 
+#[cfg(feature = "bytes")]
+#[cfg_attr(docsrs, doc(cfg(feature = "heapless")))]
+pub use bytes;
+
 #[cfg(feature = "rand_core")]
 #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
 pub use rand_core;
@@ -52,6 +56,8 @@ use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
+use bytes::BytesMut;
+use std::io::Bytes;
 
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, RngCore};
@@ -503,6 +509,25 @@ impl Buffer for Vec<u8> {
 
     fn truncate(&mut self, len: usize) {
         Vec::truncate(self, len);
+    }
+}
+
+#[cfg(feature = "bytes")]
+impl Buffer for bytes::BytesMut {
+    fn len(&self) -> usize {
+        BytesMut::len(self)
+    }
+
+    fn is_empty(&self) -> bool {
+        BytesMut::is_empty(self)
+    }
+
+    fn extend_from_slice(&mut self, other: &[u8]) -> Result<()> {
+        Ok(BytesMut::extend_from_slice(self, other))
+    }
+
+    fn truncate(&mut self, len: usize) {
+        BytesMut::truncate(self, len);
     }
 }
 
