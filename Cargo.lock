@@ -39,9 +39,9 @@ checksum = "8a32fd6af2b5827bce66c29053ba0e7c42b9dcab01835835058558c10851a46b"
 
 [[package]]
 name = "blobby"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc52553543ecb104069b0ff9e0fcc5c739ad16202935528a112d974e8f1a4ee8"
+checksum = "847495c209977a90e8aad588b959d0ca9f5dc228096d29a6bd3defd53f35eaec"
 
 [[package]]
 name = "block-buffer"
@@ -54,19 +54,9 @@ dependencies = [
 
 [[package]]
 name = "block-buffer"
-version = "0.10.0-pre.4"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4b13c429c0b48d55a541108e23c7795eb821ee65b50c2f719f4f7fc5a022dcf"
-dependencies = [
- "block-padding",
- "generic-array",
-]
-
-[[package]]
-name = "block-padding"
-version = "0.3.0-pre"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3992d179d1dd2fa87869057217d43cf88ad31d4e44738d159a5a6caafdf63ae6"
+checksum = "f1d36a02058e76b040de25a4464ba1c80935655595b661505c8b39b664828b95"
 dependencies = [
  "generic-array",
 ]
@@ -88,7 +78,6 @@ name = "cipher"
 version = "0.4.0-pre"
 dependencies = [
  "blobby",
- "block-buffer 0.10.0-pre.4",
  "crypto-common",
  "generic-array",
  "rand_core",
@@ -105,22 +94,10 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.1.0-pre"
+version = "0.1.0"
 dependencies = [
- "block-buffer 0.10.0-pre.4",
- "generic-array",
-]
-
-[[package]]
-name = "crypto-mac"
-version = "0.12.0-pre"
-dependencies = [
- "blobby",
- "cipher",
- "crypto-common",
  "generic-array",
  "rand_core",
- "subtle",
 ]
 
 [[package]]
@@ -134,11 +111,13 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.10.0-pre.3"
+version = "0.10.0"
 dependencies = [
  "blobby",
+ "block-buffer 0.10.0",
  "crypto-common",
  "generic-array",
+ "subtle",
 ]
 
 [[package]]
@@ -203,9 +182,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.107"
+version = "0.2.109"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbe5e23404da5b4f555ef85ebed98fb4083e55a00c317800bc2a50ede9f3d219"
+checksum = "f98a04dce437184842841303488f70d0188c5f51437d2a834dc097eafa909a01"
 
 [[package]]
 name = "lock_api"
@@ -239,9 +218,9 @@ checksum = "dbf0c48bc1d91375ae5c3cd81e3722dff1abcf81a30960240640d223f59fe0e5"
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.32"
+version = "1.0.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba508cc11742c0dc5c1659771673afbab7a0efab23aa17e854cbab0837ed0b43"
+checksum = "fb37d2df5df740e582f28f8560cf425f52bb267d872fe58358eadb554909f07a"
 dependencies = [
  "unicode-xid",
 ]
@@ -327,9 +306,9 @@ checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 
 [[package]]
 name = "syn"
-version = "1.0.81"
+version = "1.0.82"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2afee18b8beb5a596ecb4a2dce128c719b4ba399d34126b9e4396e3f9860966"
+checksum = "8daf5dd0bb60cbd4137b1b587d2fc0ae729bc07cf01cd70b36a1ed5ade3b9d59"
 dependencies = [
  "proc-macro2",
  "quote",
