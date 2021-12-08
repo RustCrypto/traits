@@ -157,7 +157,7 @@ impl<T: KeyInit + Update + FixedOutput + MacMarker> Mac for T {
 ///
 /// It is useful for implementing Message Authentication Codes (MACs).
 #[derive(Clone)]
-#[cfg_attr(docsrs, doc(cfg(feature = "subtle")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 pub struct CtOutput<T: OutputSizeUser> {
     bytes: Output<T>,
 }
@@ -209,6 +209,7 @@ impl<T: OutputSizeUser> Eq for CtOutput<T> {}
 /// Error type for when the [`Output`] of a [`Mac`]
 /// is not equal to the expected value.
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
+#[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 pub struct MacError;
 
 impl fmt::Display for MacError {
