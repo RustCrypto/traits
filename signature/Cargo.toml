@@ -28,7 +28,7 @@ path = "derive"
 
 [dev-dependencies]
 hex-literal = "0.2"
-sha2 = { version = "0.9", default-features = false }
+sha2 = { version = "0.10", default-features = false }
 
 [features]
 default = ["std"]
