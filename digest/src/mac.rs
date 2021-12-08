@@ -157,7 +157,7 @@ impl<T: KeyInit + Update + FixedOutput + MacMarker> Mac for T {
 ///
 /// It is useful for implementing Message Authentication Codes (MACs).
 #[derive(Clone)]
-#[cfg_attr(docsrs, doc(cfg(feature = "subtle")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 pub struct CtOutput<T: OutputSizeUser> {
     bytes: Output<T>,
 }
