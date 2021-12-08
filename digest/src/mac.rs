@@ -209,6 +209,7 @@ impl<T: OutputSizeUser> Eq for CtOutput<T> {}
 /// Error type for when the [`Output`] of a [`Mac`]
 /// is not equal to the expected value.
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
+#[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 pub struct MacError;
 
 impl fmt::Display for MacError {
