@@ -1,0 +1,20 @@
+[package]
+name          = "kem"
+description   = "Traits for key encapsulation mechanisms"
+version       = "0.0.1" # Also update html_root_url in lib.rs when bumping this
+authors       = ["RustCrypto Developers"]
+license       = "Apache-2.0 OR MIT"
+documentation = "https://docs.rs/kem"
+repository    = "https://github.com/RustCrypto/traits/tree/master/kem"
+readme        = "README.md"
+edition       = "2018"
+keywords      = ["crypto"]
+categories    = ["cryptography", "no-std"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[dependencies]
+rand_core = "0.6"
+generic-array = "0.14"

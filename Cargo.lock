@@ -181,6 +181,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "kem"
+version = "0.0.1"
+dependencies = [
+ "generic-array",
+ "rand_core",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.109"
 source = "registry+https://github.com/rust-lang/crates.io-index"
