@@ -314,7 +314,7 @@ dependencies = [
 [[package]]
 name = "hpke"
 version = "0.8.0"
-source = "git+ssh://git@github.com/rozbb/rust-hpke.git?branch=pub-shared-secret#3c795445f38317d6a0868259caf3e87916548356"
+source = "git+https://github.com/rozbb/rust-hpke?branch=pub-shared-secret#3c795445f38317d6a0868259caf3e87916548356"
 dependencies = [
  "aead 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "aes-gcm",

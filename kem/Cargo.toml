@@ -24,7 +24,7 @@ version = "0.8"
 features = [ "getrandom" ]
 
 [dev-dependencies.hpke]
-git = "ssh://git@github.com/rozbb/rust-hpke.git"
+git = "https://github.com/rozbb/rust-hpke"
 branch = "pub-shared-secret"
 default-features = false
 features = [ "x25519" ]
