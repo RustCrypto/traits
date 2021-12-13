@@ -70,3 +70,25 @@ mod errors;
 mod kem;
 
 pub use crate::{errors::*, kem::*};
+pub use generic_array;
+
+use generic_array::{typenum::marker_traits::Unsigned, ArrayLength, GenericArray};
+
+/// Implemented by types that have a fixed-length byte representation
+pub trait Serializable {
+    /// The size, in bytes, of the serialized data
+    type OutputSize: ArrayLength<u8>;
+
+    /// Converts `Self` to an array of bytes
+    fn to_bytes(&self) -> GenericArray<u8, Self::OutputSize>;
+
+    /// Returns the size (in bytes) of this type when serialized
+    fn size() -> usize {
+        Self::OutputSize::to_usize()
+    }
+}
+/// Implemented by types that can be deserialized from byte representation
+pub trait Deserializable: Serializable + Sized {
+    /// Converts a byte buffer to `Self`. Returns an error on failure.
+    fn from_bytes(encoded: &[u8]) -> Result<Self, Error>;
+}

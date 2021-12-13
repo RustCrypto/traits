@@ -1,6 +1,6 @@
 //! KEM Traits
 
-use crate::errors::Error;
+use crate::{errors::Error, Deserializable, Serializable};
 use core::fmt::Debug;
 use generic_array::{ArrayLength, GenericArray};
 
@@ -8,22 +8,13 @@ use rand_core::{CryptoRng, RngCore};
 
 /// Trait impl'd by concrete types that represent encapsulated keys. Besides encoding the behavior
 /// of the encapsulated key, this also requires
-pub trait EncappedKey: AsRef<[u8]> + Debug + Sized {
+pub trait EncappedKey: Serializable + Deserializable + Debug + Sized {
     /// The size of the shared secret that this KEM produces
     type NSecret: ArrayLength<u8>;
 
     /// The public key type of this KEM. This is used for encapsulation and authenticated
     /// decapsulation.
-    type PublicKey: AsRef<[u8]> + Debug + Sized;
-
-    /// Parse an encapsulated key from its byte representation
-    fn from_bytes(bytes: &[u8]) -> Result<Self, Error>;
-
-    /// Borrow a byte slice representing the serialized form of this
-    /// encapsulated key
-    fn as_bytes(&self) -> &[u8] {
-        self.as_ref()
-    }
+    type PublicKey: Serializable + Debug + Sized;
 }
 
 /// Represents the functionality of a key encapsulator. For unauthenticated encapsulation, `Self`
