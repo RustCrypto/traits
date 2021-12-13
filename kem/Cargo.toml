@@ -18,3 +18,13 @@ rustdoc-args = ["--cfg", "docsrs"]
 [dependencies]
 rand_core = "0.6"
 generic-array = "0.14"
+
+[dev-dependencies.rand]
+version = "0.8"
+features = [ "getrandom" ]
+
+[dev-dependencies.hpke]
+git = "ssh://git@github.com/rozbb/rust-hpke.git"
+branch = "pub-shared-secret"
+default-features = false
+features = [ "x25519" ]
