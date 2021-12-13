@@ -34,6 +34,7 @@ pub trait Encapsulator<EK: EncappedKey> {
     /// `Self` is empty, then this is equivalent to unauthenticated encapsulation. Returns the
     /// shared secret and encapsulated key on success, or an error if something went wrong.
     fn try_encap<R>(
+        &self,
         csprng: &mut R,
         recip_pubkey: &EK::PublicKey,
     ) -> Result<(EK, GenericArray<u8, EK::NSecret>), Error>
@@ -45,7 +46,7 @@ pub trait Encapsulator<EK: EncappedKey> {
 pub trait Decapsulator<EK: EncappedKey> {
     /// Attempt to decapsulate the given encapsulated key. Returns the shared secret on success, or
     /// an error if something went wrong.
-    fn try_decap(encapped_key: &EK) -> Result<GenericArray<u8, EK::NSecret>, Error>;
+    fn try_decap(&self, encapped_key: &EK) -> Result<GenericArray<u8, EK::NSecret>, Error>;
 }
 
 /// Represents the functionality of a authenticated-key decapsulator, where `Self` is a
@@ -58,6 +59,7 @@ where
     /// the provided sender identity, thus providing authenticity. Returns the shared secret
     /// success, or an error if something went wrong.
     fn try_auth_decap(
+        &self,
         encapped_key: &EK,
         sender_pubkey: &EK::PublicKey,
     ) -> Result<GenericArray<u8, EK::NSecret>, Error>;
