@@ -19,6 +19,10 @@ rustdoc-args = ["--cfg", "docsrs"]
 rand_core = "0.6"
 generic-array = "0.14"
 
+[features]
+default = []
+std = []
+
 [dev-dependencies.rand]
 version = "0.8"
 features = [ "getrandom" ]
