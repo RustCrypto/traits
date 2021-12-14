@@ -1,7 +1,7 @@
 [package]
 name = "digest"
 description = "Traits for cryptographic hash functions"
-version = "0.10.0"
+version = "0.10.1" # Also update html_root_url in lib.rs when bumping this
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = "0.14"
-crypto-common = { version = "0.1", path = "../crypto-common" }
+crypto-common = { version = "0.1.1", path = "../crypto-common" }
 
 block-buffer = { version = "0.10", optional = true }
 subtle = { version = "=2.4", default-features = false, optional = true }
@@ -23,6 +23,7 @@ blobby = { version = "0.3", optional = true }
 default = ["core-api"]
 core-api = ["block-buffer"] # Enable Core API traits
 mac = ["subtle"] # Enable MAC traits
+rand_core = ["crypto-common/rand_core"] # Enable random key generation methods
 alloc = []
 std = ["alloc", "crypto-common/std"]
 dev = ["blobby"]
