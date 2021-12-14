@@ -23,7 +23,7 @@ pub trait Mac: KeySizeUser + OutputSizeUser + Sized {
     /// Generate random key using the provided [`CryptoRng`].
     #[cfg(feature = "rand_core")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-    fn generate_key(mut rng: impl CryptoRng + RngCore) -> Key<Self>;
+    fn generate_key(rng: impl CryptoRng + RngCore) -> Key<Self>;
 
     /// Create new value from variable size key.
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength>;
@@ -162,7 +162,7 @@ impl<T: KeyInit + Update + FixedOutput + MacMarker> Mac for T {
     #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
     fn generate_key(rng: impl CryptoRng + RngCore) -> Key<Self> {
-        KeyInit::generate_key(rng)
+        <T as KeyInit>::generate_key(rng)
     }
 }
 
