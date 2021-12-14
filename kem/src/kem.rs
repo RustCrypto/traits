@@ -12,9 +12,12 @@ pub trait EncappedKey: AsRef<[u8]> + Debug + Sized {
     /// The size of the shared secret that this KEM produces
     type NSecret: ArrayLength<u8>;
 
-    /// The public key type of this KEM. This is used for encapsulation and authenticated
+    /// Represents the identity key of an encapsulator. This is used in authenticated
     /// decapsulation.
-    type PublicKey;
+    type SenderPublicKey;
+
+    /// The public key of a decapsulator. This is used in encapsulation.
+    type RecipPublicKey;
 }
 
 /// Represents the functionality of a key encapsulator. For unauthenticated encapsulation, `Self`
@@ -27,7 +30,7 @@ pub trait Encapsulator<EK: EncappedKey> {
     fn try_encap<R>(
         &self,
         csprng: &mut R,
-        recip_pubkey: &EK::PublicKey,
+        recip_pubkey: &EK::RecipPublicKey,
     ) -> Result<(EK, GenericArray<u8, EK::NSecret>), Error>
     where
         R: CryptoRng + RngCore;
@@ -52,6 +55,6 @@ where
     fn try_auth_decap(
         &self,
         encapped_key: &EK,
-        sender_pubkey: &EK::PublicKey,
+        sender_pubkey: &EK::SenderPublicKey,
     ) -> Result<GenericArray<u8, EK::NSecret>, Error>;
 }
