@@ -77,8 +77,7 @@ mod tests {
     // Define an decapsulator. Since authenticated and unauthenticated encapped keys are
     // represented by the same type (which, outside of testing, should not be the case), this can
     // do both auth'd and unauth'd decapsulation.
-    struct X25519Decap(X25519PrivateKey);
-    impl Decapsulator<X25519EncappedKey> for X25519Decap {
+    impl Decapsulator<X25519EncappedKey> for X25519PrivateKey {
         fn try_decap(&self, encapped_key: &X25519EncappedKey) -> Result<SharedSecret, Error> {
             // First parse the encapped key, since it's just bytes right now
             let deserialized_encapped_key =
@@ -88,12 +87,12 @@ mod tests {
                 .map_err(|_| Error)?;
 
             // Now decapsulate
-            <X25519HkdfSha256 as KemTrait>::decap(&self.0, None, &deserialized_encapped_key)
+            <X25519HkdfSha256 as KemTrait>::decap(self, None, &deserialized_encapped_key)
                 .map(|ss| ss.0)
                 .map_err(|_| Error)
         }
     }
-    impl AuthDecapsulator<X25519EncappedKey> for X25519Decap {
+    impl AuthDecapsulator<X25519EncappedKey> for X25519PrivateKey {
         fn try_auth_decap(
             &self,
             encapped_key: &X25519EncappedKey,
@@ -108,7 +107,7 @@ mod tests {
 
             // Now decapsulate
             <X25519HkdfSha256 as KemTrait>::decap(
-                &self.0,
+                self,
                 Some(&sender_pubkey.0),
                 &deserialized_encapped_key,
             )
@@ -135,15 +134,14 @@ mod tests {
 
         // Try an unauthed encap first. Check that the derived shared secrets are equal
         let encapper = X25519Encap;
-        let decapper = X25519Decap(sk_recip);
         let (ek, ss1) = encapper.try_encap(&mut rng, &pk_recip).unwrap();
-        let ss2 = decapper.try_decap(&ek).unwrap();
+        let ss2 = sk_recip.try_decap(&ek).unwrap();
         assert_eq!(ss1, ss2);
 
         // Now do an authenticated encap
         let encapper = X25519AuthEncap(sk_sender, pk_sender.clone());
         let (ek, ss1) = encapper.try_encap(&mut rng, &pk_recip).unwrap();
-        let ss2 = decapper.try_auth_decap(&ek, &pk_sender).unwrap();
+        let ss2 = sk_recip.try_auth_decap(&ek, &pk_sender).unwrap();
         assert_eq!(ss1, ss2);
 
         // Now do an invalid authenticated encap, where the sender uses the wrong private key. This
@@ -151,7 +149,7 @@ mod tests {
         let (rand_sk, _) = gen_keypair(&mut rng);
         let encapper = X25519AuthEncap(rand_sk, pk_sender.clone());
         let (ek, ss1) = encapper.try_encap(&mut rng, &pk_recip).unwrap();
-        let ss2 = decapper.try_auth_decap(&ek, &pk_sender).unwrap();
+        let ss2 = sk_recip.try_auth_decap(&ek, &pk_sender).unwrap();
         assert_ne!(ss1, ss2);
     }
 }
