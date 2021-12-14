@@ -6,57 +6,33 @@ mod tests {
         kem::{Kem as KemTrait, X25519HkdfSha256},
         Deserializable as HpkeDeserializable, Serializable as HpkeSerializable,
     };
-    use kem::{
-        AuthDecapsulator, Decapsulator, Deserializable, EncappedKey, Encapsulator, Error,
-        Serializable,
-    };
+    use kem::{AuthDecapsulator, Decapsulator, EncappedKey, Encapsulator, Error};
     use rand::rngs::OsRng;
     use rand_core::{CryptoRng, RngCore};
 
-    // Define the pubkey type and impl the necessary traits. This is a thin wrapper
+    // Define the pubkey type. This has no trait bounds required by the library
     #[derive(Clone)]
     struct X25519PublicKey(<X25519HkdfSha256 as KemTrait>::PublicKey);
-    impl Serializable for X25519PublicKey {
-        type OutputSize =
-            <<X25519HkdfSha256 as KemTrait>::PublicKey as hpke::Serializable>::OutputSize;
-        fn to_bytes(&self) -> GenericArray<u8, Self::OutputSize> {
-            self.0.to_bytes()
-        }
-    }
-    impl core::fmt::Debug for X25519PublicKey {
-        // The underlying pubkey doesn't impl Debug. That'll be fixed eventually
-        fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-            write!(f, "HPKE-X25519HkdfSha256 public key")
-        }
-    }
 
     // Define the encapsulated key type and impl the necessary traits. Since authenticated and
     // unauthenticated DHKEMs have the same encapped key type, this will support both types of
     // algorithms. In practice, one should use types to distinguish between the two. But this is
     // just test code, so whatever.
-    struct X25519Ek(<X25519HkdfSha256 as KemTrait>::EncappedKey);
-    impl Serializable for X25519Ek {
-        type OutputSize =
-            <<X25519HkdfSha256 as KemTrait>::EncappedKey as HpkeSerializable>::OutputSize;
-        fn to_bytes(&self) -> GenericArray<u8, Self::OutputSize> {
-            self.0.to_bytes()
-        }
-    }
-    impl Deserializable for X25519Ek {
-        fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
-            <<X25519HkdfSha256 as KemTrait>::EncappedKey as HpkeDeserializable>::from_bytes(bytes)
-                .map(X25519Ek)
-                .map_err(|_| Error)
-        }
-    }
+    #[derive(Debug)]
+    struct X25519Ek(
+        // It's just an array of bytes
+        GenericArray<
+            u8,
+            <<X25519HkdfSha256 as KemTrait>::EncappedKey as HpkeSerializable>::OutputSize,
+        >,
+    );
     impl EncappedKey for X25519Ek {
         type NSecret = <X25519HkdfSha256 as KemTrait>::NSecret;
         type PublicKey = X25519PublicKey;
     }
-    impl core::fmt::Debug for X25519Ek {
-        // The underlying encapped key doesn't impl Debug. That'll be fixed eventually
-        fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-            write!(f, "HPKE-X25519HkdfSha256 encapped key")
+    impl AsRef<[u8]> for X25519Ek {
+        fn as_ref(&self) -> &[u8] {
+            &self.0
         }
     }
 
@@ -77,7 +53,7 @@ mod tests {
                 Some((&self.0, &(self.1).0)),
                 csprng,
             )
-            .map(|(ss, ek)| (X25519Ek(ek), ss.0))
+            .map(|(ss, ek)| (X25519Ek(ek.to_bytes()), ss.0))
             .map_err(|_| Error)
         }
     }
@@ -91,7 +67,7 @@ mod tests {
             recip_pubkey: &X25519PublicKey,
         ) -> Result<(X25519Ek, SharedSecret), Error> {
             <X25519HkdfSha256 as KemTrait>::encap(&recip_pubkey.0, None, csprng)
-                .map(|(ss, ek)| (X25519Ek(ek), ss.0))
+                .map(|(ss, ek)| (X25519Ek(ek.to_bytes()), ss.0))
                 .map_err(|_| Error)
         }
     }
@@ -102,7 +78,15 @@ mod tests {
     struct X25519Decap(X25519PrivateKey);
     impl Decapsulator<X25519Ek> for X25519Decap {
         fn try_decap(&self, encapped_key: &X25519Ek) -> Result<SharedSecret, Error> {
-            <X25519HkdfSha256 as KemTrait>::decap(&self.0, None, &encapped_key.0)
+            // First parse the encapped key, since it's just bytes right now
+            let deserialized_encapped_key =
+                <<X25519HkdfSha256 as KemTrait>::EncappedKey as HpkeDeserializable>::from_bytes(
+                    &encapped_key.0,
+                )
+                .map_err(|_| Error)?;
+
+            // Now decapsulate
+            <X25519HkdfSha256 as KemTrait>::decap(&self.0, None, &deserialized_encapped_key)
                 .map(|ss| ss.0)
                 .map_err(|_| Error)
         }
@@ -113,9 +97,21 @@ mod tests {
             encapped_key: &X25519Ek,
             sender_pubkey: &X25519PublicKey,
         ) -> Result<SharedSecret, Error> {
-            <X25519HkdfSha256 as KemTrait>::decap(&self.0, Some(&sender_pubkey.0), &encapped_key.0)
-                .map(|ss| ss.0)
-                .map_err(|_| Error)
+            // First parse the encapped key, since it's just bytes right now
+            let deserialized_encapped_key =
+                <<X25519HkdfSha256 as KemTrait>::EncappedKey as HpkeDeserializable>::from_bytes(
+                    &encapped_key.0,
+                )
+                .map_err(|_| Error)?;
+
+            // Now decapsulate
+            <X25519HkdfSha256 as KemTrait>::decap(
+                &self.0,
+                Some(&sender_pubkey.0),
+                &deserialized_encapped_key,
+            )
+            .map(|ss| ss.0)
+            .map_err(|_| Error)
         }
     }
 
