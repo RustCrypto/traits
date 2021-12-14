@@ -23,9 +23,10 @@ generic-array = "0.14"
 default = []
 std = []
 
-[dev-dependencies.rand]
-version = "0.8"
-features = [ "getrandom" ]
+[dev-dependencies]
+rand = { version = "0.8", features = [ "getrandom" ] }
+x3dh-ke = "0.1"
+p256 = { version = "0.9", features = [ "ecdsa" ] }
 
 [dev-dependencies.hpke]
 git = "https://github.com/rozbb/rust-hpke"
