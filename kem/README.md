@@ -14,7 +14,7 @@ establishing shared secrets using [a key encapsulation mechanism][1].
 
 ## Minimum Supported Rust Version
 
-Rust **1.56.1** or higher.
+Rust **1.56** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
