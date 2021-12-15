@@ -5,7 +5,7 @@
 //!
 //! ## Minimum Supported Rust Version
 //!
-//! Rust **1.56.0** or higher.
+//! Rust **1.56.1** or higher.
 //!
 //! Minimum supported Rust version may be changed in the future, but such changes will be
 //! accompanied with a minor version bump.
@@ -61,7 +61,7 @@
     html_root_url = "https://docs.rs/kem"
 )]
 #![forbid(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms, unused_qualifications)]
+#![warn(missing_docs, unused_qualifications)]
 
 #[cfg(feature = "std")]
 extern crate std;

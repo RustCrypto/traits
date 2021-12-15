@@ -7,7 +7,7 @@ license       = "Apache-2.0 OR MIT"
 documentation = "https://docs.rs/kem"
 repository    = "https://github.com/RustCrypto/traits/tree/master/kem"
 readme        = "README.md"
-edition       = "2018"
+edition       = "2021"
 keywords      = ["crypto"]
 categories    = ["cryptography", "no-std"]
 
