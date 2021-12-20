@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.11.6 (2021-12-20)
+### Added
+- Type conversions chart ([#852])
+
+[#852]: https://github.com/RustCrypto/traits/pull/852
+
 ## 0.11.5 (2021-12-05)
 ### Changed
 - Revised `LinearCombination` trait ([#835])

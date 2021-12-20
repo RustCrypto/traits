@@ -1,3 +1,12 @@
+#![no_std]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![forbid(unsafe_code, clippy::unwrap_used)]
+#![warn(missing_docs, rust_2018_idioms, unused_qualifications)]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
+    html_root_url = "https://docs.rs/elliptic-curve/0.11.6"
+)]
 #![doc = include_str!("../README.md")]
 
 //! ## Usage
@@ -45,16 +54,6 @@
 //! [`p256`]: https://github.com/RustCrypto/elliptic-curves/tree/master/p256
 //! [`p384`]: https://github.com/RustCrypto/elliptic-curves/tree/master/p384
 //! [`ecdsa`]: https://github.com/RustCrypto/signatures/tree/master/ecdsa
-
-#![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
-#![forbid(unsafe_code, clippy::unwrap_used)]
-#![warn(missing_docs, rust_2018_idioms, unused_qualifications)]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_root_url = "https://docs.rs/elliptic-curve/0.11.5"
-)]
 
 #[cfg(feature = "alloc")]
 #[allow(unused_imports)]
