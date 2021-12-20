@@ -20,6 +20,13 @@
 //! the above crates, either via an external ECDSA implementation, or
 //! using native curve arithmetic where applicable.
 //!
+//! ## Type conversions
+//!
+//! The following chart illustrates the various conversions possible between
+//! the various types defined by this crate.
+//!
+//! ![Type Conversion Map](https://raw.githubusercontent.com/RustCrypto/media/master/img/elliptic-curve/type-transforms.svg)
+//!
 //! ## `serde` support
 //!
 //! When the `serde` feature of this crate is enabled, `Serialize` and
