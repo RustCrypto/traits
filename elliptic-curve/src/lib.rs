@@ -94,6 +94,11 @@ pub mod ecdh;
 #[cfg(feature = "jwk")]
 mod jwk;
 
+/// Optimized simplified Shallue-van de Woestijne-Ulas methods
+#[cfg(feature = "osswu")]
+#[cfg_attr(docsrs, doc(cfg(feature = "osswu")))]
+pub mod osswu;
+
 pub use crate::{
     error::{Error, Result},
     point::{
