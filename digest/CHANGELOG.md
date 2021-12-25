@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.10.1 (2021-12-14)
+### Added
+- `Update::chain` and `Digest::new_with_prefix` methods. ([#846])
+- `Mac::generate_key` method. ([#847])
+
+### Fixed
+- Doc cfg attribute for CtOutput and MacError. ([#842])
+- Expose `KeyInit::generate_key` method in docs. ([#847])
+
+[#842]: https://github.com/RustCrypto/traits/pull/842
+[#846]: https://github.com/RustCrypto/traits/pull/846
+[#847]: https://github.com/RustCrypto/traits/pull/847
+
 ## 0.10.0 (2021-12-07)
 ### Changed
 - Dirty traits are removed and instead block-level traits are introduced.

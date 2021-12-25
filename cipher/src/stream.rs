@@ -57,7 +57,7 @@ pub trait StreamCipherSeek {
     /// Seek to the given position
     ///
     /// # Panics
-    /// If provided position value is bigger than keystream leangth
+    /// If provided position value is bigger than keystream length
     fn seek<T: SeekNum>(&mut self, pos: T) {
         self.try_seek(pos).unwrap()
     }

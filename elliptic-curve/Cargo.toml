@@ -1,6 +1,6 @@
 [package]
 name = "elliptic-curve"
-version = "0.11.5" # Also update html_root_url in lib.rs when bumping this
+version = "0.11.6" # Also update html_root_url in lib.rs when bumping this
 description = """
 General purpose Elliptic Curve Cryptography (ECC) support, including types
 and traits for representing various elliptic curve forms, scalars, points,
@@ -49,6 +49,7 @@ dev = ["arithmetic", "hex-literal", "pem", "pkcs8"]
 ecdh = ["arithmetic"]
 hazmat = []
 jwk = ["alloc", "base64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
+osswu  = ["ff"]
 pem = ["alloc", "arithmetic", "pem-rfc7468/alloc", "pkcs8", "sec1/pem"]
 pkcs8 = ["sec1/pkcs8"]
 std = ["alloc", "rand_core/std"]

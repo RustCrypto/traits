@@ -27,8 +27,9 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg"
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
+    html_root_url = "https://docs.rs/digest/0.10.1"
 )]
 #![warn(missing_docs, rust_2018_idioms)]
 
@@ -38,6 +39,9 @@ extern crate alloc;
 
 #[cfg(feature = "std")]
 extern crate std;
+
+#[cfg(feature = "rand_core")]
+pub use crypto_common::rand_core;
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
@@ -72,6 +76,15 @@ use core::fmt;
 pub trait Update {
     /// Update state using the provided data.
     fn update(&mut self, data: &[u8]);
+
+    /// Digest input data in a chained manner.
+    fn chain(mut self, data: impl AsRef<[u8]>) -> Self
+    where
+        Self: Sized,
+    {
+        self.update(data.as_ref());
+        self
+    }
 }
 
 /// Trait for hash functions with fixed-size output.
