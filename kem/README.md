@@ -7,8 +7,9 @@
 [![Project Chat][chat-image]][chat-link]
 [![Build Status][build-image]][build-link]
 
-This crate contains traits which provide generic, object-safe APIs for
-establishing shared secrets using [a key encapsulation mechanism][1].
+This crate provides a common set of traits for [key encapsulation mechanisms][1]—algorithms for non-interactively establishing secrets between peers. This is intended to be implemented by libraries which produce or contain implementations of key encapsulation mechanisms, and used by libraries which want to produce or consume encapsulated secrets while generically supporting any compatible backend.
+
+The crate exposes four traits, `Encapsulator`, `Decapsulator`, `AuthEncapsulator`, and `AuthDecapsulator`. These traits represent the ability to initiate a key exchange and complete a key exchange, in the case where the sender is authenticated to the receiver and in the case where the sender is not.
 
 [Documentation][docs-link]
 
