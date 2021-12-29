@@ -32,6 +32,6 @@ pqcrypto-traits = "0.3"
 
 [dev-dependencies.hpke]
 git = "https://github.com/rozbb/rust-hpke"
-branch = "pub-shared-secret"
+rev = "3c795445f38317d6a0868259caf3e87916548356"
 default-features = false
 features = [ "x25519" ]
