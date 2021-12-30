@@ -4,7 +4,6 @@ members = [
     "cipher",
     "crypto-common",
     "digest",
-    "kem",
     "password-hash",
     "signature",
     "signature/async",
