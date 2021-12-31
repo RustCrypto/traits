@@ -17,7 +17,7 @@ pub trait EncappedKey: AsRef<[u8]> + Debug + Sized {
     type SenderPublicKey;
 
     /// The public key of a decapsulator. This is used in encapsulation.
-    type RecipPublicKey;
+    type RecipientPublicKey;
 }
 
 /// Represents the functionality of a key encapsulator. For unauthenticated encapsulation, `Self`
@@ -27,13 +27,11 @@ pub trait Encapsulator<EK: EncappedKey> {
     /// secret is bound to the identity encoded in `Self` (i.e., authenticated wrt `Self`). If
     /// `Self` is empty, then this is equivalent to unauthenticated encapsulation. Returns the
     /// shared secret and encapsulated key on success, or an error if something went wrong.
-    fn try_encap<R>(
+    fn try_encap<R: CryptoRng + RngCore>(
         &self,
         csprng: &mut R,
-        recip_pubkey: &EK::RecipPublicKey,
-    ) -> Result<(EK, GenericArray<u8, EK::NSecret>), Error>
-    where
-        R: CryptoRng + RngCore;
+        recip_pubkey: &EK::RecipientPublicKey,
+    ) -> Result<(EK, GenericArray<u8, EK::NSecret>), Error>;
 }
 
 /// Represents the functionality of a key decapsulator, where `Self` is a cryptographic key
@@ -45,10 +43,7 @@ pub trait Decapsulator<EK: EncappedKey> {
 
 /// Represents the functionality of a authenticated-key decapsulator, where `Self` is a
 /// cryptographic key
-pub trait AuthDecapsulator<EK>
-where
-    EK: EncappedKey,
-{
+pub trait AuthDecapsulator<EK: EncappedKey> {
     /// Attempt to decapsulate the given encapsulated key. The resulting shared secret is bound to
     /// the provided sender identity, thus providing authenticity. Returns the shared secret
     /// success, or an error if something went wrong.

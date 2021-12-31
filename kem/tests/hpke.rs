@@ -23,7 +23,7 @@ struct X25519EncappedKey(
 impl EncappedKey for X25519EncappedKey {
     type NSecret = <X25519HkdfSha256 as KemTrait>::NSecret;
     // In HPKE the only recipient public key is the identity key
-    type RecipPublicKey = X25519PublicKey;
+    type RecipientPublicKey = X25519PublicKey;
     // The sender's pubkey is the identity too
     type SenderPublicKey = X25519PublicKey;
 }

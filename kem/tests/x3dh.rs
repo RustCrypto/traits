@@ -44,7 +44,7 @@ struct X3DhEncappedKey([u8; P256_POINT_SIZE]);
 impl EncappedKey for X3DhEncappedKey {
     type NSecret = U32;
     type SenderPublicKey = X3DhSenderPublicKey;
-    type RecipPublicKey = X3DhPubkeyBundle;
+    type RecipientPublicKey = X3DhPubkeyBundle;
 }
 impl AsRef<[u8]> for X3DhEncappedKey {
     fn as_ref(&self) -> &[u8] {

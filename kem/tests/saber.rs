@@ -15,7 +15,7 @@ struct SaberEncappedKey(Ciphertext);
 impl EncappedKey for SaberEncappedKey {
     type NSecret = U32;
     // In HPKE the only recipient public key is the identity key
-    type RecipPublicKey = SaberPublicKey;
+    type RecipientPublicKey = SaberPublicKey;
     // The sender's pubkey is the identity too
     type SenderPublicKey = SaberPrivateKey;
 }
