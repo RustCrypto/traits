@@ -1,0 +1,41 @@
+[package]
+name          = "kem"
+description   = "Traits for key encapsulation mechanisms"
+version       = "0.1.0"
+authors       = ["RustCrypto Developers"]
+license       = "Apache-2.0 OR MIT"
+documentation = "https://docs.rs/kem"
+repository    = "https://github.com/RustCrypto/traits/tree/master/kem"
+readme        = "README.md"
+edition       = "2021"
+keywords      = ["crypto"]
+categories    = ["cryptography", "no-std"]
+
+# Hack to allow this crate to coexist with pre-2021 edition crates
+[workspace]
+members = ["."]
+
+[dependencies]
+rand_core = "0.6"
+generic-array = "0.14"
+
+[dev-dependencies]
+rand = { version = "0.8", features = [ "getrandom" ] }
+x3dh-ke = "0.1"
+p256 = { version = "0.9", features = [ "ecdsa" ] }
+pqcrypto = { version = "0.14", default-features = false, features = [ "pqcrypto-saber" ] }
+pqcrypto-traits = "0.3"
+
+[dev-dependencies.hpke]
+git = "https://github.com/rozbb/rust-hpke"
+rev = "3c795445f38317d6a0868259caf3e87916548356"
+default-features = false
+features = [ "x25519" ]
+
+[features]
+default = []
+std = []
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

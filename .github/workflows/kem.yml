@@ -1,0 +1,84 @@
+name: kem
+
+on:
+  pull_request:
+    paths:
+      - "kem/**"
+      - "Cargo.*"
+  push:
+    branches: master
+
+defaults:
+  run:
+    working-directory: kem
+
+env:
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: "-Dwarnings"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - 1.56.0 # MSRV
+          - stable
+        target:
+          - thumbv7em-none-eabi
+          - wasm32-unknown-unknown
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          target: ${{ matrix.target }}
+          override: true
+          profile: minimal
+      - run: cargo build --no-default-features --release --target ${{ matrix.target }}
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - 1.56.0 # MSRV
+          - stable
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        override: true
+        profile: minimal
+    - run: cargo check --all-features
+    - run: cargo test --no-default-features --release
+    - run: cargo test --release
+    - run: cargo test --all-features --release
+
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: 1.56.0
+          components: clippy
+          override: true
+          profile: minimal
+      - run: cargo clippy --all --all-features -- -D warnings
+
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+          override: true
+          profile: minimal
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
