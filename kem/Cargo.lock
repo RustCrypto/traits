@@ -330,7 +330,7 @@ dependencies = [
 
 [[package]]
 name = "kem"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "generic-array",
  "hpke",
