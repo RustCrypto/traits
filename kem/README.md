@@ -1,4 +1,4 @@
-# RustCrypto: Key Encapsulation Mechanisms
+# [RustCrypto]: Key Encapsulation Mechanisms (KEMs)
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -57,6 +57,7 @@ dual licensed as above, without any additional terms or conditions.
 [build-image]: https://github.com/RustCrypto/traits/workflows/kem/badge.svg?branch=master&event=push
 [build-link]: https://github.com/RustCrypto/traits/actions?query=workflow%3Akem
 
-[//]: # (general links)
+[//]: # (links)
 
+[RustCrypto]: https://github.com/RustCrypto
 [1]: https://en.wikipedia.org/wiki/Key_encapsulation
