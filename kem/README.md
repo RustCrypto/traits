@@ -51,7 +51,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/kem/badge.svg
 [docs-link]: https://docs.rs/kem/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260048-signatures
 [build-image]: https://github.com/RustCrypto/traits/workflows/kem/badge.svg?branch=master&event=push
