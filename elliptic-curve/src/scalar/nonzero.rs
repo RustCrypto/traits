@@ -9,7 +9,7 @@ use crate::{
 };
 use core::{
     fmt,
-    ops::{Deref, Neg},
+    ops::{Deref, Mul, Neg},
     str,
 };
 use crypto_bigint::{ArrayEncoding, Integer};
@@ -194,6 +194,36 @@ where
 
     fn neg(self) -> NonZeroScalar<C> {
         let scalar = -self.scalar;
+        debug_assert!(!bool::from(scalar.is_zero()));
+        NonZeroScalar { scalar }
+    }
+}
+
+impl<C> Mul<NonZeroScalar<C>> for NonZeroScalar<C>
+where
+    C: Curve + ScalarArithmetic,
+{
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self {
+        // Assumes that the multiplication is modulo a prime,
+        // so the product of two non-zero scalars is also non-zero.
+        let scalar = self.scalar * other.scalar;
+        debug_assert!(!bool::from(scalar.is_zero()));
+        NonZeroScalar { scalar }
+    }
+}
+
+impl<C> Mul<&NonZeroScalar<C>> for NonZeroScalar<C>
+where
+    C: Curve + ScalarArithmetic,
+{
+    type Output = Self;
+
+    fn mul(self, other: &Self) -> Self {
+        // Assumes that the multiplication is modulo a prime,
+        // so the product of two non-zero scalars is also non-zero.
+        let scalar = self.scalar * other.scalar;
         debug_assert!(!bool::from(scalar.is_zero()));
         NonZeroScalar { scalar }
     }
