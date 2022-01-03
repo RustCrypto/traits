@@ -5,7 +5,8 @@ use crate::{
     hex,
     ops::{Invert, Reduce, ReduceNonZero},
     rand_core::{CryptoRng, RngCore},
-    Curve, Error, FieldBytes, IsHigh, Result, Scalar, ScalarArithmetic, ScalarCore, SecretKey,
+    Curve, Error, FieldBytes, IsHigh, PrimeCurve, Result, Scalar, ScalarArithmetic, ScalarCore,
+    SecretKey,
 };
 use core::{
     fmt,
@@ -201,28 +202,25 @@ where
 
 impl<C> Mul<NonZeroScalar<C>> for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: PrimeCurve + ScalarArithmetic,
 {
     type Output = Self;
 
+    #[inline]
     fn mul(self, other: Self) -> Self {
-        // Assumes that the multiplication is modulo a prime,
-        // so the product of two non-zero scalars is also non-zero.
-        let scalar = self.scalar * other.scalar;
-        debug_assert!(!bool::from(scalar.is_zero()));
-        NonZeroScalar { scalar }
+        Self::mul(self, &other)
     }
 }
 
 impl<C> Mul<&NonZeroScalar<C>> for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: PrimeCurve + ScalarArithmetic,
 {
     type Output = Self;
 
     fn mul(self, other: &Self) -> Self {
-        // Assumes that the multiplication is modulo a prime,
-        // so the product of two non-zero scalars is also non-zero.
+        // Multiplication is modulo a prime, so the product of two non-zero
+        // scalars is also non-zero.
         let scalar = self.scalar * other.scalar;
         debug_assert!(!bool::from(scalar.is_zero()));
         NonZeroScalar { scalar }
