@@ -14,6 +14,7 @@ Collection of traits which describe functionality of cryptographic primitives.
 | [`crypto‑common`]      | Common cryptographic traits | [![crates.io](https://img.shields.io/crates/v/crypto-common.svg)](https://crates.io/crates/crypto-common) | [![Documentation](https://docs.rs/crypto-common/badge.svg)](https://docs.rs/crypto-common) | ![MSRV 1.41][msrv-1.41] |
 | [`digest`]          | [Cryptographic hash function] | [![crates.io](https://img.shields.io/crates/v/digest.svg)](https://crates.io/crates/digest) | [![Documentation](https://docs.rs/digest/badge.svg)](https://docs.rs/digest) | ![MSRV 1.41][msrv-1.41] |
 | [`elliptic‑curve`]  | [Elliptic curve cryptography] | [![crates.io](https://img.shields.io/crates/v/elliptic-curve.svg)](https://crates.io/crates/elliptic-curve) | [![Documentation](https://docs.rs/elliptic-curve/badge.svg)](https://docs.rs/elliptic-curve) | ![MSRV 1.56][msrv-1.56] |
+| [`kem`]             | [Key encapsulation mechanism] | [![crates.io](https://img.shields.io/crates/v/kem.svg)](https://crates.io/crates/kem) | [![Documentation](https://docs.rs/kem/badge.svg)](https://docs.rs/kem) | ![MSRV 1.56][msrv-1.56] |
 | [`password-hash`]   | [Password hashing]            | [![crates.io](https://img.shields.io/crates/v/password-hash.svg)](https://crates.io/crates/password-hash) | [![Documentation](https://docs.rs/password-hash/badge.svg)](https://docs.rs/password-hash) | ![MSRV 1.47][msrv-1.47] |
 | [`signature`]       | [Digital signature]           | [![crates.io](https://img.shields.io/crates/v/signature.svg)](https://crates.io/crates/signature) | [![Documentation](https://docs.rs/signature/badge.svg)](https://docs.rs/signature) | ![MSRV 1.41][msrv-1.41] |
 | [`universal‑hash`]  | [Universal hash function]     | [![crates.io](https://img.shields.io/crates/v/universal-hash.svg)](https://crates.io/crates/universal-hash) | [![Documentation](https://docs.rs/universal-hash/badge.svg)](https://docs.rs/universal-hash) | ![MSRV 1.41][msrv-1.41] |
@@ -61,6 +62,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [`crypto`]: ./crypto
 [`digest`]: ./digest
 [`elliptic‑curve`]: ./elliptic-curve
+[`kem`]: ./kem
 [`password-hash`]: ./password-hash
 [`signature`]: ./signature
 [`universal‑hash`]: ./universal-hash
@@ -73,6 +75,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [Cryptographic hash function]: https://en.wikipedia.org/wiki/Cryptographic_hash_function
 [Digital signature]: https://en.wikipedia.org/wiki/Digital_signature
 [Elliptic curve cryptography]: https://en.wikipedia.org/wiki/Elliptic-curve_cryptography
+[Key encapsulation mechanism]: https://en.wikipedia.org/wiki/Key_encapsulation
 [Password hashing]: https://en.wikipedia.org/wiki/Cryptographic_hash_function#Password_verification
 [Stream cipher]: https://en.wikipedia.org/wiki/Stream_cipher
 [Universal hash function]: https://en.wikipedia.org/wiki/Universal_hashing
