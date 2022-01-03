@@ -8,9 +8,8 @@
 //!   usually prefer using these traits.
 //! - **Mid-level traits**: [`Update`], [`FixedOutput`], [`FixedOutputReset`],
 //!   [`ExtendableOutput`], [`ExtendableOutputReset`], [`XofReader`],
-//!   [`VariableOutput`], [`VariableOutput`], [`Reset`], [`KeyInit`], and
-//!   [`InnerInit`]. These traits atomically describe available functionality
-//!   of an algorithm.
+//!   [`VariableOutput`], [`Reset`], [`KeyInit`], and [`InnerInit`]. These
+//!   traits atomically describe available functionality of an algorithm.
 //! - **Marker traits**: [`HashMarker`], [`MacMarker`]. Used to distinguish
 //!   different algorithm classes.
 //! - **Low-level traits** defined in the [`core_api`] module. These traits
