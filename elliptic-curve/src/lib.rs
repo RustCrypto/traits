@@ -99,6 +99,12 @@ mod jwk;
 #[cfg_attr(docsrs, doc(cfg(feature = "osswu")))]
 pub mod osswu;
 
+/// Traits for computing hash to field as described in
+/// <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve>
+#[cfg(feature = "hashing")]
+#[cfg_attr(docsrs, doc(cfg(feature = "hashing")))]
+pub mod hash2field;
+
 pub use crate::{
     error::{Error, Result},
     point::{
