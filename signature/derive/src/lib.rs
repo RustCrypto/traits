@@ -4,7 +4,6 @@
 //! types that impl `DigestSigner` or `DigestVerifier` respectively.
 
 #![crate_type = "proc-macro"]
-#![recursion_limit = "128"]
 #![deny(warnings, unused_import_braces, unused_qualifications)]
 #![forbid(unsafe_code)]
 
