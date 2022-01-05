@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.5.0 (2022-01-04)
+### Changed
+- Bump `digest` dependency to v0.10 ([#850])
+- Bump `signature-derive` dependency to v1.0.0-pre.4 ([#866])
+
+[#850]: https://github.com/RustCrypto/traits/pull/850
+[#866]: https://github.com/RustCrypto/traits/pull/866
+
 ## 1.4.0 (2021-10-20)
 ### Added
 - Re-export `rand_core` when the `rand-preview` feature is enabled ([#683])

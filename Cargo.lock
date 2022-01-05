@@ -258,7 +258,7 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "1.5.0-pre"
+version = "1.5.0"
 dependencies = [
  "digest 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex-literal",
