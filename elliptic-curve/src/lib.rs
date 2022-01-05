@@ -95,8 +95,8 @@ pub mod ecdh;
 mod jwk;
 
 /// Optimized simplified Shallue-van de Woestijne-Ulas methods
-#[cfg(feature = "osswu")]
-#[cfg_attr(docsrs, doc(cfg(feature = "osswu")))]
+#[cfg(feature = "digest")]
+#[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
 pub mod osswu;
 
 /// Traits for computing hash to field as described in
@@ -104,6 +104,23 @@ pub mod osswu;
 #[cfg(feature = "digest")]
 #[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
 pub mod hash2field;
+
+/// Traits for mapping an isogeny to another curve
+/// <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve>
+#[cfg(feature = "digest")]
+#[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
+pub mod isogeny;
+
+/// Traits for computing hash to curve as described in
+/// <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve>
+#[cfg(feature = "digest")]
+#[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
+pub mod group_digest;
+
+/// Traits for mapping field elements to points on the curve
+#[cfg(feature = "digest")]
+#[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
+pub mod map2curve;
 
 pub use crate::{
     error::{Error, Result},

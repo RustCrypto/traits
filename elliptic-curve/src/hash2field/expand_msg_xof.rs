@@ -1,27 +1,33 @@
 use super::ExpandMsg;
-use core::marker::PhantomData;
-use digest::{ExtendableOutput, Update, XofReader};
+use crate::hash2field::Domain;
+use digest_traits::{ExtendableOutput, ExtendableOutputDirty, Update, XofReader};
+use generic_array::typenum::U32;
 
 /// Placeholder type for implementing expand_message_xof based on an extendable output function
-#[derive(Debug)]
-pub struct ExpandMsgXof<HashT> {
-    phantom: PhantomData<HashT>,
+pub struct ExpandMsgXof<HashT>
+where
+    HashT: Default + ExtendableOutput + ExtendableOutputDirty + Update,
+{
+    reader: <HashT as ExtendableOutput>::Reader,
 }
 
 /// ExpandMsgXof implements expand_message_xof for the ExpandMsg trait
-impl<HashT, const LEN_IN_BYTES: usize> ExpandMsg<LEN_IN_BYTES> for ExpandMsgXof<HashT>
+impl<HashT> ExpandMsg for ExpandMsgXof<HashT>
 where
-    HashT: Default + ExtendableOutput + Update,
+    HashT: Default + ExtendableOutput + ExtendableOutputDirty + Update,
 {
-    fn expand_message(msg: &[u8], dst: &[u8]) -> [u8; LEN_IN_BYTES] {
-        let mut buf = [0u8; LEN_IN_BYTES];
-        let mut r = HashT::default()
+    fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Self {
+        let domain = Domain::<U32>::xof::<HashT>(dst);
+        let reader = HashT::default()
             .chain(msg)
-            .chain([(LEN_IN_BYTES >> 8) as u8, LEN_IN_BYTES as u8])
-            .chain(dst)
-            .chain([dst.len() as u8])
+            .chain([(len_in_bytes >> 8) as u8, len_in_bytes as u8])
+            .chain(domain.data())
+            .chain([domain.len() as u8])
             .finalize_xof();
-        r.read(&mut buf);
-        buf
+        Self { reader }
+    }
+
+    fn fill_bytes(&mut self, okm: &mut [u8]) {
+        self.reader.read(okm);
     }
 }

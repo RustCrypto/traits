@@ -9,7 +9,7 @@ use subtle::CtOption;
 use group::Group;
 
 #[cfg(feature = "digest")]
-use digest::{BlockInput, Digest, FixedOutput, Reset, Update};
+use digest_traits::{BlockInput, Digest, FixedOutput, Reset, Update};
 
 /// Perform an inversion on a field element (i.e. base field element or scalar)
 pub trait Invert {
