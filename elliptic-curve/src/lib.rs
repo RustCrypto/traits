@@ -94,33 +94,15 @@ pub mod ecdh;
 #[cfg(feature = "jwk")]
 mod jwk;
 
-/// Optimized simplified Shallue-van de Woestijne-Ulas methods
-#[cfg(feature = "digest")]
-#[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
-pub mod osswu;
-
-/// Traits for computing hash to field as described in
-/// <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve>
-#[cfg(feature = "digest")]
-#[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
+/// Traits for hashing to field elements
+#[cfg(feature = "hash2curve")]
+#[cfg_attr(docsrs, doc(cfg(feature = "hash2curve")))]
 pub mod hash2field;
 
-/// Traits for mapping an isogeny to another curve
-/// <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve>
-#[cfg(feature = "digest")]
-#[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
-pub mod isogeny;
-
-/// Traits for computing hash to curve as described in
-/// <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve>
-#[cfg(feature = "digest")]
-#[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
-pub mod group_digest;
-
-/// Traits for mapping field elements to points on the curve
-#[cfg(feature = "digest")]
-#[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
-pub mod map2curve;
+/// Traits for hashing byte sequences to curve points
+#[cfg(feature = "hash2curve")]
+#[cfg_attr(docsrs, doc(cfg(feature = "hash2curve")))]
+pub mod hash2curve;
 
 pub use crate::{
     error::{Error, Result},

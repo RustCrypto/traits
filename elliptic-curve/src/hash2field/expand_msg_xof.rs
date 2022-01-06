@@ -1,6 +1,6 @@
 use super::ExpandMsg;
 use crate::hash2field::Domain;
-use digest_traits::{ExtendableOutput, ExtendableOutputDirty, Update, XofReader};
+use digest::{ExtendableOutput, ExtendableOutputDirty, Update, XofReader};
 use generic_array::typenum::U32;
 
 /// Placeholder type for implementing expand_message_xof based on an extendable output function

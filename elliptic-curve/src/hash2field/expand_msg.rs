@@ -1,4 +1,4 @@
-use digest_traits::{Digest, ExtendableOutputDirty, Update, XofReader};
+use digest::{Digest, ExtendableOutputDirty, Update, XofReader};
 use generic_array::{ArrayLength, GenericArray};
 
 /// Salt when the DST is too long

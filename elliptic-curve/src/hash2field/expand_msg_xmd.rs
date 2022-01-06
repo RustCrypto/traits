@@ -1,6 +1,9 @@
 use super::{Domain, ExpandMsg};
-use digest_traits::{
-    generic_array::{typenum::Unsigned, GenericArray},
+use digest::{
+    generic_array::{
+        typenum::{IsLess, IsLessOrEqual, Unsigned, U256},
+        GenericArray,
+    },
     BlockInput, Digest,
 };
 
@@ -8,6 +11,8 @@ use digest_traits::{
 pub struct ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
+    HashT::OutputSize: IsLess<U256>,
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
     b_0: GenericArray<u8, HashT::OutputSize>,
     b_vals: GenericArray<u8, HashT::OutputSize>,
@@ -20,6 +25,8 @@ where
 impl<HashT> ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
+    HashT::OutputSize: IsLess<U256>,
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
     fn next(&mut self) -> bool {
         if self.index < self.ell {
@@ -49,13 +56,15 @@ where
 impl<HashT> ExpandMsg for ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
+    HashT::OutputSize: IsLess<U256>,
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
     fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Self {
         let b_in_bytes = HashT::OutputSize::to_usize();
         let ell = (len_in_bytes + b_in_bytes - 1) / b_in_bytes;
-        if ell > 255 {
-            panic!("ell was too big in expand_message_xmd");
-        }
+        // if ell > 255 {
+        //     panic!("ell was too big in expand_message_xmd");
+        // }
         let domain = Domain::xmd::<HashT>(dst);
         let b_0 = HashT::new()
             .chain(GenericArray::<u8, HashT::BlockSize>::default())
