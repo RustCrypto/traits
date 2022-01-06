@@ -40,6 +40,7 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features arithmetic
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features bits
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features dev
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features digest
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features ecdh
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features hazmat
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features jwk
@@ -49,7 +50,7 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features serde
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features pkcs8,sec1
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features pem,pkcs8,sec1
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,ecdh,hazmat,jwk,pem,pkcs8,sec1,serde
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,digest,ecdh,hazmat,jwk,pem,pkcs8,sec1,serde
 
   test:
     runs-on: ubuntu-latest
