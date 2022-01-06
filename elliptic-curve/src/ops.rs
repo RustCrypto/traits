@@ -8,6 +8,9 @@ use subtle::CtOption;
 #[cfg(feature = "arithmetic")]
 use group::Group;
 
+#[cfg(feature = "digest")]
+use digest::{BlockInput, Digest, FixedOutput, Reset, Update};
+
 /// Perform an inversion on a field element (i.e. base field element or scalar)
 pub trait Invert {
     /// Field element type
@@ -46,24 +49,48 @@ pub trait Reduce<UInt: Integer + ArrayEncoding>: Sized {
     /// Perform a modular reduction, returning a field element.
     fn from_uint_reduced(n: UInt) -> Self;
 
-    /// Interpret the given byte array as a big endian integer and perform a
-    /// modular reduction.
+    /// Interpret the given byte array as a big endian integer and perform
+    /// a modular reduction.
     fn from_be_bytes_reduced(bytes: ByteArray<UInt>) -> Self {
         Self::from_uint_reduced(UInt::from_be_byte_array(bytes))
     }
 
-    /// Interpret the given byte array as a big endian integer and perform a
+    /// Interpret the given byte array as a little endian integer and perform a
     /// modular reduction.
     fn from_le_bytes_reduced(bytes: ByteArray<UInt>) -> Self {
         Self::from_uint_reduced(UInt::from_le_byte_array(bytes))
+    }
+
+    /// Interpret a digest as a big endian integer and perform a modular
+    /// reduction.
+    #[cfg(feature = "digest")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
+    fn from_be_digest_reduced<D>(digest: D) -> Self
+    where
+        D: FixedOutput<OutputSize = UInt::ByteSize> + BlockInput + Clone + Default + Reset + Update,
+    {
+        Self::from_be_bytes_reduced(digest.finalize())
+    }
+
+    /// Interpret a digest as a little endian integer and perform a modular
+    /// reduction.
+    #[cfg(feature = "digest")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
+    fn from_le_digest_reduced<D>(digest: D) -> Self
+    where
+        D: FixedOutput<OutputSize = UInt::ByteSize> + BlockInput + Clone + Default + Reset + Update,
+    {
+        Self::from_le_bytes_reduced(digest.finalize())
     }
 }
 
 /// Modular reduction to a non-zero output.
 ///
-/// This trait is primarily intended for use by curve implementations.
+/// This trait is primarily intended for use by curve implementations such
+/// as the `k256` and `p256` crates.
 ///
-/// End users can use the `Reduce` impl on `NonZeroScalar` instead.
+/// End users should use the [`Reduce`] impl on
+/// [`NonZeroScalar`][`crate::NonZeroScalar`] instead.
 pub trait ReduceNonZero<UInt: Integer + ArrayEncoding>: Sized {
     /// Perform a modular reduction, returning a field element.
     fn from_uint_reduced_nonzero(n: UInt) -> Self;
