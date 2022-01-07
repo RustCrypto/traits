@@ -79,10 +79,8 @@ where
         let b_0 = HashT::new()
             .chain(GenericArray::<u8, HashT::BlockSize>::default())
             .chain(msg)
-            .chain({
-                let l = L::to_u16().to_be_bytes();
-                [l[0], l[1], 0u8]
-            })
+            .chain(L::to_u16().to_be_bytes())
+            .chain([0])
             .chain(domain.data())
             .chain([domain.len()])
             .finalize();
