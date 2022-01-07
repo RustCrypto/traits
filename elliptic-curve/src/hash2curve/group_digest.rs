@@ -1,12 +1,12 @@
 use super::MapToCurve;
 use crate::{
     hash2field::{hash_to_field, ExpandMsg, FromOkm},
-    ProjectiveArithmetic, Result,
+    Result,
 };
 use group::cofactor::CofactorGroup;
 
 /// Adds hashing arbitrary byte sequences to a valid group element
-pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
+pub trait GroupDigest {
     /// The field element representation for a group value with multiple elements
     type FieldElement: FromOkm + MapToCurve<Output = Self::Output> + Default + Copy;
     /// The resulting group element
