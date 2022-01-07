@@ -1,12 +1,12 @@
 use super::ExpandMsg;
 use crate::{hash2field::Domain, Error, Result};
-use digest::{ExtendableOutput, ExtendableOutputDirty, Update, XofReader};
+use digest::{ExtendableOutput, Update, XofReader};
 use generic_array::typenum::U32;
 
 /// Placeholder type for implementing expand_message_xof based on an extendable output function
 pub struct ExpandMsgXof<HashT>
 where
-    HashT: Default + ExtendableOutput + ExtendableOutputDirty + Update,
+    HashT: Default + ExtendableOutput + Update,
 {
     reader: <HashT as ExtendableOutput>::Reader,
 }
@@ -14,7 +14,7 @@ where
 /// ExpandMsgXof implements expand_message_xof for the ExpandMsg trait
 impl<HashT> ExpandMsg for ExpandMsgXof<HashT>
 where
-    HashT: Default + ExtendableOutput + ExtendableOutputDirty + Update,
+    HashT: Default + ExtendableOutput + Update,
 {
     fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Result<Self> {
         if len_in_bytes == 0 {
