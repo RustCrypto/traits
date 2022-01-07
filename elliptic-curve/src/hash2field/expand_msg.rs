@@ -9,13 +9,8 @@ const MAX_DST_LEN: usize = 255;
 
 /// Trait for types implementing expand_message interface for hash_to_field
 pub trait ExpandMsg<L: ArrayLength<u8>> {
-    /// Expands `msg` to the required number of bytes
-    /// Returns an expander that can be used to call `read` until enough
-    /// bytes have been consumed
-    fn expand_message(msg: &[u8], dst: &'static [u8]) -> Self;
-
-    /// Fill the array with the expanded bytes
-    fn fill_bytes(&mut self, okm: &mut [u8]);
+    /// Expands `msg` to the required number of bytes in `L`
+    fn expand_message(msg: &[u8], dst: &[u8]) -> GenericArray<u8, L>;
 }
 
 /// The domain separation tag
@@ -23,21 +18,21 @@ pub trait ExpandMsg<L: ArrayLength<u8>> {
 /// Implements [section 5.4.3 of `draft-irtf-cfrg-hash-to-curve-13`][dst].
 ///
 /// [dst]: https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-5.4.3
-pub(crate) enum Domain<L>
+pub(crate) enum Domain<'a, L>
 where
     L: ArrayLength<u8> + IsLessOrEqual<U256>,
 {
     /// > 255
     Hashed(GenericArray<u8, L>),
     /// <= 255
-    Array(&'static [u8]),
+    Array(&'a [u8]),
 }
 
-impl<L> Domain<L>
+impl<'a, L> Domain<'a, L>
 where
     L: ArrayLength<u8> + IsLessOrEqual<U256>,
 {
-    pub fn xof<X>(dst: &'static [u8]) -> Self
+    pub fn xof<X>(dst: &'a [u8]) -> Self
     where
         X: Default + ExtendableOutputDirty + Update,
     {
@@ -54,7 +49,7 @@ where
         }
     }
 
-    pub fn xmd<X>(dst: &'static [u8]) -> Self
+    pub fn xmd<X>(dst: &'a [u8]) -> Self
     where
         X: Digest<OutputSize = L>,
     {

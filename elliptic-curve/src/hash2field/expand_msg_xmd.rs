@@ -1,54 +1,18 @@
+use core::marker::PhantomData;
 use core::ops::Mul;
 
 use super::{Domain, ExpandMsg};
 use digest::{BlockInput, Digest};
 use generic_array::typenum::{IsLess, IsLessOrEqual, NonZero, Prod, Unsigned, U255, U256, U65536};
 use generic_array::{ArrayLength, GenericArray};
+use subtle::{Choice, ConditionallySelectable};
 
 /// Placeholder type for implementing expand_message_xmd based on a hash function
-pub struct ExpandMsgXmd<HashT>
+pub struct ExpandMsgXmd<HashT>(PhantomData<HashT>)
 where
     HashT: Digest + BlockInput,
     HashT::OutputSize: IsLessOrEqual<U256>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
-{
-    b_0: GenericArray<u8, HashT::OutputSize>,
-    b_vals: GenericArray<u8, HashT::OutputSize>,
-    domain: Domain<HashT::OutputSize>,
-    index: u8,
-    offset: usize,
-    ell: u8,
-}
-
-impl<HashT> ExpandMsgXmd<HashT>
-where
-    HashT: Digest + BlockInput,
-    HashT::OutputSize: IsLessOrEqual<U256>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
-{
-    fn next(&mut self) -> bool {
-        if self.index < self.ell {
-            self.index += 1;
-            self.offset = 0;
-            // b_0 XOR b_(idx - 1)
-            let mut tmp = GenericArray::<u8, HashT::OutputSize>::default();
-            self.b_0
-                .iter()
-                .zip(&self.b_vals[..])
-                .enumerate()
-                .for_each(|(j, (b0val, bi1val))| tmp[j] = b0val ^ bi1val);
-            self.b_vals = HashT::new()
-                .chain(tmp)
-                .chain([self.index])
-                .chain(self.domain.data())
-                .chain([self.domain.len()])
-                .finalize();
-            true
-        } else {
-            false
-        }
-    }
-}
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>;
 
 /// ExpandMsgXmd implements expand_message_xmd for the ExpandMsg trait
 impl<HashT, L> ExpandMsg<L> for ExpandMsgXmd<HashT>
@@ -67,7 +31,7 @@ where
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-6
     L: NonZero + IsLess<Prod<U255, HashT::OutputSize>> + IsLess<U65536>,
 {
-    fn expand_message(msg: &[u8], dst: &'static [u8]) -> Self {
+    fn expand_message(msg: &[u8], dst: &[u8]) -> GenericArray<u8, L> {
         let b_in_bytes = HashT::OutputSize::to_u16();
         // Can't overflow because enforced on a type level.
         let ell = ((L::to_u16() + b_in_bytes - 1) / b_in_bytes) as u8;
@@ -85,30 +49,42 @@ where
             .chain([domain.len()])
             .finalize();
 
-        let b_vals = HashT::new()
+        let mut b_vals = HashT::new()
             .chain(&b_0[..])
             .chain([1u8])
             .chain(domain.data())
             .chain([domain.len()])
             .finalize();
 
-        Self {
-            b_0,
-            b_vals,
-            domain,
-            index: 1,
-            offset: 0,
-            ell,
-        }
-    }
+        let mut buf = GenericArray::<_, L>::default();
+        let mut offset = 0;
 
-    fn fill_bytes(&mut self, okm: &mut [u8]) {
-        for b in okm {
-            if self.offset == self.b_vals.len() && !self.next() {
-                return;
+        for i in 1..ell {
+            // b_0 XOR b_(idx - 1)
+            let tmp: GenericArray<_, HashT::OutputSize> = b_0
+                .iter()
+                .zip(b_vals.as_slice())
+                .map(|(b0val, bi1val)| b0val ^ bi1val)
+                .collect();
+            for b in b_vals {
+                buf[offset % L::to_usize()].conditional_assign(
+                    &b,
+                    Choice::from(if offset < L::to_usize() { 1 } else { 0 }),
+                );
+                offset += 1;
             }
-            *b = self.b_vals[self.offset];
-            self.offset += 1;
+            b_vals = HashT::new()
+                .chain(tmp)
+                .chain([i + 1])
+                .chain(domain.data())
+                .chain([domain.len()])
+                .finalize();
         }
+        for b in b_vals {
+            buf[offset % L::to_usize()]
+                .conditional_assign(&b, Choice::from(if offset < L::to_usize() { 1 } else { 0 }));
+            offset += 1;
+        }
+        buf
     }
 }

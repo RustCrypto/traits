@@ -40,7 +40,7 @@ pub trait GroupDigest {
     /// let pt = ProjectivePoint::hash_from_bytes::<hash2field::ExpandMsgXof<sha3::Shake256>>(b"test data", b"CURVE_XOF:SHAKE-256_SSWU_RO_");
     /// ```
     ///
-    fn hash_from_bytes<X>(msg: &[u8], dst: &'static [u8]) -> Self::Output
+    fn hash_from_bytes<X>(msg: &[u8], dst: &[u8]) -> Self::Output
     where
         X: ExpandMsg<Prod<<Self::FieldElement as FromOkm>::Length, U2>>,
         <Self::FieldElement as FromOkm>::Length: Mul<U2>,
@@ -70,7 +70,7 @@ pub trait GroupDigest {
     /// uniformly random in G: the set of possible outputs of
     /// encode_to_curve is only a fraction of the points in G, and some
     /// points in this set are more likely to be output than others.
-    fn encode_from_bytes<X>(msg: &[u8], dst: &'static [u8]) -> Self::Output
+    fn encode_from_bytes<X>(msg: &[u8], dst: &[u8]) -> Self::Output
     where
         X: ExpandMsg<Prod<<Self::FieldElement as FromOkm>::Length, U1>>,
         <Self::FieldElement as FromOkm>::Length: Mul<U1>,
