@@ -67,7 +67,7 @@ where
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-4
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
-    fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Result<Self> {
+    fn expand_message(msgs: &[&[u8]], dst: &'static [u8], len_in_bytes: usize) -> Result<Self> {
         if len_in_bytes == 0 {
             return Err(Error);
         }
@@ -78,9 +78,13 @@ where
         let ell = u8::try_from((len_in_bytes + b_in_bytes - 1) / b_in_bytes).map_err(|_| Error)?;
 
         let domain = Domain::xmd::<HashT>(dst);
-        let b_0 = HashT::new()
-            .chain(GenericArray::<u8, HashT::BlockSize>::default())
-            .chain(msg)
+        let mut b_0 = HashT::new().chain(GenericArray::<u8, HashT::BlockSize>::default());
+
+        for msg in msgs {
+            b_0 = b_0.chain(msg);
+        }
+
+        let b_0 = b_0
             .chain(len_in_bytes_u16.to_be_bytes())
             .chain([0])
             .chain(domain.data())
@@ -177,8 +181,11 @@ mod test {
         {
             assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
 
-            let mut expander =
-                <ExpandMsgXmd<HashT> as ExpandMsg>::expand_message(self.msg, dst, L::to_usize())?;
+            let mut expander = <ExpandMsgXmd<HashT> as ExpandMsg>::expand_message(
+                &[self.msg],
+                dst,
+                L::to_usize(),
+            )?;
 
             let mut uniform_bytes = GenericArray::<u8, L>::default();
             expander.fill_bytes(&mut uniform_bytes);

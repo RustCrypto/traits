@@ -18,7 +18,7 @@ impl<HashT> ExpandMsg for ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + Update,
 {
-    fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Result<Self> {
+    fn expand_message(msgs: &[&[u8]], dst: &'static [u8], len_in_bytes: usize) -> Result<Self> {
         if len_in_bytes == 0 {
             return Err(Error);
         }
@@ -26,8 +26,13 @@ where
         let len_in_bytes = u16::try_from(len_in_bytes).map_err(|_| Error)?;
 
         let domain = Domain::<U32>::xof::<HashT>(dst);
-        let reader = HashT::default()
-            .chain(msg)
+        let mut reader = HashT::default();
+
+        for msg in msgs {
+            reader = reader.chain(msg);
+        }
+
+        let reader = reader
             .chain(len_in_bytes.to_be_bytes())
             .chain(domain.data())
             .chain([domain.len()])
@@ -83,8 +88,11 @@ mod test {
         {
             assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
 
-            let mut expander =
-                <ExpandMsgXof<HashT> as ExpandMsg>::expand_message(self.msg, dst, L::to_usize())?;
+            let mut expander = <ExpandMsgXof<HashT> as ExpandMsg>::expand_message(
+                &[self.msg],
+                dst,
+                L::to_usize(),
+            )?;
 
             let mut uniform_bytes = GenericArray::<u8, L>::default();
             expander.fill_bytes(&mut uniform_bytes);

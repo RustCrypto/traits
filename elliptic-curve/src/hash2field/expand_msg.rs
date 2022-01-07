@@ -19,7 +19,7 @@ pub trait ExpandMsg: Sized {
     ///
     /// Returns an expander that can be used to call `read` until enough
     /// bytes have been consumed
-    fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Result<Self>;
+    fn expand_message(msgs: &[&[u8]], dst: &'static [u8], len_in_bytes: usize) -> Result<Self>;
 
     /// Fill the array with the expanded bytes
     fn fill_bytes(&mut self, okm: &mut [u8]);
