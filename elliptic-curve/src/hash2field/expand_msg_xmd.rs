@@ -1,14 +1,9 @@
 use core::ops::Mul;
 
 use super::{Domain, ExpandMsg};
-use digest::{
-    generic_array::{
-        typenum::{IsLess, IsLessOrEqual, Unsigned, U255, U256, U65536},
-        GenericArray,
-    },
-    BlockInput, Digest,
-};
-use generic_array::{typenum::Prod, ArrayLength};
+use digest::{BlockInput, Digest};
+use generic_array::typenum::{IsLess, IsLessOrEqual, NonZero, Prod, Unsigned, U255, U256, U65536};
+use generic_array::{ArrayLength, GenericArray};
 
 /// Placeholder type for implementing expand_message_xmd based on a hash function
 pub struct ExpandMsgXmd<HashT>
@@ -61,7 +56,7 @@ where
     HashT: Digest + BlockInput,
     HashT::OutputSize: IsLessOrEqual<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
-    L: ArrayLength<u8> + IsLess<U65536>,
+    L: ArrayLength<u8> + IsLess<U65536> + NonZero,
     U255: Mul<HashT::OutputSize>,
     L: IsLess<Prod<U255, HashT::OutputSize>>,
 {
