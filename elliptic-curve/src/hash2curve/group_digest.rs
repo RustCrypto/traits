@@ -3,12 +3,12 @@
 use super::MapToCurve;
 use crate::{
     hash2field::{hash_to_field, ExpandMsg, FromOkm},
-    Result,
+    ProjectiveArithmetic, Result,
 };
 use group::cofactor::CofactorGroup;
 
 /// Adds hashing arbitrary byte sequences to a valid group element
-pub trait GroupDigest {
+pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// The field element representation for a group value with multiple elements
     type FieldElement: FromOkm + MapToCurve<Output = Self::Output> + Default + Copy;
     /// The resulting group element
@@ -71,5 +71,17 @@ pub trait GroupDigest {
         hash_to_field::<X, _>(msgs, dst, &mut u)?;
         let q0 = u[0].map_to_curve();
         Ok(q0.clear_cofactor())
+    }
+
+    /// Computes the hash to field routine according to
+    /// <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5>
+    /// and returns a scalar.
+    fn hash_to_scalar<X: ExpandMsg>(msgs: &[&[u8]], dst: &'static [u8]) -> Result<Self::Scalar>
+    where
+        Self::Scalar: FromOkm,
+    {
+        let mut u = [Self::Scalar::default()];
+        hash_to_field::<X, _>(msgs, dst, &mut u)?;
+        Ok(u[0])
     }
 }
