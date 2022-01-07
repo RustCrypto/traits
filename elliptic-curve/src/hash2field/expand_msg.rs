@@ -1,4 +1,5 @@
 use digest::{Digest, ExtendableOutputDirty, Update, XofReader};
+use generic_array::typenum::{IsLessOrEqual, U256};
 use generic_array::{ArrayLength, GenericArray};
 
 /// Salt when the DST is too long
@@ -22,14 +23,20 @@ pub trait ExpandMsg<L: ArrayLength<u8>> {
 /// Implements [section 5.4.3 of `draft-irtf-cfrg-hash-to-curve-13`][dst].
 ///
 /// [dst]: https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-5.4.3
-pub(crate) enum Domain<L: ArrayLength<u8>> {
+pub(crate) enum Domain<L>
+where
+    L: ArrayLength<u8> + IsLessOrEqual<U256>,
+{
     /// > 255
     Hashed(GenericArray<u8, L>),
     /// <= 255
     Array(&'static [u8]),
 }
 
-impl<L: ArrayLength<u8>> Domain<L> {
+impl<L> Domain<L>
+where
+    L: ArrayLength<u8> + IsLessOrEqual<U256>,
+{
     pub fn xof<X>(dst: &'static [u8]) -> Self
     where
         X: Default + ExtendableOutputDirty + Update,
@@ -65,10 +72,11 @@ impl<L: ArrayLength<u8>> Domain<L> {
         }
     }
 
-    pub fn len(&self) -> usize {
+    pub fn len(&self) -> u8 {
         match self {
-            Self::Hashed(_) => L::to_usize(),
-            Self::Array(d) => d.len(),
+            Self::Hashed(_) => L::to_u8(),
+            // Can't overflow because enforced on a type level.
+            Self::Array(d) => d.len() as u8,
         }
     }
 }

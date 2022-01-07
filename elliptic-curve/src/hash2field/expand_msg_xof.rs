@@ -32,7 +32,7 @@ where
             .chain(msg)
             .chain(L::to_u16().to_be_bytes())
             .chain(domain.data())
-            .chain([domain.len() as u8])
+            .chain([domain.len()])
             .finalize_xof();
         Self { reader }
     }

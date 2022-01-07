@@ -15,9 +15,9 @@ where
     b_0: GenericArray<u8, HashT::OutputSize>,
     b_vals: GenericArray<u8, HashT::OutputSize>,
     domain: Domain<HashT::OutputSize>,
-    index: usize,
+    index: u8,
     offset: usize,
-    ell: usize,
+    ell: u8,
 }
 
 impl<HashT> ExpandMsgXmd<HashT>
@@ -39,9 +39,9 @@ where
                 .for_each(|(j, (b0val, bi1val))| tmp[j] = b0val ^ bi1val);
             self.b_vals = HashT::new()
                 .chain(tmp)
-                .chain([self.index as u8])
+                .chain([self.index])
                 .chain(self.domain.data())
-                .chain([self.domain.len() as u8])
+                .chain([self.domain.len()])
                 .finalize();
             true
         } else {
@@ -68,8 +68,9 @@ where
     L: NonZero + IsLess<Prod<U255, HashT::OutputSize>> + IsLess<U65536>,
 {
     fn expand_message(msg: &[u8], dst: &'static [u8]) -> Self {
-        let b_in_bytes = HashT::OutputSize::to_usize();
-        let ell = (L::to_usize() + b_in_bytes - 1) / b_in_bytes;
+        let b_in_bytes = HashT::OutputSize::to_u16();
+        // Can't overflow because enforced on a type level.
+        let ell = ((L::to_u16() + b_in_bytes - 1) / b_in_bytes) as u8;
         // Enforced on the type level
         // if ell > 255 {
         //     panic!("ell was too big in expand_message_xmd");
@@ -83,14 +84,14 @@ where
                 [l[0], l[1], 0u8]
             })
             .chain(domain.data())
-            .chain([domain.len() as u8])
+            .chain([domain.len()])
             .finalize();
 
         let b_vals = HashT::new()
             .chain(&b_0[..])
             .chain([1u8])
             .chain(domain.data())
-            .chain([domain.len() as u8])
+            .chain([domain.len()])
             .finalize();
 
         Self {
