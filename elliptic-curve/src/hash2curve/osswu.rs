@@ -43,8 +43,7 @@ pub trait OsswuMap: Field + Sgn0 {
         let mut tv2 = tv3.square(); // tv3^2
         let mut xd = tv2 + tv3; // tv3^2 + tv3
         let x1n = Self::PARAMS.map_b * (xd + Self::one()); // B * (xd + 1)
-        let a_neg = -Self::PARAMS.map_a;
-        xd *= a_neg; // -A * xd
+        xd *= -Self::PARAMS.map_a; // -A * xd
 
         let tv = Self::PARAMS.z * Self::PARAMS.map_a;
         xd.conditional_assign(&tv, xd.is_zero());

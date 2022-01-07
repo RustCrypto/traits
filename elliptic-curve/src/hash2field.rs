@@ -2,32 +2,32 @@ mod expand_msg;
 mod expand_msg_xmd;
 mod expand_msg_xof;
 
-use core::convert::TryFrom;
 pub use expand_msg::*;
 pub use expand_msg_xmd::*;
 pub use expand_msg_xof::*;
+use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
 /// The trait for helping to convert to a scalar
-pub trait FromOkm<const L: usize>: Sized {
+pub trait FromOkm {
+    /// The number of bytes needed to convert to a scalar
+    type Length: ArrayLength<u8>;
+
     /// Convert a byte sequence into a scalar
-    fn from_okm(data: &[u8; L]) -> Self;
+    fn from_okm(data: &GenericArray<u8, Self::Length>) -> Self;
 }
 
 /// Convert an arbitrary byte sequence according to
 /// <https://tools.ietf.org/html/draft-irtf-cfrg-hash-to-curve-11#section-5.3>
-pub fn hash_to_field<E, T, const L: usize, const COUNT: usize, const OUT: usize>(
-    data: &[u8],
-    domain: &[u8],
-) -> [T; COUNT]
+pub fn hash_to_field<E, T>(data: &[u8], domain: &'static [u8], out: &mut [T])
 where
-    E: ExpandMsg<OUT>,
-    T: FromOkm<L> + Default + Copy,
+    E: ExpandMsg,
+    T: FromOkm + Default,
 {
-    let random_bytes = E::expand_message(data, domain);
-    let mut out = [T::default(); COUNT];
-    for i in 0..COUNT {
-        let u = <[u8; L]>::try_from(&random_bytes[(L * i)..L * (i + 1)]).expect("not enough bytes");
-        out[i] = T::from_okm(&u);
+    let len_in_bytes = T::Length::to_usize() * out.len();
+    let mut tmp = GenericArray::<u8, <T as FromOkm>::Length>::default();
+    let mut expander = E::expand_message(data, domain, len_in_bytes);
+    for o in out.iter_mut() {
+        expander.fill_bytes(&mut tmp);
+        *o = T::from_okm(&tmp);
     }
-    out
 }
