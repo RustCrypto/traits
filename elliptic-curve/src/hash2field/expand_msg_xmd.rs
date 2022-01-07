@@ -54,11 +54,18 @@ where
 impl<HashT, L> ExpandMsg<L> for ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
-    HashT::OutputSize: IsLessOrEqual<U256>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
-    L: ArrayLength<u8> + IsLess<U65536> + NonZero,
+    L: ArrayLength<u8>,
     U255: Mul<HashT::OutputSize>,
-    L: IsLess<Prod<U255, HashT::OutputSize>>,
+    // If `len_in_bytes` is bigger then 256, length of the `DST` will depend on
+    // the output size of the hash, which is still not allowed to be bigger then 256:
+    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-6
+    HashT::OutputSize: IsLessOrEqual<U256>,
+    // Constraint set by `expand_message_xmd`:
+    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-4
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
+    // Constraint set by `expand_message_xmd`:
+    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-6
+    L: NonZero + IsLess<Prod<U255, HashT::OutputSize>> + IsLess<U65536>,
 {
     fn expand_message(msg: &[u8], dst: &'static [u8]) -> Self {
         let b_in_bytes = HashT::OutputSize::to_usize();

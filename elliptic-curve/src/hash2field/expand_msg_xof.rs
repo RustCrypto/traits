@@ -17,8 +17,14 @@ where
 impl<HashT, L> ExpandMsg<L> for ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + ExtendableOutputDirty + FixedOutput + Update,
+    L: ArrayLength<u8>,
+    // If `len_in_bytes` is bigger then 256, length of the `DST` will depend on
+    // the output size of the hash, which is still not allowed to be bigger then 256:
+    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.2-5
     HashT::OutputSize: IsLessOrEqual<U256>,
-    L: ArrayLength<u8> + IsLessOrEqual<U65536> + NonZero,
+    // Constraint set by `expand_message_xof`:
+    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.2-5
+    L: NonZero + IsLessOrEqual<U65536>,
 {
     fn expand_message(msg: &[u8], dst: &'static [u8]) -> Self {
         let domain = Domain::<U32>::xof::<HashT>(dst);
