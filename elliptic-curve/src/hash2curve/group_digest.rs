@@ -1,5 +1,8 @@
 use super::MapToCurve;
-use crate::hash2field::{hash_to_field, ExpandMsg, FromOkm};
+use crate::{
+    hash2field::{hash_to_field, ExpandMsg, FromOkm},
+    Result,
+};
 use group::cofactor::CofactorGroup;
 
 /// Adds hashing arbitrary byte sequences to a valid group element
@@ -34,9 +37,9 @@ pub trait GroupDigest {
     /// let pt = ProjectivePoint::hash_from_bytes::<hash2field::ExpandMsgXof<sha3::Shake256>>(b"test data", b"CURVE_XOF:SHAKE-256_SSWU_RO_");
     /// ```
     ///
-    fn hash_from_bytes<X: ExpandMsg>(msg: &[u8], dst: &'static [u8]) -> Self::Output {
+    fn hash_from_bytes<X: ExpandMsg>(msg: &[u8], dst: &'static [u8]) -> Result<Self::Output> {
         let mut u = [Self::FieldElement::default(), Self::FieldElement::default()];
-        hash_to_field::<X, _>(msg, dst, &mut u);
+        hash_to_field::<X, _>(msg, dst, &mut u)?;
         let q0 = Self::Output::map_to_curve(u[0]);
         let q1 = Self::Output::map_to_curve(u[1]);
         // Ideally we could add and then clear cofactor once
@@ -49,7 +52,7 @@ pub trait GroupDigest {
         // isogenies are different with curves like k256 and bls12-381.
         // This problem doesn't manifest for curves with no isogeny like p256.
         // For k256 and p256 clear_cofactor doesn't do anything anyway so it will be a no-op.
-        q0.clear_cofactor() + q1.clear_cofactor()
+        Ok(q0.clear_cofactor() + q1.clear_cofactor())
     }
 
     /// Computes the encode to curve routine according to
@@ -60,10 +63,10 @@ pub trait GroupDigest {
     /// uniformly random in G: the set of possible outputs of
     /// encode_to_curve is only a fraction of the points in G, and some
     /// points in this set are more likely to be output than others.
-    fn encode_from_bytes<X: ExpandMsg>(msg: &[u8], dst: &'static [u8]) -> Self::Output {
+    fn encode_from_bytes<X: ExpandMsg>(msg: &[u8], dst: &'static [u8]) -> Result<Self::Output> {
         let mut u = [Self::FieldElement::default()];
-        hash_to_field::<X, _>(msg, dst, &mut u);
+        hash_to_field::<X, _>(msg, dst, &mut u)?;
         let q0 = Self::Output::map_to_curve(u[0]);
-        q0.clear_cofactor()
+        Ok(q0.clear_cofactor())
     }
 }
