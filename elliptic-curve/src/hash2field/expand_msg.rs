@@ -81,4 +81,10 @@ where
             Self::Array(d) => d.len() as u8,
         }
     }
+
+    #[cfg(test)]
+    pub fn assert(&self, bytes: &[u8]) {
+        assert_eq!(self.data(), &bytes[..bytes.len() - 1]);
+        assert_eq!(self.len(), bytes[bytes.len() - 1]);
+    }
 }

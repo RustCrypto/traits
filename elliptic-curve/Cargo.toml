@@ -40,6 +40,8 @@ serde_json = { version = "1", optional = true, default-features = false, feature
 
 [dev-dependencies]
 hex-literal = "0.3"
+sha2 = "0.9"
+sha3 = "0.9"
 
 [features]
 default = ["arithmetic"]
