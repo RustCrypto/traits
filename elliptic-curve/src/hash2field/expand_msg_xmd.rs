@@ -18,9 +18,9 @@ where
     b_0: GenericArray<u8, HashT::OutputSize>,
     b_vals: GenericArray<u8, HashT::OutputSize>,
     domain: Domain<HashT::OutputSize>,
-    index: usize,
+    index: u8,
     offset: usize,
-    ell: usize,
+    ell: u8,
 }
 
 impl<HashT> ExpandMsgXmd<HashT>
@@ -42,9 +42,9 @@ where
                 .for_each(|(j, (b0val, bi1val))| tmp[j] = b0val ^ bi1val);
             self.b_vals = HashT::new()
                 .chain(tmp)
-                .chain([self.index as u8])
+                .chain([self.index])
                 .chain(self.domain.data())
-                .chain([self.domain.len() as u8])
+                .chain([self.domain.len()])
                 .finalize();
             true
         } else {
@@ -57,34 +57,39 @@ where
 impl<HashT> ExpandMsg for ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
-    HashT::OutputSize: IsLess<U256> + IsLessOrEqual<HashT::BlockSize>,
+    // If `len_in_bytes` is bigger then 256, length of the `DST` will depend on
+    // the output size of the hash, which is still not allowed to be bigger then 256:
+    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-6
+    HashT::OutputSize: IsLess<U256>,
+    // Constraint set by `expand_message_xmd`:
+    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-4
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
     fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Result<Self> {
-        if len_in_bytes > 0xFFFF {
+        if len_in_bytes == 0 {
             return Err(Error);
         }
+
+        let len_in_bytes_u16 = u16::try_from(len_in_bytes).map_err(|_| Error)?;
 
         let b_in_bytes = HashT::OutputSize::to_usize();
-        let ell = (len_in_bytes + b_in_bytes - 1) / b_in_bytes;
-
-        if ell > 255 {
-            return Err(Error);
-        }
+        let ell = u8::try_from((len_in_bytes + b_in_bytes - 1) / b_in_bytes).map_err(|_| Error)?;
 
         let domain = Domain::xmd::<HashT>(dst);
         let b_0 = HashT::new()
             .chain(GenericArray::<u8, HashT::BlockSize>::default())
             .chain(msg)
-            .chain([(len_in_bytes >> 8) as u8, len_in_bytes as u8, 0u8])
+            .chain(len_in_bytes_u16.to_be_bytes())
+            .chain([0])
             .chain(domain.data())
-            .chain([domain.len() as u8])
+            .chain([domain.len()])
             .finalize();
 
         let b_vals = HashT::new()
             .chain(&b_0[..])
             .chain([1u8])
             .chain(domain.data())
-            .chain([domain.len() as u8])
+            .chain([domain.len()])
             .finalize();
 
         Ok(Self {
