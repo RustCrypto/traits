@@ -78,7 +78,7 @@ where
             // Can't overflow because it's enforced on a type level.
             Self::Hashed(_) => L::to_u8(),
             // Can't overflow because it's checked on creation.
-            Self::Array(d) => d.len() as u8,
+            Self::Array(d) => u8::try_from(d.len()).expect("length overflow"),
         }
     }
 
