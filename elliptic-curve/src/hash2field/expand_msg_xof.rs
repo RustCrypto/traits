@@ -1,7 +1,7 @@
 use super::ExpandMsg;
 use crate::hash2field::Domain;
 use digest::{ExtendableOutput, ExtendableOutputDirty, Update, XofReader};
-use generic_array::typenum::U32;
+use generic_array::{typenum::U32, ArrayLength};
 
 /// Placeholder type for implementing expand_message_xof based on an extendable output function
 pub struct ExpandMsgXof<HashT>
@@ -12,15 +12,16 @@ where
 }
 
 /// ExpandMsgXof implements expand_message_xof for the ExpandMsg trait
-impl<HashT> ExpandMsg for ExpandMsgXof<HashT>
+impl<HashT, L> ExpandMsg<L> for ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + ExtendableOutputDirty + Update,
+    L: ArrayLength<u8>,
 {
-    fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Self {
+    fn expand_message(msg: &[u8], dst: &'static [u8]) -> Self {
         let domain = Domain::<U32>::xof::<HashT>(dst);
         let reader = HashT::default()
             .chain(msg)
-            .chain([(len_in_bytes >> 8) as u8, len_in_bytes as u8])
+            .chain([(L::to_usize() >> 8) as u8, L::to_usize() as u8])
             .chain(domain.data())
             .chain([domain.len() as u8])
             .finalize_xof();

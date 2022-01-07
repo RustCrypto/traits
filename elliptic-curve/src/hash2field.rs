@@ -2,10 +2,13 @@ mod expand_msg;
 mod expand_msg_xmd;
 mod expand_msg_xof;
 
+use core::ops::Mul;
+
 pub use expand_msg::*;
 pub use expand_msg_xmd::*;
 pub use expand_msg_xof::*;
-use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+use generic_array::{ArrayLength, GenericArray};
+use generic_array::typenum::Prod;
 
 /// The trait for helping to convert to a scalar
 pub trait FromOkm {
@@ -18,16 +21,22 @@ pub trait FromOkm {
 
 /// Convert an arbitrary byte sequence according to
 /// <https://tools.ietf.org/html/draft-irtf-cfrg-hash-to-curve-11#section-5.3>
-pub fn hash_to_field<E, T>(data: &[u8], domain: &'static [u8], out: &mut [T])
+pub fn hash_to_field<E, T, O: ArrayLength<T>>(
+    data: &[u8],
+    domain: &'static [u8],
+) -> GenericArray<T, O>
 where
-    E: ExpandMsg,
+    E: ExpandMsg<Prod<T::Length, O>>,
     T: FromOkm + Default,
+    T::Length: Mul<O>,
+    Prod<T::Length, O>: ArrayLength<u8>,
 {
-    let len_in_bytes = T::Length::to_usize() * out.len();
     let mut tmp = GenericArray::<u8, <T as FromOkm>::Length>::default();
-    let mut expander = E::expand_message(data, domain, len_in_bytes);
+    let mut expander = E::expand_message(data, domain);
+    let mut out = GenericArray::default();
     for o in out.iter_mut() {
         expander.fill_bytes(&mut tmp);
         *o = T::from_okm(&tmp);
     }
+    out
 }

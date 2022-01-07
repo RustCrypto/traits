@@ -7,11 +7,11 @@ const OVERSIZE_DST_SALT: &[u8] = b"H2C-OVERSIZE-DST-";
 const MAX_DST_LEN: usize = 255;
 
 /// Trait for types implementing expand_message interface for hash_to_field
-pub trait ExpandMsg {
+pub trait ExpandMsg<L: ArrayLength<u8>> {
     /// Expands `msg` to the required number of bytes
     /// Returns an expander that can be used to call `read` until enough
     /// bytes have been consumed
-    fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Self;
+    fn expand_message(msg: &[u8], dst: &'static [u8]) -> Self;
 
     /// Fill the array with the expanded bytes
     fn fill_bytes(&mut self, okm: &mut [u8]);

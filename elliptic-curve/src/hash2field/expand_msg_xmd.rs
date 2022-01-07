@@ -1,11 +1,12 @@
 use super::{Domain, ExpandMsg};
 use digest::{
     generic_array::{
-        typenum::{IsLess, IsLessOrEqual, Unsigned, U256},
+        typenum::{IsLess, IsLessOrEqual, Unsigned, U256, U65536},
         GenericArray,
     },
     BlockInput, Digest,
 };
+use generic_array::ArrayLength;
 
 /// Placeholder type for implementing expand_message_xmd based on a hash function
 pub struct ExpandMsgXmd<HashT>
@@ -53,15 +54,16 @@ where
 }
 
 /// ExpandMsgXmd implements expand_message_xmd for the ExpandMsg trait
-impl<HashT> ExpandMsg for ExpandMsgXmd<HashT>
+impl<HashT, L> ExpandMsg<L> for ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
     HashT::OutputSize: IsLess<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
+    L: ArrayLength<u8> + IsLess<U65536>,
 {
-    fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Self {
+    fn expand_message(msg: &[u8], dst: &'static [u8]) -> Self {
         let b_in_bytes = HashT::OutputSize::to_usize();
-        let ell = (len_in_bytes + b_in_bytes - 1) / b_in_bytes;
+        let ell = (L::to_usize() + b_in_bytes - 1) / b_in_bytes;
         // if ell > 255 {
         //     panic!("ell was too big in expand_message_xmd");
         // }
@@ -69,7 +71,11 @@ where
         let b_0 = HashT::new()
             .chain(GenericArray::<u8, HashT::BlockSize>::default())
             .chain(msg)
-            .chain([(len_in_bytes >> 8) as u8, len_in_bytes as u8, 0u8])
+            .chain([
+                L::to_u16().to_be_bytes()[0],
+                L::to_u16().to_be_bytes()[1],
+                0u8,
+            ])
             .chain(domain.data())
             .chain([domain.len() as u8])
             .finalize();
