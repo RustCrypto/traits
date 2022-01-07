@@ -1,3 +1,6 @@
+pub(super) mod xmd;
+pub(super) mod xof;
+
 use crate::Result;
 use digest::{Digest, ExtendableOutput, Update, XofReader};
 use generic_array::typenum::{IsLess, U256};
