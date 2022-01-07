@@ -8,10 +8,9 @@ use group::cofactor::CofactorGroup;
 /// Adds hashing arbitrary byte sequences to a valid group element
 pub trait GroupDigest {
     /// The field element representation for a group value with multiple elements
-    type FieldElement: FromOkm + Default + Copy;
+    type FieldElement: FromOkm + MapToCurve<Output = Self::Output> + Default + Copy;
     /// The resulting group element
-    type Output: CofactorGroup<Subgroup = Self::Output>
-        + MapToCurve<FieldElement = Self::FieldElement, Output = Self::Output>;
+    type Output: CofactorGroup<Subgroup = Self::Output>;
 
     /// Computes the hash to curve routine according to
     /// <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html>
@@ -40,8 +39,8 @@ pub trait GroupDigest {
     fn hash_from_bytes<X: ExpandMsg>(msg: &[u8], dst: &'static [u8]) -> Result<Self::Output> {
         let mut u = [Self::FieldElement::default(), Self::FieldElement::default()];
         hash_to_field::<X, _>(msg, dst, &mut u)?;
-        let q0 = Self::Output::map_to_curve(u[0]);
-        let q1 = Self::Output::map_to_curve(u[1]);
+        let q0 = u[0].map_to_curve();
+        let q1 = u[1].map_to_curve();
         // Ideally we could add and then clear cofactor once
         // thus saving a call but the field elements may not
         // add properly due to the underlying implementation
@@ -66,7 +65,7 @@ pub trait GroupDigest {
     fn encode_from_bytes<X: ExpandMsg>(msg: &[u8], dst: &'static [u8]) -> Result<Self::Output> {
         let mut u = [Self::FieldElement::default()];
         hash_to_field::<X, _>(msg, dst, &mut u)?;
-        let q0 = Self::Output::map_to_curve(u[0]);
+        let q0 = u[0].map_to_curve();
         Ok(q0.clear_cofactor())
     }
 }

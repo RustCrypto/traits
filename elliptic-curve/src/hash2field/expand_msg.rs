@@ -1,5 +1,6 @@
 use crate::Result;
-use digest::{Digest, ExtendableOutputDirty, Update, XofReader};
+use digest::{Digest, ExtendableOutput, Update, XofReader};
+use generic_array::typenum::{IsLess, U256};
 use generic_array::{ArrayLength, GenericArray};
 
 /// Salt when the DST is too long
@@ -23,24 +24,30 @@ pub trait ExpandMsg: Sized {
 /// Implements [section 5.4.3 of `draft-irtf-cfrg-hash-to-curve-13`][dst].
 ///
 /// [dst]: https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-5.4.3
-pub(crate) enum Domain<L: ArrayLength<u8>> {
+pub(crate) enum Domain<L>
+where
+    L: ArrayLength<u8> + IsLess<U256>,
+{
     /// > 255
     Hashed(GenericArray<u8, L>),
     /// <= 255
     Array(&'static [u8]),
 }
 
-impl<L: ArrayLength<u8>> Domain<L> {
+impl<L> Domain<L>
+where
+    L: ArrayLength<u8> + IsLess<U256>,
+{
     pub fn xof<X>(dst: &'static [u8]) -> Self
     where
-        X: Default + ExtendableOutputDirty + Update,
+        X: Default + ExtendableOutput + Update,
     {
         if dst.len() > MAX_DST_LEN {
             let mut data = GenericArray::<u8, L>::default();
             X::default()
                 .chain(OVERSIZE_DST_SALT)
                 .chain(dst)
-                .finalize_xof_dirty()
+                .finalize_xof()
                 .read(&mut data);
             Self::Hashed(data)
         } else {
@@ -66,10 +73,18 @@ impl<L: ArrayLength<u8>> Domain<L> {
         }
     }
 
-    pub fn len(&self) -> usize {
+    pub fn len(&self) -> u8 {
         match self {
-            Self::Hashed(_) => L::to_usize(),
-            Self::Array(d) => d.len(),
+            // Can't overflow because it's enforced on a type level.
+            Self::Hashed(_) => L::to_u8(),
+            // Can't overflow because it's checked on creation.
+            Self::Array(d) => u8::try_from(d.len()).expect("length overflow"),
         }
+    }
+
+    #[cfg(test)]
+    pub fn assert(&self, bytes: &[u8]) {
+        assert_eq!(self.data(), &bytes[..bytes.len() - 1]);
+        assert_eq!(self.len(), bytes[bytes.len() - 1]);
     }
 }
