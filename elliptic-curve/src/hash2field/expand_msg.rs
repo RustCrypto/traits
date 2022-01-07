@@ -1,5 +1,5 @@
 use digest::{Digest, ExtendableOutputDirty, Update, XofReader};
-use generic_array::typenum::{IsLessOrEqual, U256};
+use generic_array::typenum::{IsLess, U256};
 use generic_array::{ArrayLength, GenericArray};
 
 /// Salt when the DST is too long
@@ -25,7 +25,7 @@ pub trait ExpandMsg<L: ArrayLength<u8>> {
 /// [dst]: https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-5.4.3
 pub(crate) enum Domain<L>
 where
-    L: ArrayLength<u8> + IsLessOrEqual<U256>,
+    L: ArrayLength<u8> + IsLess<U256>,
 {
     /// > 255
     Hashed(GenericArray<u8, L>),
@@ -35,7 +35,7 @@ where
 
 impl<L> Domain<L>
 where
-    L: ArrayLength<u8> + IsLessOrEqual<U256>,
+    L: ArrayLength<u8> + IsLess<U256>,
 {
     pub fn xof<X>(dst: &'static [u8]) -> Self
     where

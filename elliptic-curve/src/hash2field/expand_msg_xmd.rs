@@ -9,7 +9,7 @@ use generic_array::{ArrayLength, GenericArray};
 pub struct ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
-    HashT::OutputSize: IsLessOrEqual<U256>,
+    HashT::OutputSize: IsLess<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
     b_0: GenericArray<u8, HashT::OutputSize>,
@@ -23,7 +23,7 @@ where
 impl<HashT> ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
-    HashT::OutputSize: IsLessOrEqual<U256>,
+    HashT::OutputSize: IsLess<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
     fn next(&mut self) -> bool {
@@ -59,7 +59,7 @@ where
     // If `len_in_bytes` is bigger then 256, length of the `DST` will depend on
     // the output size of the hash, which is still not allowed to be bigger then 256:
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-6
-    HashT::OutputSize: IsLessOrEqual<U256>,
+    HashT::OutputSize: IsLess<U256>,
     // Constraint set by `expand_message_xmd`:
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-4
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
