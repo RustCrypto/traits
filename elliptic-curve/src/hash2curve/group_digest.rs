@@ -2,10 +2,8 @@ use core::ops::Mul;
 
 use super::MapToCurve;
 use crate::hash2field::{hash_to_field, ExpandMsg, FromOkm};
-use generic_array::{
-    typenum::{Prod, U1, U2},
-    ArrayLength,
-};
+use generic_array::typenum::{Prod, U1, U2};
+use generic_array::ArrayLength;
 use group::cofactor::CofactorGroup;
 
 /// Adds hashing arbitrary byte sequences to a valid group element

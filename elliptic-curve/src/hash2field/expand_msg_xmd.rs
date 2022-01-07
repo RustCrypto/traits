@@ -2,7 +2,8 @@ use core::marker::PhantomData;
 use core::ops::Mul;
 
 use super::{Domain, ExpandMsg};
-use digest::{BlockInput, Digest};
+use digest::core_api::BlockSizeUser;
+use digest::{Digest, Update};
 use generic_array::typenum::{IsLess, IsLessOrEqual, NonZero, Prod, Unsigned, U255, U256, U65536};
 use generic_array::{ArrayLength, GenericArray};
 use subtle::{Choice, ConditionallySelectable};
@@ -10,14 +11,14 @@ use subtle::{Choice, ConditionallySelectable};
 /// Placeholder type for implementing expand_message_xmd based on a hash function
 pub struct ExpandMsgXmd<HashT>(PhantomData<HashT>)
 where
-    HashT: Digest + BlockInput,
+    HashT: Digest + BlockSizeUser + Update,
     HashT::OutputSize: IsLessOrEqual<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>;
 
 /// ExpandMsgXmd implements expand_message_xmd for the ExpandMsg trait
 impl<HashT, L> ExpandMsg<L> for ExpandMsgXmd<HashT>
 where
-    HashT: Digest + BlockInput,
+    HashT: Digest + BlockSizeUser + Update,
     L: ArrayLength<u8>,
     U255: Mul<HashT::OutputSize>,
     // If `len_in_bytes` is bigger then 256, length of the `DST` will depend on

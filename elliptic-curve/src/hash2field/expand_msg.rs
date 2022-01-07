@@ -1,4 +1,4 @@
-use digest::{Digest, ExtendableOutputDirty, Update, XofReader};
+use digest::{Digest, ExtendableOutput, Update, XofReader};
 use generic_array::typenum::{IsLessOrEqual, U256};
 use generic_array::{ArrayLength, GenericArray};
 
@@ -34,14 +34,14 @@ where
 {
     pub fn xof<X>(dst: &'a [u8]) -> Self
     where
-        X: Default + ExtendableOutputDirty + Update,
+        X: Default + ExtendableOutput + Update,
     {
         if dst.len() > MAX_DST_LEN {
             let mut data = GenericArray::<u8, L>::default();
             X::default()
                 .chain(OVERSIZE_DST_SALT)
                 .chain(dst)
-                .finalize_xof_dirty()
+                .finalize_xof()
                 .read(&mut data);
             Self::Hashed(data)
         } else {
@@ -51,7 +51,7 @@ where
 
     pub fn xmd<X>(dst: &'a [u8]) -> Self
     where
-        X: Digest<OutputSize = L>,
+        X: Digest<OutputSize = L> + Update,
     {
         if dst.len() > MAX_DST_LEN {
             Self::Hashed(X::new().chain(OVERSIZE_DST_SALT).chain(dst).finalize())
