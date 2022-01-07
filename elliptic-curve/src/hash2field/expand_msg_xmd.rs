@@ -14,7 +14,7 @@ use generic_array::{typenum::Prod, ArrayLength};
 pub struct ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
-    HashT::OutputSize: IsLess<U256>,
+    HashT::OutputSize: IsLessOrEqual<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
     b_0: GenericArray<u8, HashT::OutputSize>,
@@ -28,7 +28,7 @@ where
 impl<HashT> ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
-    HashT::OutputSize: IsLess<U256>,
+    HashT::OutputSize: IsLessOrEqual<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
     fn next(&mut self) -> bool {
@@ -59,7 +59,7 @@ where
 impl<HashT, L> ExpandMsg<L> for ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
-    HashT::OutputSize: IsLess<U256>,
+    HashT::OutputSize: IsLessOrEqual<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
     L: ArrayLength<u8> + IsLess<U65536>,
     U255: Mul<HashT::OutputSize>,
