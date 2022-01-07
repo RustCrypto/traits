@@ -1,5 +1,5 @@
 use super::ExpandMsg;
-use crate::hash2field::Domain;
+use crate::{hash2field::Domain, Result};
 use digest::{ExtendableOutput, ExtendableOutputDirty, Update, XofReader};
 use generic_array::typenum::U32;
 
@@ -16,7 +16,7 @@ impl<HashT> ExpandMsg for ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + ExtendableOutputDirty + Update,
 {
-    fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Self {
+    fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Result<Self> {
         let domain = Domain::<U32>::xof::<HashT>(dst);
         let reader = HashT::default()
             .chain(msg)
@@ -24,7 +24,7 @@ where
             .chain(domain.data())
             .chain([domain.len() as u8])
             .finalize_xof();
-        Self { reader }
+        Ok(Self { reader })
     }
 
     fn fill_bytes(&mut self, okm: &mut [u8]) {

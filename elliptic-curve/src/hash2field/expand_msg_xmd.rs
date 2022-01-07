@@ -1,4 +1,5 @@
 use super::{Domain, ExpandMsg};
+use crate::{Error, Result};
 use digest::{
     generic_array::{
         typenum::{IsLess, IsLessOrEqual, Unsigned, U256},
@@ -56,15 +57,20 @@ where
 impl<HashT> ExpandMsg for ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
-    HashT::OutputSize: IsLess<U256>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
+    HashT::OutputSize: IsLess<U256> + IsLessOrEqual<HashT::BlockSize>,
 {
-    fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Self {
+    fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Result<Self> {
+        if len_in_bytes > 0xFFFF {
+            return Err(Error);
+        }
+
         let b_in_bytes = HashT::OutputSize::to_usize();
         let ell = (len_in_bytes + b_in_bytes - 1) / b_in_bytes;
-        // if ell > 255 {
-        //     panic!("ell was too big in expand_message_xmd");
-        // }
+
+        if ell > 255 {
+            return Err(Error);
+        }
+
         let domain = Domain::xmd::<HashT>(dst);
         let b_0 = HashT::new()
             .chain(GenericArray::<u8, HashT::BlockSize>::default())
@@ -81,14 +87,14 @@ where
             .chain([domain.len() as u8])
             .finalize();
 
-        Self {
+        Ok(Self {
             b_0,
             b_vals,
             domain,
             index: 1,
             offset: 0,
             ell,
-        }
+        })
     }
 
     fn fill_bytes(&mut self, okm: &mut [u8]) {
