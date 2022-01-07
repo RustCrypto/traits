@@ -1,10 +1,6 @@
 mod expand_msg;
-mod expand_msg_xmd;
-mod expand_msg_xof;
 
-pub use expand_msg::*;
-pub use expand_msg_xmd::*;
-pub use expand_msg_xof::*;
+pub use expand_msg::{xmd::*, xof::*, *};
 
 use crate::Result;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
