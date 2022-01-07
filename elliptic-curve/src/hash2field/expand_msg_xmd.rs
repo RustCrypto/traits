@@ -1,12 +1,14 @@
+use core::ops::Mul;
+
 use super::{Domain, ExpandMsg};
 use digest::{
     generic_array::{
-        typenum::{IsLess, IsLessOrEqual, Unsigned, U256, U65536},
+        typenum::{IsLess, IsLessOrEqual, Unsigned, U255, U256, U65536},
         GenericArray,
     },
     BlockInput, Digest,
 };
-use generic_array::ArrayLength;
+use generic_array::{typenum::Prod, ArrayLength};
 
 /// Placeholder type for implementing expand_message_xmd based on a hash function
 pub struct ExpandMsgXmd<HashT>
@@ -60,10 +62,13 @@ where
     HashT::OutputSize: IsLess<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
     L: ArrayLength<u8> + IsLess<U65536>,
+    U255: Mul<HashT::OutputSize>,
+    L: IsLess<Prod<U255, HashT::OutputSize>>,
 {
     fn expand_message(msg: &[u8], dst: &'static [u8]) -> Self {
         let b_in_bytes = HashT::OutputSize::to_usize();
         let ell = (L::to_usize() + b_in_bytes - 1) / b_in_bytes;
+        // Enforced on the type level
         // if ell > 255 {
         //     panic!("ell was too big in expand_message_xmd");
         // }
@@ -71,11 +76,10 @@ where
         let b_0 = HashT::new()
             .chain(GenericArray::<u8, HashT::BlockSize>::default())
             .chain(msg)
-            .chain([
-                L::to_u16().to_be_bytes()[0],
-                L::to_u16().to_be_bytes()[1],
-                0u8,
-            ])
+            .chain({
+                let l = L::to_u16().to_be_bytes();
+                [l[0], l[1], 0u8]
+            })
             .chain(domain.data())
             .chain([domain.len() as u8])
             .finalize();

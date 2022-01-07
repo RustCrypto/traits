@@ -7,8 +7,8 @@ use core::ops::Mul;
 pub use expand_msg::*;
 pub use expand_msg_xmd::*;
 pub use expand_msg_xof::*;
-use generic_array::{ArrayLength, GenericArray};
 use generic_array::typenum::Prod;
+use generic_array::{ArrayLength, GenericArray};
 
 /// The trait for helping to convert to a scalar
 pub trait FromOkm {
