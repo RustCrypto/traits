@@ -1,3 +1,5 @@
+//! Traits for handling hash to curve.
+
 use super::MapToCurve;
 use crate::{
     hash2field::{hash_to_field, ExpandMsg, FromOkm},
@@ -12,25 +14,26 @@ pub trait GroupDigest {
     /// The resulting group element
     type Output: CofactorGroup<Subgroup = Self::Output>;
 
-    /// Computes the hash to curve routine according to
-    /// <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html>
-    /// which says
-    /// Uniform encoding from byte strings to points in G.
-    /// That is, the distribution of its output is statistically close
-    /// to uniform in G.
-    /// This function is suitable for most applications requiring a random
-    /// oracle returning points in G assuming a cryptographically secure
-    /// hash function is used.
+    /// Computes the hash to curve routine.
     ///
-    /// Examples
+    /// From <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html>:
     ///
-    /// Using a fixed size hash function
+    /// > Uniform encoding from byte strings to points in G.
+    /// > That is, the distribution of its output is statistically close
+    /// > to uniform in G.
+    /// > This function is suitable for most applications requiring a random
+    /// > oracle returning points in G assuming a cryptographically secure
+    /// > hash function is used.
+    ///
+    /// # Examples
+    ///
+    /// ## Using a fixed size hash function
     ///
     /// ```ignore
     /// let pt = ProjectivePoint::hash_from_bytes::<hash2field::ExpandMsgXmd<sha2::Sha256>>(b"test data", b"CURVE_XMD:SHA-256_SSWU_RO_");
     /// ```
     ///
-    /// Using an extendable output function
+    /// ## Using an extendable output function
     ///
     /// ```ignore
     /// let pt = ProjectivePoint::hash_from_bytes::<hash2field::ExpandMsgXof<sha3::Shake256>>(b"test data", b"CURVE_XOF:SHAKE-256_SSWU_RO_");
@@ -54,14 +57,15 @@ pub trait GroupDigest {
         Ok(q0.clear_cofactor() + q1.clear_cofactor())
     }
 
-    /// Computes the encode to curve routine according to
-    /// <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html>
-    /// which says
-    /// Nonuniform encoding from byte strings to
-    /// points in G. That is, the distribution of its output is not
-    /// uniformly random in G: the set of possible outputs of
-    /// encode_to_curve is only a fraction of the points in G, and some
-    /// points in this set are more likely to be output than others.
+    /// Computes the encode to curve routine.
+    ///
+    /// From <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html>:
+    ///
+    /// > Nonuniform encoding from byte strings to
+    /// > points in G. That is, the distribution of its output is not
+    /// > uniformly random in G: the set of possible outputs of
+    /// > encode_to_curve is only a fraction of the points in G, and some
+    /// > points in this set are more likely to be output than others.
     fn encode_from_bytes<X: ExpandMsg>(msg: &[u8], dst: &'static [u8]) -> Result<Self::Output> {
         let mut u = [Self::FieldElement::default()];
         hash_to_field::<X, _>(msg, dst, &mut u)?;
