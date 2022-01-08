@@ -39,7 +39,10 @@ pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// let pt = ProjectivePoint::hash_from_bytes::<hash2field::ExpandMsgXof<sha3::Shake256>>(b"test data", b"CURVE_XOF:SHAKE-256_SSWU_RO_");
     /// ```
     ///
-    fn hash_from_bytes<X: ExpandMsg>(msgs: &[&[u8]], dst: &'static [u8]) -> Result<Self::Output> {
+    fn hash_from_bytes<'a, X: ExpandMsg<'a>>(
+        msgs: &[&[u8]],
+        dst: &'a [u8],
+    ) -> Result<Self::Output> {
         let mut u = [Self::FieldElement::default(), Self::FieldElement::default()];
         hash_to_field::<X, _>(msgs, dst, &mut u)?;
         let q0 = u[0].map_to_curve();
@@ -66,7 +69,10 @@ pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// > uniformly random in G: the set of possible outputs of
     /// > encode_to_curve is only a fraction of the points in G, and some
     /// > points in this set are more likely to be output than others.
-    fn encode_from_bytes<X: ExpandMsg>(msgs: &[&[u8]], dst: &'static [u8]) -> Result<Self::Output> {
+    fn encode_from_bytes<'a, X: ExpandMsg<'a>>(
+        msgs: &[&[u8]],
+        dst: &'a [u8],
+    ) -> Result<Self::Output> {
         let mut u = [Self::FieldElement::default()];
         hash_to_field::<X, _>(msgs, dst, &mut u)?;
         let q0 = u[0].map_to_curve();
@@ -76,7 +82,7 @@ pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// Computes the hash to field routine according to
     /// <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5>
     /// and returns a scalar.
-    fn hash_to_scalar<X: ExpandMsg>(msgs: &[&[u8]], dst: &'static [u8]) -> Result<Self::Scalar>
+    fn hash_to_scalar<'a, X: ExpandMsg<'a>>(msgs: &[&[u8]], dst: &'a [u8]) -> Result<Self::Scalar>
     where
         Self::Scalar: FromOkm,
     {

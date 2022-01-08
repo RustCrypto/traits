@@ -1,6 +1,8 @@
 //! `expand_message_xmd` based on a hash function.
 
-use super::{Domain, ExpandMsg};
+use core::marker::PhantomData;
+
+use super::{Domain, ExpandMsg, Expander};
 use crate::{Error, Result};
 use digest::{
     generic_array::{
@@ -11,52 +13,14 @@ use digest::{
 };
 
 /// Placeholder type for implementing `expand_message_xmd` based on a hash function
-pub struct ExpandMsgXmd<HashT>
+pub struct ExpandMsgXmd<HashT>(PhantomData<HashT>)
 where
     HashT: Digest + BlockInput,
     HashT::OutputSize: IsLess<U256>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
-{
-    b_0: GenericArray<u8, HashT::OutputSize>,
-    b_vals: GenericArray<u8, HashT::OutputSize>,
-    domain: Domain<HashT::OutputSize>,
-    index: u8,
-    offset: usize,
-    ell: u8,
-}
-
-impl<HashT> ExpandMsgXmd<HashT>
-where
-    HashT: Digest + BlockInput,
-    HashT::OutputSize: IsLess<U256>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
-{
-    fn next(&mut self) -> bool {
-        if self.index < self.ell {
-            self.index += 1;
-            self.offset = 0;
-            // b_0 XOR b_(idx - 1)
-            let mut tmp = GenericArray::<u8, HashT::OutputSize>::default();
-            self.b_0
-                .iter()
-                .zip(&self.b_vals[..])
-                .enumerate()
-                .for_each(|(j, (b0val, bi1val))| tmp[j] = b0val ^ bi1val);
-            self.b_vals = HashT::new()
-                .chain(tmp)
-                .chain([self.index])
-                .chain(self.domain.data())
-                .chain([self.domain.len()])
-                .finalize();
-            true
-        } else {
-            false
-        }
-    }
-}
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>;
 
 /// ExpandMsgXmd implements expand_message_xmd for the ExpandMsg trait
-impl<HashT> ExpandMsg for ExpandMsgXmd<HashT>
+impl<'a, HashT> ExpandMsg<'a> for ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,
     // If `len_in_bytes` is bigger then 256, length of the `DST` will depend on
@@ -67,7 +31,13 @@ where
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-4
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
-    fn expand_message(msgs: &[&[u8]], dst: &'static [u8], len_in_bytes: usize) -> Result<Self> {
+    type Expander = ExpanderXmd<'a, HashT>;
+
+    fn expand_message(
+        msgs: &[&[u8]],
+        dst: &'a [u8],
+        len_in_bytes: usize,
+    ) -> Result<Self::Expander> {
         if len_in_bytes == 0 {
             return Err(Error);
         }
@@ -98,7 +68,7 @@ where
             .chain([domain.len()])
             .finalize();
 
-        Ok(Self {
+        Ok(ExpanderXmd {
             b_0,
             b_vals,
             domain,
@@ -107,7 +77,58 @@ where
             ell,
         })
     }
+}
 
+pub struct ExpanderXmd<'a, HashT>
+where
+    HashT: Digest + BlockInput,
+    HashT::OutputSize: IsLess<U256>,
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
+{
+    b_0: GenericArray<u8, HashT::OutputSize>,
+    b_vals: GenericArray<u8, HashT::OutputSize>,
+    domain: Domain<'a, HashT::OutputSize>,
+    index: u8,
+    offset: usize,
+    ell: u8,
+}
+
+impl<'a, HashT> ExpanderXmd<'a, HashT>
+where
+    HashT: Digest + BlockInput,
+    HashT::OutputSize: IsLess<U256>,
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
+{
+    fn next(&mut self) -> bool {
+        if self.index < self.ell {
+            self.index += 1;
+            self.offset = 0;
+            // b_0 XOR b_(idx - 1)
+            let mut tmp = GenericArray::<u8, HashT::OutputSize>::default();
+            self.b_0
+                .iter()
+                .zip(&self.b_vals[..])
+                .enumerate()
+                .for_each(|(j, (b0val, bi1val))| tmp[j] = b0val ^ bi1val);
+            self.b_vals = HashT::new()
+                .chain(tmp)
+                .chain([self.index])
+                .chain(self.domain.data())
+                .chain([self.domain.len()])
+                .finalize();
+            true
+        } else {
+            false
+        }
+    }
+}
+
+impl<'a, HashT> Expander for ExpanderXmd<'a, HashT>
+where
+    HashT: Digest + BlockInput,
+    HashT::OutputSize: IsLess<U256>,
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
+{
     fn fill_bytes(&mut self, okm: &mut [u8]) {
         for b in okm {
             if self.offset == self.b_vals.len() && !self.next() {
@@ -132,7 +153,7 @@ mod test {
 
     fn assert_message<HashT>(
         msg: &[u8],
-        domain: &Domain<HashT::OutputSize>,
+        domain: &Domain<'_, HashT::OutputSize>,
         len_in_bytes: u16,
         bytes: &[u8],
     ) where
@@ -173,7 +194,7 @@ mod test {
         fn assert<HashT, L: ArrayLength<u8>>(
             &self,
             dst: &'static [u8],
-            domain: &Domain<HashT::OutputSize>,
+            domain: &Domain<'_, HashT::OutputSize>,
         ) -> Result<()>
         where
             HashT: Digest + BlockInput,

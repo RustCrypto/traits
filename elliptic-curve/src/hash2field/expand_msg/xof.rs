@@ -1,24 +1,29 @@
 //! `expand_message_xof` for the `ExpandMsg` trait
 
-use super::ExpandMsg;
-use crate::{hash2field::Domain, Error, Result};
+use core::marker::PhantomData;
+
+use super::{Domain, ExpandMsg, Expander};
+use crate::{Error, Result};
 use digest::{ExtendableOutput, Update, XofReader};
 use generic_array::typenum::U32;
 
 /// Placeholder type for implementing `expand_message_xof` based on an extendable output function
-pub struct ExpandMsgXof<HashT>
+pub struct ExpandMsgXof<HashT>(PhantomData<HashT>)
 where
-    HashT: Default + ExtendableOutput + Update,
-{
-    reader: <HashT as ExtendableOutput>::Reader,
-}
+    HashT: Default + ExtendableOutput + Update;
 
 /// ExpandMsgXof implements `expand_message_xof` for the [`ExpandMsg`] trait
-impl<HashT> ExpandMsg for ExpandMsgXof<HashT>
+impl<'a, HashT> ExpandMsg<'a> for ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + Update,
 {
-    fn expand_message(msgs: &[&[u8]], dst: &'static [u8], len_in_bytes: usize) -> Result<Self> {
+    type Expander = ExpanderXof<HashT>;
+
+    fn expand_message(
+        msgs: &[&[u8]],
+        dst: &'a [u8],
+        len_in_bytes: usize,
+    ) -> Result<Self::Expander> {
         if len_in_bytes == 0 {
             return Err(Error);
         }
@@ -37,13 +42,26 @@ where
             .chain(domain.data())
             .chain([domain.len()])
             .finalize_xof();
-        Ok(Self { reader })
+        Ok(ExpanderXof { reader })
     }
+}
 
+pub struct ExpanderXof<HashT>
+where
+    HashT: Default + ExtendableOutput + Update,
+{
+    reader: <HashT as ExtendableOutput>::Reader,
+}
+
+impl<HashT> Expander for ExpanderXof<HashT>
+where
+    HashT: Default + ExtendableOutput + Update,
+{
     fn fill_bytes(&mut self, okm: &mut [u8]) {
         self.reader.read(okm);
     }
 }
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -55,7 +73,12 @@ mod test {
     use hex_literal::hex;
     use sha3::Shake128;
 
-    fn assert_message<HashT>(msg: &[u8], domain: &Domain<U32>, len_in_bytes: u16, bytes: &[u8]) {
+    fn assert_message<HashT>(
+        msg: &[u8],
+        domain: &Domain<'_, U32>,
+        len_in_bytes: u16,
+        bytes: &[u8],
+    ) {
         let msg_len = msg.len();
         assert_eq!(msg, &bytes[..msg_len]);
 
@@ -81,7 +104,7 @@ mod test {
     }
 
     impl TestVector {
-        fn assert<HashT, L>(&self, dst: &'static [u8], domain: &Domain<U32>) -> Result<()>
+        fn assert<HashT, L>(&self, dst: &'static [u8], domain: &Domain<'_, U32>) -> Result<()>
         where
             HashT: Default + ExtendableOutput + Update,
             L: ArrayLength<u8>,
