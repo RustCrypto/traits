@@ -1,3 +1,7 @@
+//! Traits for hashing to field elements.
+//!
+//! <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve>
+
 mod expand_msg;
 
 pub use expand_msg::{xmd::*, xof::*, *};
@@ -5,16 +9,17 @@ pub use expand_msg::{xmd::*, xof::*, *};
 use crate::Result;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 
-/// The trait for helping to convert to a scalar
+/// The trait for helping to convert to a field element.
 pub trait FromOkm {
-    /// The number of bytes needed to convert to a scalar
+    /// The number of bytes needed to convert to a field element.
     type Length: ArrayLength<u8>;
 
-    /// Convert a byte sequence into a scalar
+    /// Convert a byte sequence into a field element.
     fn from_okm(data: &GenericArray<u8, Self::Length>) -> Self;
 }
 
-/// Convert an arbitrary byte sequence according to
+/// Convert an arbitrary byte sequence into a field element.
+///
 /// <https://tools.ietf.org/html/draft-irtf-cfrg-hash-to-curve-11#section-5.3>
 pub fn hash_to_field<E, T>(data: &[u8], domain: &'static [u8], out: &mut [T]) -> Result<()>
 where

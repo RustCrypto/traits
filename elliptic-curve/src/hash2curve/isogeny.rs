@@ -1,3 +1,7 @@
+//! Traits for mapping an isogeny to another curve
+//!
+//! <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve>
+
 use core::ops::{AddAssign, Mul};
 use ff::Field;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
@@ -14,7 +18,7 @@ pub struct IsogenyCoefficients<F: Field + AddAssign + Mul<Output = F>> {
     pub yden: &'static [F],
 }
 
-/// The Isogeny methods to map to another curve
+/// The [`Isogeny`] methods to map to another curve.
 pub trait Isogeny: Field + AddAssign + Mul<Output = Self> {
     /// The maximum number of coefficients
     type Degree: ArrayLength<Self>;

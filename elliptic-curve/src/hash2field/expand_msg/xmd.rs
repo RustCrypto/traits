@@ -1,3 +1,5 @@
+//! `expand_message_xmd` based on a hash function.
+
 use super::{Domain, ExpandMsg};
 use crate::{Error, Result};
 use digest::{
@@ -8,7 +10,7 @@ use digest::{
     BlockInput, Digest,
 };
 
-/// Placeholder type for implementing expand_message_xmd based on a hash function
+/// Placeholder type for implementing `expand_message_xmd` based on a hash function
 pub struct ExpandMsgXmd<HashT>
 where
     HashT: Digest + BlockInput,

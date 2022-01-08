@@ -1,3 +1,5 @@
+//! `expand_message` interface `for hash_to_field`.
+
 pub(super) mod xmd;
 pub(super) mod xof;
 
@@ -11,9 +13,10 @@ const OVERSIZE_DST_SALT: &[u8] = b"H2C-OVERSIZE-DST-";
 /// Maximum domain separation tag length
 const MAX_DST_LEN: usize = 255;
 
-/// Trait for types implementing expand_message interface for hash_to_field
+/// Trait for types implementing expand_message interface for `hash_to_field`.
 pub trait ExpandMsg: Sized {
-    /// Expands `msg` to the required number of bytes
+    /// Expands `msg` to the required number of bytes.
+    ///
     /// Returns an expander that can be used to call `read` until enough
     /// bytes have been consumed
     fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Result<Self>;

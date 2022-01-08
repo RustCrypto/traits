@@ -1,3 +1,5 @@
+//! Traits for mapping field elements to points on the curve.
+
 /// Trait for converting field elements into a point
 /// via a mapping method like Simplified Shallue-van de Woestijne-Ulas
 /// or Elligator

@@ -1,3 +1,7 @@
+//! Optimized simplified Shallue-van de Woestijne-Ulas methods.
+//!
+//! <https://eprint.iacr.org/2009/340.pdf>
+
 use ff::Field;
 use subtle::Choice;
 
@@ -34,7 +38,7 @@ pub trait OsswuMap: Field + Sgn0 {
     /// should be for isogeny where A≠0 and B≠0.
     const PARAMS: OsswuMapParams<Self>;
 
-    /// Convert this field element into an affine point on the ellliptic curve
+    /// Convert this field element into an affine point on the elliptic curve
     /// returning (X, Y). For Weierstrass curves having A==0 or B==0
     /// the result is a point on an isogeny.
     fn osswu(&self) -> (Self, Self) {

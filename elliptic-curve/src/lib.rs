@@ -94,12 +94,10 @@ pub mod ecdh;
 #[cfg(feature = "jwk")]
 mod jwk;
 
-/// Traits for hashing to field elements
 #[cfg(feature = "hash2curve")]
 #[doc(hidden)]
 pub mod hash2field;
 
-/// Traits for hashing byte sequences to curve points
 #[cfg(feature = "hash2curve")]
 #[cfg_attr(docsrs, doc(cfg(feature = "hash2curve")))]
 pub mod hash2curve;
