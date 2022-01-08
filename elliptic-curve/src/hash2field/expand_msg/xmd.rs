@@ -79,6 +79,7 @@ where
     }
 }
 
+/// [`Expander`] type for [`ExpandMsgXmd`].
 pub struct ExpanderXmd<'a, HashT>
 where
     HashT: Digest + BlockInput,

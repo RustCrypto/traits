@@ -15,6 +15,7 @@ const MAX_DST_LEN: usize = 255;
 
 /// Trait for types implementing expand_message interface for `hash_to_field`.
 pub trait ExpandMsg<'a> {
+    /// Type holding data for the [`Expander`].
     type Expander: Expander + Sized;
 
     /// Expands `msg` to the required number of bytes.
@@ -25,6 +26,7 @@ pub trait ExpandMsg<'a> {
         -> Result<Self::Expander>;
 }
 
+/// Expander that, call `read` until enough bytes have been consumed.
 pub trait Expander {
     /// Fill the array with the expanded bytes
     fn fill_bytes(&mut self, okm: &mut [u8]);

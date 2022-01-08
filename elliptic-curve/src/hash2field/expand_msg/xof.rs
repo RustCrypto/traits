@@ -1,23 +1,24 @@
 //! `expand_message_xof` for the `ExpandMsg` trait
 
-use core::marker::PhantomData;
-
 use super::{Domain, ExpandMsg, Expander};
 use crate::{Error, Result};
 use digest::{ExtendableOutput, Update, XofReader};
 use generic_array::typenum::U32;
 
 /// Placeholder type for implementing `expand_message_xof` based on an extendable output function
-pub struct ExpandMsgXof<HashT>(PhantomData<HashT>)
+pub struct ExpandMsgXof<HashT>
 where
-    HashT: Default + ExtendableOutput + Update;
+    HashT: Default + ExtendableOutput + Update,
+{
+    reader: <HashT as ExtendableOutput>::Reader,
+}
 
 /// ExpandMsgXof implements `expand_message_xof` for the [`ExpandMsg`] trait
 impl<'a, HashT> ExpandMsg<'a> for ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + Update,
 {
-    type Expander = ExpanderXof<HashT>;
+    type Expander = Self;
 
     fn expand_message(
         msgs: &[&[u8]],
@@ -42,18 +43,11 @@ where
             .chain(domain.data())
             .chain([domain.len()])
             .finalize_xof();
-        Ok(ExpanderXof { reader })
+        Ok(Self { reader })
     }
 }
 
-pub struct ExpanderXof<HashT>
-where
-    HashT: Default + ExtendableOutput + Update,
-{
-    reader: <HashT as ExtendableOutput>::Reader,
-}
-
-impl<HashT> Expander for ExpanderXof<HashT>
+impl<HashT> Expander for ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + Update,
 {
