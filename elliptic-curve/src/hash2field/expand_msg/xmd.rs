@@ -203,11 +203,8 @@ mod test {
         {
             assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
 
-            let mut expander = <ExpandMsgXmd<HashT> as ExpandMsg>::expand_message(
-                &[self.msg],
-                dst,
-                L::to_usize(),
-            )?;
+            let mut expander =
+                ExpandMsgXmd::<HashT>::expand_message(&[self.msg], dst, L::to_usize())?;
 
             let mut uniform_bytes = GenericArray::<u8, L>::default();
             expander.fill_bytes(&mut uniform_bytes);
