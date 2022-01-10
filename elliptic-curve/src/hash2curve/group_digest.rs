@@ -30,15 +30,20 @@ pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// ## Using a fixed size hash function
     ///
     /// ```ignore
-    /// let pt = ProjectivePoint::hash_from_bytes::<hash2field::ExpandMsgXmd<sha2::Sha256>>(b"test data", b"CURVE_XMD:SHA-256_SSWU_RO_");
+    /// let pt = ProjectivePoint::hash_from_bytes::<ExpandMsgXmd<sha2::Sha256>>(b"test data", b"CURVE_XMD:SHA-256_SSWU_RO_");
     /// ```
     ///
     /// ## Using an extendable output function
     ///
     /// ```ignore
-    /// let pt = ProjectivePoint::hash_from_bytes::<hash2field::ExpandMsgXof<sha3::Shake256>>(b"test data", b"CURVE_XOF:SHAKE-256_SSWU_RO_");
+    /// let pt = ProjectivePoint::hash_from_bytes::<ExpandMsgXof<sha3::Shake256>>(b"test data", b"CURVE_XOF:SHAKE-256_SSWU_RO_");
     /// ```
     ///
+    /// # Errors
+    /// Can't fail with [`ExpandMsgXmd`] or [`ExpandMsgXof`].
+    ///
+    /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
+    /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
     fn hash_from_bytes<'a, X: ExpandMsg<'a>>(
         msgs: &[&[u8]],
         dst: &'a [u8],
@@ -69,6 +74,12 @@ pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// > uniformly random in G: the set of possible outputs of
     /// > encode_to_curve is only a fraction of the points in G, and some
     /// > points in this set are more likely to be output than others.
+    ///
+    /// # Errors
+    /// Can't fail with [`ExpandMsgXmd`] or [`ExpandMsgXof`].
+    ///
+    /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
+    /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
     fn encode_from_bytes<'a, X: ExpandMsg<'a>>(
         msgs: &[&[u8]],
         dst: &'a [u8],
@@ -82,6 +93,12 @@ pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// Computes the hash to field routine according to
     /// <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5>
     /// and returns a scalar.
+    ///
+    /// # Errors
+    /// Can't fail with [`ExpandMsgXmd`] or [`ExpandMsgXof`].
+    ///
+    /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
+    /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
     fn hash_to_scalar<'a, X: ExpandMsg<'a>>(msgs: &[&[u8]], dst: &'a [u8]) -> Result<Self::Scalar>
     where
         Self::Scalar: FromOkm,

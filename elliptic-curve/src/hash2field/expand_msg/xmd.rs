@@ -13,6 +13,12 @@ use digest::{
 };
 
 /// Placeholder type for implementing `expand_message_xmd` based on a hash function
+///
+/// # Errors
+/// - `len_in_bytes == 0`
+/// - `len_in_bytes != out.len()`
+/// - `len_in_bytes > u16::MAX`
+/// - `len_in_bytes > 255 * HashT::OutputSize`
 pub struct ExpandMsgXmd<HashT>(PhantomData<HashT>)
 where
     HashT: Digest + BlockInput,
