@@ -40,7 +40,11 @@ pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// ```
     ///
     /// # Errors
-    /// Can't fail with [`ExpandMsgXmd`] or [`ExpandMsgXof`].
+    /// See implementors of [`ExpandMsg`] for errors:
+    /// - [`ExpandMsgXmd`]
+    /// - [`ExpandMsgXof`]
+    ///
+    /// `len_in_bytes = T::Length * 2`
     ///
     /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
@@ -76,7 +80,11 @@ pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// > points in this set are more likely to be output than others.
     ///
     /// # Errors
-    /// Can't fail with [`ExpandMsgXmd`] or [`ExpandMsgXof`].
+    /// See implementors of [`ExpandMsg`] for errors:
+    /// - [`ExpandMsgXmd`]
+    /// - [`ExpandMsgXof`]
+    ///
+    /// `len_in_bytes = T::Length`
     ///
     /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
@@ -95,7 +103,11 @@ pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// and returns a scalar.
     ///
     /// # Errors
-    /// Can't fail with [`ExpandMsgXmd`] or [`ExpandMsgXof`].
+    /// See implementors of [`ExpandMsg`] for errors:
+    /// - [`ExpandMsgXmd`]
+    /// - [`ExpandMsgXof`]
+    ///
+    /// `len_in_bytes = T::Length`
     ///
     /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof

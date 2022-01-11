@@ -21,6 +21,16 @@ pub trait FromOkm {
 /// Convert an arbitrary byte sequence into a field element.
 ///
 /// <https://tools.ietf.org/html/draft-irtf-cfrg-hash-to-curve-11#section-5.3>
+///
+/// # Errors
+/// See implementors of [`ExpandMsg`] for errors:
+/// - [`ExpandMsgXmd`]
+/// - [`ExpandMsgXof`]
+///
+/// `len_in_bytes = T::Length * out.len()`
+///
+/// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
+/// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
 pub fn hash_to_field<'a, E, T>(data: &[&[u8]], domain: &'a [u8], out: &mut [T]) -> Result<()>
 where
     E: ExpandMsg<'a>,

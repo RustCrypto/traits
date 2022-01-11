@@ -14,8 +14,9 @@ const OVERSIZE_DST_SALT: &[u8] = b"H2C-OVERSIZE-DST-";
 const MAX_DST_LEN: usize = 255;
 
 /// Trait for types implementing expand_message interface for `hash_to_field`.
+///
 /// # Errors
-/// See implementors of `ExpandMsg` for errors.
+/// See implementors of [`ExpandMsg`] for errors.
 pub trait ExpandMsg<'a> {
     /// Type holding data for the [`Expander`].
     type Expander: Expander + Sized;

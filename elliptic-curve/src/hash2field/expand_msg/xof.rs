@@ -9,7 +9,6 @@ use generic_array::typenum::U32;
 ///
 /// # Errors
 /// - `len_in_bytes == 0`
-/// - `len_in_bytes != out.len()`
 /// - `len_in_bytes > u16::MAX`
 pub struct ExpandMsgXof<HashT>
 where
