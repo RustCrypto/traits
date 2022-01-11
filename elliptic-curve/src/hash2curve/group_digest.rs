@@ -3,12 +3,12 @@
 use super::MapToCurve;
 use crate::{
     hash2field::{hash_to_field, ExpandMsg, FromOkm},
-    Result,
+    ProjectiveArithmetic, Result,
 };
 use group::cofactor::CofactorGroup;
 
 /// Adds hashing arbitrary byte sequences to a valid group element
-pub trait GroupDigest {
+pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// The field element representation for a group value with multiple elements
     type FieldElement: FromOkm + MapToCurve<Output = Self::Output> + Default + Copy;
     /// The resulting group element
@@ -30,18 +30,30 @@ pub trait GroupDigest {
     /// ## Using a fixed size hash function
     ///
     /// ```ignore
-    /// let pt = ProjectivePoint::hash_from_bytes::<hash2field::ExpandMsgXmd<sha2::Sha256>>(b"test data", b"CURVE_XMD:SHA-256_SSWU_RO_");
+    /// let pt = ProjectivePoint::hash_from_bytes::<ExpandMsgXmd<sha2::Sha256>>(b"test data", b"CURVE_XMD:SHA-256_SSWU_RO_");
     /// ```
     ///
     /// ## Using an extendable output function
     ///
     /// ```ignore
-    /// let pt = ProjectivePoint::hash_from_bytes::<hash2field::ExpandMsgXof<sha3::Shake256>>(b"test data", b"CURVE_XOF:SHAKE-256_SSWU_RO_");
+    /// let pt = ProjectivePoint::hash_from_bytes::<ExpandMsgXof<sha3::Shake256>>(b"test data", b"CURVE_XOF:SHAKE-256_SSWU_RO_");
     /// ```
     ///
-    fn hash_from_bytes<X: ExpandMsg>(msg: &[u8], dst: &'static [u8]) -> Result<Self::Output> {
+    /// # Errors
+    /// See implementors of [`ExpandMsg`] for errors:
+    /// - [`ExpandMsgXmd`]
+    /// - [`ExpandMsgXof`]
+    ///
+    /// `len_in_bytes = T::Length * 2`
+    ///
+    /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
+    /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
+    fn hash_from_bytes<'a, X: ExpandMsg<'a>>(
+        msgs: &[&[u8]],
+        dst: &'a [u8],
+    ) -> Result<Self::Output> {
         let mut u = [Self::FieldElement::default(), Self::FieldElement::default()];
-        hash_to_field::<X, _>(msg, dst, &mut u)?;
+        hash_to_field::<X, _>(msgs, dst, &mut u)?;
         let q0 = u[0].map_to_curve();
         let q1 = u[1].map_to_curve();
         // Ideally we could add and then clear cofactor once
@@ -66,10 +78,45 @@ pub trait GroupDigest {
     /// > uniformly random in G: the set of possible outputs of
     /// > encode_to_curve is only a fraction of the points in G, and some
     /// > points in this set are more likely to be output than others.
-    fn encode_from_bytes<X: ExpandMsg>(msg: &[u8], dst: &'static [u8]) -> Result<Self::Output> {
+    ///
+    /// # Errors
+    /// See implementors of [`ExpandMsg`] for errors:
+    /// - [`ExpandMsgXmd`]
+    /// - [`ExpandMsgXof`]
+    ///
+    /// `len_in_bytes = T::Length`
+    ///
+    /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
+    /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
+    fn encode_from_bytes<'a, X: ExpandMsg<'a>>(
+        msgs: &[&[u8]],
+        dst: &'a [u8],
+    ) -> Result<Self::Output> {
         let mut u = [Self::FieldElement::default()];
-        hash_to_field::<X, _>(msg, dst, &mut u)?;
+        hash_to_field::<X, _>(msgs, dst, &mut u)?;
         let q0 = u[0].map_to_curve();
         Ok(q0.clear_cofactor())
+    }
+
+    /// Computes the hash to field routine according to
+    /// <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5>
+    /// and returns a scalar.
+    ///
+    /// # Errors
+    /// See implementors of [`ExpandMsg`] for errors:
+    /// - [`ExpandMsgXmd`]
+    /// - [`ExpandMsgXof`]
+    ///
+    /// `len_in_bytes = T::Length`
+    ///
+    /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
+    /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
+    fn hash_to_scalar<'a, X: ExpandMsg<'a>>(msgs: &[&[u8]], dst: &'a [u8]) -> Result<Self::Scalar>
+    where
+        Self::Scalar: FromOkm,
+    {
+        let mut u = [Self::Scalar::default()];
+        hash_to_field::<X, _>(msgs, dst, &mut u)?;
+        Ok(u[0])
     }
 }

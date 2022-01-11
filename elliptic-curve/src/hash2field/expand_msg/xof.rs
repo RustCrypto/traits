@@ -1,11 +1,15 @@
 //! `expand_message_xof` for the `ExpandMsg` trait
 
-use super::ExpandMsg;
-use crate::{hash2field::Domain, Error, Result};
+use super::{Domain, ExpandMsg, Expander};
+use crate::{Error, Result};
 use digest::{ExtendableOutput, Update, XofReader};
 use generic_array::typenum::U32;
 
 /// Placeholder type for implementing `expand_message_xof` based on an extendable output function
+///
+/// # Errors
+/// - `len_in_bytes == 0`
+/// - `len_in_bytes > u16::MAX`
 pub struct ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + Update,
@@ -14,11 +18,17 @@ where
 }
 
 /// ExpandMsgXof implements `expand_message_xof` for the [`ExpandMsg`] trait
-impl<HashT> ExpandMsg for ExpandMsgXof<HashT>
+impl<'a, HashT> ExpandMsg<'a> for ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + Update,
 {
-    fn expand_message(msg: &[u8], dst: &'static [u8], len_in_bytes: usize) -> Result<Self> {
+    type Expander = Self;
+
+    fn expand_message(
+        msgs: &[&[u8]],
+        dst: &'a [u8],
+        len_in_bytes: usize,
+    ) -> Result<Self::Expander> {
         if len_in_bytes == 0 {
             return Err(Error);
         }
@@ -26,19 +36,30 @@ where
         let len_in_bytes = u16::try_from(len_in_bytes).map_err(|_| Error)?;
 
         let domain = Domain::<U32>::xof::<HashT>(dst);
-        let reader = HashT::default()
-            .chain(msg)
+        let mut reader = HashT::default();
+
+        for msg in msgs {
+            reader = reader.chain(msg);
+        }
+
+        let reader = reader
             .chain(len_in_bytes.to_be_bytes())
             .chain(domain.data())
             .chain([domain.len()])
             .finalize_xof();
         Ok(Self { reader })
     }
+}
 
+impl<HashT> Expander for ExpandMsgXof<HashT>
+where
+    HashT: Default + ExtendableOutput + Update,
+{
     fn fill_bytes(&mut self, okm: &mut [u8]) {
         self.reader.read(okm);
     }
 }
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -50,7 +71,12 @@ mod test {
     use hex_literal::hex;
     use sha3::Shake128;
 
-    fn assert_message<HashT>(msg: &[u8], domain: &Domain<U32>, len_in_bytes: u16, bytes: &[u8]) {
+    fn assert_message<HashT>(
+        msg: &[u8],
+        domain: &Domain<'_, U32>,
+        len_in_bytes: u16,
+        bytes: &[u8],
+    ) {
         let msg_len = msg.len();
         assert_eq!(msg, &bytes[..msg_len]);
 
@@ -76,7 +102,7 @@ mod test {
     }
 
     impl TestVector {
-        fn assert<HashT, L>(&self, dst: &'static [u8], domain: &Domain<U32>) -> Result<()>
+        fn assert<HashT, L>(&self, dst: &'static [u8], domain: &Domain<'_, U32>) -> Result<()>
         where
             HashT: Default + ExtendableOutput + Update,
             L: ArrayLength<u8>,
@@ -84,7 +110,7 @@ mod test {
             assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
 
             let mut expander =
-                <ExpandMsgXof<HashT> as ExpandMsg>::expand_message(self.msg, dst, L::to_usize())?;
+                ExpandMsgXof::<HashT>::expand_message(&[self.msg], dst, L::to_usize())?;
 
             let mut uniform_bytes = GenericArray::<u8, L>::default();
             expander.fill_bytes(&mut uniform_bytes);
