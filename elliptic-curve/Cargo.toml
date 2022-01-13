@@ -56,6 +56,7 @@ jwk = ["alloc", "base64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
 pem = ["alloc", "arithmetic", "pem-rfc7468/alloc", "pkcs8", "sec1/pem"]
 pkcs8 = ["sec1/pkcs8"]
 std = ["alloc", "rand_core/std"]
+voprf = ["digest"]
 
 [package.metadata.docs.rs]
 features = ["arithmetic", "ecdh", "jwk", "pem", "std"]
