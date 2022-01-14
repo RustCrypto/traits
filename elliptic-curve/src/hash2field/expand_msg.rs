@@ -76,7 +76,12 @@ where
         X: Digest<OutputSize = L>,
     {
         if dst.len() > MAX_DST_LEN {
-            Self::Hashed(X::new().chain(OVERSIZE_DST_SALT).chain(dst).finalize())
+            Self::Hashed(
+                X::new()
+                    .chain_update(OVERSIZE_DST_SALT)
+                    .chain_update(dst)
+                    .finalize(),
+            )
         } else {
             Self::Array(dst)
         }

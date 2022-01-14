@@ -9,7 +9,7 @@ use subtle::CtOption;
 use group::Group;
 
 #[cfg(feature = "digest")]
-use digest::{BlockInput, Digest, FixedOutput, Reset, Update};
+use digest::{core_api::BlockSizeUser, Digest, FixedOutput, Reset};
 
 /// Perform an inversion on a field element (i.e. base field element or scalar)
 pub trait Invert {
@@ -67,7 +67,7 @@ pub trait Reduce<UInt: Integer + ArrayEncoding>: Sized {
     #[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
     fn from_be_digest_reduced<D>(digest: D) -> Self
     where
-        D: FixedOutput<OutputSize = UInt::ByteSize> + BlockInput + Clone + Default + Reset + Update,
+        D: FixedOutput<OutputSize = UInt::ByteSize> + BlockSizeUser + Clone + Digest + Reset,
     {
         Self::from_be_bytes_reduced(digest.finalize())
     }
@@ -78,7 +78,7 @@ pub trait Reduce<UInt: Integer + ArrayEncoding>: Sized {
     #[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
     fn from_le_digest_reduced<D>(digest: D) -> Self
     where
-        D: FixedOutput<OutputSize = UInt::ByteSize> + BlockInput + Clone + Default + Reset + Update,
+        D: FixedOutput<OutputSize = UInt::ByteSize> + BlockSizeUser + Clone + Digest + Reset,
     {
         Self::from_le_bytes_reduced(digest.finalize())
     }
