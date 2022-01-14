@@ -44,7 +44,7 @@ pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// - [`ExpandMsgXmd`]
     /// - [`ExpandMsgXof`]
     ///
-    /// `len_in_bytes = T::Length * 2`
+    /// `len_in_bytes = <Self::FieldElement as FromOkm>::Length * 2`
     ///
     /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
@@ -84,7 +84,7 @@ pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// - [`ExpandMsgXmd`]
     /// - [`ExpandMsgXof`]
     ///
-    /// `len_in_bytes = T::Length`
+    /// `len_in_bytes = <Self::FieldElement as FromOkm>::Length`
     ///
     /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
@@ -107,7 +107,7 @@ pub trait GroupDigest: ProjectiveArithmetic<ProjectivePoint = Self::Output> {
     /// - [`ExpandMsgXmd`]
     /// - [`ExpandMsgXof`]
     ///
-    /// `len_in_bytes = T::Length`
+    /// `len_in_bytes = <Self::Scalar as FromOkm>::Length`
     ///
     /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
