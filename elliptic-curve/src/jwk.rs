@@ -20,7 +20,7 @@ use core::{
     str::{self, FromStr},
 };
 use serde::{de, ser, Deserialize, Serialize};
-use zeroize::Zeroize;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[cfg(feature = "arithmetic")]
 use crate::{
@@ -344,6 +344,8 @@ impl PartialEq for JwkEcKey {
 }
 
 impl Eq for JwkEcKey {}
+
+impl ZeroizeOnDrop for JwkEcKey {}
 
 impl Drop for JwkEcKey {
     fn drop(&mut self) {
