@@ -54,25 +54,25 @@ where
         let ell = u8::try_from((len_in_bytes + b_in_bytes - 1) / b_in_bytes).map_err(|_| Error)?;
 
         let domain = Domain::xmd::<HashT>(dst);
-        let mut b_0 = HashT::new().chain_update(GenericArray::<u8, HashT::BlockSize>::default());
+        let mut b_0 = HashT::new();
+        b_0.update(GenericArray::<u8, HashT::BlockSize>::default());
 
         for msg in msgs {
-            b_0 = b_0.chain_update(msg);
+            b_0.update(msg);
         }
 
-        let b_0 = b_0
-            .chain_update(len_in_bytes_u16.to_be_bytes())
-            .chain_update([0])
-            .chain_update(domain.data())
-            .chain_update([domain.len()])
-            .finalize();
+        b_0.update(len_in_bytes_u16.to_be_bytes());
+        b_0.update([0]);
+        b_0.update(domain.data());
+        b_0.update([domain.len()]);
+        let b_0 = b_0.finalize();
 
-        let b_vals = HashT::new()
-            .chain_update(&b_0[..])
-            .chain_update([1u8])
-            .chain_update(domain.data())
-            .chain_update([domain.len()])
-            .finalize();
+        let mut b_vals = HashT::new();
+        b_vals.update(&b_0[..]);
+        b_vals.update([1u8]);
+        b_vals.update(domain.data());
+        b_vals.update([domain.len()]);
+        let b_vals = b_vals.finalize();
 
         Ok(ExpanderXmd {
             b_0,
@@ -117,12 +117,12 @@ where
                 .zip(&self.b_vals[..])
                 .enumerate()
                 .for_each(|(j, (b0val, bi1val))| tmp[j] = b0val ^ bi1val);
-            self.b_vals = HashT::new()
-                .chain_update(tmp)
-                .chain_update([self.index])
-                .chain_update(self.domain.data())
-                .chain_update([self.domain.len()])
-                .finalize();
+            let mut b_vals = HashT::new();
+            b_vals.update(tmp);
+            b_vals.update([self.index]);
+            b_vals.update(self.domain.data());
+            b_vals.update([self.domain.len()]);
+            self.b_vals = b_vals.finalize();
             true
         } else {
             false
