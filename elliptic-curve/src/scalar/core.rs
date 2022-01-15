@@ -10,6 +10,7 @@ use crate::{
     },
     Curve, Error, FieldBytes, IsHigh, Result,
 };
+use base16ct::HexDisplay;
 use core::{
     cmp::Ordering,
     fmt,
@@ -376,7 +377,7 @@ where
     C: Curve,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        hex::write_lower(&self.to_be_bytes(), f)
+        write!(f, "{:x}", HexDisplay(&self.to_be_bytes()))
     }
 }
 
@@ -385,7 +386,7 @@ where
     C: Curve,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        hex::write_upper(&self.to_be_bytes(), f)
+        write!(f, "{:X}", HexDisplay(&self.to_be_bytes()))
     }
 }
 
