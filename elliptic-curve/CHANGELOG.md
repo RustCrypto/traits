@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.11.8 (2021-01-15)
+### Added
+- Impl `ZeroizeOnDrop` on appropriate items ([#884])
+
+### Changed
+- Use the `base16ct` crate for hex serialization ([#886], [#887], [#888])
+
+[#884]: https://github.com/RustCrypto/traits/pull/884
+[#886]: https://github.com/RustCrypto/traits/pull/886
+[#887]: https://github.com/RustCrypto/traits/pull/887
+[#888]: https://github.com/RustCrypto/traits/pull/888
+
 ## 0.11.7 (2021-01-14)
 ### Added
 - Initial hash-to-field support ([#854], [#855], [#871], [#874])
