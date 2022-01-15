@@ -2,7 +2,6 @@
 
 use crate::{
     bigint::{prelude::*, Limb, NonZero},
-    hex,
     rand_core::{CryptoRng, RngCore},
     subtle::{
         Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
@@ -398,7 +397,7 @@ where
 
     fn from_str(hex: &str) -> Result<Self> {
         let mut bytes = FieldBytes::<C>::default();
-        hex::decode(hex, &mut bytes)?;
+        base16ct::lower::decode(hex, &mut bytes)?;
         Option::from(Self::from_be_bytes(bytes)).ok_or(Error)
     }
 }
