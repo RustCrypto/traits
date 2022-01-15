@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "base16ct"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ecf0f8400afa4e4e3654e950d5717c0c626ffbaf218d80cccd86abd609529ed"
+checksum = "349a06037c7bf932dd7e7d1f653678b2038b9ad46a74102f1fc7bd7872678cce"
 
 [[package]]
 name = "base64ct"

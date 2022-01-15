@@ -8,6 +8,7 @@ use crate::{
     Curve, Error, FieldBytes, IsHigh, PrimeCurve, Result, Scalar, ScalarArithmetic, ScalarCore,
     SecretKey,
 };
+use base16ct::HexDisplay;
 use core::{
     fmt,
     ops::{Deref, Mul, Neg},
@@ -298,7 +299,7 @@ where
     C: Curve + ScalarArithmetic,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        hex::write_lower(&self.to_repr(), f)
+        write!(f, "{:x}", HexDisplay(&self.to_repr()))
     }
 }
 
@@ -307,7 +308,7 @@ where
     C: Curve + ScalarArithmetic,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        hex::write_upper(&self.to_repr(), f)
+        write!(f, "{:}", HexDisplay(&self.to_repr()))
     }
 }
 
