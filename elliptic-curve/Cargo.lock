@@ -3,6 +3,12 @@
 version = 3
 
 [[package]]
+name = "base16ct"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ecf0f8400afa4e4e3654e950d5717c0c626ffbaf218d80cccd86abd609529ed"
+
+[[package]]
 name = "base64ct"
 version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -92,6 +98,7 @@ dependencies = [
 name = "elliptic-curve"
 version = "0.11.7"
 dependencies = [
+ "base16ct",
  "base64ct",
  "crypto-bigint",
  "der",

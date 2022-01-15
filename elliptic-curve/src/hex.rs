@@ -23,41 +23,13 @@ pub(crate) fn write_upper(slice: &[u8], formatter: &mut fmt::Formatter<'_>) -> f
 
 /// Decode the provided hexadecimal string into the provided buffer.
 ///
-/// Accepts either lower case or upper case hexadecimal, but not mixed.
-// TODO(tarcieri): constant-time hex decoder?
+/// Accepts either lower case or upper case hexadecimal.
 pub(crate) fn decode(hex: &str, out: &mut [u8]) -> Result<()> {
-    if hex.as_bytes().len() != out.len() * 2 {
-        return Err(Error);
+    if base16ct::mixed::decode(hex, out)?.len() == out.len() {
+        Ok(())
+    } else {
+        Err(Error)
     }
-
-    let mut upper_case = None;
-
-    // Ensure all characters are valid and case is not mixed
-    for &byte in hex.as_bytes() {
-        match byte {
-            b'0'..=b'9' => (),
-            b'a'..=b'z' => match upper_case {
-                Some(true) => return Err(Error),
-                Some(false) => (),
-                None => upper_case = Some(false),
-            },
-            b'A'..=b'Z' => match upper_case {
-                Some(true) => (),
-                Some(false) => return Err(Error),
-                None => upper_case = Some(true),
-            },
-            _ => return Err(Error),
-        }
-    }
-
-    for (digit, byte) in hex.as_bytes().chunks_exact(2).zip(out.iter_mut()) {
-        *byte = str::from_utf8(digit)
-            .ok()
-            .and_then(|s| u8::from_str_radix(s, 16).ok())
-            .ok_or(Error)?;
-    }
-
-    Ok(())
 }
 
 #[cfg(all(test, feature = "std"))]
@@ -95,12 +67,6 @@ mod tests {
         let mut buf = [0u8; 8];
         super::decode(EXAMPLE_HEX_LOWER, &mut buf).unwrap();
         assert_eq!(buf, EXAMPLE_DATA);
-    }
-
-    #[test]
-    fn decode_rejects_mixed_case() {
-        let mut buf = [0u8; 8];
-        assert!(super::decode("0123456789abcDEF", &mut buf).is_err());
     }
 
     #[test]
