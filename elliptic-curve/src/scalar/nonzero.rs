@@ -2,7 +2,6 @@
 
 use crate::{
     bigint::Encoding as _,
-    hex,
     ops::{Invert, Reduce, ReduceNonZero},
     rand_core::{CryptoRng, RngCore},
     Curve, Error, FieldBytes, IsHigh, PrimeCurve, Result, Scalar, ScalarArithmetic, ScalarCore,
@@ -320,8 +319,12 @@ where
 
     fn from_str(hex: &str) -> Result<Self> {
         let mut bytes = FieldBytes::<C>::default();
-        hex::decode(hex, &mut bytes)?;
-        Option::from(Self::from_repr(bytes)).ok_or(Error)
+
+        if base16ct::mixed::decode(hex, &mut bytes)?.len() == bytes.len() {
+            Option::from(Self::from_repr(bytes)).ok_or(Error)
+        } else {
+            Err(Error)
+        }
     }
 }
 

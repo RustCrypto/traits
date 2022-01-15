@@ -73,7 +73,6 @@ pub mod ops;
 pub mod sec1;
 
 mod error;
-mod hex;
 mod point;
 mod scalar;
 mod secret_key;
