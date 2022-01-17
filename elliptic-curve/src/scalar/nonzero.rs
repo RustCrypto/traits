@@ -170,11 +170,13 @@ impl<C> Invert for NonZeroScalar<C>
 where
     C: Curve + ScalarArithmetic,
 {
-    type Output = Scalar<C>;
+    type Output = Self;
 
-    /// Perform a scalar inversion
-    fn invert(&self) -> CtOption<Self::Output> {
-        ff::Field::invert(&self.scalar)
+    fn invert(&self) -> Self {
+        Self {
+            // This will always succeed since `scalar` will never be 0
+            scalar: ff::Field::invert(&self.scalar).unwrap(),
+        }
     }
 }
 

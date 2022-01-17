@@ -3,10 +3,9 @@
 pub use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
 use crypto_bigint::{ArrayEncoding, ByteArray, Integer};
-use subtle::CtOption;
 
 #[cfg(feature = "arithmetic")]
-use group::Group;
+use {group::Group, subtle::CtOption};
 
 #[cfg(feature = "digest")]
 use digest::{core_api::BlockSizeUser, Digest, FixedOutput, Reset};
@@ -17,12 +16,12 @@ pub trait Invert {
     type Output;
 
     /// Invert a field element.
-    fn invert(&self) -> CtOption<Self::Output>;
+    fn invert(&self) -> Self::Output;
 }
 
 #[cfg(feature = "arithmetic")]
 impl<F: ff::Field> Invert for F {
-    type Output = F;
+    type Output = CtOption<F>;
 
     fn invert(&self) -> CtOption<F> {
         ff::Field::invert(self)
