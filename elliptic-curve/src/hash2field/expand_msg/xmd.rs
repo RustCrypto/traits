@@ -5,11 +5,12 @@ use core::marker::PhantomData;
 use super::{Domain, ExpandMsg, Expander};
 use crate::{Error, Result};
 use digest::{
+    core_api::BlockSizeUser,
     generic_array::{
         typenum::{IsLess, IsLessOrEqual, Unsigned, U256},
         GenericArray,
     },
-    BlockInput, Digest,
+    Digest,
 };
 
 /// Placeholder type for implementing `expand_message_xmd` based on a hash function
@@ -20,14 +21,14 @@ use digest::{
 /// - `len_in_bytes > 255 * HashT::OutputSize`
 pub struct ExpandMsgXmd<HashT>(PhantomData<HashT>)
 where
-    HashT: Digest + BlockInput,
+    HashT: Digest + BlockSizeUser,
     HashT::OutputSize: IsLess<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>;
 
 /// ExpandMsgXmd implements expand_message_xmd for the ExpandMsg trait
 impl<'a, HashT> ExpandMsg<'a> for ExpandMsgXmd<HashT>
 where
-    HashT: Digest + BlockInput,
+    HashT: Digest + BlockSizeUser,
     // If `len_in_bytes` is bigger then 256, length of the `DST` will depend on
     // the output size of the hash, which is still not allowed to be bigger then 256:
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-6
@@ -53,25 +54,25 @@ where
         let ell = u8::try_from((len_in_bytes + b_in_bytes - 1) / b_in_bytes).map_err(|_| Error)?;
 
         let domain = Domain::xmd::<HashT>(dst);
-        let mut b_0 = HashT::new().chain(GenericArray::<u8, HashT::BlockSize>::default());
+        let mut b_0 = HashT::new();
+        b_0.update(GenericArray::<u8, HashT::BlockSize>::default());
 
         for msg in msgs {
-            b_0 = b_0.chain(msg);
+            b_0.update(msg);
         }
 
-        let b_0 = b_0
-            .chain(len_in_bytes_u16.to_be_bytes())
-            .chain([0])
-            .chain(domain.data())
-            .chain([domain.len()])
-            .finalize();
+        b_0.update(len_in_bytes_u16.to_be_bytes());
+        b_0.update([0]);
+        b_0.update(domain.data());
+        b_0.update([domain.len()]);
+        let b_0 = b_0.finalize();
 
-        let b_vals = HashT::new()
-            .chain(&b_0[..])
-            .chain([1u8])
-            .chain(domain.data())
-            .chain([domain.len()])
-            .finalize();
+        let mut b_vals = HashT::new();
+        b_vals.update(&b_0[..]);
+        b_vals.update([1u8]);
+        b_vals.update(domain.data());
+        b_vals.update([domain.len()]);
+        let b_vals = b_vals.finalize();
 
         Ok(ExpanderXmd {
             b_0,
@@ -87,7 +88,7 @@ where
 /// [`Expander`] type for [`ExpandMsgXmd`].
 pub struct ExpanderXmd<'a, HashT>
 where
-    HashT: Digest + BlockInput,
+    HashT: Digest + BlockSizeUser,
     HashT::OutputSize: IsLess<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
@@ -101,7 +102,7 @@ where
 
 impl<'a, HashT> ExpanderXmd<'a, HashT>
 where
-    HashT: Digest + BlockInput,
+    HashT: Digest + BlockSizeUser,
     HashT::OutputSize: IsLess<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
@@ -116,12 +117,12 @@ where
                 .zip(&self.b_vals[..])
                 .enumerate()
                 .for_each(|(j, (b0val, bi1val))| tmp[j] = b0val ^ bi1val);
-            self.b_vals = HashT::new()
-                .chain(tmp)
-                .chain([self.index])
-                .chain(self.domain.data())
-                .chain([self.domain.len()])
-                .finalize();
+            let mut b_vals = HashT::new();
+            b_vals.update(tmp);
+            b_vals.update([self.index]);
+            b_vals.update(self.domain.data());
+            b_vals.update([self.domain.len()]);
+            self.b_vals = b_vals.finalize();
             true
         } else {
             false
@@ -131,7 +132,7 @@ where
 
 impl<'a, HashT> Expander for ExpanderXmd<'a, HashT>
 where
-    HashT: Digest + BlockInput,
+    HashT: Digest + BlockSizeUser,
     HashT::OutputSize: IsLess<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
@@ -163,7 +164,7 @@ mod test {
         len_in_bytes: u16,
         bytes: &[u8],
     ) where
-        HashT: Digest + BlockInput,
+        HashT: Digest + BlockSizeUser,
         HashT::OutputSize: IsLess<U256>,
     {
         let block = HashT::BlockSize::to_usize();
@@ -203,7 +204,7 @@ mod test {
             domain: &Domain<'_, HashT::OutputSize>,
         ) -> Result<()>
         where
-            HashT: Digest + BlockInput,
+            HashT: Digest + BlockSizeUser,
             HashT::OutputSize: IsLess<U256> + IsLessOrEqual<HashT::BlockSize>,
         {
             assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
