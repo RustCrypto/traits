@@ -22,7 +22,7 @@ members = ["."]
 aead = { version = "0.4", optional = true, path = "../aead" }
 cipher = { version = "0.3", optional = true }
 digest = { version = "0.10", optional = true }
-elliptic-curve = { version = "0.11", optional = true, path = "../elliptic-curve" }
+elliptic-curve = { version = "0.12.0-pre", optional = true, path = "../elliptic-curve" }
 mac = { version = "0.11", package = "crypto-mac", optional = true }
 password-hash = { version = "0.3", optional = true, path = "../password-hash" }
 signature = { version = "1.5", optional = true, default-features = false, path = "../signature" }
