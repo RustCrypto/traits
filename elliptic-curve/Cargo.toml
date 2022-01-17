@@ -60,5 +60,5 @@ std = ["alloc", "rand_core/std"]
 voprf = ["digest"]
 
 [package.metadata.docs.rs]
-features = ["arithmetic", "ecdh", "jwk", "pem", "std"]
+features = ["bits", "ecdh", "hash2curve", "jwk", "pem", "std", "voprf"]
 rustdoc-args = ["--cfg", "docsrs"]
