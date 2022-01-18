@@ -6,7 +6,6 @@ use crate::{
     Encoding, Error, Ident, Result,
 };
 use core::{
-    convert::{TryFrom, TryInto},
     fmt::{self, Debug, Write},
     iter::FromIterator,
     str::{self, FromStr},
@@ -325,7 +324,7 @@ mod tests {
 
     #[cfg(feature = "alloc")]
     use alloc::string::ToString;
-    use core::{convert::TryFrom, str::FromStr};
+    use core::str::FromStr;
 
     #[test]
     fn add() {

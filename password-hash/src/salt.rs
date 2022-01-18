@@ -1,10 +1,7 @@
 //! Salt string support.
 
 use crate::{Encoding, Error, Result, Value};
-use core::{
-    convert::{TryFrom, TryInto},
-    fmt, str,
-};
+use core::{fmt, str};
 
 use crate::errors::InvalidValue;
 #[cfg(feature = "rand_core")]

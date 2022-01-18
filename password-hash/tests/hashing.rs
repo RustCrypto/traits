@@ -3,7 +3,6 @@
 pub use password_hash::{
     Decimal, Error, Ident, Output, ParamsString, PasswordHash, PasswordHasher, Result, Salt,
 };
-use std::convert::{TryFrom, TryInto};
 
 const ALG: Ident = Ident::new("example");
 

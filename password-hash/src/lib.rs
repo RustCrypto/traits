@@ -1,19 +1,14 @@
-//! This crate defines a set of traits which describe the functionality of
-//! [password hashing algorithms].
-//!
-//! Provides a `no_std`-friendly implementation of the
-//! [Password Hashing Competition (PHC) string format specification][PHC]
-//! (a well-defined subset of the [Modular Crypt Format a.k.a. MCF][MCF]) which
-//! works in conjunction with the traits this crate defines.
-//!
-//! # Supported Crates
-//!
-//! See [RustCrypto/password-hashes] for algorithm implementations which use
-//! this crate for interoperability:
-//!
-//! - [`argon2`] - Argon2 memory hard key derivation function
-//! - [`pbkdf2`] - Password-Based Key Derivation Function v2
-//! - [`scrypt`] - scrypt key derivation function
+#![no_std]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![doc = include_str!("../README.md")]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
+    html_root_url = "https://docs.rs/password-hash/0.4.0-pre"
+)]
+#![forbid(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms, unused_lifetimes)]
+
 //!
 //! # Usage
 //!
@@ -25,24 +20,6 @@
 //! ```
 //!
 //! For more information, please see the documentation for [`PasswordHash`].
-//!
-//! [password hashing algorithms]: https://en.wikipedia.org/wiki/Cryptographic_hash_function#Password_verification
-//! [PHC]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
-//! [MCF]: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
-//! [RustCrypto/password-hashes]: https://github.com/RustCrypto/password-hashes
-//! [`argon2`]: https://docs.rs/argon2
-//! [`pbkdf2`]: https://docs.rs/pbkdf2
-//! [`scrypt`]: https://docs.rs/scrypt
-
-#![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_root_url = "https://docs.rs/password-hash/0.4.0-pre"
-)]
-#![forbid(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms, unused_lifetimes)]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -74,10 +51,7 @@ pub use crate::{
     value::{Decimal, Value},
 };
 
-use core::{
-    convert::{TryFrom, TryInto},
-    fmt::{self, Debug},
-};
+use core::fmt::{self, Debug};
 
 #[cfg(feature = "alloc")]
 use alloc::{

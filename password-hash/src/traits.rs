@@ -1,10 +1,7 @@
 //! Trait definitions.
 
 use crate::{Decimal, Error, Ident, ParamsString, PasswordHash, Result, Salt};
-use core::{
-    convert::{TryFrom, TryInto},
-    fmt::Debug,
-};
+use core::fmt::Debug;
 
 /// Trait for password hashing functions.
 pub trait PasswordHasher {

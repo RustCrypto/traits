@@ -9,14 +9,23 @@
 
 Traits which describe the functionality of [password hashing algorithms].
 
-Includes a `no_std`-friendly implementation of the [PHC string format]
-(a well-defined subset of the Modular Crypt Format a.k.a. MCF) which
-uses the traits this crate defines.
+[Documentation][docs-link]
+
+## About
+
+Provides a `no_std`-friendly implementation of the
+[Password Hashing Competition (PHC) string format specification][PHC]
+(a well-defined subset of the [Modular Crypt Format a.k.a. MCF][MCF]) which
+works in conjunction with the traits this crate defines.
+
+## Supported Crates
 
 See [RustCrypto/password-hashes] for algorithm implementations which use
-these traits.
+this crate for interoperability:
 
-[Documentation][docs-link]
+- [`argon2`] - Argon2 memory hard key derivation function
+- [`pbkdf2`] - Password-Based Key Derivation Function v2
+- [`scrypt`] - scrypt key derivation function
 
 ## Minimum Supported Rust Version
 
@@ -61,5 +70,9 @@ dual licensed as above, without any additional terms or conditions.
 [//]: # (general links)
 
 [password hashing algorithms]: https://en.wikipedia.org/wiki/Cryptographic_hash_function#Password_verification
-[PHC string format]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
+[PHC]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
+[MCF]: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
 [RustCrypto/password-hashes]: https://github.com/RustCrypto/password-hashes
+[`argon2`]: https://docs.rs/argon2
+[`pbkdf2`]: https://docs.rs/pbkdf2
+[`scrypt`]: https://docs.rs/scrypt

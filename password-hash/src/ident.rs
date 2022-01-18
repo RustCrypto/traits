@@ -17,7 +17,7 @@
 //! [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 
 use crate::{Error, Result};
-use core::{convert::TryFrom, fmt, ops::Deref, str};
+use core::{fmt, ops::Deref, str};
 
 /// Algorithm or parameter identifier.
 ///
@@ -151,7 +151,6 @@ const fn is_char_valid(c: u8) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{Error, Ident};
-    use core::convert::TryFrom;
 
     // Invalid ident examples
     const INVALID_EMPTY: &str = "";
