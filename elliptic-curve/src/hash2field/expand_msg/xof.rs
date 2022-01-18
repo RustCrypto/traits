@@ -8,6 +8,7 @@ use generic_array::typenum::U32;
 /// Placeholder type for implementing `expand_message_xof` based on an extendable output function
 ///
 /// # Errors
+/// - `dst.is_empty()`
 /// - `len_in_bytes == 0`
 /// - `len_in_bytes > u16::MAX`
 pub struct ExpandMsgXof<HashT>
@@ -35,7 +36,7 @@ where
 
         let len_in_bytes = u16::try_from(len_in_bytes).map_err(|_| Error)?;
 
-        let domain = Domain::<U32>::xof::<HashT>(dst);
+        let domain = Domain::<U32>::xof::<HashT>(dst)?;
         let mut reader = HashT::default();
 
         for msg in msgs {
@@ -126,7 +127,7 @@ mod test {
         const DST_PRIME: &[u8] =
             &hex!("515555582d5630312d435330322d776974682d657870616e6465722d5348414b4531323824");
 
-        let dst_prime = Domain::<U32>::xof::<Shake128>(DST);
+        let dst_prime = Domain::<U32>::xof::<Shake128>(DST)?;
         dst_prime.assert(DST_PRIME);
 
         const TEST_VECTORS_32: &[TestVector] = &[
@@ -202,7 +203,7 @@ mod test {
         const DST_PRIME: &[u8] =
             &hex!("acb9736c0867fdfbd6385519b90fc8c034b5af04a958973212950132d035792f20");
 
-        let dst_prime = Domain::<U32>::xof::<Shake128>(DST);
+        let dst_prime = Domain::<U32>::xof::<Shake128>(DST)?;
         dst_prime.assert(DST_PRIME);
 
         const TEST_VECTORS_32: &[TestVector] = &[
@@ -280,7 +281,7 @@ mod test {
         const DST_PRIME: &[u8] =
             &hex!("515555582d5630312d435330322d776974682d657870616e6465722d5348414b4532353624");
 
-        let dst_prime = Domain::<U32>::xof::<Shake256>(DST);
+        let dst_prime = Domain::<U32>::xof::<Shake256>(DST)?;
         dst_prime.assert(DST_PRIME);
 
         const TEST_VECTORS_32: &[TestVector] = &[
