@@ -3,7 +3,7 @@
 pub(super) mod xmd;
 pub(super) mod xof;
 
-use crate::Result;
+use crate::{Error, Result};
 use digest::{Digest, ExtendableOutput, Update, XofReader};
 use generic_array::typenum::{IsLess, U256};
 use generic_array::{ArrayLength, GenericArray};
@@ -54,36 +54,40 @@ impl<'a, L> Domain<'a, L>
 where
     L: ArrayLength<u8> + IsLess<U256>,
 {
-    pub fn xof<X>(dst: &'a [u8]) -> Self
+    pub fn xof<X>(dst: &'a [u8]) -> Result<Self>
     where
         X: Default + ExtendableOutput + Update,
     {
-        if dst.len() > MAX_DST_LEN {
+        if dst.is_empty() {
+            Err(Error)
+        } else if dst.len() > MAX_DST_LEN {
             let mut data = GenericArray::<u8, L>::default();
             X::default()
                 .chain(OVERSIZE_DST_SALT)
                 .chain(dst)
                 .finalize_xof()
                 .read(&mut data);
-            Self::Hashed(data)
+            Ok(Self::Hashed(data))
         } else {
-            Self::Array(dst)
+            Ok(Self::Array(dst))
         }
     }
 
-    pub fn xmd<X>(dst: &'a [u8]) -> Self
+    pub fn xmd<X>(dst: &'a [u8]) -> Result<Self>
     where
         X: Digest<OutputSize = L>,
     {
-        if dst.len() > MAX_DST_LEN {
-            Self::Hashed({
+        if dst.is_empty() {
+            Err(Error)
+        } else if dst.len() > MAX_DST_LEN {
+            Ok(Self::Hashed({
                 let mut hash = X::new();
                 hash.update(OVERSIZE_DST_SALT);
                 hash.update(dst);
                 hash.finalize()
-            })
+            }))
         } else {
-            Self::Array(dst)
+            Ok(Self::Array(dst))
         }
     }
 

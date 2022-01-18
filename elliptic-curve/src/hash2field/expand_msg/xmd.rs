@@ -16,6 +16,7 @@ use digest::{
 /// Placeholder type for implementing `expand_message_xmd` based on a hash function
 ///
 /// # Errors
+/// - `dst.is_empty()`
 /// - `len_in_bytes == 0`
 /// - `len_in_bytes > u16::MAX`
 /// - `len_in_bytes > 255 * HashT::OutputSize`
@@ -53,7 +54,7 @@ where
         let b_in_bytes = HashT::OutputSize::to_usize();
         let ell = u8::try_from((len_in_bytes + b_in_bytes - 1) / b_in_bytes).map_err(|_| Error)?;
 
-        let domain = Domain::xmd::<HashT>(dst);
+        let domain = Domain::xmd::<HashT>(dst)?;
         let mut b_0 = HashT::new();
         b_0.update(GenericArray::<u8, HashT::BlockSize>::default());
 
@@ -226,7 +227,7 @@ mod test {
         const DST_PRIME: &[u8] =
             &hex!("515555582d5630312d435330322d776974682d657870616e6465722d5348413235362d31323826");
 
-        let dst_prime = Domain::xmd::<Sha256>(DST);
+        let dst_prime = Domain::xmd::<Sha256>(DST)?;
         dst_prime.assert(DST_PRIME);
 
         const TEST_VECTORS_32: &[TestVector] = &[
@@ -298,7 +299,7 @@ mod test {
         const DST_PRIME: &[u8] =
             &hex!("412717974da474d0f8c420f320ff81e8432adb7c927d9bd082b4fb4d16c0a23620");
 
-        let dst_prime = Domain::xmd::<Sha256>(DST);
+        let dst_prime = Domain::xmd::<Sha256>(DST)?;
         dst_prime.assert(DST_PRIME);
 
         const TEST_VECTORS_32: &[TestVector] = &[
@@ -376,7 +377,7 @@ mod test {
         const DST_PRIME: &[u8] =
             &hex!("515555582d5630312d435330322d776974682d657870616e6465722d5348413531322d32353626");
 
-        let dst_prime = Domain::xmd::<Sha512>(DST);
+        let dst_prime = Domain::xmd::<Sha512>(DST)?;
         dst_prime.assert(DST_PRIME);
 
         const TEST_VECTORS_32: &[TestVector] = &[
