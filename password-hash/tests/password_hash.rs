@@ -4,7 +4,6 @@
 //! of the string encoding, and ensures password hashes round trip under each
 //! of the conditions.
 
-use core::convert::{TryFrom, TryInto};
 use password_hash::{Ident, ParamsString, PasswordHash, Salt};
 
 const EXAMPLE_ALGORITHM: Ident = Ident::new("argon2d");

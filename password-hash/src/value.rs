@@ -15,7 +15,7 @@
 
 use crate::errors::InvalidValue;
 use crate::{Encoding, Error, Result};
-use core::{convert::TryFrom, fmt, str};
+use core::{fmt, str};
 
 /// Type used to represent decimal (i.e. integer) values.
 pub type Decimal = u32;
@@ -209,7 +209,6 @@ fn is_char_valid(c: char) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{Error, InvalidValue, Value};
-    use core::convert::TryFrom;
 
     // Invalid value examples
     const INVALID_CHAR: &str = "x;y";

@@ -32,12 +32,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "base64ct"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a32fd6af2b5827bce66c29053ba0e7c42b9dcab01835835058558c10851a46b"
-
-[[package]]
 name = "blobby"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -195,15 +189,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712a4d093c9976e24e7dbca41db895dabcbac38eb5f4045393d17a95bdfb1109"
 dependencies = [
  "scopeguard",
-]
-
-[[package]]
-name = "password-hash"
-version = "0.4.0-pre"
-dependencies = [
- "base64ct",
- "rand_core",
- "subtle",
 ]
 
 [[package]]

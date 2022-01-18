@@ -1,7 +1,7 @@
 //! Outputs from password hashing functions.
 
 use crate::{Encoding, Error, Result};
-use core::{cmp::PartialEq, convert::TryFrom, fmt, str::FromStr};
+use core::{cmp::PartialEq, fmt, str::FromStr};
 use subtle::{Choice, ConstantTimeEq};
 
 /// Output from password hashing functions, i.e. the "hash" or "digest"

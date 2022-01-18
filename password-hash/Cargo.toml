@@ -9,11 +9,16 @@ version = "0.4.0-pre" # Also update html_root_url in lib.rs when bumping this
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-edition = "2018"
 documentation = "https://docs.rs/password-hash"
 repository = "https://github.com/RustCrypto/traits/tree/master/password-hash"
 categories = ["cryptography", "no-std"]
 keywords = ["crypt", "mcf", "password", "pbkdf", "phc"]
+edition = "2021"
+rust-version = "1.57"
+
+# Hack to allow this crate to coexist with pre-2021 edition crates
+[workspace]
+members = ["."]
 
 [dependencies]
 base64ct = ">=1, <1.1.0"
