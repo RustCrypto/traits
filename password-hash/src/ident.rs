@@ -60,23 +60,14 @@ impl<'a> Ident<'a> {
     pub const fn new(s: &'a str) -> Self {
         let input = s.as_bytes();
 
-        /// Constant panicking assertion.
-        // TODO(tarcieri): use const panic when stable.
-        // See: https://github.com/rust-lang/rust/issues/51999
-        macro_rules! const_assert {
-            ($bool:expr, $msg:expr) => {
-                [$msg][!$bool as usize]
-            };
-        }
-
-        const_assert!(!input.is_empty(), "PHC ident string can't be empty");
-        const_assert!(input.len() <= Self::MAX_LENGTH, "PHC ident string too long");
+        assert!(!input.is_empty(), "PHC ident string can't be empty");
+        assert!(input.len() <= Self::MAX_LENGTH, "PHC ident string too long");
 
         macro_rules! validate_chars {
             ($($pos:expr),+) => {
                 $(
                     if $pos < input.len() {
-                        const_assert!(
+                        assert!(
                             is_char_valid(input[$pos]),
                             "invalid character in PHC string ident"
                         );
