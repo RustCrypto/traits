@@ -1,10 +1,7 @@
 //! Traits for handling hash to curve.
 
-use super::MapToCurve;
-use crate::{
-    hash2field::{hash_to_field, ExpandMsg, FromOkm},
-    ProjectiveArithmetic, Result,
-};
+use super::{hash_to_field, ExpandMsg, FromOkm, MapToCurve};
+use crate::{ProjectiveArithmetic, Result};
 use group::cofactor::CofactorGroup;
 
 /// Adds hashing arbitrary byte sequences to a valid group element
