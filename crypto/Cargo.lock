@@ -183,7 +183,7 @@ checksum = "fbe5e23404da5b4f555ef85ebed98fb4083e55a00c317800bc2a50ede9f3d219"
 
 [[package]]
 name = "password-hash"
-version = "0.3.2"
+version = "0.4.0-pre"
 dependencies = [
  "base64ct",
  "rand_core",
