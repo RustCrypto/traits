@@ -94,8 +94,7 @@ pub mod ecdh;
 mod jwk;
 
 #[cfg(feature = "hash2curve")]
-#[doc(hidden)]
-pub mod hash2field;
+mod hash2field;
 
 #[cfg(feature = "hash2curve")]
 #[cfg_attr(docsrs, doc(cfg(feature = "hash2curve")))]
