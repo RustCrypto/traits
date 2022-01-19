@@ -8,7 +8,7 @@ use crypto_bigint::{ArrayEncoding, ByteArray, Integer};
 use {group::Group, subtle::CtOption};
 
 #[cfg(feature = "digest")]
-use digest::{core_api::BlockSizeUser, Digest, FixedOutput, Reset};
+use digest::FixedOutput;
 
 /// Perform an inversion on a field element (i.e. base field element or scalar)
 pub trait Invert {
@@ -66,9 +66,9 @@ pub trait Reduce<UInt: Integer + ArrayEncoding>: Sized {
     #[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
     fn from_be_digest_reduced<D>(digest: D) -> Self
     where
-        D: FixedOutput<OutputSize = UInt::ByteSize> + BlockSizeUser + Clone + Digest + Reset,
+        D: FixedOutput<OutputSize = UInt::ByteSize>,
     {
-        Self::from_be_bytes_reduced(digest.finalize())
+        Self::from_be_bytes_reduced(digest.finalize_fixed())
     }
 
     /// Interpret a digest as a little endian integer and perform a modular
@@ -77,9 +77,9 @@ pub trait Reduce<UInt: Integer + ArrayEncoding>: Sized {
     #[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
     fn from_le_digest_reduced<D>(digest: D) -> Self
     where
-        D: FixedOutput<OutputSize = UInt::ByteSize> + BlockSizeUser + Clone + Digest + Reset,
+        D: FixedOutput<OutputSize = UInt::ByteSize>,
     {
-        Self::from_le_bytes_reduced(digest.finalize())
+        Self::from_le_bytes_reduced(digest.finalize_fixed())
     }
 }
 
