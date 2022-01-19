@@ -21,7 +21,7 @@ rust-version = "1.57"
 members = ["."]
 
 [dependencies]
-base64ct = ">=1, <1.1.0"
+base64ct = "1"
 subtle = { version = ">=2, <2.5", default-features = false }
 
 # optional features
