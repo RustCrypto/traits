@@ -5,3 +5,23 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 10
+- package-ecosystem: cargo
+  directory: "/crypto"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+- package-ecosystem: cargo
+  directory: "/elliptic-curve"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+- package-ecosystem: cargo
+  directory: "/kem"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+- package-ecosystem: cargo
+  directory: "/password-hash"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
