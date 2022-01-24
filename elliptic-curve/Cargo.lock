@@ -100,7 +100,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.12.0-pre.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "base16ct",
  "base64ct",
@@ -257,9 +257,9 @@ checksum = "97565067517b60e2d1ea8b268e59ce036de907ac523ad83a0475da04e818989a"
 
 [[package]]
 name = "serde_json"
-version = "1.0.75"
+version = "1.0.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c059c05b48c5c0067d4b4b2b4f0732dd65feb52daf7e0ea09cd87e7dadc1af79"
+checksum = "d23c1ba4cf0efd44be32017709280b32d1cea5c3f1275c3b6d9e8bc54f758085"
 dependencies = [
  "itoa",
  "ryu",
