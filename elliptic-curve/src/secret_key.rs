@@ -15,7 +15,7 @@ use core::fmt::{self, Debug};
 use crypto_bigint::Encoding;
 use generic_array::GenericArray;
 use subtle::{Choice, ConstantTimeEq};
-use zeroize::{Zeroize, ZeroizeOnDrop};
+use zeroize::Zeroize;
 
 #[cfg(all(feature = "alloc", feature = "arithmetic"))]
 use {
@@ -324,8 +324,6 @@ where
         write!(f, "SecretKey<{:?}>{{ ... }}", C::default())
     }
 }
-
-impl<C> ZeroizeOnDrop for SecretKey<C> where C: Curve {}
 
 impl<C> Drop for SecretKey<C>
 where

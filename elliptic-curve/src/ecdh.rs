@@ -33,7 +33,7 @@ use crate::{
 use core::borrow::Borrow;
 use group::Curve as _;
 use rand_core::{CryptoRng, RngCore};
-use zeroize::{Zeroize, ZeroizeOnDrop};
+use zeroize::Zeroize;
 
 /// Low-level Elliptic Curve Diffie-Hellman (ECDH) function.
 ///
@@ -138,8 +138,6 @@ where
     }
 }
 
-impl<C> ZeroizeOnDrop for EphemeralSecret<C> where C: Curve + ProjectiveArithmetic {}
-
 impl<C> Drop for EphemeralSecret<C>
 where
     C: Curve + ProjectiveArithmetic,
@@ -209,8 +207,6 @@ impl<C: Curve> Zeroize for SharedSecret<C> {
         self.secret_bytes.zeroize()
     }
 }
-
-impl<C: Curve> ZeroizeOnDrop for SharedSecret<C> {}
 
 impl<C: Curve> Drop for SharedSecret<C> {
     fn drop(&mut self) {
