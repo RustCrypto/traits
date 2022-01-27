@@ -4,13 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.11.9 (2022-01-17)
+## 0.11.10 (2022-01-27)
+### Changed
+- Revert [#884] to support a wider range of `zeroize` versions ([#923])
+
+[#923]: https://github.com/RustCrypto/traits/pull/891
+
+## 0.11.9 (2022-01-17) [YANKED]
 ### Changed
 - Activate `bits`, `hash2curve`, and `voprf` features on docs.rs ([#891])
 
 [#891]: https://github.com/RustCrypto/traits/pull/891
 
-## 0.11.8 (2022-01-15)
+## 0.11.8 (2022-01-15) [YANKED]
 ### Added
 - Impl `ZeroizeOnDrop` on appropriate items ([#884])
 
@@ -22,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#887]: https://github.com/RustCrypto/traits/pull/887
 [#888]: https://github.com/RustCrypto/traits/pull/888
 
-## 0.11.7 (2022-01-14)
+## 0.11.7 (2022-01-14) [YANKED]
 ### Added
 - Initial hash-to-field support ([#854], [#855], [#871], [#874])
 - Initial hash-to-curve support ([#865], [#876])
