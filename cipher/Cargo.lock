@@ -47,9 +47,9 @@ dependencies = [
 
 [[package]]
 name = "inout"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1d8734d7f28aaff861d726dc3bc8003e2987d2fc26add21f5dab0c35d5c348a"
+checksum = "9e1f03d4ab4d5dc9ec2d219f86c15d2a15fc08239d1cd3b2d6a19717c0a2f443"
 dependencies = [
  "block-padding",
  "generic-array",
