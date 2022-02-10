@@ -1,6 +1,5 @@
 use super::{FixedOutput, FixedOutputReset, InvalidBufferSize, Reset, Update};
-use crypto_common::{Output, OutputSizeUser};
-use generic_array::typenum::Unsigned;
+use crypto_common::{typenum::Unsigned, Output, OutputSizeUser};
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
@@ -24,6 +23,7 @@ pub trait Digest: OutputSizeUser {
     fn update(&mut self, data: impl AsRef<[u8]>);
 
     /// Process input data in a chained manner.
+    #[must_use]
     fn chain_update(self, data: impl AsRef<[u8]>) -> Self;
 
     /// Retrieve result and consume hasher instance.

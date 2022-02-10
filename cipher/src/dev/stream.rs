@@ -4,11 +4,11 @@
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! stream_cipher_test {
-    ($name:ident, $cipher:ty, $test_name:expr) => {
+    ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
             use cipher::generic_array::GenericArray;
-            use cipher::{blobby::Blob4Iterator, NewCipher, StreamCipher};
+            use cipher::{blobby::Blob4Iterator, KeyIvInit, StreamCipher};
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
@@ -44,7 +44,7 @@ macro_rules! stream_cipher_seek_test {
         #[test]
         fn $name() {
             use cipher::generic_array::GenericArray;
-            use cipher::{NewCipher, StreamCipher, StreamCipherSeek};
+            use cipher::{KeyIvInit, StreamCipher, StreamCipherSeek};
 
             fn get_cipher() -> $cipher {
                 <$cipher>::new(&Default::default(), &Default::default())
@@ -89,153 +89,57 @@ macro_rules! stream_cipher_seek_test {
     };
 }
 
-/// Test core functionality of asynchronous stream cipher
+/// Create stream cipher benchmarks
 #[macro_export]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-macro_rules! stream_cipher_async_test {
-    ($name:ident, $test_name:expr, $cipher:ty) => {
-        #[test]
-        fn $name() {
-            use cipher::generic_array::GenericArray;
-            use cipher::{blobby::Blob4Iterator, AsyncStreamCipher, NewCipher};
+macro_rules! stream_cipher_bench {
+    (
+        $cipher:ty;
+        $($name:ident $bs:expr;)*
+    ) => {
+        $crate::stream_cipher_bench!(
+            Init: {
+                use $crate::KeyIvInit;
+                let key = test::black_box(Default::default());
+                let iv = test::black_box(Default::default());
+                <$cipher>::new(&key, &iv)
+            };
+            $($name $bs;)*
+        );
+    };
+    (
+        Key: $cipher:ty;
+        $($name:ident $bs:expr;)*
+    ) => {
+        $crate::stream_cipher_bench!(
+            Init: {
+                use $crate::KeyInit;
+                let key = test::black_box(Default::default());
+                let iv = test::black_box(Default::default());
+                <$cipher>::new(&key, &iv)
+            };
+            $($name $bs;)*
+        );
+    };
+    (
+        Init: $init:expr;
+        $($name:ident $bs:expr;)*
+    ) => {
+        $(
+            #[bench]
+            fn $name(b: &mut test::Bencher) {
+                use $crate::StreamCipher;
 
-            fn run_test(
-                key: &[u8],
-                iv: &[u8],
-                plaintext: &[u8],
-                ciphertext: &[u8],
-            ) -> Option<&'static str> {
-                for n in 1..=plaintext.len() {
-                    let mut mode = <$cipher>::new_from_slices(key, iv).unwrap();
-                    let mut buf = plaintext.to_vec();
-                    for chunk in buf.chunks_mut(n) {
-                        mode.encrypt(chunk);
-                    }
-                    if buf != &ciphertext[..] {
-                        return Some("encrypt");
-                    }
-                }
+                let mut cipher = $init;
+                let mut buf = vec![0; $bs];
 
-                for n in 1..=plaintext.len() {
-                    let mut mode = <$cipher>::new_from_slices(key, iv).unwrap();
-                    let mut buf = ciphertext.to_vec();
-                    for chunk in buf.chunks_mut(n) {
-                        mode.decrypt(chunk);
-                    }
-                    if buf != &plaintext[..] {
-                        return Some("decrypt");
-                    }
-                }
+                b.iter(|| {
+                    cipher.apply_keystream(&mut buf);
+                    test::black_box(&buf);
+                });
 
-                None
+                b.bytes = $bs;
             }
-
-            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
-
-            for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
-                let [key, iv, pt, ct] = row.unwrap();
-                if let Some(desc) = run_test(key, iv, pt, ct) {
-                    panic!(
-                        "\n\
-                         Failed test №{}: {}\n\
-                         key:\t{:?}\n\
-                         iv:\t{:?}\n\
-                         plaintext:\t{:?}\n\
-                         ciphertext:\t{:?}\n",
-                        i, desc, key, iv, pt, ct,
-                    );
-                }
-            }
-        }
-    };
-}
-
-/// Create synchronous stream cipher benchmarks
-#[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-macro_rules! stream_cipher_sync_bench {
-    ($name:ident, $cipher:path, $data_len:expr) => {
-        #[bench]
-        pub fn $name(bh: &mut Bencher) {
-            let key = Default::default();
-            let nonce = Default::default();
-            let mut cipher = <$cipher>::new(&key, &nonce);
-            let mut data = get_data($data_len);
-
-            bh.iter(|| {
-                cipher.apply_keystream(&mut data);
-                test::black_box(&data);
-            });
-            bh.bytes = data.len() as u64;
-        }
-    };
-    ($cipher:path) => {
-        extern crate test;
-
-        use cipher::{generic_array::GenericArray, NewCipher, StreamCipher};
-        use test::Bencher;
-
-        #[inline(never)]
-        fn get_data(n: usize) -> Vec<u8> {
-            vec![77; n]
-        }
-
-        $crate::stream_cipher_sync_bench!(bench1_10, $cipher, 10);
-        $crate::stream_cipher_sync_bench!(bench2_100, $cipher, 100);
-        $crate::stream_cipher_sync_bench!(bench3_1000, $cipher, 1000);
-        $crate::stream_cipher_sync_bench!(bench4_10000, $cipher, 10000);
-        $crate::stream_cipher_sync_bench!(bench5_100000, $cipher, 100000);
-    };
-}
-
-/// Create asynchronous stream cipher benchmarks
-#[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-macro_rules! stream_cipher_async_bench {
-    ($enc_name:ident, $dec_name:ident, $cipher:path, $data_len:expr) => {
-        #[bench]
-        pub fn $enc_name(bh: &mut Bencher) {
-            let key = Default::default();
-            let nonce = Default::default();
-            let mut cipher = <$cipher>::new(&key, &nonce);
-            let mut data = get_data($data_len);
-
-            bh.iter(|| {
-                cipher.encrypt(&mut data);
-                test::black_box(&data);
-            });
-            bh.bytes = data.len() as u64;
-        }
-
-        #[bench]
-        pub fn $dec_name(bh: &mut Bencher) {
-            let key = Default::default();
-            let nonce = Default::default();
-            let mut cipher = <$cipher>::new(&key, &nonce);
-            let mut data = get_data($data_len);
-
-            bh.iter(|| {
-                cipher.decrypt(&mut data);
-                test::black_box(&data);
-            });
-            bh.bytes = data.len() as u64;
-        }
-    };
-    ($cipher:path) => {
-        extern crate test;
-
-        use cipher::{generic_array::GenericArray, AsyncStreamCipher, NewCipher};
-        use test::Bencher;
-
-        #[inline(never)]
-        fn get_data(n: usize) -> Vec<u8> {
-            vec![77; n]
-        }
-
-        $crate::stream_cipher_async_bench!(encrypt_10, decrypt_10, $cipher, 10);
-        $crate::stream_cipher_async_bench!(encrypt_100, decrypt_100, $cipher, 100);
-        $crate::stream_cipher_async_bench!(encrypt_1000, decrypt_1000, $cipher, 1000);
-        $crate::stream_cipher_async_bench!(encrypt_10000, decrypt_10000, $cipher, 10000);
-        $crate::stream_cipher_async_bench!(encrypt_100000, decrypt_100000, $cipher, 100000);
+        )*
     };
 }

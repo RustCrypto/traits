@@ -1,25 +1,33 @@
 [package]
 name = "cipher"
 description = "Traits for describing block ciphers and stream ciphers"
-version = "0.4.0-pre"
+version = "0.4.0" # Also update html_root_url in lib.rs when bumping this
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-edition = "2018"
+edition = "2021"
+rust-version = "1.56"
 documentation = "https://docs.rs/cipher"
 repository = "https://github.com/RustCrypto/traits"
 keywords = ["crypto", "block-cipher", "stream-cipher", "trait"]
 categories = ["cryptography", "no-std"]
 
-[dependencies]
-generic-array = "0.14"
-crypto-common = { version = "0.1", path = "../crypto-common" }
+# Hack to allow this crate to coexist with pre-2021 edition crates
+[workspace]
+members = ["."]
 
+[dependencies]
+crypto-common = { version = "0.1.2", path = "../crypto-common" }
+inout = "0.1"
+
+# optional dependencies
 blobby = { version = "0.3", optional = true }
-rand_core = { version = "0.6", optional = true }
+zeroize = { version = "1.5", optional = true, default-features = false }
 
 [features]
-std = ["crypto-common/std", "rand_core/std"]
+std = ["crypto-common/std", "inout/std"]
+block-padding = ["inout/block-padding"]
+rand_core = ["crypto-common/rand_core"] # Enable random key and IV generation methods
 dev = ["blobby"]
 
 [package.metadata.docs.rs]
