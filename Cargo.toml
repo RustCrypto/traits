@@ -1,7 +1,6 @@
 [workspace]
 members = [
     "aead",
-    "cipher",
     "crypto-common",
     "digest",
     "signature",

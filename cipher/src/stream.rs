@@ -3,48 +3,159 @@
 //! See [RustCrypto/stream-ciphers](https://github.com/RustCrypto/stream-ciphers)
 //! for ciphers implementation.
 
-use crate::errors::{LoopError, OverflowError};
-use core::convert::{TryFrom, TryInto};
+use crate::errors::{OverflowError, StreamCipherError};
+use crate::stream_core::Counter;
+use crate::{Block, BlockDecryptMut, BlockEncryptMut};
+use inout::{InOutBuf, NotEqualError};
+
+/// Marker trait for block-level asynchronous stream ciphers
+pub trait AsyncStreamCipher: Sized {
+    /// Encrypt data using `InOutBuf`.
+    fn encrypt_inout(mut self, data: InOutBuf<'_, '_, u8>)
+    where
+        Self: BlockEncryptMut,
+    {
+        let (blocks, mut tail) = data.into_chunks();
+        self.encrypt_blocks_inout_mut(blocks);
+        let mut block = Block::<Self>::default();
+        let n = tail.len();
+        if n != 0 {
+            block[..n].copy_from_slice(tail.get_in());
+            self.encrypt_block_mut(&mut block);
+            tail.get_out().copy_from_slice(&block[..n]);
+        }
+    }
+
+    /// Decrypt data using `InOutBuf`.
+    fn decrypt_inout(mut self, data: InOutBuf<'_, '_, u8>)
+    where
+        Self: BlockDecryptMut,
+    {
+        let (blocks, mut tail) = data.into_chunks();
+        self.decrypt_blocks_inout_mut(blocks);
+        let mut block = Block::<Self>::default();
+        let n = tail.len();
+        if n != 0 {
+            block[..n].copy_from_slice(tail.get_in());
+            self.decrypt_block_mut(&mut block);
+            tail.get_out().copy_from_slice(&block[..n]);
+        }
+    }
+    /// Encrypt data in place.
+    fn encrypt(self, buf: &mut [u8])
+    where
+        Self: BlockEncryptMut,
+    {
+        self.encrypt_inout(buf.into());
+    }
+
+    /// Decrypt data in place.
+    fn decrypt(self, buf: &mut [u8])
+    where
+        Self: BlockDecryptMut,
+    {
+        self.decrypt_inout(buf.into());
+    }
+
+    /// Encrypt data from buffer to buffer.
+    fn encrypt_b2b(self, in_buf: &[u8], out_buf: &mut [u8]) -> Result<(), NotEqualError>
+    where
+        Self: BlockEncryptMut,
+    {
+        InOutBuf::new(in_buf, out_buf).map(|b| self.encrypt_inout(b))
+    }
+
+    /// Decrypt data from buffer to buffer.
+    fn decrypt_b2b(self, in_buf: &[u8], out_buf: &mut [u8]) -> Result<(), NotEqualError>
+    where
+        Self: BlockDecryptMut,
+    {
+        InOutBuf::new(in_buf, out_buf).map(|b| self.decrypt_inout(b))
+    }
+}
 
 /// Synchronous stream cipher core trait.
 pub trait StreamCipher {
-    /// Apply keystream to the data.
+    /// Apply keystream to `inout` data.
     ///
-    /// It will XOR generated keystream with the data, which can be both
-    /// encryption and decryption.
+    /// If end of the keystream will be achieved with the given data length,
+    /// method will return [`StreamCipherError`] without modifying provided `data`.
+    fn try_apply_keystream_inout(
+        &mut self,
+        buf: InOutBuf<'_, '_, u8>,
+    ) -> Result<(), StreamCipherError>;
+
+    /// Apply keystream to data behind `buf`.
+    ///
+    /// If end of the keystream will be achieved with the given data length,
+    /// method will return [`StreamCipherError`] without modifying provided `data`.
+    #[inline]
+    fn try_apply_keystream(&mut self, buf: &mut [u8]) -> Result<(), StreamCipherError> {
+        self.try_apply_keystream_inout(buf.into())
+    }
+
+    /// Apply keystream to `inout` data.
+    ///
+    /// It will XOR generated keystream with the data behind `in` pointer
+    /// and will write result to `out` pointer.
     ///
     /// # Panics
     /// If end of the keystream will be reached with the given data length,
     /// method will panic without modifying the provided `data`.
     #[inline]
-    fn apply_keystream(&mut self, data: &mut [u8]) {
-        self.try_apply_keystream(data).unwrap();
+    fn apply_keystream_inout(&mut self, buf: InOutBuf<'_, '_, u8>) {
+        self.try_apply_keystream_inout(buf).unwrap();
     }
 
-    /// Apply keystream to the data, but return an error if end of a keystream
-    /// will be reached.
+    /// Apply keystream to data in-place.
     ///
-    /// If end of the keystream will be achieved with the given data length,
-    /// method will return `Err(LoopError)` without modifying provided `data`.
-    fn try_apply_keystream(&mut self, data: &mut [u8]) -> Result<(), LoopError>;
+    /// It will XOR generated keystream with `data` and will write result
+    /// to the same buffer.
+    ///
+    /// # Panics
+    /// If end of the keystream will be reached with the given data length,
+    /// method will panic without modifying the provided `data`.
+    #[inline]
+    fn apply_keystream(&mut self, buf: &mut [u8]) {
+        self.try_apply_keystream(buf).unwrap();
+    }
+
+    /// Apply keystream to data buffer-to-buffer.
+    ///
+    /// It will XOR generated keystream with data from the `input` buffer
+    /// and will write result to the `output` buffer.
+    ///
+    /// Returns [`StreamCipherError`] if provided `in_blocks` and `out_blocks`
+    /// have different lengths or if end of the keystream will be reached with
+    /// the given input data length.
+    #[inline]
+    fn apply_keystream_b2b(
+        &mut self,
+        input: &[u8],
+        output: &mut [u8],
+    ) -> Result<(), StreamCipherError> {
+        InOutBuf::new(input, output)
+            .map_err(|_| StreamCipherError)
+            .and_then(|buf| self.try_apply_keystream_inout(buf))
+    }
 }
 
 /// Trait for seekable stream ciphers.
 ///
 /// Methods of this trait are generic over the [`SeekNum`] trait, which is
-/// implemented for primitive numeric types, i.e.: `i/u8`, `i/u16`, `i/u32`,
-/// `i/u64`, `i/u128`, and `i/usize`.
+/// implemented for primitive numeric types, i.e.: `i32`, `u32`, `u64`,
+/// `u128`, and `usize`.
 pub trait StreamCipherSeek {
     /// Try to get current keystream position
     ///
-    /// Returns [`LoopError`] if position can not be represented by type `T`
+    /// Returns [`OverflowError`] if position can not be represented by type `T`
     fn try_current_pos<T: SeekNum>(&self) -> Result<T, OverflowError>;
 
     /// Try to seek to the given position
     ///
-    /// Returns [`LoopError`] if provided position value is bigger than
+    /// Returns [`StreamCipherError`] if provided position value is bigger than
     /// keystream length.
-    fn try_seek<T: SeekNum>(&mut self, pos: T) -> Result<(), LoopError>;
+    fn try_seek<T: SeekNum>(&mut self, pos: T) -> Result<(), StreamCipherError>;
 
     /// Get current keystream position
     ///
@@ -57,70 +168,51 @@ pub trait StreamCipherSeek {
     /// Seek to the given position
     ///
     /// # Panics
-    /// If provided position value is bigger than keystream length
+    /// If provided position value is bigger than keystream leangth
     fn seek<T: SeekNum>(&mut self, pos: T) {
         self.try_seek(pos).unwrap()
     }
 }
 
-/// Asynchronous stream cipher core trait.
-pub trait AsyncStreamCipher {
-    /// Encrypt data in place.
-    fn encrypt(&mut self, data: &mut [u8]);
-
-    /// Decrypt data in place.
-    fn decrypt(&mut self, data: &mut [u8]);
-}
-
 impl<C: StreamCipher> StreamCipher for &mut C {
     #[inline]
-    fn apply_keystream(&mut self, data: &mut [u8]) {
-        C::apply_keystream(self, data);
-    }
-
-    #[inline]
-    fn try_apply_keystream(&mut self, data: &mut [u8]) -> Result<(), LoopError> {
-        C::try_apply_keystream(self, data)
+    fn try_apply_keystream_inout(
+        &mut self,
+        buf: InOutBuf<'_, '_, u8>,
+    ) -> Result<(), StreamCipherError> {
+        C::try_apply_keystream_inout(self, buf)
     }
 }
 
 /// Trait implemented for numeric types which can be used with the
 /// [`StreamCipherSeek`] trait.
 ///
-/// This trait is implemented for primitive numeric types, i.e. `i/u8`,
-/// `u16`, `u32`, `u64`, `u128`, `usize`, and `i32`. It is not intended
-/// to be implemented in third-party crates.
-#[rustfmt::skip]
-pub trait SeekNum:
-    Sized
-    + TryInto<u8> + TryFrom<u8> + TryInto<i8> + TryFrom<i8>
-    + TryInto<u16> + TryFrom<u16> + TryInto<i16> + TryFrom<i16>
-    + TryInto<u32> + TryFrom<u32> + TryInto<i32> + TryFrom<i32>
-    + TryInto<u64> + TryFrom<u64> + TryInto<i64> + TryFrom<i64>
-    + TryInto<u128> + TryFrom<u128> + TryInto<i128> + TryFrom<i128>
-    + TryInto<usize> + TryFrom<usize> + TryInto<isize> + TryFrom<isize>
-{
+/// This trait is implemented for `i32`, `u32`, `u64`, `u128`, and `usize`.
+/// It is not intended to be implemented in third-party crates.
+pub trait SeekNum: Sized {
     /// Try to get position for block number `block`, byte position inside
     /// block `byte`, and block size `bs`.
-    fn from_block_byte<T: SeekNum>(block: T, byte: u8, bs: u8) -> Result<Self, OverflowError>;
+    fn from_block_byte<T: Counter>(block: T, byte: u8, bs: u8) -> Result<Self, OverflowError>;
 
     /// Try to get block number and bytes position for given block size `bs`.
-    #[allow(clippy::wrong_self_convention)]
-    fn to_block_byte<T: SeekNum>(self, bs: u8) -> Result<(T, u8), OverflowError>;
+    fn into_block_byte<T: Counter>(self, bs: u8) -> Result<(T, u8), OverflowError>;
 }
 
 macro_rules! impl_seek_num {
     {$($t:ty )*} => {
         $(
             impl SeekNum for $t {
-                fn from_block_byte<T: TryInto<Self>>(block: T, byte: u8, bs: u8) -> Result<Self, OverflowError> {
+                fn from_block_byte<T: Counter>(block: T, byte: u8, bs: u8) -> Result<Self, OverflowError> {
                     debug_assert!(byte < bs);
-                    let block = block.try_into().map_err(|_| OverflowError)?;
+                    let mut block: Self = block.try_into().map_err(|_| OverflowError)?;
+                    if byte != 0 {
+                        block -= 1;
+                    }
                     let pos = block.checked_mul(bs as Self).ok_or(OverflowError)? + (byte as Self);
                     Ok(pos)
                 }
 
-                fn to_block_byte<T: TryFrom<Self>>(self, bs: u8) -> Result<(T, u8), OverflowError> {
+                fn into_block_byte<T: Counter>(self, bs: u8) -> Result<(T, u8), OverflowError> {
                     let bs = bs as Self;
                     let byte = self % bs;
                     let block = T::try_from(self/bs).map_err(|_| OverflowError)?;
@@ -131,4 +223,4 @@ macro_rules! impl_seek_num {
     };
 }
 
-impl_seek_num! { u8 u16 u32 u64 u128 usize i32 }
+impl_seek_num! { i32 u32 u64 u128 usize }
