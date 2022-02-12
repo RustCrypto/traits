@@ -17,6 +17,9 @@
 pub use crypto_common;
 pub use inout;
 
+#[cfg(all(feature = "block-padding", feature = "alloc"))]
+extern crate alloc;
+
 #[cfg(feature = "std")]
 extern crate std;
 
