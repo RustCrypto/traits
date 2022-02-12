@@ -363,11 +363,11 @@ pub trait BlockEncryptMut: BlockSizeUser + Sized {
     #[cfg(feature = "block-padding")]
     #[cfg_attr(docsrs, doc(cfg(feature = "block-padding")))]
     #[inline]
-    fn encrypt_padded_mut<'a, P: Padding<Self::BlockSize>>(
+    fn encrypt_padded_mut<P: Padding<Self::BlockSize>>(
         self,
-        buf: &'a mut [u8],
+        buf: &mut [u8],
         msg_len: usize,
-    ) -> Result<&'a [u8], PadError> {
+    ) -> Result<&[u8], PadError> {
         let buf = InOutBufReserved::from_mut_slice(buf, msg_len).map_err(|_| PadError)?;
         self.encrypt_padded_inout_mut::<P>(buf)
     }
@@ -470,10 +470,10 @@ pub trait BlockDecryptMut: BlockSizeUser + Sized {
     #[cfg(feature = "block-padding")]
     #[cfg_attr(docsrs, doc(cfg(feature = "block-padding")))]
     #[inline]
-    fn decrypt_padded_mut<'a, P: Padding<Self::BlockSize>>(
+    fn decrypt_padded_mut<P: Padding<Self::BlockSize>>(
         self,
-        buf: &'a mut [u8],
-    ) -> Result<&'a [u8], UnpadError> {
+        buf: &mut [u8],
+    ) -> Result<&[u8], UnpadError> {
         self.decrypt_padded_inout_mut::<P>(buf.into())
     }
 

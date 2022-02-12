@@ -26,6 +26,8 @@ jobs:
           profile: minimal
       - run: cargo clippy --all --all-features -- -D warnings
       - run: cargo clippy --all --all-features -- -D warnings
+        working-directory: cipher
+      - run: cargo clippy --all --all-features -- -D warnings
         working-directory: crypto
       - run: cargo clippy --all --all-features -- -D warnings
         working-directory: elliptic-curve
