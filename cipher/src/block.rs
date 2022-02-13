@@ -182,8 +182,11 @@ pub trait BlockEncrypt: BlockSizeUser + Sized {
     #[inline]
     fn encrypt_padded_vec<P: Padding<Self::BlockSize>>(&self, msg: &[u8]) -> Vec<u8> {
         let mut out = allocate_out_vec::<Self>(msg.len());
-        self.encrypt_padded_b2b::<P>(msg, &mut out)
-            .expect("enough space for encrypting is allocated");
+        let len = self
+            .encrypt_padded_b2b::<P>(msg, &mut out)
+            .expect("enough space for encrypting is allocated")
+            .len();
+        out.truncate(len);
         out
     }
 }
@@ -424,8 +427,11 @@ pub trait BlockEncryptMut: BlockSizeUser + Sized {
     #[inline]
     fn encrypt_padded_vec_mut<P: Padding<Self::BlockSize>>(self, msg: &[u8]) -> Vec<u8> {
         let mut out = allocate_out_vec::<Self>(msg.len());
-        self.encrypt_padded_b2b_mut::<P>(msg, &mut out)
-            .expect("enough space for encrypting is allocated");
+        let len = self
+            .encrypt_padded_b2b_mut::<P>(msg, &mut out)
+            .expect("enough space for encrypting is allocated")
+            .len();
+        out.truncate(len);
         out
     }
 }
