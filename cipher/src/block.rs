@@ -527,11 +527,11 @@ impl<Alg: BlockDecrypt> BlockDecrypt for &Alg {
 }
 
 /// Closure used in methods which operate over separate blocks.
-struct BlockCtx<'inp, 'out, BS: ArrayLength<u8>> {
+struct BlockCtx<'inp, 'out, BS: 'static + ArrayLength<u8>> {
     block: InOut<'inp, 'out, Block<Self>>,
 }
 
-impl<'inp, 'out, BS: ArrayLength<u8>> BlockSizeUser for BlockCtx<'inp, 'out, BS> {
+impl<'inp, 'out, BS: 'static + ArrayLength<u8>> BlockSizeUser for BlockCtx<'inp, 'out, BS> {
     type BlockSize = BS;
 }
 
@@ -543,11 +543,11 @@ impl<'inp, 'out, BS: ArrayLength<u8>> BlockClosure for BlockCtx<'inp, 'out, BS> 
 }
 
 /// Closure used in methods which operate over slice of blocks.
-struct BlocksCtx<'inp, 'out, BS: ArrayLength<u8>> {
+struct BlocksCtx<'inp, 'out, BS: 'static + ArrayLength<u8>> {
     blocks: InOutBuf<'inp, 'out, Block<Self>>,
 }
 
-impl<'inp, 'out, BS: ArrayLength<u8>> BlockSizeUser for BlocksCtx<'inp, 'out, BS> {
+impl<'inp, 'out, BS: 'static + ArrayLength<u8>> BlockSizeUser for BlocksCtx<'inp, 'out, BS> {
     type BlockSize = BS;
 }
 
