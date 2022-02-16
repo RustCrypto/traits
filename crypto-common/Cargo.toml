@@ -1,7 +1,7 @@
 [package]
 name = "crypto-common"
 description = "Common cryptographic traits"
-version = "0.1.2" # Also update html_root_url in lib.rs when bumping this
+version = "0.1.3" # Also update html_root_url in lib.rs when bumping this
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -14,6 +14,8 @@ categories = ["cryptography", "no-std"]
 [dependencies]
 generic-array = { version = "0.14.4", features = ["more_lengths"] }
 rand_core = { version = "0.6", optional = true }
+# earlier versions of typenum don't satisfy the 'static bound on U* types
+typenum = "1.14"
 
 [features]
 std = []
