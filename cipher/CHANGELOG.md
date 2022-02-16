@@ -5,13 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## UNRELEASED
+## 0.4.1 (2022-02-16)
 ### Added
 - Allocating padded encrypt/decrypt ([#936])
 
+### Fixed
+- Minimal versions build ([#940])
+
+[#940]: https://github.com/RustCrypto/traits/pull/940
 [#936]: https://github.com/RustCrypto/traits/pull/936
 
-## 0.3.0 (2022-02-10)
+## 0.4.0 (2022-02-10)
 ### Changed
 - Major rework of traits. Core functionality of block and stream ciphers
 is defined using rank-2 closures with convinience methods built on top of

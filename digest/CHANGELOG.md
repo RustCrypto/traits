@@ -5,9 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.10.3 (2022-02-16)
+### Fixed
+- Minimal versions build ([#940])
+
+[#940]: https://github.com/RustCrypto/traits/pull/940
+
 ## 0.10.2 (2022-02-10)
 ### Changed
-- Relaxed bounds on the `Mac` trait ([#849])
+- Relax bounds on the `Mac` trait ([#849])
 
 [#849]: https://github.com/RustCrypto/traits/pull/849
 
