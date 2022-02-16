@@ -25,7 +25,9 @@ blobby = { version = "0.3", optional = true }
 zeroize = { version = "1.5", optional = true, default-features = false }
 
 [features]
-std = ["crypto-common/std", "inout/std"]
+default = ["alloc"]
+alloc = []
+std = ["alloc", "crypto-common/std", "inout/std"]
 block-padding = ["inout/block-padding"]
 rand_core = ["crypto-common/rand_core"] # Enable random key and IV generation methods
 dev = ["blobby"]
