@@ -1,7 +1,7 @@
 [package]
 name = "digest"
 description = "Traits for cryptographic hash functions"
-version = "0.10.2" # Also update html_root_url in lib.rs when bumping this
+version = "0.10.3" # Also update html_root_url in lib.rs when bumping this
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -12,7 +12,7 @@ keywords = ["digest", "crypto", "hash"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = { version = "0.1.2", path = "../crypto-common" }
+crypto-common = { version = "0.1.3", path = "../crypto-common" }
 
 block-buffer = { version = "0.10", optional = true }
 subtle = { version = "=2.4", default-features = false, optional = true }
