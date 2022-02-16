@@ -555,7 +555,7 @@ pub trait BlockDecryptMut: BlockSizeUser + Sized {
     #[cfg(all(feature = "block-padding", feature = "alloc"))]
     #[cfg_attr(docsrs, doc(cfg(all(feature = "block-padding", feature = "alloc"))))]
     #[inline]
-    fn decrypt_padded_vec<P: Padding<Self::BlockSize>>(
+    fn decrypt_padded_vec_mut<P: Padding<Self::BlockSize>>(
         self,
         buf: &[u8],
     ) -> Result<Vec<u8>, UnpadError> {
