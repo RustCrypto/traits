@@ -32,6 +32,7 @@ pub use crypto_common::rand_core;
 pub use inout::block_padding;
 
 #[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 pub use zeroize;
 
 #[cfg(feature = "dev")]
