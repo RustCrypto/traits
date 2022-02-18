@@ -36,6 +36,12 @@ jobs:
           override: true
           profile: minimal
       - run: cargo build --target ${{ matrix.target }}
+
+  minimal-versions:
+    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+    with:
+        working-directory: ${{ github.workflow }}
+
   test:
     runs-on: ubuntu-latest
     strategy:

@@ -54,6 +54,21 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features pem,pkcs8,sec1
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,digest,ecdh,hazmat,hash2curve,jwk,pem,pkcs8,sec1,serde,voprf
 
+  # TODO: use the reusable workflow after this crate will be part of the
+  # toot workspace
+  # minimal-versions:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: nightly
+  #         override: true
+  #         profile: minimal
+  #     - uses: RustCrypto/actions/cargo-hack-install@master
+  #     - run: cargo update -Z minimal-versions
+  #     - run: cargo hack test --release --feature-powerset
+
   test:
     runs-on: ubuntu-latest
     strategy:

@@ -40,6 +40,11 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features rand_core
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features stream
 
+  minimal-versions:
+    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+    with:
+        working-directory: ${{ github.workflow }}
+
   heapless:
     runs-on: ubuntu-latest
     strategy:
