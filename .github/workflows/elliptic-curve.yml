@@ -29,6 +29,7 @@ jobs:
           - wasm32-unknown-unknown
     steps:
       - uses: actions/checkout@v2
+      - uses: RustCrypto/actions/cargo-cache@master
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -59,7 +60,8 @@ jobs:
   # minimal-versions:
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: actions/checkout@v1
+  #     - uses: actions/checkout@v2
+  #     - uses: RustCrypto/actions/cargo-cache@master
   #     - uses: actions-rs/toolchain@v1
   #       with:
   #         toolchain: nightly
@@ -78,21 +80,23 @@ jobs:
           - stable
           - nightly
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: ${{ matrix.rust }}
-        override: true
-        profile: minimal
-    - run: cargo check --all-features
-    - run: cargo test --no-default-features
-    - run: cargo test
-    - run: cargo test --all-features
+      - uses: actions/checkout@v2
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+      - run: cargo check --all-features
+      - run: cargo test --no-default-features
+      - run: cargo test
+      - run: cargo test --all-features
 
   clippy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: RustCrypto/actions/cargo-cache@master
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: 1.57.0
