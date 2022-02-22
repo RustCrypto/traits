@@ -1,7 +1,7 @@
 [package]
 name = "cipher"
 description = "Traits for describing block ciphers and stream ciphers"
-version = "0.4.2" # Also update html_root_url in lib.rs when bumping this
+version = "0.4.3" # Also update html_root_url in lib.rs when bumping this
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -25,7 +25,6 @@ blobby = { version = "0.3", optional = true }
 zeroize = { version = "1.5", optional = true, default-features = false }
 
 [features]
-default = ["alloc"]
 alloc = []
 std = ["alloc", "crypto-common/std", "inout/std"]
 block-padding = ["inout/block-padding"]
