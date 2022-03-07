@@ -37,7 +37,7 @@ const INVARIANT_VIOLATED_MSG: &str = "salt string invariant violated";
 /// # Recommended length
 /// The recommended default length for a salt string is **16-bytes** (128-bits).
 ///
-/// See below for rationale.
+/// See [`Salt::RECOMMENDED_LENGTH`] for more information.
 ///
 /// # Constraints
 /// Salt strings are constrained to the following set of characters per the
@@ -89,6 +89,15 @@ impl<'a> Salt<'a> {
     pub const MAX_LENGTH: usize = 64;
 
     /// Recommended length of a salt: 16-bytes.
+    ///
+    /// This recommendation comes from the [PHC string format specification]:
+    ///
+    /// > The role of salts is to achieve uniqueness. A *random* salt is fine
+    /// > for that as long as its length is sufficient; a 16-byte salt would
+    /// > work well (by definition, UUID are very good salts, and they encode
+    /// > over exactly 16 bytes). 16 bytes encode as 22 characters in B64.
+    ///
+    /// [PHC string format specification]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#function-duties
     pub const RECOMMENDED_LENGTH: usize = 16;
 
     /// Create a [`Salt`] from the given `str`, validating it according to
