@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.0 (2022-03-09)
+### Changed
+- Leverage `const_panic`; MSRV 1.57 ([#896])
+- Rust 2021 edition upgrade ([#897])
+- Make `Ident::new` fallible; add `Ident::new_unwrap` ([#896], [#960])
+
+### Fixed
+- Better `Debug`/`Display` impls for `SaltString` ([#804])
+
+### Removed
+- `base64ct` version restrictions ([#914])
+
+[#804]: https://github.com/RustCrypto/traits/pull/804
+[#896]: https://github.com/RustCrypto/traits/pull/896
+[#897]: https://github.com/RustCrypto/traits/pull/897
+[#897]: https://github.com/RustCrypto/traits/pull/897
+[#914]: https://github.com/RustCrypto/traits/pull/914
+[#960]: https://github.com/RustCrypto/traits/pull/960
+
 ## 0.3.2 (2021-09-15)
 ### Fixed
 - Remove unused lifetimes ([#760])
