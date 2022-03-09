@@ -16,13 +16,9 @@ keywords = ["crypt", "mcf", "password", "pbkdf", "phc"]
 edition = "2021"
 rust-version = "1.57"
 
-# Hack to allow this crate to coexist with pre-2021 edition crates
-[workspace]
-members = ["."]
-
 [dependencies]
 base64ct = "1"
-subtle = { version = ">=2, <2.5", default-features = false }
+subtle = { version = "2", default-features = false }
 
 # optional features
 rand_core = { version = "0.6", optional = true, default-features = false }

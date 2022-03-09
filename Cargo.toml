@@ -1,8 +1,13 @@
 [workspace]
+resolver = "2"
 members = [
     "aead",
+    "cipher",
+    "crypto",
     "crypto-common",
     "digest",
+    "elliptic-curve",
+    "kem",
     "signature",
     "signature/async",
     "universal-hash",

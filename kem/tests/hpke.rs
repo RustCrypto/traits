@@ -1,3 +1,6 @@
+// TODO(tarcieri): re-enable when `zeroize` dependency issues are resolved
+#![cfg(disabled)]
+
 use generic_array::GenericArray;
 use hpke::{
     kem::{Kem as KemTrait, X25519HkdfSha256},

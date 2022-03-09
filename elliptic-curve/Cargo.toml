@@ -15,10 +15,6 @@ keywords = ["crypto", "ecc", "elliptic", "weierstrass"]
 edition = "2021"
 rust-version = "1.57"
 
-# Hack to allow this crate to coexist with pre-2021 edition crates
-[workspace]
-members = ["."]
-
 [dependencies]
 base16ct = "0.1.1"
 crypto-bigint = { version = "=0.4.0-pre.0", default-features = false, features = ["rand_core", "generic-array", "zeroize"] }

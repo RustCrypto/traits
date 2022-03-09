@@ -14,10 +14,6 @@ readme = "README.md"
 edition = "2021"
 rust-version = "1.57"
 
-# Hack to allow this crate to coexist with pre-2021 edition crates
-[workspace]
-members = ["."]
-
 [dependencies]
 aead = { version = "0.4", optional = true, path = "../aead" }
 cipher = { version = "0.4", optional = true }

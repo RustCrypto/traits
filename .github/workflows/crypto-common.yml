@@ -36,6 +36,8 @@ jobs:
           target: ${{ matrix.target }}
           override: true
           profile: minimal
+      # Isolate this crate from workspace which is otherwise MSRV 1.56 due to 2021 edition crates
+      - run: rm ../Cargo.toml
       - run: cargo build --target ${{ matrix.target }}
 
   minimal-versions:
@@ -58,6 +60,8 @@ jobs:
           toolchain: ${{ matrix.rust }}
           override: true
           profile: minimal
+      # Isolate this crate from workspace which is otherwise MSRV 1.56 due to 2021 edition crates
+      - run: rm ../Cargo.toml
       - run: cargo check --all-features
       - run: cargo test
       - run: cargo test --features std
