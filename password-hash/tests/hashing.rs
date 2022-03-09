@@ -4,7 +4,7 @@ pub use password_hash::{
     Decimal, Error, Ident, Output, ParamsString, PasswordHash, PasswordHasher, Result, Salt,
 };
 
-const ALG: Ident = Ident::new("example");
+const ALG: Ident = Ident::new_unwrap("example");
 
 /// Stub password hashing function for testing.
 pub struct StubPasswordHasher;

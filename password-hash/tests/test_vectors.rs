@@ -11,7 +11,7 @@ const SCRYPT_HASH: &str =
 #[test]
 fn argon2id() {
     let ph = PasswordHash::new(ARGON2D_HASH).unwrap();
-    assert_eq!(ph.algorithm, Ident::new("argon2d"));
+    assert_eq!(ph.algorithm, Ident::new("argon2d").unwrap());
     assert_eq!(ph.version, Some(19));
     assert_eq!(ph.params.iter().count(), 3);
     assert_eq!(ph.params.get_decimal("m").unwrap(), 512);
@@ -25,7 +25,7 @@ fn argon2id() {
 #[test]
 fn bcrypt() {
     let ph = PasswordHash::new(BCRYPT_HASH).unwrap();
-    assert_eq!(ph.algorithm, Ident::new("2b"));
+    assert_eq!(ph.algorithm, Ident::new("2b").unwrap());
     assert_eq!(ph.version, None);
     assert_eq!(ph.params.len(), 0);
     assert_eq!(ph.salt.unwrap().to_string(), "MTIzNA");
@@ -39,7 +39,7 @@ fn bcrypt() {
 #[test]
 fn scrypt() {
     let ph = PasswordHash::new(SCRYPT_HASH).unwrap();
-    assert_eq!(ph.algorithm, Ident::new("scrypt"));
+    assert_eq!(ph.algorithm, Ident::new("scrypt").unwrap());
     assert_eq!(ph.version, None);
     assert_eq!(ph.params.len(), 0);
     assert_eq!(ph.salt.unwrap().to_string(), "epIxT/h6HbbwHaehFnh/bw");

@@ -6,7 +6,7 @@
 
 use password_hash::{Ident, ParamsString, PasswordHash, Salt};
 
-const EXAMPLE_ALGORITHM: Ident = Ident::new("argon2d");
+const EXAMPLE_ALGORITHM: Ident = Ident::new_unwrap("argon2d");
 const EXAMPLE_SALT: &str = "saltsaltsaltsaltsalt";
 const EXAMPLE_HASH: &[u8] = &[
     0x85, 0xab, 0x21, 0x85, 0xab, 0x21, 0x85, 0xab, 0x21, 0x85, 0xab, 0x21, 0x85, 0xab, 0x21, 0x85,
