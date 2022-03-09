@@ -36,6 +36,8 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
+      # Isolate this crate from workspace which is otherwise MSRV 1.56 due to 2021 edition crates
+      - run: rm ../Cargo.toml
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features bytes
@@ -84,6 +86,8 @@ jobs:
           toolchain: ${{ matrix.rust }}
           override: true
           profile: minimal
+      # Isolate this crate from workspace which is otherwise MSRV 1.56 due to 2021 edition crates
+      - run: rm ../Cargo.toml
       - run: cargo test --release --no-default-features
       - run: cargo test --release
       - run: cargo test --release --features dev,rand_core,stream,std
