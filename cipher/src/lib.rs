@@ -10,7 +10,7 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
-    html_root_url = "https://docs.rs/cipher/0.4.3"
+    html_root_url = "https://docs.rs/cipher/0.4.4"
 )]
 #![warn(missing_docs, rust_2018_idioms)]
 
@@ -51,21 +51,11 @@ pub use crypto_common::{
     generic_array,
     typenum::{self, consts},
     AlgorithmName, Block, InnerIvInit, InvalidLength, Iv, IvSizeUser, Key, KeyInit, KeyIvInit,
-    KeySizeUser,
+    KeySizeUser, ParBlocks, ParBlocksSizeUser,
 };
-use generic_array::{ArrayLength, GenericArray};
 
 /// Trait for loading current IV state.
 pub trait IvState: IvSizeUser {
     /// Returns current IV state.
     fn iv_state(&self) -> Iv<Self>;
 }
-
-/// Types which process blocks in parallel.
-pub trait ParBlocksSizeUser: BlockSizeUser {
-    /// Number of blocks which can be processed in parallel.
-    type ParBlocksSize: ArrayLength<Block<Self>>;
-}
-
-/// Parallel blocks on which [`ParBlocksSizeUser`] implementors operate.
-pub type ParBlocks<T> = GenericArray<Block<T>, <T as ParBlocksSizeUser>::ParBlocksSize>;
