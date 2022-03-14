@@ -30,17 +30,16 @@
 extern crate std;
 
 pub use crypto_common::{
-    self,
-    generic_array,
+    self, generic_array,
     typenum::{self, consts},
-    KeyInit, Key, Block, ParBlocks,
+    Block, Key, KeyInit, ParBlocks,
 };
 
-use typenum::Unsigned;
-use generic_array::{GenericArray, ArrayLength};
-use crypto_common::{BlockSizeUser, ParBlocksSizeUser};
-use subtle::ConstantTimeEq;
 use core::slice;
+use crypto_common::{BlockSizeUser, ParBlocksSizeUser};
+use generic_array::{ArrayLength, GenericArray};
+use subtle::ConstantTimeEq;
+use typenum::Unsigned;
 
 /// Trait implemented by UHF backends.
 pub trait UhfBackend: ParBlocksSizeUser {
@@ -125,18 +124,19 @@ pub trait UniversalHash: BlockSizeUser + Sized {
     /// Reset [`UniversalHash`] instance.
     fn reset(&mut self);
 
-    /// Obtain the [`Output`] of a [`UniversalHash`] function and consume it.
+    /// Retrieve result and consume hasher instance.
     fn finalize(self) -> Block<Self>;
 
-    /// Obtain the [`Output`] of a [`UniversalHash`] computation and reset it back
-    /// to its initial state.
+    /// Retrieve result and reset hasher instance to its initial state.
     fn finalize_reset(&mut self) -> Block<Self>;
 
-    /// Verify the [`UniversalHash`] of the processed input matches a given [`Output`].
+    /// Verify the [`UniversalHash`] of the processed input matches
+    /// a given `expected` value.
+    ///
     /// This is useful when constructing Message Authentication Codes (MACs)
     /// from universal hash functions.
-    fn verify(self, other: &Block<Self>) -> Result<(), Error> {
-        if self.finalize().ct_eq(other).unwrap_u8() == 1 {
+    fn verify(self, expected: &Block<Self>) -> Result<(), Error> {
+        if self.finalize().ct_eq(expected).unwrap_u8() == 1 {
             Ok(())
         } else {
             Err(Error)
@@ -144,8 +144,8 @@ pub trait UniversalHash: BlockSizeUser + Sized {
     }
 }
 
-/// Error type for when the [`Output`] of a [`UniversalHash`]
-/// is not equal to the expected value.
+/// Error type used by the [`UniversalHash::verify`] method
+/// to indicate that UHF output is not equal the expected value.
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Error;
 
@@ -156,6 +156,7 @@ impl core::fmt::Display for Error {
 }
 
 #[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl std::error::Error for Error {}
 
 /// Split message into slice of blocks and leftover tail.
