@@ -42,7 +42,7 @@ sha3 = "0.10"
 
 [features]
 default = ["arithmetic"]
-alloc = ["der/alloc", "sec1/alloc", "zeroize/alloc"] # todo: use weak activation for `group`/`sec1` alloc when available
+alloc = ["base16ct/alloc", "der/alloc", "sec1/alloc", "zeroize/alloc"] # todo: use weak activation for `group`/`sec1` alloc when available
 arithmetic = ["ff", "group"]
 bits = ["arithmetic", "ff/bits"]
 dev = ["arithmetic", "hex-literal", "pem", "pkcs8"]
