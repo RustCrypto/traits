@@ -32,7 +32,6 @@ use {
 use alloc::string::{String, ToString};
 
 #[cfg(all(feature = "pem", feature = "serde"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "pem", feature = "serde"))))]
 use serde::{de, ser, Deserialize, Serialize};
 
 /// Elliptic curve public keys.
@@ -353,8 +352,8 @@ where
     }
 }
 
-#[cfg(all(feature = "pem", feature = "serde"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "pem", feature = "serde"))))]
+#[cfg(all(feature = "alloc", feature = "serde"))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "alloc", feature = "serde"))))]
 impl<C> Serialize for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
@@ -365,15 +364,18 @@ where
     where
         S: ser::Serializer,
     {
-        self.to_public_key_der()
-            .map_err(ser::Error::custom)?
-            .as_ref()
-            .serialize(serializer)
+        let der = self.to_public_key_der().map_err(ser::Error::custom)?;
+
+        if serializer.is_human_readable() {
+            base16ct::upper::encode_string(der.as_ref()).serialize(serializer)
+        } else {
+            der.as_ref().serialize(serializer)
+        }
     }
 }
 
-#[cfg(all(feature = "pem", feature = "serde"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "pem", feature = "serde"))))]
+#[cfg(all(feature = "alloc", feature = "serde"))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "alloc", feature = "serde"))))]
 impl<'de, C> Deserialize<'de> for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
@@ -386,8 +388,15 @@ where
     {
         use de::Error;
 
-        <&[u8]>::deserialize(deserializer)
-            .and_then(|bytes| Self::from_public_key_der(bytes).map_err(D::Error::custom))
+        if deserializer.is_human_readable() {
+            let der_bytes = base16ct::mixed::decode_vec(<&str>::deserialize(deserializer)?)
+                .map_err(D::Error::custom)?;
+            Self::from_public_key_der(&der_bytes)
+        } else {
+            let der_bytes = <&[u8]>::deserialize(deserializer)?;
+            Self::from_public_key_der(der_bytes)
+        }
+        .map_err(D::Error::custom)
     }
 }
 
