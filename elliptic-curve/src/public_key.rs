@@ -31,7 +31,7 @@ use {
 #[cfg(any(feature = "jwk", feature = "pem"))]
 use alloc::string::{String, ToString};
 
-#[cfg(all(feature = "pem", feature = "serde"))]
+#[cfg(all(feature = "alloc", feature = "serde"))]
 use serde::{de, ser, Deserialize, Serialize};
 
 /// Elliptic curve public keys.
