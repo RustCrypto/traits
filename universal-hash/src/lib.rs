@@ -109,6 +109,7 @@ pub trait UniversalHash: BlockSizeUser + Sized {
     ///
     /// This approach is frequently used by AEAD modes which use
     /// Message Authentication Codes (MACs) based on universal hashing.
+    #[inline]
     fn update_padded(&mut self, data: &[u8]) {
         let (blocks, tail) = to_blocks(data);
 
@@ -129,6 +130,7 @@ pub trait UniversalHash: BlockSizeUser + Sized {
     ///
     /// This is useful when constructing Message Authentication Codes (MACs)
     /// from universal hash functions.
+    #[inline]
     fn verify(self, expected: &Block<Self>) -> Result<(), Error> {
         if self.finalize().ct_eq(expected).unwrap_u8() == 1 {
             Ok(())
@@ -144,6 +146,7 @@ pub trait UniversalHash: BlockSizeUser + Sized {
 pub struct Error;
 
 impl core::fmt::Display for Error {
+    #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str("UHF output mismatch")
     }
