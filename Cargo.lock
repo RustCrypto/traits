@@ -322,7 +322,7 @@ dependencies = [
  "generic-array",
  "group 0.11.0",
  "hex-literal 0.3.4",
- "pem-rfc7468 0.3.1",
+ "pem-rfc7468 0.5.1",
  "rand_core",
  "sec1",
  "serde",
@@ -573,6 +573,15 @@ name = "pem-rfc7468"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "01de5d978f34aa4b2296576379fcc416034702fd94117c56ffd8a1a767cefb30"
+dependencies = [
+ "base64ct",
+]
+
+[[package]]
+name = "pem-rfc7468"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "973e070439aaacda48e5effad187f36d670b7635f7dcb75fa3c6f482d1b5b932"
 dependencies = [
  "base64ct",
 ]
