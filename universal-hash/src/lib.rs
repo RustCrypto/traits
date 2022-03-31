@@ -59,7 +59,7 @@ pub trait UhfBackend: ParBlocksSizeUser {
 ///
 /// This trait is used to define rank-2 closures.
 pub trait UhfClosure: BlockSizeUser {
-    /// Execute closure with the provided block cipher backend.
+    /// Execute closure with the provided UHF backend.
     fn call<B: UhfBackend<BlockSize = Self::BlockSize>>(self, backend: &mut B);
 }
 
@@ -121,14 +121,8 @@ pub trait UniversalHash: BlockSizeUser + Sized {
         }
     }
 
-    /// Reset [`UniversalHash`] instance.
-    fn reset(&mut self);
-
     /// Retrieve result and consume hasher instance.
     fn finalize(self) -> Block<Self>;
-
-    /// Retrieve result and reset hasher instance to its initial state.
-    fn finalize_reset(&mut self) -> Block<Self>;
 
     /// Verify the [`UniversalHash`] of the processed input matches
     /// a given `expected` value.
