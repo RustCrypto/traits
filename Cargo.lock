@@ -617,9 +617,9 @@ checksum = "eb9f9e6e233e5c4a35559a617bf40a4ec447db2e84c20b55a6f83167b7e57872"
 
 [[package]]
 name = "pqcrypto"
-version = "0.14.2"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9da39bd0587bff4189521766c34f3203263926f7527906578a96d22a81a700d5"
+checksum = "e10caefecccc56b78d30a6b46effa2360048104d668fb7cea944c0761f9c1f11"
 dependencies = [
  "pqcrypto-saber",
  "pqcrypto-traits",
@@ -638,9 +638,9 @@ dependencies = [
 
 [[package]]
 name = "pqcrypto-saber"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57ba16b59d256e2cae57bcdbd013f73b32496ebc66db3db6ccb79a10f0d4b275"
+checksum = "7453b631d7bd268fffadf70514cdf05c9e9fd9574e26eafb85b5b86402e34c5b"
 dependencies = [
  "cc",
  "glob",

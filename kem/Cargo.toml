@@ -20,7 +20,7 @@ generic-array = "0.14"
 rand = { version = "0.8", features = [ "getrandom" ] }
 x3dh-ke = "0.1"
 p256 = { version = "0.9", features = [ "ecdsa" ] }
-pqcrypto = { version = "0.14", default-features = false, features = [ "pqcrypto-saber" ] }
+pqcrypto = { version = "0.15", default-features = false, features = [ "pqcrypto-saber" ] }
 pqcrypto-traits = "0.3"
 
 # TODO(tarcieri): re-enable when `zeroize` compatibility can be resolved
