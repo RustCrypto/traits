@@ -3,6 +3,7 @@
 use crate::errors::Error;
 use core::fmt::Debug;
 use generic_array::{ArrayLength, GenericArray};
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 use rand_core::{CryptoRng, RngCore};
 
@@ -33,6 +34,24 @@ pub trait EncappedKey: AsRef<[u8]> + Debug + Sized {
     }
 }
 
+/// The shared secret that results from key exchange.
+#[derive(Zeroize)]
+pub struct SharedSecret<EK: EncappedKey>(GenericArray<u8, EK::NSecret>);
+
+impl<EK: EncappedKey> ZeroizeOnDrop for SharedSecret<EK> {}
+
+impl<EK: EncappedKey> SharedSecret<EK> {
+    /// Constructs a new `SharedSecret` by wrapping the given bytes
+    pub fn new(bytes: GenericArray<u8, EK::NSecret>) -> Self {
+        SharedSecret(bytes)
+    }
+
+    /// Returns borrowed bytes representing the shared secret of the key exchange
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
+
 /// Represents the functionality of a key encapsulator. For unauthenticated encapsulation, `Self`
 /// can be an empty struct. For authenticated encapsulation, `Self` is a private key.
 pub trait Encapsulator<EK: EncappedKey> {
@@ -44,14 +63,14 @@ pub trait Encapsulator<EK: EncappedKey> {
         &self,
         csprng: &mut R,
         recip_pubkey: &EK::RecipientPublicKey,
-    ) -> Result<(EK, GenericArray<u8, EK::NSecret>), Error>;
+    ) -> Result<(EK, SharedSecret<EK>), Error>;
 }
 
 /// Represents the functionality of a key decapsulator, where `Self` is a cryptographic key.
 pub trait Decapsulator<EK: EncappedKey> {
     /// Attempt to decapsulate the given encapsulated key. Returns the shared secret on success, or
     /// an error if something went wrong.
-    fn try_decap(&self, encapped_key: &EK) -> Result<GenericArray<u8, EK::NSecret>, Error>;
+    fn try_decap(&self, encapped_key: &EK) -> Result<SharedSecret<EK>, Error>;
 }
 
 /// Represents the functionality of a authenticated-key decapsulator, where `Self` is a
@@ -64,5 +83,5 @@ pub trait AuthDecapsulator<EK: EncappedKey> {
         &self,
         encapped_key: &EK,
         sender_pubkey: &EK::SenderPublicKey,
-    ) -> Result<GenericArray<u8, EK::NSecret>, Error>;
+    ) -> Result<SharedSecret<EK>, Error>;
 }

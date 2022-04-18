@@ -7,6 +7,7 @@ use hpke::{
 };
 use kem::{
     generic_array::GenericArray, AuthDecapsulator, Decapsulator, EncappedKey, Encapsulator, Error,
+    SharedSecret,
 };
 use rand::rngs::OsRng;
 use rand_core::{CryptoRng, RngCore};
@@ -44,7 +45,7 @@ impl AsRef<[u8]> for X25519EncappedKey {
 
 // Define some convenience types
 type X25519PrivateKey = <X25519HkdfSha256 as KemTrait>::PrivateKey;
-type SharedSecret = GenericArray<u8, <X25519EncappedKey as EncappedKey>::NSecret>;
+type X25519SharedSecret = SharedSecret<X25519EncappedKey>;
 
 // Define an authenticated encapsulator. To authenticate, we need a full sender keypair.
 struct X25519AuthEncap(X25519PrivateKey, X25519PublicKey);
@@ -53,9 +54,14 @@ impl Encapsulator<X25519EncappedKey> for X25519AuthEncap {
         &self,
         csprng: &mut R,
         recip_pubkey: &X25519PublicKey,
-    ) -> Result<(X25519EncappedKey, SharedSecret), Error> {
+    ) -> Result<(X25519EncappedKey, X25519SharedSecret), Error> {
         <X25519HkdfSha256 as KemTrait>::encap(&recip_pubkey.0, Some((&self.0, &(self.1).0)), csprng)
-            .map(|(ss, ek)| (X25519EncappedKey(ek.to_bytes()), ss.0))
+            .map(|(ss, ek)| {
+                (
+                    X25519EncappedKey(ek.to_bytes()),
+                    X25519SharedSecret::new(ss.0),
+                )
+            })
             .map_err(|_| Error)
     }
 }
@@ -67,9 +73,14 @@ impl Encapsulator<X25519EncappedKey> for X25519Encap {
         &self,
         csprng: &mut R,
         recip_pubkey: &X25519PublicKey,
-    ) -> Result<(X25519EncappedKey, SharedSecret), Error> {
+    ) -> Result<(X25519EncappedKey, X25519SharedSecret), Error> {
         <X25519HkdfSha256 as KemTrait>::encap(&recip_pubkey.0, None, csprng)
-            .map(|(ss, ek)| (X25519EncappedKey(ek.to_bytes()), ss.0))
+            .map(|(ss, ek)| {
+                (
+                    X25519EncappedKey(ek.to_bytes()),
+                    X25519SharedSecret::new(ss.0),
+                )
+            })
             .map_err(|_| Error)
     }
 }
@@ -78,7 +89,7 @@ impl Encapsulator<X25519EncappedKey> for X25519Encap {
 // the same type (which, outside of testing, should not be the case), this can do both auth'd and
 // unauth'd decapsulation.
 impl Decapsulator<X25519EncappedKey> for X25519PrivateKey {
-    fn try_decap(&self, encapped_key: &X25519EncappedKey) -> Result<SharedSecret, Error> {
+    fn try_decap(&self, encapped_key: &X25519EncappedKey) -> Result<X25519SharedSecret, Error> {
         // First parse the encapped key, since it's just bytes right now
         let deserialized_encapped_key =
             <<X25519HkdfSha256 as KemTrait>::EncappedKey as HpkeDeserializable>::from_bytes(
@@ -97,7 +108,7 @@ impl AuthDecapsulator<X25519EncappedKey> for X25519PrivateKey {
         &self,
         encapped_key: &X25519EncappedKey,
         sender_pubkey: &X25519PublicKey,
-    ) -> Result<SharedSecret, Error> {
+    ) -> Result<X25519SharedSecret, Error> {
         // First parse the encapped key, since it's just bytes right now
         let deserialized_encapped_key =
             <<X25519HkdfSha256 as KemTrait>::EncappedKey as HpkeDeserializable>::from_bytes(
@@ -111,7 +122,7 @@ impl AuthDecapsulator<X25519EncappedKey> for X25519PrivateKey {
             Some(&sender_pubkey.0),
             &deserialized_encapped_key,
         )
-        .map(|ss| ss.0)
+        .map(|ss| X25519SharedSecret::new(ss.0))
         .map_err(|_| Error)
     }
 }
