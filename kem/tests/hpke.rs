@@ -1,12 +1,13 @@
 // TODO(tarcieri): re-enable when `zeroize` dependency issues are resolved
 #![cfg(disabled)]
 
-use generic_array::GenericArray;
 use hpke::{
     kem::{Kem as KemTrait, X25519HkdfSha256},
     Deserializable as HpkeDeserializable, Serializable as HpkeSerializable,
 };
-use kem::{AuthDecapsulator, Decapsulator, EncappedKey, Encapsulator, Error};
+use kem::{
+    generic_array::GenericArray, AuthDecapsulator, Decapsulator, EncappedKey, Encapsulator, Error,
+};
 use rand::rngs::OsRng;
 use rand_core::{CryptoRng, RngCore};
 
@@ -25,10 +26,15 @@ struct X25519EncappedKey(
 );
 impl EncappedKey for X25519EncappedKey {
     type NSecret = <X25519HkdfSha256 as KemTrait>::NSecret;
+    type NEnc = <<X25519HkdfSha256 as KemTrait>::PublicKey as HpkeSerializable>::OutputSize;
     // In HPKE the only recipient public key is the identity key
     type RecipientPublicKey = X25519PublicKey;
     // The sender's pubkey is the identity too
     type SenderPublicKey = X25519PublicKey;
+
+    fn from_bytes(bytes: &GenericArray<u8, Self::NEnc>) -> Result<Self, Error> {
+        <X25519HkdfSha256 as KemTrait>::PublicKey::from_bytes(bytes.as_slice()).map_err(|_| Error)
+    }
 }
 impl AsRef<[u8]> for X25519EncappedKey {
     fn as_ref(&self) -> &[u8] {

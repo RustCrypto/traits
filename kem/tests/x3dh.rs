@@ -1,12 +1,17 @@
-use generic_array::{typenum::U32, GenericArray};
-use kem::{AuthDecapsulator, EncappedKey, Encapsulator, Error};
+use kem::{
+    generic_array::{
+        typenum::{self, Unsigned},
+        GenericArray,
+    },
+    AuthDecapsulator, EncappedKey, Encapsulator, Error,
+};
 use p256::ecdsa::Signature;
 use rand::rngs::OsRng;
 use rand_core::{CryptoRng, RngCore};
 use x3dh_ke::{x3dh_a, x3dh_b, EphemeralKey, IdentityKey, Key, OneTimePreKey, SignedPreKey};
 
-// The size of an encapped key
-const P256_POINT_SIZE: usize = 231;
+// The size of an encapped key. This is the number of bytes in an uncompressed P256 point
+type NEnc = typenum::U231;
 
 // Define the sender pubkey type. This is an identity key;
 type X3DhSenderPublicKey = IdentityKey;
@@ -40,11 +45,18 @@ type X3DhPubkeyBundle = X3DhPrivkeyBundle;
 
 // The encapped key is just the byte repr of an ephemeral key. Impl the appropriate traits
 #[derive(Debug)]
-struct X3DhEncappedKey([u8; P256_POINT_SIZE]);
+struct X3DhEncappedKey([u8; NEnc::USIZE]);
 impl EncappedKey for X3DhEncappedKey {
-    type NSecret = U32;
+    type NSecret = typenum::U32;
+    type NEnc = NEnc;
     type SenderPublicKey = X3DhSenderPublicKey;
     type RecipientPublicKey = X3DhPubkeyBundle;
+
+    fn from_bytes(bytes: &GenericArray<u8, Self::NEnc>) -> Result<Self, Error> {
+        let mut buf = [0u8; NEnc::USIZE];
+        buf.copy_from_slice(bytes);
+        Ok(X3DhEncappedKey(buf))
+    }
 }
 impl AsRef<[u8]> for X3DhEncappedKey {
     fn as_ref(&self) -> &[u8] {
@@ -77,11 +89,7 @@ impl Encapsulator<X3DhEncappedKey> for X3DhSenderPrivateKey {
                 Error
             })?;
         // Serialize the ephemeral key
-        let encapped_key = {
-            let mut buf = [0u8; P256_POINT_SIZE];
-            buf.copy_from_slice(&ek.to_bytes());
-            X3DhEncappedKey(buf)
-        };
+        let encapped_key = X3DhEncappedKey::from_bytes(ek.to_bytes().as_slice().into())?;
 
         Ok((encapped_key, shared_secret))
     }

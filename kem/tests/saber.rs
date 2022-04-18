@@ -1,5 +1,10 @@
-use generic_array::{typenum::U32, GenericArray};
-use kem::{Decapsulator, EncappedKey, Encapsulator, Error};
+use kem::{
+    generic_array::{
+        typenum::{self, U1000, U32, U472},
+        GenericArray,
+    },
+    Decapsulator, EncappedKey, Encapsulator, Error,
+};
 use pqcrypto::kem::firesaber::{
     decapsulate, encapsulate, keypair, Ciphertext, PublicKey, SecretKey,
 };
@@ -14,10 +19,19 @@ type SaberPublicKey = PublicKey;
 struct SaberEncappedKey(Ciphertext);
 impl EncappedKey for SaberEncappedKey {
     type NSecret = U32;
+    // FireSaber encapped keys are 1472 bytes;
+    type NEnc = typenum::op!(U1000 + U472);
+
     // In HPKE the only recipient public key is the identity key
     type RecipientPublicKey = SaberPublicKey;
     // The sender's pubkey is the identity too
     type SenderPublicKey = SaberPrivateKey;
+
+    fn from_bytes(bytes: &GenericArray<u8, Self::NEnc>) -> Result<Self, Error> {
+        Ciphertext::from_bytes(bytes.as_slice())
+            .map(SaberEncappedKey)
+            .map_err(|_| Error)
+    }
 }
 impl AsRef<[u8]> for SaberEncappedKey {
     fn as_ref(&self) -> &[u8] {
@@ -69,4 +83,9 @@ fn test_saber() {
     let (ek, ss1) = encapper.try_encap(&mut rng, &pk_recip).unwrap();
     let ss2 = sk_recip.try_decap(&ek).unwrap();
     assert_eq!(ss1, ss2);
+
+    // Test serialization/deserialization
+    let ek_bytes = ek.as_bytes();
+    let ek2 = SaberEncappedKey::from_bytes(ek_bytes).unwrap();
+    assert_eq!(ek.as_bytes(), ek2.as_bytes());
 }
