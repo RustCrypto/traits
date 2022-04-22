@@ -2,10 +2,10 @@
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
+[![Build Status][build-image]][build-link]
 ![Apache2/MIT licensed][license-image]
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
-[![Build Status][build-image]][build-link]
 
 Traits which describe the functionality of [password hashing algorithms].
 
@@ -56,16 +56,16 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/password-hash.svg
+[crate-image]: https://img.shields.io/crates/v/password-hash.svg?logo=rust
 [crate-link]: https://crates.io/crates/password-hash
 [docs-image]: https://docs.rs/password-hash/badge.svg
 [docs-link]: https://docs.rs/password-hash/
+[build-image]: https://github.com/RustCrypto/traits/workflows/password-hash/badge.svg?branch=master&event=push
+[build-link]: https://github.com/RustCrypto/traits/actions?query=workflow:password-hash
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.57+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260046-password-hashes
-[build-image]: https://github.com/RustCrypto/traits/workflows/password-hash/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/traits/actions?query=workflow:password-hash
 
 [//]: # (general links)
 
