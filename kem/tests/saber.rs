@@ -18,16 +18,16 @@ type SaberPublicKey = PublicKey;
 // The encapped key type is called "Ciphertext" in Rust's pqcrypto. Impl the necessary traits.
 struct SaberEncappedKey(Ciphertext);
 impl EncappedKey for SaberEncappedKey {
-    type NSecret = U32;
+    type SharedSecretSize = U32;
     // FireSaber encapped keys are 1472 bytes;
-    type NEnc = typenum::op!(U1000 + U472);
+    type EncappedKeySize = typenum::op!(U1000 + U472);
 
     // In HPKE the only recipient public key is the identity key
     type RecipientPublicKey = SaberPublicKey;
     // The sender's pubkey is the identity too
     type SenderPublicKey = SaberPrivateKey;
 
-    fn from_bytes(bytes: &GenericArray<u8, Self::NEnc>) -> Result<Self, Error> {
+    fn from_bytes(bytes: &GenericArray<u8, Self::EncappedKeySize>) -> Result<Self, Error> {
         Ciphertext::from_bytes(bytes.as_slice())
             .map(SaberEncappedKey)
             .map_err(|_| Error)

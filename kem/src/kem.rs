@@ -11,10 +11,10 @@ use rand_core::{CryptoRng, RngCore};
 /// essence, a bag of bytes.
 pub trait EncappedKey: AsRef<[u8]> + Debug + Sized {
     /// The size, in bytes, of an encapsulated key.
-    type NEnc: ArrayLength<u8>;
+    type EncappedKeySize: ArrayLength<u8>;
 
     /// The size, in bytes, of the shared secret that this KEM produces.
-    type NSecret: ArrayLength<u8>;
+    type SharedSecretSize: ArrayLength<u8>;
 
     /// Represents the identity key of an encapsulator. This is used in authenticated
     /// decapsulation.
@@ -24,10 +24,10 @@ pub trait EncappedKey: AsRef<[u8]> + Debug + Sized {
     type RecipientPublicKey;
 
     /// Parses an encapsulated key from its byte representation.
-    fn from_bytes(bytes: &GenericArray<u8, Self::NEnc>) -> Result<Self, Error>;
+    fn from_bytes(bytes: &GenericArray<u8, Self::EncappedKeySize>) -> Result<Self, Error>;
 
     /// Borrows a byte slice representing the serialized form of this encapsulated key.
-    fn as_bytes(&self) -> &GenericArray<u8, Self::NEnc> {
+    fn as_bytes(&self) -> &GenericArray<u8, Self::EncappedKeySize> {
         // EncappedKey is already AsRef<[u8]>, so we don't need to do any work. This will panic iff
         // the underlying bytestring is not precisely NEnc bytes long.
         self.as_ref().into()
@@ -36,13 +36,13 @@ pub trait EncappedKey: AsRef<[u8]> + Debug + Sized {
 
 /// The shared secret that results from key exchange.
 #[derive(Zeroize)]
-pub struct SharedSecret<EK: EncappedKey>(GenericArray<u8, EK::NSecret>);
+pub struct SharedSecret<EK: EncappedKey>(GenericArray<u8, EK::SharedSecretSize>);
 
 impl<EK: EncappedKey> ZeroizeOnDrop for SharedSecret<EK> {}
 
 impl<EK: EncappedKey> SharedSecret<EK> {
     /// Constructs a new `SharedSecret` by wrapping the given bytes
-    pub fn new(bytes: GenericArray<u8, EK::NSecret>) -> Self {
+    pub fn new(bytes: GenericArray<u8, EK::SharedSecretSize>) -> Self {
         SharedSecret(bytes)
     }
 

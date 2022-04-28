@@ -26,14 +26,15 @@ struct X25519EncappedKey(
     GenericArray<u8, <<X25519HkdfSha256 as KemTrait>::EncappedKey as HpkeSerializable>::OutputSize>,
 );
 impl EncappedKey for X25519EncappedKey {
-    type NSecret = <X25519HkdfSha256 as KemTrait>::NSecret;
-    type NEnc = <<X25519HkdfSha256 as KemTrait>::PublicKey as HpkeSerializable>::OutputSize;
+    type SharedSecretSize = <X25519HkdfSha256 as KemTrait>::SharedSecretSize;
+    type EncappedKeySize =
+        <<X25519HkdfSha256 as KemTrait>::PublicKey as HpkeSerializable>::OutputSize;
     // In HPKE the only recipient public key is the identity key
     type RecipientPublicKey = X25519PublicKey;
     // The sender's pubkey is the identity too
     type SenderPublicKey = X25519PublicKey;
 
-    fn from_bytes(bytes: &GenericArray<u8, Self::NEnc>) -> Result<Self, Error> {
+    fn from_bytes(bytes: &GenericArray<u8, Self::EncappedKeySize>) -> Result<Self, Error> {
         <X25519HkdfSha256 as KemTrait>::PublicKey::from_bytes(bytes.as_slice()).map_err(|_| Error)
     }
 }

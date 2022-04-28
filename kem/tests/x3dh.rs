@@ -47,12 +47,12 @@ type X3DhPubkeyBundle = X3DhPrivkeyBundle;
 #[derive(Debug)]
 struct X3DhEncappedKey([u8; NEnc::USIZE]);
 impl EncappedKey for X3DhEncappedKey {
-    type NSecret = typenum::U32;
-    type NEnc = NEnc;
+    type SharedSecretSize = typenum::U32;
+    type EncappedKeySize = NEnc;
     type SenderPublicKey = X3DhSenderPublicKey;
     type RecipientPublicKey = X3DhPubkeyBundle;
 
-    fn from_bytes(bytes: &GenericArray<u8, Self::NEnc>) -> Result<Self, Error> {
+    fn from_bytes(bytes: &GenericArray<u8, Self::EncappedKeySize>) -> Result<Self, Error> {
         let mut buf = [0u8; NEnc::USIZE];
         buf.copy_from_slice(bytes);
         Ok(X3DhEncappedKey(buf))
