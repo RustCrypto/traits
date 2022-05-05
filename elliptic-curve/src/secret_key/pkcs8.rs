@@ -6,7 +6,7 @@ use crate::{
     sec1::{ModulusSize, ValidatePublicKey},
     AlgorithmParameters, Curve, FieldSize, ALGORITHM_OID,
 };
-use der::Decodable;
+use der::Decode;
 use sec1::EcPrivateKey;
 
 // Imports for the `EncodePrivateKey` impl
@@ -65,9 +65,10 @@ where
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
-    fn to_pkcs8_der(&self) -> pkcs8::Result<pkcs8::PrivateKeyDocument> {
+    fn to_pkcs8_der(&self) -> pkcs8::Result<der::SecretDocument> {
         let ec_private_key = self.to_sec1_der()?;
-        pkcs8::PrivateKeyInfo::new(C::algorithm_identifier(), &ec_private_key).to_der()
+        let pkcs8_key = pkcs8::PrivateKeyInfo::new(C::algorithm_identifier(), &ec_private_key);
+        Ok(der::SecretDocument::encode_msg(&pkcs8_key)?)
     }
 }
 

@@ -312,7 +312,7 @@ where
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
-    fn to_public_key_der(&self) -> pkcs8::spki::Result<pkcs8::PublicKeyDocument> {
+    fn to_public_key_der(&self) -> pkcs8::spki::Result<der::Document> {
         let public_key_bytes = self.to_encoded_point(false);
 
         pkcs8::SubjectPublicKeyInfo {
