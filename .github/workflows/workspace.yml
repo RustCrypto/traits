@@ -13,6 +13,11 @@ on:
       - '**/CHANGELOG.md'
       - .github/**
 
+env:
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: "-Dwarnings"
+  RUSTDOCFLAGS: "-Dwarnings"
+
 jobs:
   clippy:
     runs-on: ubuntu-latest
@@ -26,18 +31,8 @@ jobs:
           override: true
           profile: minimal
       - run: cargo clippy --all --all-features -- -D warnings
-      - run: cargo clippy --all --all-features -- -D warnings
-        working-directory: cipher
-      - run: cargo clippy --all --all-features -- -D warnings
-        working-directory: crypto
-      - run: cargo clippy --all --all-features -- -D warnings
-        working-directory: elliptic-curve
-      - run: cargo clippy --all --all-features -- -D warnings
-        working-directory: kem
-      - run: cargo clippy --all --all-features -- -D warnings
-        working-directory: password-hash
 
-  rustfmt_workspace:
+  rustfmt:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -45,80 +40,8 @@ jobs:
         with:
           toolchain: stable
           components: rustfmt
-          override: true
           profile: minimal
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-  rustfmt_crypto:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: crypto
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt
           override: true
-          profile: minimal
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-  rustfmt_elliptic-curve:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: elliptic-curve
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt
-          override: true
-          profile: minimal
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-  rustfmt_kem:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: kem
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt
-          override: true
-          profile: minimal
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-  rustfmt_password-hash:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: password-hash
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt
-          override: true
-          profile: minimal
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
