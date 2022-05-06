@@ -24,7 +24,7 @@ use {
         AffinePoint,
     },
     alloc::vec::Vec,
-    der::Encodable,
+    der::Encode,
     zeroize::Zeroizing,
 };
 
