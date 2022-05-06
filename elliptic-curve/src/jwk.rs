@@ -19,7 +19,7 @@ use core::{
     marker::PhantomData,
     str::{self, FromStr},
 };
-use serde::{de, ser, Deserialize, Serialize};
+use serdect::serde::{de, ser, Deserialize, Serialize};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[cfg(feature = "arithmetic")]

@@ -32,7 +32,7 @@ group = { version = "0.12", optional = true, default-features = false }
 hex-literal = { version = "0.3", optional = true }
 pem-rfc7468 = { version = "0.5", optional = true }
 sec1 = { version = "=0.3.0-pre.2", optional = true, features = ["subtle", "zeroize"] }
-serde = { version = "1", optional = true, default-features = false }
+serdect = { version = "0.1", optional = true, default-features = false, features = ["alloc"] }
 serde_json = { version = "1", optional = true, default-features = false, features = ["alloc"] }
 
 [dev-dependencies]
@@ -52,6 +52,7 @@ hazmat = []
 jwk = ["alloc", "base64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
 pem = ["alloc", "arithmetic", "pem-rfc7468/alloc", "pkcs8", "sec1/pem"]
 pkcs8 = ["sec1/pkcs8"]
+serde = ["alloc", "serdect"]
 std = ["alloc", "rand_core/std"]
 voprf = ["digest"]
 

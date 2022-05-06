@@ -326,8 +326,8 @@ dependencies = [
  "pem-rfc7468 0.5.1",
  "rand_core",
  "sec1",
- "serde",
  "serde_json",
+ "serdect",
  "sha2 0.10.2",
  "sha3",
  "subtle",
@@ -777,6 +777,16 @@ checksum = "8e8d9fa5c3b304765ce1fd9c4c8a3de2c8db365a5b91be52f186efc675681d95"
 dependencies = [
  "itoa",
  "ryu",
+ "serde",
+]
+
+[[package]]
+name = "serdect"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "038fce1bf4d74b9b30ea7dcd59df75ba8ec669a5dcb3cc64fbfcef7334ced32c"
+dependencies = [
+ "base16ct",
  "serde",
 ]
 
