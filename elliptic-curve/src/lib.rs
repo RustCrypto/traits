@@ -133,9 +133,6 @@ pub use crate::jwk::{JwkEcKey, JwkParameters};
 #[cfg(feature = "pkcs8")]
 pub use ::sec1::pkcs8;
 
-#[cfg(feature = "serde")]
-pub use serde;
-
 use core::fmt::Debug;
 use generic_array::GenericArray;
 

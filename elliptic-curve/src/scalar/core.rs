@@ -26,7 +26,7 @@ use {
 };
 
 #[cfg(feature = "serde")]
-use serde::{de, ser, Deserialize, Serialize};
+use serdect::serde::{de, ser, Deserialize, Serialize};
 
 /// Generic scalar type with core functionality.
 ///
@@ -408,25 +408,11 @@ impl<C> Serialize for ScalarCore<C>
 where
     C: Curve,
 {
-    #[cfg(not(feature = "alloc"))]
     fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
     where
         S: ser::Serializer,
     {
-        self.to_be_bytes().as_slice().serialize(serializer)
-    }
-
-    #[cfg(feature = "alloc")]
-    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        use alloc::string::ToString;
-        if serializer.is_human_readable() {
-            self.to_string().serialize(serializer)
-        } else {
-            self.to_be_bytes().as_slice().serialize(serializer)
-        }
+        serdect::array::serialize_hex_upper_or_bin(&self.to_be_bytes(), serializer)
     }
 }
 
@@ -436,29 +422,13 @@ impl<'de, C> Deserialize<'de> for ScalarCore<C>
 where
     C: Curve,
 {
-    #[cfg(not(feature = "alloc"))]
     fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
     where
         D: de::Deserializer<'de>,
     {
-        use de::Error;
-        <&[u8]>::deserialize(deserializer)
-            .and_then(|slice| Self::from_be_slice(slice).map_err(D::Error::custom))
-    }
-
-    #[cfg(feature = "alloc")]
-    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        use de::Error;
-        if deserializer.is_human_readable() {
-            <&str>::deserialize(deserializer)?
-                .parse()
-                .map_err(D::Error::custom)
-        } else {
-            <&[u8]>::deserialize(deserializer)
-                .and_then(|slice| Self::from_be_slice(slice).map_err(D::Error::custom))
-        }
+        let mut bytes = FieldBytes::<C>::default();
+        serdect::array::deserialize_hex_or_bin(&mut bytes, deserializer)?;
+        Option::from(Self::from_be_bytes(bytes))
+            .ok_or_else(|| de::Error::custom("scalar out of range"))
     }
 }

@@ -31,8 +31,8 @@ use {
 #[cfg(any(feature = "jwk", feature = "pem"))]
 use alloc::string::{String, ToString};
 
-#[cfg(all(feature = "alloc", feature = "serde"))]
-use serde::{de, ser, Deserialize, Serialize};
+#[cfg(feature = "serde")]
+use serdect::serde::{de, ser, Deserialize, Serialize};
 
 /// Elliptic curve public keys.
 ///
@@ -352,8 +352,8 @@ where
     }
 }
 
-#[cfg(all(feature = "alloc", feature = "serde"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "alloc", feature = "serde"))))]
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<C> Serialize for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
@@ -365,17 +365,12 @@ where
         S: ser::Serializer,
     {
         let der = self.to_public_key_der().map_err(ser::Error::custom)?;
-
-        if serializer.is_human_readable() {
-            base16ct::upper::encode_string(der.as_ref()).serialize(serializer)
-        } else {
-            der.as_ref().serialize(serializer)
-        }
+        serdect::slice::serialize_hex_upper_or_bin(&der, serializer)
     }
 }
 
-#[cfg(all(feature = "alloc", feature = "serde"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "alloc", feature = "serde"))))]
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de, C> Deserialize<'de> for PublicKey<C>
 where
     C: Curve + AlgorithmParameters + ProjectiveArithmetic,
@@ -386,17 +381,8 @@ where
     where
         D: de::Deserializer<'de>,
     {
-        use de::Error;
-
-        if deserializer.is_human_readable() {
-            let der_bytes = base16ct::mixed::decode_vec(<&str>::deserialize(deserializer)?)
-                .map_err(D::Error::custom)?;
-            Self::from_public_key_der(&der_bytes)
-        } else {
-            let der_bytes = <&[u8]>::deserialize(deserializer)?;
-            Self::from_public_key_der(der_bytes)
-        }
-        .map_err(D::Error::custom)
+        let der_bytes = serdect::slice::deserialize_hex_or_bin_vec(deserializer)?;
+        Self::from_public_key_der(&der_bytes).map_err(de::Error::custom)
     }
 }
 
