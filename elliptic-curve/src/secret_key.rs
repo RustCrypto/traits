@@ -79,7 +79,7 @@ pub(crate) const SEC1_PEM_TYPE_LABEL: &str = "EC PRIVATE KEY";
 /// To decode an elliptic curve private key from PKCS#8, enable the `pkcs8`
 /// feature of this crate (or the `pkcs8` feature of a specific RustCrypto
 /// elliptic curve crate) and use the
-/// [`elliptic_curve::pkcs8::DecodePrivateKey`][`DecodePrivateKey`]
+/// [`DecodePrivateKey`][`elliptic_curve::pkcs8::DecodePrivateKey`]
 /// trait to parse it.
 ///
 /// When the `pem` feature of this crate (or a specific RustCrypto elliptic
