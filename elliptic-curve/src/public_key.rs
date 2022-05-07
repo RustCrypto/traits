@@ -11,8 +11,8 @@ use crate::{JwkEcKey, JwkParameters};
 
 #[cfg(all(feature = "sec1", feature = "pkcs8"))]
 use crate::{
-    pkcs8::{self, DecodePublicKey},
-    AlgorithmParameters, ALGORITHM_OID,
+    pkcs8::{self, AssociatedOid, DecodePublicKey},
+    ALGORITHM_OID,
 };
 
 #[cfg(feature = "pem")]
@@ -281,7 +281,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(all(feature = "pkcs8", feature = "sec1"))))]
 impl<C> TryFrom<pkcs8::SubjectPublicKeyInfo<'_>> for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -298,7 +298,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(all(feature = "pkcs8", feature = "sec1"))))]
 impl<C> DecodePublicKey for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -308,15 +308,20 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> EncodePublicKey for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
     fn to_public_key_der(&self) -> pkcs8::spki::Result<der::Document> {
+        let algorithm = pkcs8::AlgorithmIdentifier {
+            oid: ALGORITHM_OID,
+            parameters: Some((&C::OID).into()),
+        };
+
         let public_key_bytes = self.to_encoded_point(false);
 
         pkcs8::SubjectPublicKeyInfo {
-            algorithm: C::algorithm_identifier(),
+            algorithm,
             subject_public_key: public_key_bytes.as_ref(),
         }
         .try_into()
@@ -327,7 +332,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -342,7 +347,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> ToString for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -356,7 +361,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<C> Serialize for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -373,7 +378,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de, C> Deserialize<'de> for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
