@@ -602,9 +602,9 @@ dependencies = [
 
 [[package]]
 name = "pkcs8"
-version = "0.9.0-pre.2"
+version = "0.9.0-pre.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "648850a9b1320771c90c141a7497552f887081f4d63117c038621222eceb511b"
+checksum = "c1799b3d2dcb77fb12fd3cada7897c333d3f62c6eec50af2461b3cd8081a2599"
 dependencies = [
  "der 0.6.0-pre.4",
  "spki 0.6.0-pre.3",
@@ -730,13 +730,13 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "sec1"
-version = "0.3.0-pre.2"
+version = "0.3.0-pre.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a064c53858053f909bdc5a83b6a471df77114d97a6c17c48b091905cdbf1f913"
+checksum = "437ee1920f19c74e2b92630ba247f0716b52249464d97e76bf22ecb8ee75bbee"
 dependencies = [
  "der 0.6.0-pre.4",
  "generic-array",
- "pkcs8 0.9.0-pre.2",
+ "pkcs8 0.9.0-pre.3",
  "subtle",
  "zeroize",
 ]
