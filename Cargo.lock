@@ -174,7 +174,7 @@ dependencies = [
  "cipher 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "crypto-mac",
  "digest 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "elliptic-curve 0.12.0-pre.3",
+ "elliptic-curve 0.12.0-pre.4",
  "password-hash",
  "signature 1.5.0",
  "universal-hash",
@@ -312,7 +312,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.12.0-pre.3"
+version = "0.12.0-pre.4"
 dependencies = [
  "base16ct",
  "base64ct",
@@ -730,13 +730,15 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "sec1"
-version = "0.3.0-pre.3"
+version = "0.3.0-pre.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "437ee1920f19c74e2b92630ba247f0716b52249464d97e76bf22ecb8ee75bbee"
+checksum = "0d00c76f7d9f461f9a12a1b67775709f4e1b214272923167195aeb6fc76e8a7a"
 dependencies = [
+ "base16ct",
  "der 0.6.0-pre.4",
  "generic-array",
  "pkcs8 0.9.0-pre.3",
+ "serdect",
  "subtle",
  "zeroize",
 ]
