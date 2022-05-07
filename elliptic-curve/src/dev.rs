@@ -12,8 +12,8 @@ use crate::{
     sec1::{FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     zeroize::DefaultIsZeroes,
-    AffineArithmetic, AffineXCoordinate, AlgorithmParameters, Curve, IsHigh, PrimeCurve,
-    ProjectiveArithmetic, ScalarArithmetic,
+    AffineArithmetic, AffineXCoordinate, Curve, IsHigh, PrimeCurve, ProjectiveArithmetic,
+    ScalarArithmetic,
 };
 use core::{
     iter::Sum,
@@ -22,6 +22,7 @@ use core::{
 use ff::{Field, PrimeField};
 use generic_array::arr;
 use hex_literal::hex;
+use pkcs8::AssociatedOid;
 
 #[cfg(feature = "bits")]
 use crate::group::ff::PrimeFieldBits;
@@ -85,7 +86,7 @@ impl ScalarArithmetic for MockCurve {
     type Scalar = Scalar;
 }
 
-impl AlgorithmParameters for MockCurve {
+impl AssociatedOid for MockCurve {
     /// OID for NIST P-256
     const OID: pkcs8::ObjectIdentifier = pkcs8::ObjectIdentifier::new_unwrap("1.2.840.10045.3.1.7");
 }

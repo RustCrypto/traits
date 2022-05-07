@@ -131,7 +131,7 @@ pub use crate::scalar::ScalarBits;
 pub use crate::jwk::{JwkEcKey, JwkParameters};
 
 #[cfg(feature = "pkcs8")]
-pub use ::sec1::pkcs8;
+pub use pkcs8;
 
 use core::fmt::Debug;
 use generic_array::GenericArray;
@@ -194,27 +194,6 @@ pub type AffinePoint<C> = <C as AffineArithmetic>::AffinePoint;
 #[cfg(feature = "arithmetic")]
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub type ProjectivePoint<C> = <C as ProjectiveArithmetic>::ProjectivePoint;
-
-/// Associate an [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] (OID) with an
-/// elliptic curve algorithm implementation.
-///
-/// This is used as as the `parameters` of an `AlgorithmIdentifier` as
-/// described in RFC 5280 Section 4.1.1.2:
-/// <https://tools.ietf.org/html/rfc5280#section-4.1.1.2>
-#[cfg(feature = "pkcs8")]
-#[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
-pub trait AlgorithmParameters: Curve {
-    /// Object Identifier (OID) for this curve
-    const OID: pkcs8::ObjectIdentifier;
-
-    /// Get the [`pkcs8::AlgorithmIdentifier`] for this curve
-    fn algorithm_identifier() -> pkcs8::AlgorithmIdentifier<'static> {
-        pkcs8::AlgorithmIdentifier {
-            oid: ALGORITHM_OID,
-            parameters: Some((&Self::OID).into()),
-        }
-    }
-}
 
 /// Elliptic curve parameters used by VOPRF.
 #[cfg(feature = "voprf")]
