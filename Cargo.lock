@@ -244,9 +244,9 @@ dependencies = [
 
 [[package]]
 name = "der"
-version = "0.6.0-pre.4"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0daf09ee3ea2f7e4f5761deb921bd4c4e46861ee4b218349a40eccfa9d7fa6a5"
+checksum = "13dd2ae565c0a381dde7fade45fce95984c568bdcb4700a4fdbe3175e0380b2f"
 dependencies = [
  "const-oid 0.9.0",
  "pem-rfc7468 0.6.0",
@@ -317,14 +317,14 @@ dependencies = [
  "base16ct",
  "base64ct",
  "crypto-bigint 0.4.0",
- "der 0.6.0-pre.4",
+ "der 0.6.0",
  "digest 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "ff 0.12.0",
  "generic-array",
  "group 0.12.0",
  "hex-literal 0.3.4",
  "pem-rfc7468 0.5.1",
- "pkcs8 0.9.0-pre.3",
+ "pkcs8 0.9.0",
  "rand_core",
  "sec1",
  "serde_json",
@@ -602,12 +602,12 @@ dependencies = [
 
 [[package]]
 name = "pkcs8"
-version = "0.9.0-pre.3"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1799b3d2dcb77fb12fd3cada7897c333d3f62c6eec50af2461b3cd8081a2599"
+checksum = "9eca2c590a5f85da82668fa685c09ce2888b9430e83299debf1f34b65fd4a4ba"
 dependencies = [
- "der 0.6.0-pre.4",
- "spki 0.6.0-pre.3",
+ "der 0.6.0",
+ "spki 0.6.0",
 ]
 
 [[package]]
@@ -730,14 +730,14 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "sec1"
-version = "0.3.0-pre.4"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d00c76f7d9f461f9a12a1b67775709f4e1b214272923167195aeb6fc76e8a7a"
+checksum = "3be24c1842290c45df0a7bf069e0c268a747ad05a192f2fd7dcfdbc1cba40928"
 dependencies = [
  "base16ct",
- "der 0.6.0-pre.4",
+ "der 0.6.0",
  "generic-array",
- "pkcs8 0.9.0-pre.3",
+ "pkcs8 0.9.0",
  "serdect",
  "subtle",
  "zeroize",
@@ -878,12 +878,12 @@ dependencies = [
 
 [[package]]
 name = "spki"
-version = "0.6.0-pre.3"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc54500466d9dad8716bc2b0bbb8e72cf2559759efa6c535fb40dcdf249716b3"
+checksum = "67cf02bbac7a337dc36e4f5a693db6c21e7863f45070f7064577eb4367a3212b"
 dependencies = [
  "base64ct",
- "der 0.6.0-pre.4",
+ "der 0.6.0",
 ]
 
 [[package]]
