@@ -180,7 +180,7 @@ dependencies = [
  "cipher 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "crypto-mac",
  "digest 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "elliptic-curve 0.12.0-pre.4",
+ "elliptic-curve 0.12.0",
  "password-hash",
  "signature 1.5.0",
  "universal-hash",
@@ -325,7 +325,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.12.0-pre.4"
+version = "0.12.0"
 dependencies = [
  "base16ct",
  "base64ct",
@@ -337,7 +337,7 @@ dependencies = [
  "group 0.12.0",
  "hex-literal 0.3.4",
  "hkdf 0.12.3",
- "pem-rfc7468 0.5.1",
+ "pem-rfc7468 0.6.0",
  "pkcs8 0.9.0",
  "rand_core",
  "sec1",
@@ -599,15 +599,6 @@ name = "pem-rfc7468"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f22eb0e3c593294a99e9ff4b24cf6b752d43f193aa4415fe5077c159996d497"
-dependencies = [
- "base64ct",
-]
-
-[[package]]
-name = "pem-rfc7468"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "973e070439aaacda48e5effad187f36d670b7635f7dcb75fa3c6f482d1b5b932"
 dependencies = [
  "base64ct",
 ]
