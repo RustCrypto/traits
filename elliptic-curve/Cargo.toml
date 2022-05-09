@@ -29,6 +29,7 @@ base64ct = { version = "1", optional = true, default-features = false }
 digest = { version = "0.10", optional = true }
 ff = { version = "0.12", optional = true, default-features = false }
 group = { version = "0.12", optional = true, default-features = false }
+hkdf = { version = "0.12", optional = true, default-features = false }
 hex-literal = { version = "0.3", optional = true }
 pem-rfc7468 = { version = "0.5", optional = true }
 pkcs8 = { version = "0.9", optional = true, default-features = false }
@@ -48,7 +49,7 @@ arithmetic = ["ff", "group"]
 bits = ["arithmetic", "ff/bits"]
 dev = ["arithmetic", "hex-literal", "pem", "pkcs8"]
 hash2curve = ["arithmetic", "digest"]
-ecdh = ["arithmetic"]
+ecdh = ["arithmetic", "digest", "hkdf"]
 hazmat = []
 jwk = ["alloc", "base64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
 pem = ["alloc", "arithmetic", "pem-rfc7468/alloc", "pkcs8", "sec1/pem"]
