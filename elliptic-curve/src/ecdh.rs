@@ -31,7 +31,9 @@ use crate::{
     ProjectiveArithmetic, ProjectivePoint, PublicKey,
 };
 use core::borrow::Borrow;
+use digest::{crypto_common::BlockSizeUser, Digest};
 use group::Curve as _;
+use hkdf::{hmac::SimpleHmac, Hkdf};
 use rand_core::{CryptoRng, RngCore};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
@@ -150,20 +152,6 @@ where
 }
 
 /// Shared secret value computed via ECDH key agreement.
-///
-/// This value contains the raw serialized x-coordinate of the elliptic curve
-/// point computed from a Diffie-Hellman exchange.
-///
-/// # ⚠️ WARNING: NOT UNIFORMLY RANDOM! ⚠️
-///
-/// This value is not uniformly random and should not be used directly
-/// as a cryptographic key for anything which requires that property
-/// (e.g. symmetric ciphers).
-///
-/// Instead, the resulting value should be used as input to a Key Derivation
-/// Function (KDF) or cryptographic hash function to produce a symmetric key.
-// TODO(tarcieri): KDF traits and support for deriving uniform keys
-// See: https://github.com/RustCrypto/traits/issues/5
 pub struct SharedSecret<C: Curve> {
     /// Computed secret value
     secret_bytes: FieldBytes<C>,
@@ -181,13 +169,48 @@ impl<C: Curve> SharedSecret<C> {
         }
     }
 
-    /// Shared secret value, serialized as bytes.
+    /// Use [HKDF] (HMAC-based Extract-and-Expand Key Derivation Function) to
+    /// extract entropy from this shared secret.
     ///
-    /// As noted in the comments for this struct, this value is non-uniform and
-    /// should not be used directly as a symmetric encryption key, but instead
-    /// as input to a KDF (or failing that, a hash function) used to produce
-    /// a symmetric key.
-    pub fn as_bytes(&self) -> &FieldBytes<C> {
+    /// This method can be used to transform the shared secret into uniformly
+    /// random values which are suitable as key material.
+    ///
+    /// The `D` type parameter is a cryptographic digest function.
+    /// `sha2::Sha256` is a common choice for use with HKDF.
+    ///
+    /// The `salt` parameter can be used to supply additional randomness.
+    /// Some examples include:
+    ///
+    /// - randomly generated (but authenticated) string
+    /// - fixed application-specific value
+    /// - previous shared secret used for rekeying (as in TLS 1.3 and Noise)
+    ///
+    /// After initializing HKDF, use [`Hkdf::expand`] to obtain output key
+    /// material.
+    ///
+    /// [HKDF]: https://en.wikipedia.org/wiki/HKDF
+    pub fn extract<D>(&self, salt: Option<&[u8]>) -> Hkdf<D, SimpleHmac<D>>
+    where
+        D: BlockSizeUser + Clone + Digest,
+    {
+        Hkdf::new(salt, &self.secret_bytes)
+    }
+
+    /// This value contains the raw serialized x-coordinate of the elliptic curve
+    /// point computed from a Diffie-Hellman exchange, serialized as bytes.
+    ///
+    /// When in doubt, use [`SharedSecret::extract`] instead.
+    ///
+    /// # ⚠️ WARNING: NOT UNIFORMLY RANDOM! ⚠️
+    ///
+    /// This value is not uniformly random and should not be used directly
+    /// as a cryptographic key for anything which requires that property
+    /// (e.g. symmetric ciphers).
+    ///
+    /// Instead, the resulting value should be used as input to a Key Derivation
+    /// Function (KDF) or cryptographic hash function to produce a symmetric key.
+    /// The [`SharedSecret::extract`] function will do this for you.
+    pub fn raw_secret_bytes(&self) -> &FieldBytes<C> {
         &self.secret_bytes
     }
 }
