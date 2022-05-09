@@ -1,6 +1,6 @@
 [package]
 name = "elliptic-curve"
-version = "0.12.0-pre.4" # Also update html_root_url in lib.rs when bumping this
+version = "0.12.0"
 description = """
 General purpose Elliptic Curve Cryptography (ECC) support, including types
 and traits for representing various elliptic curve forms, scalars, points,
@@ -31,7 +31,7 @@ ff = { version = "0.12", optional = true, default-features = false }
 group = { version = "0.12", optional = true, default-features = false }
 hkdf = { version = "0.12", optional = true, default-features = false }
 hex-literal = { version = "0.3", optional = true }
-pem-rfc7468 = { version = "0.5", optional = true }
+pem-rfc7468 = { version = "0.6", optional = true }
 pkcs8 = { version = "0.9", optional = true, default-features = false }
 sec1 = { version = "0.3", optional = true, features = ["subtle", "zeroize"] }
 serdect = { version = "0.1", optional = true, default-features = false, features = ["alloc"] }
@@ -52,7 +52,7 @@ hash2curve = ["arithmetic", "digest"]
 ecdh = ["arithmetic", "digest", "hkdf"]
 hazmat = []
 jwk = ["alloc", "base64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
-pem = ["alloc", "arithmetic", "pem-rfc7468/alloc", "pkcs8", "sec1/pem"]
+pem = ["alloc", "arithmetic", "der/pem", "pem-rfc7468/alloc", "pkcs8", "sec1/pem"]
 serde = ["alloc", "sec1/serde", "serdect"]
 std = ["alloc", "rand_core/std"]
 voprf = ["digest"]
