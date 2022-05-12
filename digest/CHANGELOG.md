@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#849]: https://github.com/RustCrypto/traits/pull/849
 
-## 0.10.1 (2021-12-14)
+## 0.10.1 (2021-12-14) [YANKED]
 ### Added
 - `Update::chain` and `Digest::new_with_prefix` methods. ([#846])
 - `Mac::generate_key` method. ([#847])
@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#846]: https://github.com/RustCrypto/traits/pull/846
 [#847]: https://github.com/RustCrypto/traits/pull/847
 
-## 0.10.0 (2021-12-07)
+## 0.10.0 (2021-12-07) [YANKED]
 ### Changed
 - Dirty traits are removed and instead block-level traits are introduced.
 Variable output traits reworked and now support both run and compile time selection of output size. ([#380], [#819])
