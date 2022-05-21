@@ -2,10 +2,10 @@
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
+[![Build Status][build-image]][build-link]
 ![Apache2/MIT licensed][license-image]
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
-[![Build Status][build-image]][build-link]
 
 General purpose Elliptic Curve Cryptography (ECC) support, including types
 and traits for representing various elliptic curve forms, scalars, points,
@@ -42,13 +42,13 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/elliptic-curve.svg
+[crate-image]: https://buildstats.info/crate/elliptic-curve
 [crate-link]: https://crates.io/crates/elliptic-curve
 [docs-image]: https://docs.rs/elliptic-curve/badge.svg
 [docs-link]: https://docs.rs/elliptic-curve/
+[build-image]: https://github.com/RustCrypto/traits/actions/workflows/elliptic-curve.yml/badge.svg
+[build-link]: https://github.com/RustCrypto/traits/actions/workflows/elliptic-curve.yml
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.57+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260040-elliptic-curves
-[build-image]: https://github.com/RustCrypto/elliptic-curves/workflows/elliptic-curve%20crate/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/elliptic-curves/actions?query=workflow%3A%22elliptic-curve+crate%22

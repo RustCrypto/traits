@@ -11,8 +11,8 @@ use crate::{JwkEcKey, JwkParameters};
 
 #[cfg(all(feature = "sec1", feature = "pkcs8"))]
 use crate::{
-    pkcs8::{self, DecodePublicKey},
-    AlgorithmParameters, ALGORITHM_OID,
+    pkcs8::{self, AssociatedOid, DecodePublicKey},
+    ALGORITHM_OID,
 };
 
 #[cfg(feature = "pem")]
@@ -31,8 +31,8 @@ use {
 #[cfg(any(feature = "jwk", feature = "pem"))]
 use alloc::string::{String, ToString};
 
-#[cfg(all(feature = "alloc", feature = "serde"))]
-use serde::{de, ser, Deserialize, Serialize};
+#[cfg(feature = "serde")]
+use serdect::serde::{de, ser, Deserialize, Serialize};
 
 /// Elliptic curve public keys.
 ///
@@ -281,7 +281,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(all(feature = "pkcs8", feature = "sec1"))))]
 impl<C> TryFrom<pkcs8::SubjectPublicKeyInfo<'_>> for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -298,7 +298,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(all(feature = "pkcs8", feature = "sec1"))))]
 impl<C> DecodePublicKey for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -308,15 +308,20 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> EncodePublicKey for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
-    fn to_public_key_der(&self) -> pkcs8::spki::Result<pkcs8::PublicKeyDocument> {
+    fn to_public_key_der(&self) -> pkcs8::spki::Result<der::Document> {
+        let algorithm = pkcs8::AlgorithmIdentifier {
+            oid: ALGORITHM_OID,
+            parameters: Some((&C::OID).into()),
+        };
+
         let public_key_bytes = self.to_encoded_point(false);
 
         pkcs8::SubjectPublicKeyInfo {
-            algorithm: C::algorithm_identifier(),
+            algorithm,
             subject_public_key: public_key_bytes.as_ref(),
         }
         .try_into()
@@ -327,7 +332,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -342,7 +347,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> ToString for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -352,11 +357,11 @@ where
     }
 }
 
-#[cfg(all(feature = "alloc", feature = "serde"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "alloc", feature = "serde"))))]
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<C> Serialize for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -365,20 +370,15 @@ where
         S: ser::Serializer,
     {
         let der = self.to_public_key_der().map_err(ser::Error::custom)?;
-
-        if serializer.is_human_readable() {
-            base16ct::upper::encode_string(der.as_ref()).serialize(serializer)
-        } else {
-            der.as_ref().serialize(serializer)
-        }
+        serdect::slice::serialize_hex_upper_or_bin(&der, serializer)
     }
 }
 
-#[cfg(all(feature = "alloc", feature = "serde"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "alloc", feature = "serde"))))]
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de, C> Deserialize<'de> for PublicKey<C>
 where
-    C: Curve + AlgorithmParameters + ProjectiveArithmetic,
+    C: Curve + AssociatedOid + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -386,17 +386,8 @@ where
     where
         D: de::Deserializer<'de>,
     {
-        use de::Error;
-
-        if deserializer.is_human_readable() {
-            let der_bytes = base16ct::mixed::decode_vec(<&str>::deserialize(deserializer)?)
-                .map_err(D::Error::custom)?;
-            Self::from_public_key_der(&der_bytes)
-        } else {
-            let der_bytes = <&[u8]>::deserialize(deserializer)?;
-            Self::from_public_key_der(der_bytes)
-        }
-        .map_err(D::Error::custom)
+        let der_bytes = serdect::slice::deserialize_hex_or_bin_vec(deserializer)?;
+        Self::from_public_key_der(&der_bytes).map_err(de::Error::custom)
     }
 }
 

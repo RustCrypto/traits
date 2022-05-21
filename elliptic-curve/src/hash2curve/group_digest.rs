@@ -44,8 +44,8 @@ where
     ///
     /// `len_in_bytes = <Self::FieldElement as FromOkm>::Length * 2`
     ///
-    /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
-    /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
+    /// [`ExpandMsgXmd`]: crate::hash2curve::ExpandMsgXmd
+    /// [`ExpandMsgXof`]: crate::hash2curve::ExpandMsgXof
     fn hash_from_bytes<'a, X: ExpandMsg<'a>>(
         msgs: &[&[u8]],
         dst: &'a [u8],
@@ -84,8 +84,8 @@ where
     ///
     /// `len_in_bytes = <Self::FieldElement as FromOkm>::Length`
     ///
-    /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
-    /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
+    /// [`ExpandMsgXmd`]: crate::hash2curve::ExpandMsgXmd
+    /// [`ExpandMsgXof`]: crate::hash2curve::ExpandMsgXof
     fn encode_from_bytes<'a, X: ExpandMsg<'a>>(
         msgs: &[&[u8]],
         dst: &'a [u8],
@@ -107,8 +107,8 @@ where
     ///
     /// `len_in_bytes = <Self::Scalar as FromOkm>::Length`
     ///
-    /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
-    /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
+    /// [`ExpandMsgXmd`]: crate::hash2curve::ExpandMsgXmd
+    /// [`ExpandMsgXof`]: crate::hash2curve::ExpandMsgXof
     fn hash_to_scalar<'a, X: ExpandMsg<'a>>(msgs: &[&[u8]], dst: &'a [u8]) -> Result<Self::Scalar>
     where
         Self::Scalar: FromOkm,
