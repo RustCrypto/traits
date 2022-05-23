@@ -1,5 +1,5 @@
 use inout::InOutBuf;
-use crate::{BlockDecrypt, BlockSizeUser, Block};
+use crate::{BlockDecrypt, BlockSizeUser, Block, BlockEncrypt};
 
 pub trait UnalignedBytesDecrypt : BlockDecrypt + BlockSizeUser {
     fn proc_tail(&self, blocks: &InOutBuf<'_, '_, Block<Self>>, tail: &InOutBuf<'_, '_, u8>) -> Result<(), TailError>;
@@ -45,6 +45,57 @@ pub trait UnalignedBytesDecrypt : BlockDecrypt + BlockSizeUser {
         out_buf: &'a mut [u8],
     ) -> Result<&'a [u8], TailError> {
         self.decrypt_bytes_inout(InOutBuf::new(msg, out_buf).unwrap())
+        // FIXME:  pass NotEqualError with TailError
+        //self.decrypt_bytes_inout(InOutBuf::new(msg, out_buf)?)
+    }
+}
+
+pub trait UnalignedBytesEncrypt : BlockEncrypt + BlockSizeUser {
+    fn proc_tail(&self, blocks: &InOutBuf<'_, '_, Block<Self>>, tail: &InOutBuf<'_, '_, u8>) -> Result<(), TailError>;
+
+    #[inline]
+    fn encrypt_bytes_inout<'inp, 'out>(
+        &self,
+        data: InOutBuf<'inp, 'out, u8>,
+    ) -> Result<&'out [u8], TailError>
+    {
+        let n = data.len();
+
+        let (mut blocks, tail) = data.into_chunks();
+        self.encrypt_blocks_inout(blocks.reborrow());
+        if !tail.is_empty() {
+            self.proc_tail(&blocks, &tail)?
+        }
+        let out = unsafe {
+            let ptr = blocks.into_raw().1 as *const u8;
+            core::slice::from_raw_parts(ptr, n)
+        };
+        Ok(out)
+    }
+
+    /// Unaligned bytes input and encrypt in-place. Returns resulting plaintext slice.
+    ///
+    /// Returns [`TailError`] if length of output buffer is not sufficient.
+    #[inline]
+    fn encrypt_bytes<'a>(
+        &self,
+        buf: &'a mut [u8],
+    ) -> Result<&'a [u8], TailError> {
+        self.encrypt_bytes_inout(buf.into())
+    }
+
+    /// Unaligned bytes input and encrypt buffer-to-buffer. Returns resulting plaintext slice.
+    ///
+    /// Returns [`TailError`] if length of output buffer is not sufficient.
+    #[inline]
+    fn encrypt_bytes_b2b<'a>(
+        &self,
+        msg: &[u8],
+        out_buf: &'a mut [u8],
+    ) -> Result<&'a [u8], TailError> {
+        self.encrypt_bytes_inout(InOutBuf::new(msg, out_buf).unwrap())
+        // FIXME:  pass NotEqualError with TailError
+        //self.encrypt_bytes_inout(InOutBuf::new(msg, out_buf)?)
     }
 }
 
