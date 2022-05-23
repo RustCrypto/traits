@@ -45,8 +45,8 @@ mod errors;
 mod stream;
 mod stream_core;
 mod stream_wrapper;
-mod unaligned_bytes_mut;
 mod unaligned_bytes;
+mod unaligned_bytes_mut;
 
 pub use crate::{block::*, errors::*, stream::*, stream_core::*, stream_wrapper::*};
 pub use crypto_common::{
