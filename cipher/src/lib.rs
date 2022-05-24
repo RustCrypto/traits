@@ -48,7 +48,10 @@ mod stream_wrapper;
 mod unaligned_bytes;
 mod unaligned_bytes_mut;
 
-pub use crate::{block::*, errors::*, stream::*, stream_core::*, stream_wrapper::*};
+pub use crate::{
+    block::*, errors::*, stream::*, stream_core::*, stream_wrapper::*, unaligned_bytes::*,
+    unaligned_bytes_mut::*,
+};
 pub use crypto_common::{
     generic_array,
     typenum::{self, consts},
