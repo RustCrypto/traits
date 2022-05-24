@@ -74,3 +74,6 @@ pub trait ParBlocksSizeUser: BlockSizeUser {
 
 /// Parallel blocks on which [`ParBlocksSizeUser`] implementors operate.
 pub type ParBlocks<T> = GenericArray<Block<T>, <T as ParBlocksSizeUser>::ParBlocksSize>;
+
+#[derive(Debug)]
+pub struct TailError;

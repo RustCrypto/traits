@@ -1,4 +1,4 @@
-use crate::{Block, BlockDecryptMut, BlockEncryptMut, BlockSizeUser};
+use crate::{Block, BlockDecryptMut, BlockEncryptMut, BlockSizeUser, TailError};
 use inout::InOutBuf;
 
 pub trait UnalignedBytesDecryptMut: BlockDecryptMut + BlockSizeUser {
@@ -18,6 +18,7 @@ pub trait UnalignedBytesDecryptMut: BlockDecryptMut + BlockSizeUser {
         data: InOutBuf<'inp, 'out, u8>,
     ) -> Result<&'out [u8], TailError> {
         let n = data.len();
+
         let (mut blocks, mut tail) = data.into_chunks();
         self.decrypt_blocks_inout_mut(blocks.reborrow());
         if !tail.is_empty() {
@@ -70,6 +71,7 @@ pub trait UnalignedBytesEncryptMut: BlockEncryptMut + BlockSizeUser {
         data: InOutBuf<'inp, 'out, u8>,
     ) -> Result<&'out [u8], TailError> {
         let n = data.len();
+
         let (mut blocks, mut tail) = data.into_chunks();
         self.encrypt_blocks_inout_mut(blocks.reborrow());
         if !tail.is_empty() {
@@ -104,6 +106,3 @@ pub trait UnalignedBytesEncryptMut: BlockEncryptMut + BlockSizeUser {
         //self.encrypt_bytes_inout_mut(InOutBuf::new(msg, out_buf)?)
     }
 }
-
-#[derive(Debug)]
-pub struct TailError;

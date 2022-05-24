@@ -1,4 +1,4 @@
-use crate::{Block, BlockDecrypt, BlockEncrypt, BlockSizeUser};
+use crate::{Block, BlockDecrypt, BlockEncrypt, BlockSizeUser, TailError};
 use inout::InOutBuf;
 
 pub trait UnalignedBytesDecrypt: BlockDecrypt + BlockSizeUser {
@@ -106,6 +106,3 @@ pub trait UnalignedBytesEncrypt: BlockEncrypt + BlockSizeUser {
         //self.encrypt_bytes_inout(InOutBuf::new(msg, out_buf)?)
     }
 }
-
-#[derive(Debug)]
-pub struct TailError;
