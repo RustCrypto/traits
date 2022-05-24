@@ -1,6 +1,9 @@
 use crate::{Block, BlockDecryptMut, BlockEncryptMut, BlockSizeUser, TailError};
 use inout::InOutBuf;
 
+/// In many cases, plaintext and ciphertext input is not divisible by the block size, and padding is often used.
+/// In practical use, however, this is not always done, and user-specified processing to an unaligned part like, for example, XOR, is often applied.
+/// This trait enables to apply additional processing to an unaligned [`tail`].
 pub trait UnalignedBytesDecryptMut: BlockDecryptMut + BlockSizeUser {
     /// In many cases, plaintext and ciphertext input is not divisible by the block size, and padding is often used.
     /// In practical use, however, this is not always done, and the termination may be handled by, for example, XOR.
@@ -12,6 +15,7 @@ pub trait UnalignedBytesDecryptMut: BlockDecryptMut + BlockSizeUser {
         tail: &mut InOutBuf<'_, '_, u8>,
     ) -> Result<(), TailError>;
 
+    /// Decrypt `inout` bytes slice.
     #[inline]
     fn decrypt_bytes_inout_mut<'inp, 'out>(
         &mut self,
@@ -54,6 +58,9 @@ pub trait UnalignedBytesDecryptMut: BlockDecryptMut + BlockSizeUser {
     }
 }
 
+/// In many cases, plaintext and ciphertext input is not divisible by the block size, and padding is often used.
+/// In practical use, however, this is not always done, and user-specified processing to an unaligned part like, for example, XOR, is often applied.
+/// This trait enables to apply additional processing to an unaligned [`tail`].
 pub trait UnalignedBytesEncryptMut: BlockEncryptMut + BlockSizeUser {
     /// In many cases, plaintext and ciphertext input is not divisible by the block size, and padding is often used.
     /// In practical use, however, this is not always done, and the termination may be handled by, for example, XOR.
@@ -65,6 +72,7 @@ pub trait UnalignedBytesEncryptMut: BlockEncryptMut + BlockSizeUser {
         tail: &mut InOutBuf<'_, '_, u8>,
     ) -> Result<(), TailError>;
 
+    /// Encrypt `inout` bytes slice.
     #[inline]
     fn encrypt_bytes_inout_mut<'inp, 'out>(
         &mut self,
