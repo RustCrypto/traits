@@ -1,6 +1,3 @@
-// TODO(tarcieri): re-enable when `zeroize` dependency issues are resolved
-#![cfg(disabled)]
-
 use hpke::{
     kem::{Kem as KemTrait, X25519HkdfSha256},
     Deserializable as HpkeDeserializable, Serializable as HpkeSerializable,
@@ -26,7 +23,7 @@ struct X25519EncappedKey(
     GenericArray<u8, <<X25519HkdfSha256 as KemTrait>::EncappedKey as HpkeSerializable>::OutputSize>,
 );
 impl EncappedKey for X25519EncappedKey {
-    type SharedSecretSize = <X25519HkdfSha256 as KemTrait>::SharedSecretSize;
+    type SharedSecretSize = <X25519HkdfSha256 as KemTrait>::NSecret;
     type EncappedKeySize =
         <<X25519HkdfSha256 as KemTrait>::PublicKey as HpkeSerializable>::OutputSize;
     // In HPKE the only recipient public key is the identity key
@@ -35,7 +32,7 @@ impl EncappedKey for X25519EncappedKey {
     type SenderPublicKey = X25519PublicKey;
 
     fn from_bytes(bytes: &GenericArray<u8, Self::EncappedKeySize>) -> Result<Self, Error> {
-        <X25519HkdfSha256 as KemTrait>::PublicKey::from_bytes(bytes.as_slice()).map_err(|_| Error)
+        Ok(X25519EncappedKey(bytes.clone()))
     }
 }
 impl AsRef<[u8]> for X25519EncappedKey {
@@ -100,7 +97,7 @@ impl Decapsulator<X25519EncappedKey> for X25519PrivateKey {
 
         // Now decapsulate
         <X25519HkdfSha256 as KemTrait>::decap(self, None, &deserialized_encapped_key)
-            .map(|ss| ss.0)
+            .map(|ss| SharedSecret::new(ss.0))
             .map_err(|_| Error)
     }
 }
@@ -148,13 +145,13 @@ fn test_hpke() {
     let encapper = X25519Encap;
     let (ek, ss1) = encapper.try_encap(&mut rng, &pk_recip).unwrap();
     let ss2 = sk_recip.try_decap(&ek).unwrap();
-    assert_eq!(ss1, ss2);
+    assert_eq!(ss1.as_bytes(), ss2.as_bytes());
 
     // Now do an authenticated encap
     let encapper = X25519AuthEncap(sk_sender, pk_sender.clone());
     let (ek, ss1) = encapper.try_encap(&mut rng, &pk_recip).unwrap();
     let ss2 = sk_recip.try_auth_decap(&ek, &pk_sender).unwrap();
-    assert_eq!(ss1, ss2);
+    assert_eq!(ss1.as_bytes(), ss2.as_bytes());
 
     // Now do an invalid authenticated encap, where the sender uses the wrong private key. This
     // should produce unequal shared secrets.
@@ -162,5 +159,5 @@ fn test_hpke() {
     let encapper = X25519AuthEncap(rand_sk, pk_sender.clone());
     let (ek, ss1) = encapper.try_encap(&mut rng, &pk_recip).unwrap();
     let ss2 = sk_recip.try_auth_decap(&ek, &pk_sender).unwrap();
-    assert_ne!(ss1, ss2);
+    assert_ne!(ss1.as_bytes(), ss2.as_bytes());
 }

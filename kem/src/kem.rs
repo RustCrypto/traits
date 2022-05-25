@@ -1,11 +1,12 @@
 //! KEM Traits
 
 use crate::errors::Error;
-use core::fmt::Debug;
-use generic_array::{ArrayLength, GenericArray};
-use zeroize::{Zeroize, ZeroizeOnDrop};
 
+use core::fmt::Debug;
+
+use generic_array::{ArrayLength, GenericArray};
 use rand_core::{CryptoRng, RngCore};
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Trait impl'd by concrete types that represent an encapsulated key. This is intended to be, in
 /// essence, a bag of bytes.
