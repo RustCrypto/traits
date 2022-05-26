@@ -15,6 +15,7 @@ rust-version  = "1.56"
 [dependencies]
 rand_core = "0.6"
 generic-array = "0.14"
+zeroize = { version = "1.5", default-features = false }
 
 [dev-dependencies]
 rand = { version = "0.8", features = [ "getrandom" ] }
@@ -23,12 +24,11 @@ p256 = { version = "0.9", features = [ "ecdsa" ] }
 pqcrypto = { version = "0.15", default-features = false, features = [ "pqcrypto-saber" ] }
 pqcrypto-traits = "0.3"
 
-# TODO(tarcieri): re-enable when `zeroize` compatibility can be resolved
-#[dev-dependencies.hpke]
-#git = "https://github.com/rozbb/rust-hpke"
-#rev = "3c795445f38317d6a0868259caf3e87916548356"
-#default-features = false
-#features = [ "x25519" ]
+[dev-dependencies.hpke]
+git = "https://github.com/rozbb/rust-hpke"
+rev = "9230db267819f5795a47510139f4f1a60688ce82"
+default-features = false
+features = [ "x25519" ]
 
 [features]
 default = []

@@ -1,12 +1,17 @@
-use generic_array::{typenum::U32, GenericArray};
-use kem::{AuthDecapsulator, EncappedKey, Encapsulator, Error};
+use kem::{
+    generic_array::{
+        typenum::{self, Unsigned},
+        GenericArray,
+    },
+    AuthDecapsulator, EncappedKey, Encapsulator, Error, SharedSecret,
+};
 use p256::ecdsa::Signature;
 use rand::rngs::OsRng;
 use rand_core::{CryptoRng, RngCore};
 use x3dh_ke::{x3dh_a, x3dh_b, EphemeralKey, IdentityKey, Key, OneTimePreKey, SignedPreKey};
 
-// The size of an encapped key
-const P256_POINT_SIZE: usize = 231;
+// The size of an encapped key. This is the number of bytes in an uncompressed P256 point
+type NEnc = typenum::U231;
 
 // Define the sender pubkey type. This is an identity key;
 type X3DhSenderPublicKey = IdentityKey;
@@ -40,11 +45,18 @@ type X3DhPubkeyBundle = X3DhPrivkeyBundle;
 
 // The encapped key is just the byte repr of an ephemeral key. Impl the appropriate traits
 #[derive(Debug)]
-struct X3DhEncappedKey([u8; P256_POINT_SIZE]);
+struct X3DhEncappedKey([u8; NEnc::USIZE]);
 impl EncappedKey for X3DhEncappedKey {
-    type NSecret = U32;
+    type SharedSecretSize = typenum::U32;
+    type EncappedKeySize = NEnc;
     type SenderPublicKey = X3DhSenderPublicKey;
     type RecipientPublicKey = X3DhPubkeyBundle;
+
+    fn from_bytes(bytes: &GenericArray<u8, Self::EncappedKeySize>) -> Result<Self, Error> {
+        let mut buf = [0u8; NEnc::USIZE];
+        buf.copy_from_slice(bytes);
+        Ok(X3DhEncappedKey(buf))
+    }
 }
 impl AsRef<[u8]> for X3DhEncappedKey {
     fn as_ref(&self) -> &[u8] {
@@ -55,7 +67,7 @@ impl AsRef<[u8]> for X3DhEncappedKey {
 // The private key of an authenticated sender is just their identity key. Again, this is the same
 // type as the pubkey.
 type X3DhSenderPrivateKey = IdentityKey;
-type SharedSecret = GenericArray<u8, <X3DhEncappedKey as EncappedKey>::NSecret>;
+type X3DhSharedSecret = SharedSecret<X3DhEncappedKey>;
 
 // Define an authenticated encapsulator. To authenticate, we need a full sender keypair.
 impl Encapsulator<X3DhEncappedKey> for X3DhSenderPrivateKey {
@@ -63,7 +75,7 @@ impl Encapsulator<X3DhEncappedKey> for X3DhSenderPrivateKey {
         &self,
         _csprng: &mut R,
         recip_pubkey: &X3DhPubkeyBundle,
-    ) -> Result<(X3DhEncappedKey, SharedSecret), Error> {
+    ) -> Result<(X3DhEncappedKey, X3DhSharedSecret), Error> {
         // Make a new ephemeral key. This will be the encapped key
         let ek = EphemeralKey::default();
         // Deconstruct the recipient's pubkey bundle
@@ -71,17 +83,13 @@ impl Encapsulator<X3DhEncappedKey> for X3DhSenderPrivateKey {
 
         // Do the X3DH operation to get the shared secret
         let shared_secret = x3dh_a(sig, self, spk, &ek, ik, opk)
-            .map(|ss| SharedSecret::clone_from_slice(&ss))
+            .map(|ss| X3DhSharedSecret::new(ss.into()))
             .map_err(|e| {
                 println!("err {:?}", e);
                 Error
             })?;
         // Serialize the ephemeral key
-        let encapped_key = {
-            let mut buf = [0u8; P256_POINT_SIZE];
-            buf.copy_from_slice(&ek.to_bytes());
-            X3DhEncappedKey(buf)
-        };
+        let encapped_key = X3DhEncappedKey::from_bytes(ek.to_bytes().as_slice().into())?;
 
         Ok((encapped_key, shared_secret))
     }
@@ -95,7 +103,7 @@ impl AuthDecapsulator<X3DhEncappedKey> for X3DhPrivkeyBundle {
         &self,
         encapped_key: &X3DhEncappedKey,
         sender_pubkey: &X3DhSenderPublicKey,
-    ) -> Result<SharedSecret, Error> {
+    ) -> Result<X3DhSharedSecret, Error> {
         // First parse the encapped key, since it's just bytes right now
         let deserialized_ek = EphemeralKey::from_bytes(&encapped_key.0).map_err(|_| Error)?;
         // Deconstruct our private keys bundle
@@ -108,7 +116,7 @@ impl AuthDecapsulator<X3DhEncappedKey> for X3DhPrivkeyBundle {
 
         // Now decapsulate
         let buf = x3dh_b(sender_pubkey, spk, &deserialized_ek, ik, opk);
-        Ok(SharedSecret::clone_from_slice(&buf))
+        Ok(X3DhSharedSecret::new(buf.into()))
     }
 }
 
@@ -128,7 +136,7 @@ fn test_x3dh() {
     let ss2 = sk_bundle_b
         .try_auth_decap(&encapped_key, &pk_ident_a)
         .unwrap();
-    assert_eq!(ss1, ss2);
+    assert_eq!(ss1.as_bytes(), ss2.as_bytes());
 
     // Now do an invalid authenticated encap, where the sender uses the wrong private key. This
     // should produce unequal shared secrets.
@@ -137,5 +145,5 @@ fn test_x3dh() {
     let ss2 = sk_bundle_b
         .try_auth_decap(&encapped_key, &pk_ident_a)
         .unwrap();
-    assert_ne!(ss1, ss2);
+    assert_ne!(ss1.as_bytes(), ss2.as_bytes());
 }
