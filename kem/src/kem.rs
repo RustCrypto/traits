@@ -36,8 +36,14 @@ pub trait EncappedKey: AsRef<[u8]> + Debug + Sized {
 }
 
 /// The shared secret that results from key exchange.
-#[derive(Zeroize)]
 pub struct SharedSecret<EK: EncappedKey>(GenericArray<u8, EK::SharedSecretSize>);
+
+// Zero the secret on drop
+impl<EK: EncappedKey> Drop for SharedSecret<EK> {
+    fn drop(&mut self) {
+        self.0.as_mut_slice().zeroize();
+    }
+}
 
 impl<EK: EncappedKey> ZeroizeOnDrop for SharedSecret<EK> {}
 
