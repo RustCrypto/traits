@@ -45,7 +45,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [//]: # (badges)
 
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
-[chat-link]: https://rustcrypto.zulipchat.com/
+[chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260050-traits
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [deps-image]: https://deps.rs/repo/github/RustCrypto/traits/status.svg
 [deps-link]: https://deps.rs/repo/github/RustCrypto/traits
