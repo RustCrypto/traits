@@ -1,6 +1,6 @@
 # RustCrypto: Traits
 
-[![Project Chat][chat-image]][chat-link] [![dependency status][deps-image]][deps-link] ![Apache2/MIT licensed][license-image]
+[![Project Chat][chat-image]][chat-link] ![Apache2/MIT licensed][license-image] [![dependency status][deps-image]][deps-link] 
 
 Collection of traits which describe functionality of cryptographic primitives.
 
