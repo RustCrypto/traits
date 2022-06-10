@@ -71,6 +71,9 @@ pub mod ops;
 #[cfg(feature = "sec1")]
 pub mod sec1;
 
+#[macro_use]
+mod macros;
+
 mod error;
 mod point;
 mod scalar;
