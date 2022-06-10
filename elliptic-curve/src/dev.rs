@@ -707,6 +707,78 @@ impl Neg for ProjectivePoint {
     }
 }
 
+/// Constant representing the base field modulus
+/// p = 2^{224}(2^{32} − 1) + 2^{192} + 2^{96} − 1
+pub const MODULUS: U256 =
+    U256::from_be_hex("ffffffff00000001000000000000000000000000ffffffffffffffffffffffff");
+
+/// Example base field element.
+#[derive(Clone, Copy, Debug)]
+pub struct FieldElement(pub(crate) U256);
+
+/// Internal field element representation.
+#[cfg(target_pointer_width = "32")]
+type FeWords = [u32; 8];
+
+/// Internal field element representation.
+#[cfg(target_pointer_width = "64")]
+type FeWords = [u64; 4];
+
+impl_field_element!(
+    FieldElement,
+    FieldBytes,
+    U256,
+    MODULUS,
+    FeWords,
+    p256_from_montgomery,
+    p256_to_montgomery,
+    p256_add,
+    p256_sub,
+    p256_mul,
+    p256_opp,
+    p256_square
+);
+
+impl FieldElement {
+    /// Returns the multiplicative inverse of self, if self is non-zero.
+    pub fn invert(&self) -> CtOption<Self> {
+        unimplemented!()
+    }
+
+    /// Returns the square root of self mod p, or `None` if no square root exists.
+    pub fn sqrt(&self) -> CtOption<Self> {
+        unimplemented!()
+    }
+}
+
+const fn p256_from_montgomery(_: &FeWords) -> FeWords {
+    unimplemented!()
+}
+
+const fn p256_to_montgomery(w: &FeWords) -> FeWords {
+    *w
+}
+
+const fn p256_add(_: &FeWords, _: &FeWords) -> FeWords {
+    unimplemented!()
+}
+
+const fn p256_sub(_: &FeWords, _: &FeWords) -> FeWords {
+    unimplemented!()
+}
+
+const fn p256_mul(_: &FeWords, _: &FeWords) -> FeWords {
+    unimplemented!()
+}
+
+const fn p256_opp(_: &FeWords) -> FeWords {
+    unimplemented!()
+}
+
+const fn p256_square(_: &FeWords) -> FeWords {
+    unimplemented!()
+}
+
 #[cfg(test)]
 mod tests {
     use super::Scalar;
