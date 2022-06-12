@@ -66,13 +66,30 @@ extern crate std;
 #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
 pub use rand_core;
 
-pub mod ops;
-
-#[cfg(feature = "sec1")]
-pub mod sec1;
-
 #[macro_use]
 mod macros;
+
+pub mod ops;
+
+#[cfg(feature = "dev")]
+#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
+pub mod dev;
+
+#[cfg(feature = "ecdh")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ecdh")))]
+pub mod ecdh;
+
+#[cfg(feature = "hash2curve")]
+#[cfg_attr(docsrs, doc(cfg(feature = "hash2curve")))]
+pub mod hash2curve;
+
+#[cfg(feature = "sec1")]
+#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
+pub mod sec1;
+
+#[cfg(feature = "arithmetic")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+pub mod weierstrass;
 
 mod error;
 mod point;
@@ -84,20 +101,8 @@ mod arithmetic;
 #[cfg(feature = "arithmetic")]
 mod public_key;
 
-#[cfg(feature = "dev")]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
-pub mod dev;
-
-#[cfg(feature = "ecdh")]
-#[cfg_attr(docsrs, doc(cfg(feature = "ecdh")))]
-pub mod ecdh;
-
 #[cfg(feature = "jwk")]
 mod jwk;
-
-#[cfg(feature = "hash2curve")]
-#[cfg_attr(docsrs, doc(cfg(feature = "hash2curve")))]
-pub mod hash2curve;
 
 pub use crate::{
     error::{Error, Result},
