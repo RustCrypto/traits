@@ -1,7 +1,11 @@
 //! Outputs from password hashing functions.
 
 use crate::{Encoding, Error, Result};
-use core::{cmp::PartialEq, fmt, str::FromStr};
+use core::{
+    cmp::{Ordering, PartialEq},
+    fmt,
+    str::FromStr,
+};
 use subtle::{Choice, ConstantTimeEq};
 
 /// Output from password hashing functions, i.e. the "hash" or "digest"
@@ -149,11 +153,17 @@ impl Output {
         F: FnOnce(&mut [u8]) -> Result<()>,
     {
         if output_size < Self::MIN_LENGTH {
-            return Err(Error::OutputTooShort);
+            return Err(Error::OutputSize {
+                provided: Ordering::Less,
+                expected: Self::MIN_LENGTH,
+            });
         }
 
         if output_size > Self::MAX_LENGTH {
-            return Err(Error::OutputTooLong);
+            return Err(Error::OutputSize {
+                provided: Ordering::Greater,
+                expected: Self::MAX_LENGTH,
+            });
         }
 
         let mut bytes = [0u8; Self::MAX_LENGTH];
@@ -266,7 +276,7 @@ impl fmt::Debug for Output {
 
 #[cfg(test)]
 mod tests {
-    use super::{Error, Output};
+    use super::{Error, Ordering, Output};
 
     #[test]
     fn new_with_valid_min_length_input() {
@@ -286,14 +296,26 @@ mod tests {
     fn reject_new_too_short() {
         let bytes = [9u8; 9];
         let err = Output::new(&bytes).err().unwrap();
-        assert_eq!(err, Error::OutputTooShort);
+        assert_eq!(
+            err,
+            Error::OutputSize {
+                provided: Ordering::Less,
+                expected: Output::MIN_LENGTH
+            }
+        );
     }
 
     #[test]
     fn reject_new_too_long() {
         let bytes = [65u8; 65];
         let err = Output::new(&bytes).err().unwrap();
-        assert_eq!(err, Error::OutputTooLong);
+        assert_eq!(
+            err,
+            Error::OutputSize {
+                provided: Ordering::Greater,
+                expected: Output::MAX_LENGTH
+            }
+        );
     }
 
     #[test]
