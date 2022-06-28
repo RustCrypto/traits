@@ -2,7 +2,6 @@
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
-[![Downloads][downloads-image]][crate-link]
 [![Build Status][build-image]][build-link]
 ![Apache2/MIT licensed][license-image]
 ![Rust Version][rustc-image]
@@ -57,11 +56,10 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/password-hash.svg?logo=rust
+[crate-image]: https://buildstats.info/crate/password-hash
 [crate-link]: https://crates.io/crates/password-hash
 [docs-image]: https://docs.rs/password-hash/badge.svg
 [docs-link]: https://docs.rs/password-hash/
-[downloads-image]: https://img.shields.io/crates/d/password-hash.svg
 [build-image]: https://github.com/RustCrypto/traits/workflows/password-hash/badge.svg?branch=master&event=push
 [build-link]: https://github.com/RustCrypto/traits/actions?query=workflow:password-hash
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
