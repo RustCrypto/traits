@@ -15,7 +15,7 @@ edition = "2021"
 rust-version = "1.57"
 
 [dependencies]
-aead = { version = "0.4", optional = true, path = "../aead" }
+aead = { version = "=0.5.0-pre", optional = true, path = "../aead" }
 cipher = { version = "0.4", optional = true }
 digest = { version = "0.10", optional = true }
 elliptic-curve = { version = "0.12", optional = true, path = "../elliptic-curve" }

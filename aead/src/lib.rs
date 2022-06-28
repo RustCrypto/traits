@@ -18,8 +18,7 @@
 #![forbid(unsafe_code, clippy::unwrap_used)]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_root_url = "https://docs.rs/aead/0.4.3"
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg"
 )]
 #![warn(missing_docs, rust_2018_idioms)]
 
@@ -37,6 +36,7 @@ pub mod dev;
 #[cfg_attr(docsrs, doc(cfg(feature = "stream")))]
 pub mod stream;
 
+pub use crypto_common::{Key, KeyInit, KeySizeUser};
 pub use generic_array::{self, typenum::consts};
 
 #[cfg(feature = "bytes")]
@@ -49,7 +49,7 @@ pub use heapless;
 
 #[cfg(feature = "rand_core")]
 #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-pub use rand_core;
+pub use crypto_common::rand_core;
 
 use core::fmt;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
@@ -59,9 +59,6 @@ use alloc::vec::Vec;
 
 #[cfg(feature = "bytes")]
 use bytes::BytesMut;
-
-#[cfg(feature = "rand_core")]
-use rand_core::{CryptoRng, RngCore};
 
 /// Error type.
 ///
@@ -82,47 +79,11 @@ impl fmt::Display for Error {
 #[cfg(feature = "std")]
 impl std::error::Error for Error {}
 
-/// Key for a [`NewAead`] algorithm
-// TODO(tarcieri): make this a struct and zeroize on drop?
-pub type Key<A> = GenericArray<u8, <A as NewAead>::KeySize>;
-
 /// Nonce: single-use value for ensuring ciphertexts are unique
 pub type Nonce<A> = GenericArray<u8, <A as AeadCore>::NonceSize>;
 
 /// Tag: authentication code which ensures ciphertexts are authentic
 pub type Tag<A> = GenericArray<u8, <A as AeadCore>::TagSize>;
-
-/// Instantiate either a stateless [`Aead`] or stateful [`AeadMut`] algorithm.
-pub trait NewAead {
-    /// The size of the key array required by this algorithm.
-    type KeySize: ArrayLength<u8>;
-
-    /// Create a new AEAD instance with the given key.
-    fn new(key: &Key<Self>) -> Self;
-
-    /// Create new AEAD instance from key given as a byte slice..
-    ///
-    /// Default implementation will accept only keys with length equal to `KeySize`.
-    fn new_from_slice(key: &[u8]) -> Result<Self>
-    where
-        Self: Sized,
-    {
-        if key.len() != Self::KeySize::to_usize() {
-            Err(Error)
-        } else {
-            Ok(Self::new(GenericArray::from_slice(key)))
-        }
-    }
-
-    /// Generate a random key for this AEAD using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-    fn generate_key(mut rng: impl CryptoRng + RngCore) -> Key<Self> {
-        let mut key = Key::<Self>::default();
-        rng.fill_bytes(&mut key);
-        key
-    }
-}
 
 /// Authenticated Encryption with Associated Data (AEAD) algorithm core trait.
 ///

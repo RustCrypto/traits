@@ -1,6 +1,6 @@
 [package]
 name = "aead"
-version = "0.4.3" # Also update html_root_url in lib.rs when bumping this
+version = "0.5.0-pre" # Also update html_root_url in lib.rs when bumping this
 description = """
 Traits for Authenticated Encryption with Associated Data (AEAD) algorithms,
 such as AES-GCM as ChaCha20Poly1305, which provide a high-level API
@@ -15,18 +15,20 @@ keywords = ["crypto", "encryption"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
+crypto-common = { version = "0.1", path = "../crypto-common" }
 generic-array = { version = "0.14", default-features = false }
 
 # optional dependencies
 blobby = { version = "0.3", optional = true }
 bytes = { version = "1", optional = true, default-features = false }
 heapless = { version = "0.7", optional = true, default-features = false }
-rand_core = { version = "0.6", optional = true }
 
 [features]
+default = ["rand_core"]
 alloc = []
-std = ["alloc", "rand_core/std"]
+std = ["alloc", "crypto-common/std"]
 dev = ["blobby"]
+rand_core = ["crypto-common/rand_core"]
 stream = []
 
 [package.metadata.docs.rs]
