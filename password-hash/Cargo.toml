@@ -29,5 +29,5 @@ alloc = ["base64ct/alloc"]
 std = ["alloc", "base64ct/std", "rand_core/std"]
 
 [package.metadata.docs.rs]
-rustc-args = ["--cfg", "docsrs"]
 all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
