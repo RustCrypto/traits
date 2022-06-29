@@ -19,6 +19,7 @@ typenum = "1.14"
 
 [features]
 std = []
+getrandom = ["rand_core/getrandom"]
 
 [package.metadata.docs.rs]
 all-features = true
