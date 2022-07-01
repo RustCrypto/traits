@@ -186,11 +186,11 @@ impl PrimeFieldBits for Scalar {
     type ReprBits = [u64; 4];
 
     fn to_le_bits(&self) -> ScalarBits {
-        self.0.as_uint().to_uint_array().into()
+        self.0.as_uint().to_words().into()
     }
 
     fn char_le_bits() -> ScalarBits {
-        MockCurve::ORDER.to_uint_array().into()
+        MockCurve::ORDER.to_words().into()
     }
 }
 
