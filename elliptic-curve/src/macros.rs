@@ -153,7 +153,7 @@ macro_rules! impl_field_element {
             ///
             /// Used incorrectly this can lead to invalid results!
             pub(crate) const fn from_uint_unchecked(w: $uint) -> Self {
-                Self(<$uint>::from_uint_array($to_mont(w.as_uint_array())))
+                Self(<$uint>::from_words($to_mont(w.as_words())))
             }
 
             /// Returns the big-endian encoding of this [`
@@ -179,7 +179,7 @@ macro_rules! impl_field_element {
             /// `] in canonical form.
             #[inline]
             pub const fn to_canonical(self) -> $uint {
-                <$uint>::from_uint_array($from_mont(self.0.as_uint_array()))
+                <$uint>::from_words($from_mont(self.0.as_words()))
             }
 
             /// Determine if this [`
@@ -218,9 +218,9 @@ macro_rules! impl_field_element {
 
             /// Add elements.
             pub const fn add(&self, rhs: &Self) -> Self {
-                Self(<$uint>::from_uint_array($add(
-                    self.0.as_uint_array(),
-                    rhs.0.as_uint_array(),
+                Self(<$uint>::from_words($add(
+                    self.0.as_words(),
+                    rhs.0.as_words(),
                 )))
             }
 
@@ -232,29 +232,29 @@ macro_rules! impl_field_element {
 
             /// Subtract elements.
             pub const fn sub(&self, rhs: &Self) -> Self {
-                Self(<$uint>::from_uint_array($sub(
-                    self.0.as_uint_array(),
-                    rhs.0.as_uint_array(),
+                Self(<$uint>::from_words($sub(
+                    self.0.as_words(),
+                    rhs.0.as_words(),
                 )))
             }
 
             /// Multiply elements.
             pub const fn mul(&self, rhs: &Self) -> Self {
-                Self(<$uint>::from_uint_array($mul(
-                    self.0.as_uint_array(),
-                    rhs.0.as_uint_array(),
+                Self(<$uint>::from_words($mul(
+                    self.0.as_words(),
+                    rhs.0.as_words(),
                 )))
             }
 
             /// Negate element.
             pub const fn neg(&self) -> Self {
-                Self(<$uint>::from_uint_array($neg(self.0.as_uint_array())))
+                Self(<$uint>::from_words($neg(self.0.as_words())))
             }
 
             /// Compute modular square.
             #[must_use]
             pub const fn square(&self) -> Self {
-                Self(<$uint>::from_uint_array($square(self.0.as_uint_array())))
+                Self(<$uint>::from_words($square(self.0.as_words())))
             }
         }
 
