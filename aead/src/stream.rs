@@ -32,7 +32,7 @@
 
 #![allow(clippy::upper_case_acronyms)]
 
-use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, NewAead, Result};
+use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, KeyInit, Result};
 use core::ops::{AddAssign, Sub};
 use generic_array::{
     typenum::{Unsigned, U4, U5},
@@ -76,7 +76,7 @@ where
     /// Create a new STREAM with the given key and nonce.
     fn new(key: &Key<A>, nonce: &Nonce<A, Self>) -> Self
     where
-        A: NewAead,
+        A: KeyInit,
         Self: Sized,
     {
         Self::from_aead(A::new(key), nonce)
@@ -227,7 +227,7 @@ macro_rules! impl_stream_object {
             #[doc = "object from the given AEAD key and nonce."]
             pub fn new(key: &Key<A>, nonce: &Nonce<A, S>) -> Self
             where
-                A: NewAead,
+                A: KeyInit,
                 S: NewStream<A>,
             {
                 Self::from_stream_primitive(S::new(key, nonce))
@@ -238,7 +238,7 @@ macro_rules! impl_stream_object {
             #[doc = "object from the given AEAD primitive."]
             pub fn from_aead(aead: A, nonce: &Nonce<A, S>) -> Self
             where
-                A: NewAead,
+                A: KeyInit,
                 S: NewStream<A>,
             {
                 Self::from_stream_primitive(S::from_aead(aead, nonce))
