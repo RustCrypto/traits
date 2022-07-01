@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.12.2 (2022-07-01)
+### Changed
+- Bump `crypto-bigint` to v0.4.8 ([#1039])
+
+[#1039]: https://github.com/RustCrypto/traits/pull/1039
+
 ## 0.12.1 (2022-06-12)
 ### Added
 - `impl_field_element!` macro ([#1021])
@@ -12,10 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Bump `crypto-bigint` to v0.4.4 ([#1018], [#1020])
 
-[#1018]: https://github.com/RustCrypto/formats/pull/1018
-[#1020]: https://github.com/RustCrypto/formats/pull/1020
-[#1021]: https://github.com/RustCrypto/formats/pull/1021
-[#1022]: https://github.com/RustCrypto/formats/pull/1022
+[#1018]: https://github.com/RustCrypto/traits/pull/1018
+[#1020]: https://github.com/RustCrypto/traits/pull/1020
+[#1021]: https://github.com/RustCrypto/traits/pull/1021
+[#1022]: https://github.com/RustCrypto/traits/pull/1022
 
 ## 0.12.0 (2022-05-08)
 ### Added
@@ -38,19 +44,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - `Zeroize` impl from `ecdh::SharedSecret` ([#978])
 
-[#883]: https://github.com/RustCrypto/formats/pull/883
-[#894]: https://github.com/RustCrypto/formats/pull/894
-[#895]: https://github.com/RustCrypto/formats/pull/895
-[#903]: https://github.com/RustCrypto/formats/pull/903
-[#904]: https://github.com/RustCrypto/formats/pull/904
-[#978]: https://github.com/RustCrypto/formats/pull/978
-[#994]: https://github.com/RustCrypto/formats/pull/994
-[#996]: https://github.com/RustCrypto/formats/pull/996
-[#1001]: https://github.com/RustCrypto/formats/pull/1001
-[#1005]: https://github.com/RustCrypto/formats/pull/1005
-[#1006]: https://github.com/RustCrypto/formats/pull/1006
-[#1007]: https://github.com/RustCrypto/formats/pull/1007
-[#1009]: https://github.com/RustCrypto/formats/pull/1009
+[#883]: https://github.com/RustCrypto/traits/pull/883
+[#894]: https://github.com/RustCrypto/traits/pull/894
+[#895]: https://github.com/RustCrypto/traits/pull/895
+[#903]: https://github.com/RustCrypto/traits/pull/903
+[#904]: https://github.com/RustCrypto/traits/pull/904
+[#978]: https://github.com/RustCrypto/traits/pull/978
+[#994]: https://github.com/RustCrypto/traits/pull/994
+[#996]: https://github.com/RustCrypto/traits/pull/996
+[#1001]: https://github.com/RustCrypto/traits/pull/1001
+[#1005]: https://github.com/RustCrypto/traits/pull/1005
+[#1006]: https://github.com/RustCrypto/traits/pull/1006
+[#1007]: https://github.com/RustCrypto/traits/pull/1007
+[#1009]: https://github.com/RustCrypto/traits/pull/1009
 
 ## 0.11.12 (2022-01-30)
 ### Changed
