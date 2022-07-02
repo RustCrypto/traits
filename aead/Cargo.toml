@@ -15,7 +15,7 @@ keywords = ["crypto", "encryption"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = { version = "0.1", path = "../crypto-common" }
+crypto-common = { version = "0.1.4", path = "../crypto-common" }
 generic-array = { version = "0.14", default-features = false }
 
 # optional dependencies
@@ -28,6 +28,7 @@ default = ["rand_core"]
 alloc = []
 std = ["alloc", "crypto-common/std"]
 dev = ["blobby"]
+getrandom = ["crypto-common/getrandom", "rand_core"]
 rand_core = ["crypto-common/rand_core"]
 stream = []
 

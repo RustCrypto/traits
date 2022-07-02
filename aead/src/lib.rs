@@ -43,6 +43,10 @@ pub use generic_array::{self, typenum::consts};
 #[cfg_attr(docsrs, doc(cfg(feature = "bytes")))]
 pub use bytes;
 
+#[cfg(feature = "getrandom")]
+#[cfg_attr(docsrs, doc(cfg(feature = "getrandom")))]
+pub use crypto_common::rand_core::OsRng;
+
 #[cfg(feature = "heapless")]
 #[cfg_attr(docsrs, doc(cfg(feature = "heapless")))]
 pub use heapless;
@@ -414,8 +418,10 @@ impl<Alg: AeadInPlace> AeadMutInPlace for Alg {
     }
 }
 
-/// AEAD payloads are a combination of a message (plaintext or ciphertext)
-/// and "additional associated data" (AAD) to be authenticated (in cleartext)
+/// AEAD payloads (message + AAD).
+///
+/// Combination of a message (plaintext or ciphertext) and
+/// "additional associated data" (AAD) to be authenticated (in cleartext)
 /// along with the message.
 ///
 /// If you don't care about AAD, you can pass a `&[u8]` as the payload to
