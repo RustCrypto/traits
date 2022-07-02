@@ -8,10 +8,11 @@ macro_rules! new_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
-            use aead::dev::blobby::Blob6Iterator;
-            use aead::generic_array::typenum::Unsigned;
-            use aead::{generic_array::GenericArray, Aead, NewAead, Payload};
-            use core::convert::TryInto;
+            use aead::{
+                dev::blobby::Blob6Iterator,
+                generic_array::{typenum::Unsigned, GenericArray},
+                Aead, NewAead, Payload,
+            };
 
             fn run_test(
                 key: &[u8],

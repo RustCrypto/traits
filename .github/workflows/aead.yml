@@ -22,39 +22,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.41.0 # MSRV
-          - stable
-        target:
-          - thumbv7em-none-eabi
-          - wasm32-unknown-unknown
-    steps:
-      - uses: actions/checkout@v2
-      - uses: RustCrypto/actions/cargo-cache@master
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.target }}
-          override: true
-      # Isolate this crate from workspace which is otherwise MSRV 1.56 due to 2021 edition crates
-      - run: rm ../Cargo.toml
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features bytes
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features rand_core
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features stream
-
-  minimal-versions:
-    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
-    with:
-        working-directory: ${{ github.workflow }}
-
-  heapless:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        rust:
-          - 1.51.0 # MSRV for `heapless`
+          - 1.56.0 # MSRV
           - stable
         target:
           - thumbv7em-none-eabi
@@ -69,14 +37,24 @@ jobs:
           target: ${{ matrix.target }}
           override: true
       - run: cargo check --all-features
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features bytes
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features heapless
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features rand_core
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features stream
+
+  minimal-versions:
+    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+    with:
+        working-directory: ${{ github.workflow }}
 
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         rust:
-          - 1.41.0 # MSRV
+          - 1.56.0 # MSRV
           - stable
     steps:
       - uses: actions/checkout@v2
@@ -86,8 +64,6 @@ jobs:
           toolchain: ${{ matrix.rust }}
           override: true
           profile: minimal
-      # Isolate this crate from workspace which is otherwise MSRV 1.56 due to 2021 edition crates
-      - run: rm ../Cargo.toml
       - run: cargo test --release --no-default-features
       - run: cargo test --release
-      - run: cargo test --release --features dev,rand_core,stream,std
+      - run: cargo test --release --all-features
