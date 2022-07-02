@@ -11,7 +11,7 @@ macro_rules! new_test {
             use aead::{
                 dev::blobby::Blob6Iterator,
                 generic_array::{typenum::Unsigned, GenericArray},
-                Aead, NewAead, Payload,
+                Aead, KeyInit, Payload,
             };
 
             fn run_test(
