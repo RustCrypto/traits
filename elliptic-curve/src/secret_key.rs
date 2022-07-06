@@ -3,9 +3,6 @@
 //! The [`SecretKey`] type is a wrapper around a secret scalar value which is
 //! designed to prevent unintentional exposure (e.g. via `Debug` or other
 //! logging).
-//!
-//! When the `zeroize` feature of this crate is enabled, it also handles
-//! zeroing it out of memory securely on drop.
 
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
 mod pkcs8;
