@@ -17,7 +17,7 @@ version = "0.5.0-pre.2"
 dependencies = [
  "blobby",
  "bytes",
- "crypto-common 0.1.5",
+ "crypto-common 0.1.6",
  "generic-array",
  "heapless",
 ]
@@ -194,7 +194,7 @@ name = "cipher"
 version = "0.4.3"
 dependencies = [
  "blobby",
- "crypto-common 0.1.5",
+ "crypto-common 0.1.6",
  "inout",
  "zeroize",
 ]
@@ -281,7 +281,7 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "generic-array",
  "rand_core 0.6.3",
@@ -355,7 +355,7 @@ version = "0.10.3"
 dependencies = [
  "blobby",
  "block-buffer 0.10.2",
- "crypto-common 0.1.5",
+ "crypto-common 0.1.6",
  "subtle",
 ]
 
