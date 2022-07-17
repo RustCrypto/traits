@@ -1,22 +1,24 @@
 [package]
 name = "universal-hash"
-version = "0.4.1" # Also update html_root_url in lib.rs when bumping this
+version = "0.5.0-pre"
+description = "Traits which describe the functionality of universal hash functions (UHFs)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
-description = "Trait for universal hash functions"
+edition = "2021"
+rust-version = "1.56"
+readme = "README.md"
 documentation = "https://docs.rs/universal-hash"
 repository = "https://github.com/RustCrypto/traits"
 keywords = ["crypto", "mac"]
 categories = ["cryptography", "no-std"]
-readme = "README.md"
-edition = "2018"
 
 [dependencies]
-generic-array = "0.14"
+crypto-common = { version = "0.1.6", path = "../crypto-common" }
 subtle = { version = "=2.4", default-features = false }
 
 [features]
-std = []
+std = ["crypto-common/std"]
 
 [package.metadata.docs.rs]
 all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
