@@ -1,6 +1,6 @@
 # RustCrypto: Traits
 
-[![Project Chat][chat-image]][chat-link] ![Apache2/MIT licensed][license-image] [![dependency status][deps-image]][deps-link] 
+[![Project Chat][chat-image]][chat-link] ![Apache2/MIT licensed][license-image] [![dependency status][deps-image]][deps-link]
 
 Collection of traits which describe functionality of cryptographic primitives.
 
@@ -17,7 +17,7 @@ Collection of traits which describe functionality of cryptographic primitives.
 | [`kem`]             | [Key encapsulation mechanism] | [![crates.io](https://img.shields.io/crates/v/kem.svg)](https://crates.io/crates/kem) | [![Documentation](https://docs.rs/kem/badge.svg)](https://docs.rs/kem) | ![MSRV 1.56][msrv-1.56] |
 | [`password-hash`]   | [Password hashing]            | [![crates.io](https://img.shields.io/crates/v/password-hash.svg)](https://crates.io/crates/password-hash) | [![Documentation](https://docs.rs/password-hash/badge.svg)](https://docs.rs/password-hash) | ![MSRV 1.57][msrv-1.57] |
 | [`signature`]       | [Digital signature]           | [![crates.io](https://img.shields.io/crates/v/signature.svg)](https://crates.io/crates/signature) | [![Documentation](https://docs.rs/signature/badge.svg)](https://docs.rs/signature) | ![MSRV 1.41][msrv-1.41] |
-| [`universal‑hash`]  | [Universal hash function]     | [![crates.io](https://img.shields.io/crates/v/universal-hash.svg)](https://crates.io/crates/universal-hash) | [![Documentation](https://docs.rs/universal-hash/badge.svg)](https://docs.rs/universal-hash) | ![MSRV 1.41][msrv-1.41] |
+| [`universal‑hash`]  | [Universal hash function]     | [![crates.io](https://img.shields.io/crates/v/universal-hash.svg)](https://crates.io/crates/universal-hash) | [![Documentation](https://docs.rs/universal-hash/badge.svg)](https://docs.rs/universal-hash) | ![MSRV 1.56][msrv-1.56] |
 
 ### Additional Crates
 

@@ -17,7 +17,7 @@ version = "0.5.0-pre.2"
 dependencies = [
  "blobby",
  "bytes",
- "crypto-common 0.1.4",
+ "crypto-common 0.1.6",
  "generic-array",
  "heapless",
 ]
@@ -194,7 +194,7 @@ name = "cipher"
 version = "0.4.3"
 dependencies = [
  "blobby",
- "crypto-common 0.1.4",
+ "crypto-common 0.1.6",
  "inout",
  "zeroize",
 ]
@@ -242,7 +242,7 @@ dependencies = [
  "elliptic-curve 0.12.2",
  "password-hash",
  "signature 1.5.0",
- "universal-hash 0.4.1",
+ "universal-hash 0.5.0-pre",
 ]
 
 [[package]]
@@ -281,7 +281,7 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.1.4"
+version = "0.1.6"
 dependencies = [
  "generic-array",
  "rand_core 0.6.3",
@@ -355,7 +355,7 @@ version = "0.10.3"
 dependencies = [
  "blobby",
  "block-buffer 0.10.2",
- "crypto-common 0.1.4",
+ "crypto-common 0.1.6",
  "subtle",
 ]
 
@@ -755,7 +755,7 @@ checksum = "048aeb476be11a4b6ca432ca569e375810de9294ae78f4774e78ea98a9246ede"
 dependencies = [
  "cpufeatures",
  "opaque-debug",
- "universal-hash 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "universal-hash 0.4.1",
 ]
 
 [[package]]
@@ -767,7 +767,7 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "opaque-debug",
- "universal-hash 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "universal-hash 0.4.1",
 ]
 
 [[package]]
@@ -1109,6 +1109,8 @@ checksum = "957e51f3646910546462e67d5f7599b9e4fb8acdd304b087a6494730f9eebf04"
 [[package]]
 name = "universal-hash"
 version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f214e8f697e925001e66ec2c6e37a4ef93f0f78c2eed7814394e10c62025b05"
 dependencies = [
  "generic-array",
  "subtle",
@@ -1116,11 +1118,9 @@ dependencies = [
 
 [[package]]
 name = "universal-hash"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f214e8f697e925001e66ec2c6e37a4ef93f0f78c2eed7814394e10c62025b05"
+version = "0.5.0-pre"
 dependencies = [
- "generic-array",
+ "crypto-common 0.1.6",
  "subtle",
 ]
 
