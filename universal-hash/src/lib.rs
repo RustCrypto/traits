@@ -32,7 +32,7 @@ extern crate std;
 pub use crypto_common::{
     self, generic_array,
     typenum::{self, consts},
-    Block, Key, KeyInit, ParBlocks,
+    Block, Key, KeyInit, ParBlocks, Reset,
 };
 
 use core::slice;
@@ -124,6 +124,18 @@ pub trait UniversalHash: BlockSizeUser + Sized {
 
     /// Retrieve result and consume hasher instance.
     fn finalize(self) -> Block<Self>;
+
+    /// Obtain the [`Output`] of a [`UniversalHash`] computation and reset it back
+    /// to its initial state.
+    #[inline]
+    fn finalize_reset(&mut self) -> Block<Self>
+    where
+        Self: Clone + Reset,
+    {
+        let ret = self.clone().finalize();
+        self.reset();
+        ret
+    }
 
     /// Verify the [`UniversalHash`] of the processed input matches
     /// a given `expected` value.
