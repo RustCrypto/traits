@@ -53,6 +53,13 @@ pub trait UhfBackend: ParBlocksSizeUser {
             self.proc_block(block);
         }
     }
+
+    /// Returns the number of blocks that should be passed to `Self::proc_block` before
+    /// `Self::proc_par_blocks` can be used efficiently. This is always less than
+    /// `Self::ParBlocksSize`.
+    fn blocks_needed_to_align(&self) -> usize {
+        0
+    }
 }
 
 /// Trait for [`UhfBackend`] users.
