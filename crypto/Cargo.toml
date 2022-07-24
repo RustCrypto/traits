@@ -22,7 +22,7 @@ elliptic-curve = { version = "0.12", optional = true, path = "../elliptic-curve"
 mac = { version = "0.11", package = "crypto-mac", optional = true }
 password-hash = { version = "0.4", optional = true, path = "../password-hash" }
 signature = { version = "1.5", optional = true, default-features = false, path = "../signature" }
-universal-hash = { version = "=0.5.0-pre.1", optional = true, path = "../universal-hash" }
+universal-hash = { version = "=0.5.0-pre.2", optional = true, path = "../universal-hash" }
 
 [features]
 std = [
