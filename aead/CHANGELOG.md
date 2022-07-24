@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.5.0 (2022-07-23)
+### Added
+- Optional support for `BytesMut` as a `Buffer` ([#956])
+- `getrandom` feature ([#1042])
+
+### Changed
+- Replace `NewAead` trait with `KeyInit` trait from `crypto-common` ([#1033])
+- Rust 2021 edition upgrade; MSRV 1.56+ ([#1044])
+
+[#956]: https://github.com/RustCrypto/traits/pull/956
+[#1033]: https://github.com/RustCrypto/traits/pull/1033
+[#1042]: https://github.com/RustCrypto/traits/pull/1042
+[#1044]: https://github.com/RustCrypto/traits/pull/1044
+
 ## 0.4.3 (2021-08-29)
 ### Added
 - `Result` type alias ([#725])
