@@ -95,7 +95,7 @@ where
 #[cfg_attr(docsrs, doc(cfg(feature = "rand-preview")))]
 pub trait RandomizedSigner<S: Signature> {
     /// Sign the given message and return a digital signature
-    fn sign_with_rng(&self, rng: impl CryptoRng + RngCore, msg: &[u8]) -> S {
+    fn sign_with_rng(&self, rng: &mut (impl CryptoRng + RngCore), msg: &[u8]) -> S {
         self.try_sign_with_rng(rng, msg)
             .expect("signature operation failed")
     }
@@ -105,7 +105,11 @@ pub trait RandomizedSigner<S: Signature> {
     ///
     /// The main intended use case for signing errors is when communicating
     /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
-    fn try_sign_with_rng(&self, rng: impl CryptoRng + RngCore, msg: &[u8]) -> Result<S, Error>;
+    fn try_sign_with_rng(
+        &self,
+        rng: &mut (impl CryptoRng + RngCore),
+        msg: &[u8],
+    ) -> Result<S, Error>;
 }
 
 /// Combination of [`DigestSigner`] and [`RandomizedSigner`] with support for
@@ -121,7 +125,7 @@ where
     /// Sign the given prehashed message `Digest`, returning a signature.
     ///
     /// Panics in the event of a signing error.
-    fn sign_digest_with_rng(&self, rng: impl CryptoRng + RngCore, digest: D) -> S {
+    fn sign_digest_with_rng(&self, rng: &mut (impl CryptoRng + RngCore), digest: D) -> S {
         self.try_sign_digest_with_rng(rng, digest)
             .expect("signature operation failed")
     }
@@ -130,7 +134,7 @@ where
     /// digital signature on success, or an error if something went wrong.
     fn try_sign_digest_with_rng(
         &self,
-        rng: impl CryptoRng + RngCore,
+        rng: &mut (impl CryptoRng + RngCore),
         digest: D,
     ) -> Result<S, Error>;
 }
