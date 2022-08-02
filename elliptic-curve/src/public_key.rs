@@ -16,7 +16,7 @@ use crate::{
 };
 
 #[cfg(feature = "pem")]
-use {core::str::FromStr, pkcs8::EncodePublicKey};
+use core::str::FromStr;
 
 #[cfg(feature = "sec1")]
 use {
@@ -28,11 +28,14 @@ use {
     subtle::CtOption,
 };
 
-#[cfg(any(feature = "jwk", feature = "pem"))]
-use alloc::string::{String, ToString};
-
 #[cfg(feature = "serde")]
 use serdect::serde::{de, ser, Deserialize, Serialize};
+
+#[cfg(all(feature = "alloc", feature = "pkcs8"))]
+use pkcs8::EncodePublicKey;
+
+#[cfg(any(feature = "jwk", feature = "pem"))]
+use alloc::string::{String, ToString};
 
 /// Elliptic curve public keys.
 ///
@@ -304,8 +307,8 @@ where
 {
 }
 
-#[cfg(feature = "pem")]
-#[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
+#[cfg(all(feature = "alloc", feature = "pkcs8"))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "alloc", feature = "pkcs8"))))]
 impl<C> EncodePublicKey for PublicKey<C>
 where
     C: Curve + AssociatedOid + ProjectiveArithmetic,
