@@ -12,7 +12,7 @@ keywords = ["crypto", "traits"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-generic-array = { version = "0.14.4", features = ["more_lengths"] }
+generic-array = { version = "0.14.6", features = ["more_lengths"] }
 typenum = "1.14" # earlier versions of typenum don't satisfy the 'static bound on U* types
 
 # optional dependencies
