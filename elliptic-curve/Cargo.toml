@@ -53,7 +53,7 @@ ecdh = ["arithmetic", "digest", "hkdf"]
 hazmat = []
 jwk = ["alloc", "base64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
 pem = ["alloc", "arithmetic", "der/pem", "pem-rfc7468/alloc", "pkcs8", "sec1/pem"]
-serde = ["alloc", "sec1/serde", "serdect"]
+serde = ["alloc", "pkcs8", "sec1/serde", "serdect"]
 std = ["alloc", "rand_core/std"]
 voprf = ["digest"]
 
