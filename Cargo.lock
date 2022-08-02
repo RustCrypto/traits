@@ -239,7 +239,7 @@ dependencies = [
  "cipher 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "crypto-mac",
  "digest 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "elliptic-curve 0.12.2",
+ "elliptic-curve 0.12.3",
  "password-hash",
  "signature 1.5.0",
  "universal-hash 0.5.0",
@@ -406,7 +406,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.12.2"
+version = "0.12.3"
 dependencies = [
  "base16ct",
  "base64ct",
