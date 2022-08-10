@@ -43,6 +43,8 @@
 //! [1]: https://github.com/RustCrypto/traits
 //! [2]: https://github.com/RustCrypto
 
+pub use crypto_common as common;
+
 #[cfg(feature = "aead")]
 pub use aead;
 

@@ -15,6 +15,9 @@ edition = "2021"
 rust-version = "1.57"
 
 [dependencies]
+crypto-common = { version = "0.1", default-features = false, path = "../crypto-common" }
+
+# optional dependencies
 aead = { version = "0.5", optional = true, path = "../aead" }
 cipher = { version = "0.4", optional = true }
 digest = { version = "0.10", optional = true, features = ["mac"] }
@@ -33,6 +36,8 @@ std = [
     "signature/std",
     "universal-hash/std"
 ]
+getrandom = ["crypto-common/getrandom"]
+rand_core = ["crypto-common/rand_core"]
 
 [package.metadata.docs.rs]
 all-features = true
