@@ -64,6 +64,9 @@ use alloc::vec::Vec;
 #[cfg(feature = "bytes")]
 use bytes::BytesMut;
 
+#[cfg(feature = "rand_core")]
+use rand_core::{CryptoRng, RngCore};
+
 /// Error type.
 ///
 /// This type is deliberately opaque as to avoid potential side-channel
@@ -103,6 +106,52 @@ pub trait AeadCore {
     /// The upper bound amount of additional space required to support a
     /// ciphertext vs. a plaintext.
     type CiphertextOverhead: ArrayLength<u8> + Unsigned;
+
+    /// Generate a random nonce for this AEAD algorithm.
+    ///
+    /// AEAD algorithms accept a parameter to encryption/decryption called
+    /// a "nonce" which must be unique every time encryption is performed and
+    /// never repeated for the same key. The nonce is often prepended to the
+    /// ciphertext. The nonce used to produce a given ciphertext must be passed
+    /// to the decryption function in order for it to decrypt correctly.
+    ///
+    /// Nonces don't necessarily have to be random, but it is one strategy
+    /// which is implemented by this function.
+    ///
+    /// # ⚠️Security Warning
+    ///
+    /// AEAD algorithms often fail catastrophically if nonces are ever repeated
+    /// (with SIV modes being an exception).
+    ///
+    /// Using random nonces runs the risk of repeating them unless the nonce
+    /// size is particularly large (e.g. 192-bit extended nonces used by the
+    /// `XChaCha20Poly1305` and `XSalsa20Poly1305` constructions.
+    ///
+    /// [NIST SP 800-38D] recommends the following:
+    ///
+    /// > The total number of invocations of the authenticated encryption
+    /// > function shall not exceed 2^32, including all IV lengths and all
+    /// > instances of the authenticated encryption function with the given key.
+    ///
+    /// Following this guideline, only 4,294,967,296 messages with random
+    /// nonces can be encrypted under a given key. While this bound is high,
+    /// it's possible to encounter in practice, and systems which might
+    /// reach it should consider alternatives to purely random nonces, like
+    /// a counter or a combination of a random nonce + counter.
+    ///
+    /// See the [`stream`] module for a ready-made implementation of the latter.
+    ///
+    /// [NIST SP 800-38D]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
+    #[cfg(feature = "rand_core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    fn generate_nonce(mut rng: impl CryptoRng + RngCore) -> Nonce<Self>
+    where
+        Nonce<Self>: Default,
+    {
+        let mut nonce = Nonce::<Self>::default();
+        rng.fill_bytes(&mut nonce);
+        nonce
+    }
 }
 
 /// Authenticated Encryption with Associated Data (AEAD) algorithm.
