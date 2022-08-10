@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.5.1 (2022-08-09)
+### Added
+- `AeadCore::generate_nonce` ([#1073])
+
+[#1073]: https://github.com/RustCrypto/traits/pull/1073
+
 ## 0.5.0 (2022-07-23)
 ### Added
 - Optional support for `BytesMut` as a `Buffer` ([#956])
