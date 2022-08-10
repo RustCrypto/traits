@@ -38,7 +38,7 @@ jobs:
           profile: minimal
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
-               --features aead,cipher,mac,digest,elliptic-curve,signature,universal-hash
+               --features aead,cipher,digest,elliptic-curve,signature,universal-hash
 
   # TODO: use the reusable workflow after this crate will be part of the
   # toot workspace
