@@ -151,7 +151,7 @@ pub trait UniversalHash: BlockSizeUser + Sized {
     /// from universal hash functions.
     #[inline]
     fn verify(self, expected: &Block<Self>) -> Result<(), Error> {
-        if self.finalize().ct_eq(expected).unwrap_u8() == 1 {
+        if self.finalize().ct_eq(expected).into::<bool>() {
             Ok(())
         } else {
             Err(Error)
