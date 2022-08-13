@@ -1,9 +1,5 @@
-//! Custom derive support for the `signature` crate.
-//!
-//! This crate can be used to derive `Signer` and `Verifier` impls for
-//! types that impl `DigestSigner` or `DigestVerifier` respectively.
-
 #![crate_type = "proc-macro"]
+#![doc = include_str!("../README.md")]
 #![deny(warnings, unused_import_braces, unused_qualifications)]
 #![forbid(unsafe_code)]
 
