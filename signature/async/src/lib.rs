@@ -1,28 +1,9 @@
-//! RustCrypto: `async-signature` crate.
-//!
-//! This is an experimental crate containing `async` versions of select traits
-//! from the [`signature`] crate, namely [`AsyncSigner`] and when the `digest`
-//! feature is enabled, [`AsyncDigestSigner`].
-//!
-//! Traits are implemented using [`async-trait`], which rewrites the traits to
-//! use `Box`-ed futures.
-//!
-//! The longer-term goal is to move these traits into the [`signature`] crate
-//! itself, however before doing so we'd like to remove the [`async-trait`]
-//! dependency in order to enable use in `no_std` environments. This crate
-//! is a stopgap until that happens.
-//!
-//! For more information, see:
-//! <https://github.com/RustCrypto/traits/issues/304>
-//!
-//! [`async-trait`]: https://docs.rs/async-trait
-
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![doc = include_str!("../README.md")]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
-    html_root_url = "https://docs.rs/async-signature/0.2.0-pre"
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg"
 )]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms, unused_qualifications)]
 
