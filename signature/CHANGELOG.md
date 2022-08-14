@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.6.0 (2022-08-14)
+### Added
+- `Keypair` trait ([#1080])
+
+### Changed
+- Rust 2021 edition upgrade; MSRV 1.56 ([#1081])
+- Bump `signature_derive` dependency to v1.0.0-pre.5 ([#1082])
+- Bump `hex-literal` dependency to v0.3 ([#1083])
+
+[#1080]: https://github.com/RustCrypto/traits/pull/1080
+[#1081]: https://github.com/RustCrypto/traits/pull/1081
+[#1082]: https://github.com/RustCrypto/traits/pull/1082
+[#1083]: https://github.com/RustCrypto/traits/pull/1083
+
 ## 1.5.0 (2022-01-04)
 ### Changed
 - Bump `digest` dependency to v0.10 ([#850])
