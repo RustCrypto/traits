@@ -176,8 +176,9 @@ pub use digest;
 pub use rand_core;
 
 mod error;
+mod keypair;
 mod signature;
 mod signer;
 mod verifier;
 
-pub use crate::{error::*, signature::*, signer::*, verifier::*};
+pub use crate::{error::*, keypair::*, signature::*, signer::*, verifier::*};
