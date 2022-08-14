@@ -49,7 +49,7 @@ dependencies = [
 
 [[package]]
 name = "async-signature"
-version = "0.2.0-pre"
+version = "0.2.0"
 dependencies = [
  "async-trait",
  "signature 1.6.0",
