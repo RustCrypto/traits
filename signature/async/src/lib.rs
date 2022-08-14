@@ -13,6 +13,7 @@ pub use signature::{self, Error, Signature};
 pub use signature::digest::{self, Digest};
 
 use async_trait::async_trait;
+use signature::Verifier;
 
 /// Asynchronously sign the provided message bytestring using `Self`
 /// (e.g. client for a Cloud KMS or HSM), returning a digital signature.
@@ -71,4 +72,29 @@ where
     async fn sign_digest_async(&self, digest: D) -> Result<S, Error> {
         self.try_sign_digest(digest)
     }
+}
+
+/// Keypair with async signer component and an associated verifying key.
+///
+/// This represents a type which holds both an async signing key and a verifying key.
+pub trait AsyncKeypair<S>: AsRef<Self::VerifyingKey> + AsyncSigner<S>
+where
+    S: Signature + Send + 'static,
+{
+    /// Verifying key type for this keypair.
+    type VerifyingKey: Verifier<S>;
+
+    /// Get the verifying key which can verify signatures produced by the
+    /// signing key portion of this keypair.
+    fn verifying_key(&self) -> &Self::VerifyingKey {
+        self.as_ref()
+    }
+}
+
+impl<S, T> AsyncKeypair<S> for T
+where
+    S: Signature + Send + 'static,
+    T: signature::Keypair<S> + Send + Sync,
+{
+    type VerifyingKey = <T as signature::Keypair<S>>::VerifyingKey;
 }
