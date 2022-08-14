@@ -14,7 +14,7 @@ rust-version  = "1.56"
 
 [dependencies]
 async-trait = "0.1.9"
-signature = { version = "=1.6.0-pre", path = ".." }
+signature = { version = "1.6", path = ".." }
 
 [features]
 digest = ["signature/digest-preview"]

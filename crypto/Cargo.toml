@@ -23,7 +23,7 @@ cipher = { version = "0.4", optional = true }
 digest = { version = "0.10", optional = true, features = ["mac"] }
 elliptic-curve = { version = "0.12", optional = true, path = "../elliptic-curve" }
 password-hash = { version = "0.4", optional = true, path = "../password-hash" }
-signature = { version = "=1.6.0-pre", optional = true, default-features = false, path = "../signature" }
+signature = { version = "1.5", optional = true, default-features = false, path = "../signature" }
 universal-hash = { version = "0.5", optional = true, path = "../universal-hash" }
 
 [features]
