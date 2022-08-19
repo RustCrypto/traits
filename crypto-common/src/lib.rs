@@ -50,6 +50,12 @@ pub type AddBlockSize<T, B> = Sum<T, <B as BlockSizeUser>::BlockSize>;
 /// Alias for `SubBlockSize<A, B> = Diff<T, B::BlockSize>`
 pub type SubBlockSize<T, B> = Diff<T, <B as BlockSizeUser>::BlockSize>;
 
+/// Alias for `AddSerializedStateSize<T, S> = Sum<T, S::SerializedStateSize>`
+pub type AddSerializedStateSize<T, S> = Sum<T, <S as SerializableState>::SerializedStateSize>;
+
+/// Alias for `SubSerializedStateSize<T, S> = Diff<T, S::SerializedStateSize>`
+pub type SubSerializedStateSize<T, S> = Diff<T, <S as SerializableState>::SerializedStateSize>;
+
 /// Types which process data in blocks.
 pub trait BlockSizeUser {
     /// Size of the block in bytes.
@@ -379,3 +385,38 @@ impl fmt::Display for InvalidLength {
 
 #[cfg(feature = "std")]
 impl std::error::Error for InvalidLength {}
+
+/// Serialized internal state.
+pub type SerializedState<T> = ByteArray<<T as SerializableState>::SerializedStateSize>;
+
+/// The error type returned when an object cannot be deserialized from the state.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct DeserializeStateError;
+
+impl fmt::Display for DeserializeStateError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("Deserialization error")
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for DeserializeStateError {}
+
+/// Types which can serialize the internal state and be restored from it.
+///
+/// # SECURITY WARNING
+///
+/// Serialized state may contain sensitive data.
+pub trait SerializableState
+where
+    Self: Sized,
+{
+    /// Size of serialized internal state.
+    type SerializedStateSize: ArraySize;
+
+    /// Serialize and return internal state.
+    fn serialize(&self) -> SerializedState<Self>;
+    /// Create an object from serialized internal state.
+    fn deserialize(serialized_state: &SerializedState<Self>)
+        -> Result<Self, DeserializeStateError>;
+}
