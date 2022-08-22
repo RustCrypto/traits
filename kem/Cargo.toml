@@ -24,13 +24,15 @@ p256 = { version = "0.9", features = [ "ecdsa" ] }
 pqcrypto = { version = "0.15", default-features = false, features = [ "pqcrypto-saber" ] }
 pqcrypto-traits = "0.3"
 
-# rust-hpke causes compilation issues, so it's temporarily disabled, see:
-# https://github.com/RustCrypto/traits/pull/1088
-# [dev-dependencies.hpke]
-# git = "https://github.com/rozbb/rust-hpke"
-# rev = "9230db267819f5795a47510139f4f1a60688ce82"
-# default-features = false
-# features = [ "x25519" ]
+# We use an hpke commit that pulls in x25519-dalek v2.0.0-pre.1. This is necessary because all the
+# modern crates (including this one) use zeroize >1.3, which is incompatible with the previous
+# x25519-dalek version. Once the next x25519-dalek version is cut, the next hpke version will be
+# cut, and this commit-based dependency can go away.
+[dev-dependencies.hpke]
+git = "https://github.com/rozbb/rust-hpke"
+rev = "18eda000f27a871f360c283b30407a95169d7d58"
+default-features = false
+features = [ "x25519" ]
 
 [features]
 default = []
