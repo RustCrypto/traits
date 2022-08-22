@@ -144,7 +144,7 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
             return Err(MacError);
         }
         let choice = self.finalize_fixed().ct_eq(tag);
-        if choice.unwrap_u8() == 1 {
+        if choice.into() {
             Ok(())
         } else {
             Err(MacError)
@@ -158,7 +158,7 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
         }
         let choice = self.finalize_fixed()[..n].ct_eq(tag);
 
-        if choice.unwrap_u8() == 1 {
+        if choice.into() {
             Ok(())
         } else {
             Err(MacError)
@@ -173,7 +173,7 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
         let m = Self::OutputSize::USIZE - n;
         let choice = self.finalize_fixed()[m..].ct_eq(tag);
 
-        if choice.unwrap_u8() == 1 {
+        if choice.into() {
             Ok(())
         } else {
             Err(MacError)
@@ -239,7 +239,7 @@ impl<T: OutputSizeUser> ConstantTimeEq for CtOutput<T> {
 impl<T: OutputSizeUser> PartialEq for CtOutput<T> {
     #[inline(always)]
     fn eq(&self, x: &CtOutput<T>) -> bool {
-        self.ct_eq(x).unwrap_u8() == 1
+        self.ct_eq(x).into()
     }
 }
 
