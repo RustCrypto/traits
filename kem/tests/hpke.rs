@@ -1,3 +1,5 @@
+#![cfg(disable_hpke)]
+
 use hpke::{
     kem::{Kem as KemTrait, X25519HkdfSha256},
     Deserializable as HpkeDeserializable, Serializable as HpkeSerializable,

@@ -24,11 +24,13 @@ p256 = { version = "0.9", features = [ "ecdsa" ] }
 pqcrypto = { version = "0.15", default-features = false, features = [ "pqcrypto-saber" ] }
 pqcrypto-traits = "0.3"
 
-[dev-dependencies.hpke]
-git = "https://github.com/rozbb/rust-hpke"
-rev = "9230db267819f5795a47510139f4f1a60688ce82"
-default-features = false
-features = [ "x25519" ]
+# rust-hpke causes compilation issues, so it's temporarily disabled, see:
+# https://github.com/RustCrypto/traits/pull/1088
+# [dev-dependencies.hpke]
+# git = "https://github.com/rozbb/rust-hpke"
+# rev = "9230db267819f5795a47510139f4f1a60688ce82"
+# default-features = false
+# features = [ "x25519" ]
 
 [features]
 default = []
