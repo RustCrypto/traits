@@ -4,8 +4,16 @@ use crate::MacMarker;
 use crate::{HashMarker, InvalidBufferSize};
 use crate::{InvalidOutputSize, Reset, Update, VariableOutput, VariableOutputReset};
 use block_buffer::BlockBuffer;
-use core::fmt;
-use crypto_common::typenum::Unsigned;
+use core::{
+    convert::TryInto,
+    fmt,
+    ops::{Add, Sub},
+};
+use crypto_common::{
+    array::{ArraySize, ByteArray},
+    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U256},
+    DeserializeStateError, SerializableState, SerializedState,
+};
 
 /// Wrapper around [`VariableOutputCore`] which selects output size
 /// at run time.
@@ -116,6 +124,67 @@ where
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         T::write_alg_name(f)?;
         f.write_str(" { .. }")
+    }
+}
+
+impl<T> SerializableState for RtVariableCoreWrapper<T>
+where
+    T: VariableOutputCore + UpdateCore + SerializableState,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
+    T::SerializedStateSize: Add<U1>,
+    Sum<T::SerializedStateSize, U1>: Add<T::BlockSize> + ArraySize,
+    Sum<Sum<T::SerializedStateSize, U1>, T::BlockSize>: Add<U1> + ArraySize,
+    Sum<Sum<Sum<T::SerializedStateSize, U1>, T::BlockSize>, U1>:
+        Sub<T::SerializedStateSize> + ArraySize,
+    Diff<Sum<Sum<Sum<T::SerializedStateSize, U1>, T::BlockSize>, U1>, T::SerializedStateSize>:
+        Sub<U1> + ArraySize,
+    Diff<
+        Diff<Sum<Sum<Sum<T::SerializedStateSize, U1>, T::BlockSize>, U1>, T::SerializedStateSize>,
+        U1,
+    >: Sub<T::BlockSize> + ArraySize,
+    Diff<
+        Diff<
+            Diff<
+                Sum<Sum<Sum<T::SerializedStateSize, U1>, T::BlockSize>, U1>,
+                T::SerializedStateSize,
+            >,
+            U1,
+        >,
+        T::BlockSize,
+    >: ArraySize,
+{
+    type SerializedStateSize = Sum<Sum<Sum<T::SerializedStateSize, U1>, T::BlockSize>, U1>;
+
+    fn serialize(&self) -> SerializedState<Self> {
+        let serialized_core = self.core.serialize();
+        let serialized_pos =
+            ByteArray::<U1>::clone_from_slice(&[self.buffer.get_pos().try_into().unwrap()]);
+        let serialized_data = self.buffer.clone().pad_with_zeros();
+        let serialized_output_size =
+            ByteArray::<U1>::clone_from_slice(&[self.output_size.try_into().unwrap()]);
+
+        serialized_core
+            .concat(serialized_pos)
+            .concat(serialized_data)
+            .concat(serialized_output_size)
+    }
+
+    fn deserialize(
+        serialized_state: &SerializedState<Self>,
+    ) -> Result<Self, DeserializeStateError> {
+        let (serialized_core, remaining_buffer) =
+            serialized_state.split_ref::<T::SerializedStateSize>();
+        let (serialized_pos, remaining_buffer) = remaining_buffer.split_ref::<U1>();
+        let (serialized_data, serialized_output_size) =
+            remaining_buffer.split_ref::<T::BlockSize>();
+
+        Ok(Self {
+            core: T::deserialize(serialized_core)?,
+            buffer: BlockBuffer::try_new(&serialized_data[..serialized_pos[0].into()])
+                .map_err(|_| DeserializeStateError)?,
+            output_size: serialized_output_size[0].into(),
+        })
     }
 }
 
