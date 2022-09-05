@@ -168,9 +168,9 @@ dependencies = [
 
 [[package]]
 name = "block-buffer"
-version = "0.10.2"
+version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bf7fe51849ea569fd452f37822f606a5cabb684dc918707a0193fd4664ff324"
+checksum = "69cce20737498f97b993470a6e536b8523f0af7892a4f928cceb1ac5e52ebe7e"
 dependencies = [
  "generic-array",
 ]
@@ -425,7 +425,7 @@ name = "digest"
 version = "0.10.3"
 dependencies = [
  "blobby",
- "block-buffer 0.10.2",
+ "block-buffer 0.10.3",
  "crypto-common 0.1.6",
  "subtle",
 ]
@@ -436,7 +436,7 @@ version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2fb860ca6fafa5552fb6d0e816a69c8e49f0908bf524e30a90d97c85892d506"
 dependencies = [
- "block-buffer 0.10.2",
+ "block-buffer 0.10.3",
  "crypto-common 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
 ]
