@@ -60,6 +60,9 @@ mod mac;
 #[cfg(feature = "core-api")]
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub use block_buffer;
+#[cfg(feature = "const-oid")]
+#[cfg_attr(docsrs, doc(cfg(feature = "const-oid")))]
+pub use const_oid;
 pub use crypto_common;
 
 pub use crate::digest::{Digest, DynDigest, HashMarker};
