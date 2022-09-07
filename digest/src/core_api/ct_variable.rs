@@ -5,6 +5,8 @@ use super::{
 use crate::HashMarker;
 #[cfg(feature = "mac")]
 use crate::MacMarker;
+#[cfg(feature = "const-oid")]
+use const_oid::{AssociatedOid, ObjectIdentifier};
 use core::{fmt, marker::PhantomData};
 use crypto_common::{
     generic_array::{ArrayLength, GenericArray},
@@ -164,4 +166,17 @@ where
         f.write_str("_")?;
         write!(f, "{}", OutSize::USIZE)
     }
+}
+
+#[cfg(feature = "const-oid")]
+#[cfg_attr(docsrs, doc(cfg(feature = "const-oid")))]
+impl<T, OutSize> AssociatedOid for CtVariableCoreWrapper<T, OutSize>
+where
+    T: VariableOutputCore + AssociatedOid,
+    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
+    LeEq<OutSize, T::OutputSize>: NonZero,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
+{
+    const OID: ObjectIdentifier = T::OID;
 }

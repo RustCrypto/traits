@@ -4,6 +4,8 @@ use crate::MacMarker;
 use crate::{HashMarker, InvalidBufferSize};
 use crate::{InvalidOutputSize, Reset, Update, VariableOutput, VariableOutputReset};
 use block_buffer::BlockBuffer;
+#[cfg(feature = "const-oid")]
+use const_oid::{AssociatedOid, ObjectIdentifier};
 use core::fmt;
 use crypto_common::typenum::{IsLess, Le, NonZero, Unsigned, U256};
 
@@ -143,6 +145,17 @@ where
         T::write_alg_name(f)?;
         f.write_str(" { .. }")
     }
+}
+
+#[cfg(feature = "const-oid")]
+#[cfg_attr(docsrs, doc(cfg(feature = "const-oid")))]
+impl<T> AssociatedOid for RtVariableCoreWrapper<T>
+where
+    T: VariableOutputCore + UpdateCore + AssociatedOid,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
+{
+    const OID: ObjectIdentifier = T::OID;
 }
 
 #[cfg(feature = "std")]

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## UNRELEASED
+### Added
+- Feature-gated implementation of the `const_oid::AssociatedOid` trait
+for the core wrappers. ([#1098])
+
+[#1098]: https://github.com/RustCrypto/traits/pull/1098
+
 ## 0.10.3 (2022-02-16)
 ### Fixed
 - Minimal versions build ([#940])
