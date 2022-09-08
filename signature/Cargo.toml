@@ -29,6 +29,7 @@ std = []
 # See https://docs.rs/signature/latest/signature/#unstable-features for more information.
 derive-preview = ["digest-preview", "signature_derive"]
 digest-preview = ["digest"]
+hazmat-preview = []
 rand-preview = ["rand_core"]
 
 [package.metadata.docs.rs]
