@@ -194,7 +194,7 @@ where
 macro_rules! impl_oid_carrier {
     ($name:ident, $oid:literal) => {
         #[doc(hidden)]
-        struct $name;
+        pub struct $name;
 
         impl AssociatedOid for $name {
             const OID: ObjectIdentifier = ObjectIdentifier::new_unwrap($oid);
