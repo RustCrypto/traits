@@ -26,7 +26,7 @@ pub trait PrehashSigner<S: Signature> {
     ///
     /// Allowed lengths are algorithm-dependent and up to a particular
     /// implementation to decide.
-    fn try_sign_prehash(&self, prehash: &[u8]) -> Result<S, Error>;
+    fn sign_prehash(&self, prehash: &[u8]) -> Result<S, Error>;
 }
 
 /// Verify the provided message prehash using `Self` (e.g. a public key)
