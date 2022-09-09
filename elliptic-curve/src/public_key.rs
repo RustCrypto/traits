@@ -37,6 +37,9 @@ use pkcs8::EncodePublicKey;
 #[cfg(any(feature = "jwk", feature = "pem"))]
 use alloc::string::{String, ToString};
 
+#[cfg(feature = "alloc")]
+use alloc::boxed::Box;
+
 /// Elliptic curve public keys.
 ///
 /// This is a wrapper type for [`AffinePoint`] which ensures an inner
@@ -119,6 +122,23 @@ where
     {
         let point = EncodedPoint::<C>::from_bytes(bytes).map_err(|_| Error)?;
         Option::from(Self::from_encoded_point(&point)).ok_or(Error)
+    }
+
+    /// Convert this [`PublicKey`] into the
+    /// `Elliptic-Curve-Point-to-Octet-String` encoding described in
+    /// SEC 1: Elliptic Curve Cryptography (Version 2.0) section 2.3.3
+    /// (page 10).
+    ///
+    /// <http://www.secg.org/sec1-v2.pdf>
+    #[cfg(feature = "alloc")]
+    pub fn to_sec1_bytes(&self) -> Box<[u8]>
+    where
+        C: Curve + ProjectiveArithmetic + PointCompression,
+        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+        FieldSize<C>: ModulusSize,
+    {
+        let point = EncodedPoint::<C>::from(self);
+        point.to_bytes()
     }
 
     /// Borrow the inner [`AffinePoint`] from this [`PublicKey`].
