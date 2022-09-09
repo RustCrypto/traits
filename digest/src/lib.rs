@@ -60,8 +60,8 @@ mod mac;
 #[cfg(feature = "core-api")]
 #[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub use block_buffer;
-#[cfg(feature = "const-oid")]
-#[cfg_attr(docsrs, doc(cfg(feature = "const-oid")))]
+#[cfg(feature = "oid")]
+#[cfg_attr(docsrs, doc(cfg(feature = "oid")))]
 pub use const_oid;
 pub use crypto_common;
 

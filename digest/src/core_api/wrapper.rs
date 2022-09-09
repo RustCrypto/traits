@@ -14,7 +14,7 @@ use crypto_common::{
 
 #[cfg(feature = "mac")]
 use crate::MacMarker;
-#[cfg(feature = "const-oid")]
+#[cfg(feature = "oid")]
 use const_oid::{AssociatedOid, ObjectIdentifier};
 
 /// Wrapper around [`BufferKindUser`].
@@ -229,8 +229,8 @@ where
     }
 }
 
-#[cfg(feature = "const-oid")]
-#[cfg_attr(docsrs, doc(cfg(feature = "const-oid")))]
+#[cfg(feature = "oid")]
+#[cfg_attr(docsrs, doc(cfg(feature = "oid")))]
 impl<T> AssociatedOid for CoreWrapper<T>
 where
     T: BufferKindUser + AssociatedOid,
