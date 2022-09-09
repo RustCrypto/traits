@@ -189,8 +189,6 @@ where
 
 /// Implement dummy type with hidden docs which is used to "carry" hasher
 /// OID for [`CtVariableCoreWrapper`].
-#[cfg(feature = "oid")]
-#[cfg_attr(docsrs, doc(cfg(feature = "oid")))]
 #[macro_export]
 macro_rules! impl_oid_carrier {
     ($name:ident, $oid:literal) => {
@@ -198,6 +196,7 @@ macro_rules! impl_oid_carrier {
         #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
         pub struct $name;
 
+        #[cfg(feature = "oid")]
         impl AssociatedOid for $name {
             const OID: ObjectIdentifier = ObjectIdentifier::new_unwrap($oid);
         }
