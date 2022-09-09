@@ -16,6 +16,7 @@ use crypto_common::{
 
 /// Dummy type used with [`CtVariableCoreWrapper`] in cases when
 /// resulting hash does not have a known OID.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct NoOid;
 
 /// Wrapper around [`VariableOutputCore`] which selects output size
@@ -194,6 +195,7 @@ where
 macro_rules! impl_oid_carrier {
     ($name:ident, $oid:literal) => {
         #[doc(hidden)]
+        #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
         pub struct $name;
 
         impl AssociatedOid for $name {
