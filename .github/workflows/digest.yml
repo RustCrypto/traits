@@ -68,4 +68,5 @@ jobs:
       - run: cargo test --features dev
       - run: cargo test --features alloc
       - run: cargo test --features std
-      - run: cargo test --all-features
+      # the `oid` feature bumps MSRV to 1.57
+      # - run: cargo test --all-features
