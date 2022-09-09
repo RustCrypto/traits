@@ -62,7 +62,7 @@ jobs:
           profile: minimal
       # Isolate this crate from workspace which is otherwise MSRV 1.56 due to 2021 edition crates
       - run: rm ../Cargo.toml
-      - run: cargo check --all-features
+      # - run: cargo check --all-features
       - run: cargo test --no-default-features
       - run: cargo test
       - run: cargo test --features dev
