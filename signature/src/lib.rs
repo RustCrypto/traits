@@ -178,6 +178,13 @@ mod verifier;
 #[cfg_attr(docsrs, doc(cfg(feature = "derive-preview")))]
 pub use signature_derive::{Signer, Verifier};
 
+#[cfg(all(feature = "derive-preview", feature = "digest-preview"))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(all(feature = "derive-preview", feature = "digest-preview")))
+)]
+pub use signature_derive::{DigestSigner, DigestVerifier};
+
 #[cfg(feature = "digest-preview")]
 pub use digest;
 
