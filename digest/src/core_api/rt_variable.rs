@@ -1,4 +1,4 @@
-use super::{AlgorithmName, TruncSide, UpdateCore, VariableOutputCore};
+use super::{AlgorithmName, BlockSizeUser, TruncSide, UpdateCore, VariableOutputCore};
 #[cfg(feature = "mac")]
 use crate::MacMarker;
 use crate::{HashMarker, InvalidBufferSize};
@@ -58,6 +58,15 @@ impl<T> HashMarker for RtVariableCoreWrapper<T> where T: VariableOutputCore + Ha
 
 #[cfg(feature = "mac")]
 impl<T> MacMarker for RtVariableCoreWrapper<T> where T: VariableOutputCore + MacMarker {}
+
+impl<T> BlockSizeUser for RtVariableCoreWrapper<T>
+where
+    T: VariableOutputCore,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
+{
+    type BlockSize = T::BlockSize;
+}
 
 impl<T> Reset for RtVariableCoreWrapper<T>
 where
