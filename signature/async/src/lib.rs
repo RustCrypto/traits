@@ -76,6 +76,7 @@ where
 /// Keypair with async signer component and an associated verifying key.
 ///
 /// This represents a type which holds both an async signing key and a verifying key.
+#[deprecated(since = "0.2.1", note = "use signature::Keypair instead")]
 pub trait AsyncKeypair<S>: AsRef<Self::VerifyingKey>
 where
     S: Signature + Send + 'static,
@@ -90,6 +91,7 @@ where
     }
 }
 
+#[allow(deprecated)]
 impl<S, T> AsyncKeypair<S> for T
 where
     S: Signature + Send + 'static,
