@@ -260,6 +260,7 @@ mod tests {
             quote! {
                 impl<D, S, C: EllipticCurve> ::signature::DigestSigner<D, S> for MySigner<C>
                 where
+                    D: ::signature::digest::Digest,
                     S: ::signature::Signature,
                     Self: ::signature::hazmat::PrehashSigner<S>
                 {
@@ -288,11 +289,12 @@ mod tests {
             quote! {
                 impl<D, S, C: EllipticCurve> ::signature::DigestVerifier<D, S> for MyVerifier<C>
                 where
+                    D: ::signature::digest::Digest,
                     S: ::signature::Signature,
                     Self: ::signature::hazmat::PrehashVerifier<S>
                 {
-                    fn verify_digest(&self, digest: D) -> ::signature::Result<S> {
-                        self.verify_prehash(&digest.finalize())
+                    fn verify_digest(&self, digest: D, signature: &S) -> ::signature::Result<()> {
+                        self.verify_prehash(&digest.finalize(), signature)
                     }
                 }
             }
