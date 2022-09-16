@@ -308,7 +308,7 @@ dependencies = [
  "aead 0.5.1",
  "cipher 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "crypto-common 0.1.6",
- "digest 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.10.3",
  "elliptic-curve 0.12.3",
  "password-hash",
  "signature 1.6.0",
@@ -423,22 +423,22 @@ dependencies = [
 [[package]]
 name = "digest"
 version = "0.10.3"
-dependencies = [
- "blobby",
- "block-buffer 0.10.3",
- "const-oid 0.9.0",
- "crypto-common 0.1.6",
- "subtle",
-]
-
-[[package]]
-name = "digest"
-version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2fb860ca6fafa5552fb6d0e816a69c8e49f0908bf524e30a90d97c85892d506"
 dependencies = [
  "block-buffer 0.10.3",
  "crypto-common 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "subtle",
+]
+
+[[package]]
+name = "digest"
+version = "0.10.4"
+dependencies = [
+ "blobby",
+ "block-buffer 0.10.3",
+ "const-oid 0.9.0",
+ "crypto-common 0.1.6",
  "subtle",
 ]
 
@@ -484,7 +484,7 @@ dependencies = [
  "base64ct",
  "crypto-bigint 0.4.8",
  "der 0.6.0",
- "digest 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.10.3",
  "ff 0.12.0",
  "generic-array",
  "group 0.12.0",
@@ -661,7 +661,7 @@ version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
 dependencies = [
- "digest 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.10.3",
 ]
 
 [[package]]
@@ -673,7 +673,7 @@ dependencies = [
  "aes-gcm",
  "byteorder",
  "chacha20poly1305",
- "digest 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.10.3",
  "generic-array",
  "hkdf 0.12.3",
  "hmac 0.12.1",
@@ -1144,7 +1144,7 @@ checksum = "cf9db03534dff993187064c4e0c05a5708d2a9728ace9a8959b77bedf415dac5"
 dependencies = [
  "cfg-if",
  "cpufeatures",
- "digest 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.10.3",
 ]
 
 [[package]]
@@ -1153,7 +1153,7 @@ version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eaedf34ed289ea47c2b741bb72e5357a209512d67bcd4bda44359e5bf0470f56"
 dependencies = [
- "digest 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.10.3",
  "keccak",
 ]
 
@@ -1171,7 +1171,7 @@ dependencies = [
 name = "signature"
 version = "1.6.0"
 dependencies = [
- "digest 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.10.3",
  "hex-literal",
  "rand_core 0.6.3",
  "sha2 0.10.5",

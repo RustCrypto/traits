@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## UNRELEASED
+## 0.10.4 (2022-09-16)
 ### Added
 - Feature-gated implementation of the `const_oid::AssociatedOid` trait
 for the core wrappers. ([#1098])
