@@ -7,11 +7,16 @@ use crate::HashMarker;
 use crate::MacMarker;
 #[cfg(feature = "oid")]
 use const_oid::{AssociatedOid, ObjectIdentifier};
-use core::{fmt, marker::PhantomData};
+use core::{
+    fmt,
+    marker::PhantomData,
+    ops::{Add, Sub},
+};
 use crypto_common::{
-    array::{Array, ArraySize},
-    typenum::{IsLessOrEqual, LeEq, NonZero},
-    Block, BlockSizeUser, OutputSizeUser,
+    array::{Array, ArraySize, ByteArray},
+    typenum::{Diff, IsLess, IsLessOrEqual, Le, LeEq, NonZero, Sum, U1, U256},
+    Block, BlockSizeUser, DeserializeStateError, OutputSizeUser, SerializableState,
+    SerializedState,
 };
 
 /// Dummy type used with [`CtVariableCoreWrapper`] in cases when
@@ -177,4 +182,41 @@ macro_rules! impl_oid_carrier {
             const OID: ObjectIdentifier = ObjectIdentifier::new_unwrap($oid);
         }
     };
+}
+
+impl<T, OutSize, O> SerializableState for CtVariableCoreWrapper<T, OutSize, O>
+where
+    T: VariableOutputCore + SerializableState,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
+    LeEq<OutSize, T::OutputSize>: NonZero,
+    T::BlockSize: IsLess<U256>,
+    Le<T::BlockSize, U256>: NonZero,
+    T::SerializedStateSize: Add<U1>,
+    Sum<T::SerializedStateSize, U1>: Sub<T::SerializedStateSize> + ArraySize,
+    Diff<Sum<T::SerializedStateSize, U1>, T::SerializedStateSize>: ArraySize,
+{
+    type SerializedStateSize = Sum<T::SerializedStateSize, U1>;
+
+    fn serialize(&self) -> SerializedState<Self> {
+        let serialized_inner = self.inner.serialize();
+        let serialized_outsize = ByteArray::<U1>::clone_from_slice(&[OutSize::U8]);
+
+        serialized_inner.concat(serialized_outsize)
+    }
+
+    fn deserialize(
+        serialized_state: &SerializedState<Self>,
+    ) -> Result<Self, DeserializeStateError> {
+        let (serialized_inner, serialized_outsize) =
+            serialized_state.split_ref::<T::SerializedStateSize>();
+
+        if serialized_outsize[0] != OutSize::U8 {
+            return Err(DeserializeStateError);
+        }
+
+        Ok(Self {
+            inner: T::deserialize(serialized_inner)?,
+            _out: PhantomData,
+        })
+    }
 }
