@@ -18,8 +18,6 @@ crypto-common = { version = "0.1.3", path = "../crypto-common" }
 block-buffer = { version = "0.10", optional = true }
 subtle = { version = "=2.4", default-features = false, optional = true }
 blobby = { version = "0.3", optional = true }
-# Enable implementation of the `AssociatedOid` trait for the core wrappers.
-# Enabling this feature bumps MSRV to 1.57.
 const-oid = { version = "0.9", optional = true }
 
 [features]
