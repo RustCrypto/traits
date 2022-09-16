@@ -433,7 +433,7 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.10.4"
+version = "0.10.5"
 dependencies = [
  "blobby",
  "block-buffer 0.10.3",
