@@ -50,8 +50,31 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.41.0 # MSRV
+          # - 1.41.0 # MSRV
           - stable
+    steps:
+      - uses: actions/checkout@v2
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+      - run: cargo check --all-features
+      - run: cargo test --no-default-features
+      - run: cargo test
+      - run: cargo test --features dev
+      - run: cargo test --features alloc
+      - run: cargo test --features std
+      - run: cargo test --all-features
+
+  # The `oid` feature bumps MSRV to 1.57, so we temporarily split this job.
+  test-msrv:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - 1.41.0 # MSRV
     steps:
       - uses: actions/checkout@v2
       - uses: RustCrypto/actions/cargo-cache@master
@@ -62,11 +85,8 @@ jobs:
           profile: minimal
       # Isolate this crate from workspace which is otherwise MSRV 1.56 due to 2021 edition crates
       - run: rm ../Cargo.toml
-      # - run: cargo check --all-features
       - run: cargo test --no-default-features
       - run: cargo test
       - run: cargo test --features dev
       - run: cargo test --features alloc
       - run: cargo test --features std
-      # the `oid` feature bumps MSRV to 1.57
-      # - run: cargo test --all-features
