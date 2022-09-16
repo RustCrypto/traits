@@ -432,17 +432,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "digest"
-version = "0.10.5"
-dependencies = [
- "blobby",
- "block-buffer 0.10.3",
- "const-oid 0.9.0",
- "crypto-common 0.1.6",
- "subtle",
-]
-
-[[package]]
 name = "dunce"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

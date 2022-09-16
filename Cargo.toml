@@ -1,16 +1,16 @@
 [workspace]
-# This causes issues like https://github.com/RustCrypto/traits/issues/1116
-# Do not uncomment it until MSRV is bumped to 1.51 or higher for all crates.
-# resolver = "2"
+resolver = "2"
 members = [
     "aead",
     "cipher",
     "crypto",
-    "crypto-common",
-    "digest",
     "elliptic-curve",
     "kem",
     "signature",
     "signature/async",
     "universal-hash",
+]
+exclude = [
+    "crypto-common",
+    "digest",
 ]
