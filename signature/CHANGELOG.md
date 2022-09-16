@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.6.2 (2022-09-16)
+### Changed
+- Bump `signature_derive` to v1.0.0-pre.7 ([#1119])
+
+[#1119]: https://github.com/RustCrypto/traits/pull/1119
+
 ## 1.6.2 (2022-09-15)
 ### Changed
 - Relax `Keypair` type bounds ([#1107])
