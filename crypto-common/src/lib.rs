@@ -23,6 +23,9 @@ use hybrid_array::{typenum::Unsigned, Array, ArraySize, ByteArray};
 #[cfg(feature = "rand_core")]
 use rand_core::CryptoRngCore;
 
+mod serializable_state;
+pub use serializable_state::{DeserializeStateError, SerializableState, SerializedState};
+
 /// Block on which [`BlockSizeUser`] implementors operate.
 pub type Block<B> = ByteArray<<B as BlockSizeUser>::BlockSize>;
 
@@ -323,38 +326,3 @@ impl fmt::Display for InvalidLength {
 
 #[cfg(feature = "std")]
 impl std::error::Error for InvalidLength {}
-
-/// Serialized internal state.
-pub type SerializedState<T> = ByteArray<<T as SerializableState>::SerializedStateSize>;
-
-/// The error type returned when an object cannot be deserialized from the state.
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub struct DeserializeStateError;
-
-impl fmt::Display for DeserializeStateError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        f.write_str("Deserialization error")
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for DeserializeStateError {}
-
-/// Types which can serialize the internal state and be restored from it.
-///
-/// # SECURITY WARNING
-///
-/// Serialized state may contain sensitive data.
-pub trait SerializableState
-where
-    Self: Sized,
-{
-    /// Size of serialized internal state.
-    type SerializedStateSize: ArraySize;
-
-    /// Serialize and return internal state.
-    fn serialize(&self) -> SerializedState<Self>;
-    /// Create an object from serialized internal state.
-    fn deserialize(serialized_state: &SerializedState<Self>)
-        -> Result<Self, DeserializeStateError>;
-}
