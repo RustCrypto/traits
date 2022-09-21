@@ -148,7 +148,7 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
 
 // note: unfortunately, currently we can not write blanket impls of
 // `BlockEncryptMut` and `BlockDecryptMut` for `T: StreamCipherCore`
-// since it requires mutually exlusive traits, see:
+// since it requires mutually exclusive traits, see:
 // https://github.com/rust-lang/rfcs/issues/1053
 
 /// Counter type usable with [`StreamCipherCore`].

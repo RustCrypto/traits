@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.4.0 (2022-02-10)
 ### Changed
 - Major rework of traits. Core functionality of block and stream ciphers
-is defined using rank-2 closures with convinience methods built on top of
+is defined using rank-2 closures with convenience methods built on top of
 it. Expose block-level trait for stream ciphers and add generic wrapper
 around it. The async stream cipher trait is defined as sub-trait of
 mutable block cipher traits. ([#849])
