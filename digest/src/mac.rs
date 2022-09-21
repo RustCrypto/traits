@@ -11,7 +11,7 @@ use subtle::{Choice, ConstantTimeEq};
 #[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 pub trait MacMarker {}
 
-/// Convinience wrapper trait covering functionality of Message Authentication algorithms.
+/// Convenience wrapper trait covering functionality of Message Authentication algorithms.
 ///
 /// This trait wraps [`KeyInit`], [`Update`], [`FixedOutput`], and [`MacMarker`]
 /// traits and provides additional convenience methods.

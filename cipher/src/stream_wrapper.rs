@@ -55,7 +55,7 @@ where
         self.pos as usize
     }
 
-    /// Return size of the internall buffer in bytes.
+    /// Return size of the internal buffer in bytes.
     #[inline]
     fn size(&self) -> usize {
         T::BlockSize::USIZE
@@ -67,7 +67,7 @@ where
         self.pos = pos as u8;
     }
 
-    /// Return number of remaining bytes in the internall buffer.
+    /// Return number of remaining bytes in the internal buffer.
     #[inline]
     fn remaining(&self) -> usize {
         self.size() - self.get_pos()

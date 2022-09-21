@@ -71,7 +71,7 @@ let hash = Sha256::new()
 println!("Result: {:x}", hash);
 ```
 
-If the whole message is available you also can use convinience `digest` method:
+If the whole message is available you also can use convenience `digest` method:
 
 ```rust
 let hash = Sha256::digest(b"my message");
