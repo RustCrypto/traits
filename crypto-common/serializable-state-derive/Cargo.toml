@@ -1,0 +1,23 @@
+[package]
+name = "serializable-state-derive"
+description = "Macro implementation of #[derive(SerializableState)]"
+version = "0.1.0"
+authors = ["Ruslan Piasetskyi <ruslan.piasetskyi@gmail.com>"]
+license = "MIT OR Apache-2.0"
+edition = "2018"
+documentation = "https://docs.rs/serializable-state-derive"
+repository = "https://github.com/RustCrypto/traits"
+keywords = ["serialization", "no_std", "derive"]
+categories = ["cryptography", "no-std"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+darling = "0.20.3"
+proc-macro2 = "1.0.69"
+quote = "1.0.33"
+syn = "2.0.38"
+
+[dev-dependencies]
+crypto-common = { version = "0.2.0-pre", path = ".." }

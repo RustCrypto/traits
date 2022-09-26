@@ -5,6 +5,8 @@ use crate::array::{
 };
 use core::{convert::TryInto, default::Default, fmt};
 
+pub use serializable_state_derive::*;
+
 /// Serialized internal state.
 pub type SerializedState<T> = ByteArray<<T as SerializableState>::SerializedStateSize>;
 
