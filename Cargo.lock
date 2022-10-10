@@ -492,6 +492,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "elliptic-curve"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7bb888ab5300a19b8e5bceef25ac745ad065f3c9f7efc6de1b91958110891d3"
+dependencies = [
+ "base16ct",
+ "crypto-bigint 0.4.8",
+ "der 0.6.0",
+ "digest 0.10.5",
+ "ff 0.12.0",
+ "generic-array",
+ "group 0.12.0",
+ "hkdf 0.12.3",
+ "rand_core 0.6.4",
+ "sec1",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
 name = "embedded-hal"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -655,8 +675,9 @@ dependencies = [
 
 [[package]]
 name = "hpke"
-version = "0.9.0"
-source = "git+https://github.com/rozbb/rust-hpke?rev=18eda000f27a871f360c283b30407a95169d7d58#18eda000f27a871f360c283b30407a95169d7d58"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf39e5461bfdc6ad0fbc97067519fcaf96a7a2e67f24cc0eb8a1e7c0c45af792"
 dependencies = [
  "aead 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "aes-gcm",
@@ -666,6 +687,7 @@ dependencies = [
  "generic-array",
  "hkdf 0.12.3",
  "hmac 0.12.1",
+ "p256 0.11.1",
  "rand_core 0.6.4",
  "sha2 0.10.6",
  "subtle",
@@ -710,7 +732,7 @@ version = "0.2.0"
 dependencies = [
  "generic-array",
  "hpke",
- "p256",
+ "p256 0.9.0",
  "pqcrypto",
  "pqcrypto-traits",
  "rand",
@@ -777,6 +799,15 @@ dependencies = [
  "ecdsa",
  "elliptic-curve 0.10.4",
  "sha2 0.9.9",
+]
+
+[[package]]
+name = "p256"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51f44edd08f51e2ade572f141051021c5af22677e42b7dd28a88155151c33594"
+dependencies = [
+ "elliptic-curve 0.12.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1093,9 +1124,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.85"
+version = "1.0.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e55a28e3aaef9d5ce0506d0a14dbba8054ddc7e499ef522dd8b26859ec9d4a44"
+checksum = "41feea4228a6f1cd09ec7a3593a682276702cd67b5273544757dae23c096f074"
 dependencies = [
  "itoa",
  "ryu",
@@ -1345,7 +1376,7 @@ dependencies = [
  "const-oid 0.6.2",
  "getrandom",
  "hkdf 0.11.0",
- "p256",
+ "p256 0.9.0",
  "rand_core 0.6.4",
  "serde",
  "serde_bytes",
