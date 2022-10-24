@@ -7,7 +7,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms, unused_qualifications)]
 
-pub use signature::{self, Error, Signature};
+pub use signature::{self, Error};
 
 #[cfg(feature = "digest")]
 pub use signature::digest::{self, Digest};
@@ -22,7 +22,7 @@ use async_trait::async_trait;
 pub trait AsyncSigner<S>
 where
     Self: Send + Sync,
-    S: Signature + Send + 'static,
+    S: Send + 'static,
 {
     /// Attempt to sign the given message, returning a digital signature on
     /// success, or an error if something went wrong.
@@ -35,7 +35,7 @@ where
 #[async_trait]
 impl<S, T> AsyncSigner<S> for T
 where
-    S: Signature + Send + 'static,
+    S: Send + 'static,
     T: signature::Signer<S> + Send + Sync,
 {
     async fn sign_async(&self, msg: &[u8]) -> Result<S, Error> {
@@ -53,7 +53,7 @@ pub trait AsyncDigestSigner<D, S>
 where
     Self: Send + Sync,
     D: Digest + Send + 'static,
-    S: Signature + 'static,
+    S: 'static,
 {
     /// Attempt to sign the given prehashed message [`Digest`], returning a
     /// digital signature on success, or an error if something went wrong.
@@ -65,37 +65,10 @@ where
 impl<D, S, T> AsyncDigestSigner<D, S> for T
 where
     D: Digest + Send + 'static,
-    S: Signature + Send + 'static,
+    S: Send + 'static,
     T: signature::DigestSigner<D, S> + Send + Sync,
 {
     async fn sign_digest_async(&self, digest: D) -> Result<S, Error> {
         self.try_sign_digest(digest)
     }
-}
-
-/// Keypair with async signer component and an associated verifying key.
-///
-/// This represents a type which holds both an async signing key and a verifying key.
-#[deprecated(since = "0.2.1", note = "use signature::Keypair instead")]
-pub trait AsyncKeypair<S>: AsRef<Self::VerifyingKey>
-where
-    S: Signature + Send + 'static,
-{
-    /// Verifying key type for this keypair.
-    type VerifyingKey;
-
-    /// Get the verifying key which can verify signatures produced by the
-    /// signing key portion of this keypair.
-    fn verifying_key(&self) -> &Self::VerifyingKey {
-        self.as_ref()
-    }
-}
-
-#[allow(deprecated)]
-impl<S, T> AsyncKeypair<S> for T
-where
-    S: Signature + Send + 'static,
-    T: signature::Keypair<S> + Send + Sync,
-{
-    type VerifyingKey = <T as signature::Keypair<S>>::VerifyingKey;
 }

@@ -43,24 +43,14 @@
 //! ## Implementation
 //!
 //! To accomplish the above goals, the [`Signer`] and [`Verifier`] traits
-//! provided by this are generic over a [`Signature`] return value, and use
-//! generic parameters rather than associated types. Notably, they use such
-//! a parameter for the return value, allowing it to be inferred by the type
-//! checker based on the desired signature type.
-//!
-//! The [`Signature`] trait is bounded on `AsRef<[u8]>`, enforcing that
-//! signature types are thin wrappers around a "bag-of-bytes"
-//! serialization. Inspiration for this approach comes from the Ed25519
-//! signature system, which was based on the observation that past
-//! systems were not prescriptive about how signatures should be represented
-//! on-the-wire, and that lead to a proliferation of different wire formats
-//! and confusion about which ones should be used. This crate aims to provide
-//! similar simplicity by minimizing the number of steps involved to obtain
-//! a serializable signature.
+//! provided by this are generic over a signature value, and use generic
+//! parameters rather than associated types. Notably, they use such a parameter
+//! for the return value, allowing it to be inferred by the type checker based
+//! on the desired signature type.
 //!
 //! ## Alternatives considered
 //!
-//! This crate is based on over two years of exploration of how to encapsulate
+//! This crate is based on many years of exploration of how to encapsulate
 //! digital signature systems in the most flexible, developer-friendly way.
 //! During that time many design alternatives were explored, tradeoffs
 //! compared, and ultimately the provided API was selected.
@@ -73,10 +63,7 @@
 //! - "Bag-of-bytes" serialization precludes signature providers from using
 //!   their own internal representation of a signature, which can be helpful
 //!   for many reasons (e.g. advanced signature system features like batch
-//!   verification). Alternatively each provider could define its own signature
-//!   type, using a marker trait to identify the particular signature algorithm,
-//!   have `From` impls for converting to/from `[u8; N]`, and a marker trait
-//!   for identifying a specific signature algorithm.
+//!   verification).
 //! - Associated types, rather than generic parameters of traits, could allow
 //!   more customization of the types used by a particular signature system,
 //!   e.g. using custom error types.
@@ -121,7 +108,7 @@
 //!   [`DigestSigner`] and [`DigestVerifier`], the `derive-preview` feature
 //!   can be used to derive [`Signer`] and [`Verifier`] traits which prehash
 //!   the input message using the [`PrehashSignature::Digest`] algorithm for
-//!   a given [`Signature`] type. When the `derive-preview` feature is enabled
+//!   a given signature type. When the `derive-preview` feature is enabled
 //!   import the proc macros with `use signature::{Signer, Verifier}` and then
 //!   add a `derive(Signer)` or `derive(Verifier)` attribute to the given
 //!   digest signer/verifier type. Enabling this feature also enables `digest`
@@ -146,10 +133,10 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-#[cfg(all(feature = "signature_derive", not(feature = "derive-preview")))]
+#[cfg(all(feature = "signature_derive", not(feature = "derive")))]
 compile_error!(
     "The `signature_derive` feature should not be enabled directly. \
-    Use the `derive-preview` feature instead."
+    Use the `derive` feature instead."
 );
 
 #[cfg(all(feature = "digest", not(feature = "digest-preview")))]
@@ -168,28 +155,28 @@ compile_error!(
 #[cfg_attr(docsrs, doc(cfg(feature = "hazmat-preview")))]
 pub mod hazmat;
 
+mod encoding;
 mod error;
 mod keypair;
-mod signature;
 mod signer;
 mod verifier;
 
-#[cfg(feature = "derive-preview")]
-#[cfg_attr(docsrs, doc(cfg(feature = "derive-preview")))]
+#[cfg(feature = "digest-preview")]
+mod prehash_signature;
+
+pub use crate::{encoding::*, error::*, keypair::*, signer::*, verifier::*};
+
+#[cfg(feature = "derive")]
+#[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
 pub use signature_derive::{Signer, Verifier};
 
-#[cfg(all(feature = "derive-preview", feature = "digest-preview"))]
-#[cfg_attr(
-    docsrs,
-    doc(cfg(all(feature = "derive-preview", feature = "digest-preview")))
-)]
+#[cfg(all(feature = "derive", feature = "digest-preview"))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "derive", feature = "digest-preview"))))]
 pub use signature_derive::{DigestSigner, DigestVerifier};
 
 #[cfg(feature = "digest-preview")]
-pub use digest;
+pub use {crate::prehash_signature::*, digest};
 
 #[cfg(feature = "rand-preview")]
 #[cfg_attr(docsrs, doc(cfg(feature = "rand-preview")))]
 pub use rand_core;
-
-pub use crate::{error::*, keypair::*, signature::*, signer::*, verifier::*};

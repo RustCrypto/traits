@@ -1,6 +1,6 @@
 //! Traits for generating digital signatures
 
-use crate::{error::Error, Signature};
+use crate::error::Error;
 
 #[cfg(feature = "digest-preview")]
 use crate::digest::Digest;
@@ -10,7 +10,7 @@ use crate::rand_core::{CryptoRng, RngCore};
 
 /// Sign the provided message bytestring using `Self` (e.g. a cryptographic key
 /// or connection to an HSM), returning a digital signature.
-pub trait Signer<S: Signature> {
+pub trait Signer<S> {
     /// Sign the given message and return a digital signature
     fn sign(&self, msg: &[u8]) -> S {
         self.try_sign(msg).expect("signature operation failed")
@@ -26,7 +26,7 @@ pub trait Signer<S: Signature> {
 
 /// Sign the provided message bytestring using `&mut Self` (e.g., an evolving
 /// cryptographic key), returning a digital signature.
-pub trait SignerMut<S: Signature> {
+pub trait SignerMut<S> {
     /// Sign the given message, update the state, and return a digital signature
     fn sign(&mut self, msg: &[u8]) -> S {
         self.try_sign(msg).expect("signature operation failed")
@@ -40,12 +40,8 @@ pub trait SignerMut<S: Signature> {
     fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error>;
 }
 
-// Blanket impl of SignerMut for all Signer types
-impl<T, S> SignerMut<S> for T
-where
-    T: Signer<S>,
-    S: Signature,
-{
+/// Blanket impl of [`SignerMut`] for all [`Signer`] types.
+impl<S, T: Signer<S>> SignerMut<S> for T {
     fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error> {
         T::try_sign(self, msg)
     }
@@ -72,11 +68,7 @@ where
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 #[cfg(feature = "digest-preview")]
 #[cfg_attr(docsrs, doc(cfg(feature = "digest-preview")))]
-pub trait DigestSigner<D, S>
-where
-    D: Digest,
-    S: Signature,
-{
+pub trait DigestSigner<D: Digest, S> {
     /// Sign the given prehashed message [`Digest`], returning a signature.
     ///
     /// Panics in the event of a signing error.
@@ -93,7 +85,7 @@ where
 /// Sign the given message using the provided external randomness source.
 #[cfg(feature = "rand-preview")]
 #[cfg_attr(docsrs, doc(cfg(feature = "rand-preview")))]
-pub trait RandomizedSigner<S: Signature> {
+pub trait RandomizedSigner<S> {
     /// Sign the given message and return a digital signature
     fn sign_with_rng(&self, rng: impl CryptoRng + RngCore, msg: &[u8]) -> S {
         self.try_sign_with_rng(rng, msg)
@@ -113,11 +105,7 @@ pub trait RandomizedSigner<S: Signature> {
 #[cfg(all(feature = "digest-preview", feature = "rand-preview"))]
 #[cfg_attr(docsrs, doc(cfg(feature = "digest-preview")))]
 #[cfg_attr(docsrs, doc(cfg(feature = "rand-preview")))]
-pub trait RandomizedDigestSigner<D, S>
-where
-    D: Digest,
-    S: Signature,
-{
+pub trait RandomizedDigestSigner<D: Digest, S> {
     /// Sign the given prehashed message `Digest`, returning a signature.
     ///
     /// Panics in the event of a signing error.

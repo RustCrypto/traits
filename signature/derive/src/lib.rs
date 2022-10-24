@@ -129,7 +129,7 @@ fn emit_digest_signer_impl(input: DeriveInput) -> TokenStream2 {
 
     let mut params = DeriveParams::new(input);
     params.add_bound(&d_ident, parse_quote!(::signature::digest::Digest));
-    params.add_bound(&s_ident, parse_quote!(::signature::Signature));
+    params.add_param(&s_ident);
     params.add_bound(
         &Ident::new("Self", Span::call_site()),
         parse_quote!(::signature::hazmat::PrehashSigner<#s_ident>),
@@ -167,7 +167,7 @@ fn emit_digest_verifier_impl(input: DeriveInput) -> TokenStream2 {
 
     let mut params = DeriveParams::new(input);
     params.add_bound(&d_ident, parse_quote!(::signature::digest::Digest));
-    params.add_bound(&s_ident, parse_quote!(::signature::Signature));
+    params.add_param(&s_ident);
     params.add_bound(
         &Ident::new("Self", Span::call_site()),
         parse_quote!(::signature::hazmat::PrehashVerifier<#s_ident>),
@@ -235,14 +235,7 @@ impl DeriveParams {
     /// Add a generic parameter with the given bound.
     fn add_bound(&mut self, name: &Ident, bound: TraitBound) {
         if name != "Self" {
-            self.impl_generics.push(TypeParam {
-                attrs: vec![],
-                ident: name.clone(),
-                colon_token: None,
-                bounds: Default::default(),
-                eq_token: None,
-                default: None,
-            });
+            self.add_param(name);
         }
 
         let type_path = parse_quote!(#name);
@@ -260,6 +253,18 @@ impl DeriveParams {
         self.where_clause
             .predicates
             .push(WherePredicate::Type(predicate_type))
+    }
+
+    /// Add a generic parameter without a bound.
+    fn add_param(&mut self, name: &Ident) {
+        self.impl_generics.push(TypeParam {
+            attrs: vec![],
+            ident: name.clone(),
+            colon_token: None,
+            bounds: Default::default(),
+            eq_token: None,
+            default: None,
+        });
     }
 }
 
@@ -345,7 +350,6 @@ mod tests {
                 impl<C: EllipticCurve, __D, __S> ::signature::DigestSigner<__D, __S> for MySigner<C>
                 where
                     __D: ::signature::digest::Digest,
-                    __S: ::signature::Signature,
                     Self: ::signature::hazmat::PrehashSigner<__S>
                 {
                     fn try_sign_digest(&self, digest: __D) -> ::signature::Result<__S> {
@@ -374,7 +378,6 @@ mod tests {
                 impl<C: EllipticCurve, __D, __S> ::signature::DigestVerifier<__D, __S> for MyVerifier<C>
                 where
                     __D: ::signature::digest::Digest,
-                    __S: ::signature::Signature,
                     Self: ::signature::hazmat::PrehashVerifier<__S>
                 {
                     fn verify_digest(&self, digest: __D, signature: &__S) -> ::signature::Result<()> {

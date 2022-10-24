@@ -37,10 +37,10 @@ jobs:
           override: true
           profile: minimal
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features derive-preview
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features derive
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features digest-preview
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features hazmat-preview
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features rand-preview
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features derive,digest-preview,rand-preview
 
   minimal-versions:
     uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
