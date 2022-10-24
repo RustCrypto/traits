@@ -133,12 +133,6 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-#[cfg(all(feature = "signature_derive", not(feature = "derive")))]
-compile_error!(
-    "The `signature_derive` feature should not be enabled directly. \
-    Use the `derive` feature instead."
-);
-
 #[cfg(all(feature = "digest", not(feature = "digest-preview")))]
 compile_error!(
     "The `digest` feature should not be enabled directly. \
@@ -168,11 +162,11 @@ pub use crate::{encoding::*, error::*, keypair::*, signer::*, verifier::*};
 
 #[cfg(feature = "derive")]
 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
-pub use signature_derive::{Signer, Verifier};
+pub use derive::{Signer, Verifier};
 
 #[cfg(all(feature = "derive", feature = "digest-preview"))]
 #[cfg_attr(docsrs, doc(cfg(all(feature = "derive", feature = "digest-preview"))))]
-pub use signature_derive::{DigestSigner, DigestVerifier};
+pub use derive::{DigestSigner, DigestVerifier};
 
 #[cfg(feature = "digest-preview")]
 pub use {crate::prehash_signature::*, digest};
