@@ -130,6 +130,9 @@
 //! [`Digest`]: https://docs.rs/digest/latest/digest/trait.Digest.html
 //! [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 #[cfg(feature = "std")]
 extern crate std;
 
@@ -145,8 +148,6 @@ compile_error!(
     Use the `rand-preview` feature instead."
 );
 
-#[cfg(feature = "hazmat-preview")]
-#[cfg_attr(docsrs, doc(cfg(feature = "hazmat-preview")))]
 pub mod hazmat;
 
 mod encoding;
