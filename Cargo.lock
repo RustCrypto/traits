@@ -474,7 +474,7 @@ dependencies = [
  "crypto-bigint 0.4.9",
  "der 0.6.0",
  "digest 0.10.5",
- "ff 0.12.0",
+ "ff 0.12.1",
  "generic-array",
  "group 0.12.1",
  "hex-literal",
@@ -501,7 +501,7 @@ dependencies = [
  "crypto-bigint 0.4.9",
  "der 0.6.0",
  "digest 0.10.5",
- "ff 0.12.0",
+ "ff 0.12.1",
  "generic-array",
  "group 0.12.1",
  "hkdf 0.12.3",
@@ -533,9 +533,9 @@ dependencies = [
 
 [[package]]
 name = "ff"
-version = "0.12.0"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df689201f395c6b90dfe87127685f8dbfc083a5e779e613575d8bd7314300c3e"
+checksum = "d013fc25338cc558c5c2cfbad646908fb23591e2404481826742b651c9af7160"
 dependencies = [
  "bitvec",
  "rand_core 0.6.4",
@@ -602,7 +602,7 @@ version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5dfbfb3a6cfbd390d5c9564ab283a0349b9b9fcd46a706c1eb10e0db70bfbac7"
 dependencies = [
- "ff 0.12.0",
+ "ff 0.12.1",
  "rand_core 0.6.4",
  "subtle",
 ]
