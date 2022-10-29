@@ -1,12 +1,12 @@
 //! Trait for verifying digital signatures
 
-use crate::{error::Error, Signature};
+use crate::error::Error;
 
 #[cfg(feature = "digest-preview")]
 use crate::digest::Digest;
 
 /// Verify the provided message bytestring using `Self` (e.g. a public key)
-pub trait Verifier<S: Signature> {
+pub trait Verifier<S> {
     /// Use `Self` to verify that the provided signature for a given message
     /// bytestring is authentic.
     ///
@@ -36,11 +36,7 @@ pub trait Verifier<S: Signature> {
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 #[cfg(feature = "digest-preview")]
 #[cfg_attr(docsrs, doc(cfg(feature = "digest-preview")))]
-pub trait DigestVerifier<D, S>
-where
-    D: Digest,
-    S: Signature,
-{
+pub trait DigestVerifier<D: Digest, S> {
     /// Verify the signature against the given [`Digest`] output.
     fn verify_digest(&self, digest: D, signature: &S) -> Result<(), Error>;
 }

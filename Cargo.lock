@@ -62,7 +62,7 @@ name = "async-signature"
 version = "0.2.1"
 dependencies = [
  "async-trait",
- "signature 1.6.4",
+ "signature 2.0.0-pre",
 ]
 
 [[package]]
@@ -303,7 +303,7 @@ dependencies = [
 
 [[package]]
 name = "crypto"
-version = "0.4.0"
+version = "0.5.0-pre"
 dependencies = [
  "aead 0.5.1",
  "cipher 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -311,7 +311,7 @@ dependencies = [
  "digest 0.10.5",
  "elliptic-curve 0.12.3",
  "password-hash",
- "signature 1.6.4",
+ "signature 2.0.0-pre",
  "universal-hash 0.5.0",
 ]
 
@@ -1189,7 +1189,7 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "1.6.4"
+version = "2.0.0-pre"
 dependencies = [
  "digest 0.10.5",
  "hex-literal",

@@ -1,4 +1,4 @@
-# RustCrypto: Digital Signature Algorithms
+# [RustCrypto]: Digital Signature Algorithms
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -8,14 +8,10 @@
 [![Project Chat][chat-image]][chat-link]
 
 This crate contains traits which provide generic, object-safe APIs for
-generating and verifying [digital signatures][1].
+generating and verifying [digital signatures].
 
-Used by the [`ecdsa`][2] and [`ed25519`][3] crates, with forthcoming support
-in the [`rsa`][4] crate.
-
-See also the [Signatory][5] crate for trait wrappers for using these traits
-with many popular Rust cryptography crates, including `ed25519-dalek`, *ring*,
-`secp256k1-rs`, and `sodiumoxide`.
+Used by the [`dsa`], [`ecdsa`], [`ed25519`], and [`rsa`] crates maintained by
+the [RustCrypto] organization, as well as [`ed25519-dalek`].
 
 [Documentation][docs-link]
 
@@ -63,10 +59,11 @@ dual licensed as above, without any additional terms or conditions.
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260048-signatures
 
-[//]: # (general links)
+[//]: # (links)
 
-[1]: https://en.wikipedia.org/wiki/Digital_signature
-[2]: https://github.com/RustCrypto/signatures/tree/master/ecdsa
-[3]: https://github.com/RustCrypto/signatures/tree/master/ed25519
-[4]: https://github.com/RustCrypto/RSA
-[5]: https://docs.rs/signatory
+[digital signatures]: https://en.wikipedia.org/wiki/Digital_signature
+[`dsa`]: https://github.com/RustCrypto/signatures/tree/master/dsa
+[`ecdsa`]: https://github.com/RustCrypto/signatures/tree/master/ecdsa
+[`ed25519`]: https://github.com/RustCrypto/signatures/tree/master/ed25519
+[`ed25519-dalek`]: https://github.com/dalek-cryptography/ed25519-dalek
+[`rsa`]: https://github.com/RustCrypto/RSA
