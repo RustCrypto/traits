@@ -59,10 +59,10 @@ dependencies = [
 
 [[package]]
 name = "async-signature"
-version = "0.2.1"
+version = "0.3.0-pre"
 dependencies = [
  "async-trait",
- "signature 2.0.0-pre",
+ "signature 2.0.0-pre.0",
 ]
 
 [[package]]
@@ -311,7 +311,7 @@ dependencies = [
  "digest 0.10.5",
  "elliptic-curve 0.12.3",
  "password-hash",
- "signature 2.0.0-pre",
+ "signature 2.0.0-pre.0",
  "universal-hash 0.5.0",
 ]
 
@@ -1189,7 +1189,7 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "2.0.0-pre"
+version = "2.0.0-pre.0"
 dependencies = [
  "digest 0.10.5",
  "hex-literal",
@@ -1200,7 +1200,7 @@ dependencies = [
 
 [[package]]
 name = "signature_derive"
-version = "1.0.0-pre.7"
+version = "2.0.0-pre.0"
 dependencies = [
  "proc-macro2",
  "quote",
