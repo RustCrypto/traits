@@ -1,7 +1,7 @@
 [package]
 name          = "async-signature"
 description   = "Traits for cryptographic signature algorithms (e.g. ECDSA, Ed25519)"
-version       = "0.2.1"
+version       = "0.3.0-pre"
 authors       = ["RustCrypto Developers"]
 license       = "Apache-2.0 OR MIT"
 documentation = "https://docs.rs/async-signature"
@@ -14,7 +14,7 @@ rust-version  = "1.56"
 
 [dependencies]
 async-trait = "0.1.9"
-signature = { version = "=2.0.0-pre", path = ".." }
+signature = { version = "=2.0.0-pre.0", path = ".." }
 
 [features]
 digest = ["signature/digest-preview"]
