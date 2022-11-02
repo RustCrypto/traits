@@ -1,9 +1,9 @@
 //! Encoding support.
 
-use crate::{Error, Result};
+use crate::Error;
 
 #[cfg(feature = "alloc")]
-use alloc::{boxed::Box, vec::Vec};
+use alloc::vec::Vec;
 
 /// Support for decoding/encoding signatures as bytes.
 pub trait SignatureEncoding:
@@ -11,11 +11,6 @@ pub trait SignatureEncoding:
 {
     /// Byte representation of a signature.
     type Repr: 'static + AsRef<[u8]> + Clone + Send + Sync;
-
-    /// Decode signature from its byte representation.
-    fn from_bytes(bytes: &Self::Repr) -> Result<Self> {
-        Self::try_from(bytes.as_ref())
-    }
 
     /// Encode signature as its byte representation.
     fn to_bytes(&self) -> Self::Repr {
@@ -27,12 +22,5 @@ pub trait SignatureEncoding:
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn to_vec(&self) -> Vec<u8> {
         self.to_bytes().as_ref().to_vec()
-    }
-
-    /// Encode the signature as a boxed byte slice.
-    #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-    fn to_boxed_slice(&self) -> Box<[u8]> {
-        self.to_vec().into_boxed_slice()
     }
 }
