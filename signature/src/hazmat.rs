@@ -13,7 +13,7 @@
 use crate::Error;
 
 #[cfg(feature = "rand-preview")]
-use crate::rand_core::{CryptoRng, RngCore};
+use crate::rand_core::CryptoRngCore;
 
 /// Sign the provided message prehash, returning a digital signature.
 pub trait PrehashSigner<S> {
@@ -50,7 +50,7 @@ pub trait RandomizedPrehashSigner<S> {
     /// implementation to decide.
     fn sign_prehash_with_rng(
         &self,
-        rng: impl CryptoRng + RngCore,
+        rng: &mut impl CryptoRngCore,
         prehash: &[u8],
     ) -> Result<S, Error>;
 }
