@@ -28,10 +28,10 @@ done with a minor version bump.
 
 ## Usage
 
-Let us demonstrate how to use crates in this repository using BLAKE2b as an
+Let us demonstrate how to use crates in this repository using Sha256 as an
 example.
 
-First add `blake2` crate to your `Cargo.toml`:
+First add the `sha2` crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
