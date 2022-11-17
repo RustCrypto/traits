@@ -5,9 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.10.6 (2022-11-17)
+### Added
+- `Mac::verify_reset` and `Mac::verify_slice_reset` methods ([#1154])
+
+[#1154]: https://github.com/RustCrypto/traits/pull/1154
+
 ## 0.10.5 (2022-09-16)
 ### Fixed 
-- MSRV build. ([#1117])
+- MSRV build ([#1117])
 
 [#1117]: https://github.com/RustCrypto/traits/pull/1117
 

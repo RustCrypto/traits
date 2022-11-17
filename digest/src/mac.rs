@@ -59,12 +59,27 @@ pub trait Mac: OutputSizeUser + Sized {
     /// Check if tag/code value is correct for the processed input.
     fn verify(self, tag: &Output<Self>) -> Result<(), MacError>;
 
+    /// Check if tag/code value is correct for the processed input and reset
+    /// [`Mac`] instance.
+    fn verify_reset(&mut self, tag: &Output<Self>) -> Result<(), MacError>
+    where
+        Self: FixedOutputReset;
+
     /// Check truncated tag correctness using all bytes
     /// of calculated tag.
     ///
     /// Returns `Error` if `tag` is not valid or not equal in length
     /// to MAC's output.
     fn verify_slice(self, tag: &[u8]) -> Result<(), MacError>;
+
+    /// Check truncated tag correctness using all bytes
+    /// of calculated tag and reset [`Mac`] instance.
+    ///
+    /// Returns `Error` if `tag` is not valid or not equal in length
+    /// to MAC's output.
+    fn verify_slice_reset(&mut self, tag: &[u8]) -> Result<(), MacError>
+    where
+        Self: FixedOutputReset;
 
     /// Check truncated tag correctness using left side bytes
     /// (i.e. `tag[..n]`) of calculated tag.
@@ -138,12 +153,41 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
     }
 
     #[inline]
+    fn verify_reset(&mut self, tag: &Output<Self>) -> Result<(), MacError>
+    where
+        Self: FixedOutputReset,
+    {
+        if self.finalize_reset() == tag.into() {
+            Ok(())
+        } else {
+            Err(MacError)
+        }
+    }
+
+    #[inline]
     fn verify_slice(self, tag: &[u8]) -> Result<(), MacError> {
         let n = tag.len();
         if n != Self::OutputSize::USIZE {
             return Err(MacError);
         }
         let choice = self.finalize_fixed().ct_eq(tag);
+        if choice.into() {
+            Ok(())
+        } else {
+            Err(MacError)
+        }
+    }
+
+    #[inline]
+    fn verify_slice_reset(&mut self, tag: &[u8]) -> Result<(), MacError>
+    where
+        Self: FixedOutputReset,
+    {
+        let n = tag.len();
+        if n != Self::OutputSize::USIZE {
+            return Err(MacError);
+        }
+        let choice = self.finalize_fixed_reset().ct_eq(tag);
         if choice.into() {
             Ok(())
         } else {
