@@ -308,7 +308,7 @@ dependencies = [
  "aead 0.5.1",
  "cipher 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "crypto-common 0.1.6",
- "digest 0.10.5",
+ "digest 0.10.6",
  "elliptic-curve 0.12.3",
  "password-hash",
  "signature 2.0.0-pre.2",
@@ -422,9 +422,9 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.10.5"
+version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "adfbc57365a37acbd2ebf2b64d7e69bb766e2fea813521ed536f5d0520dcf86c"
+checksum = "8168378f4e5023e7218c89c891c0fd8ecdb5e5e4f18cb78f38cf245dd021e76f"
 dependencies = [
  "block-buffer 0.10.3",
  "crypto-common 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -473,7 +473,7 @@ dependencies = [
  "base64ct",
  "crypto-bigint 0.4.9",
  "der 0.6.0",
- "digest 0.10.5",
+ "digest 0.10.6",
  "ff 0.12.1",
  "generic-array",
  "group 0.12.1",
@@ -500,7 +500,7 @@ dependencies = [
  "base16ct",
  "crypto-bigint 0.4.9",
  "der 0.6.0",
- "digest 0.10.5",
+ "digest 0.10.6",
  "ff 0.12.1",
  "generic-array",
  "group 0.12.1",
@@ -670,7 +670,7 @@ version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
 dependencies = [
- "digest 0.10.5",
+ "digest 0.10.6",
 ]
 
 [[package]]
@@ -683,7 +683,7 @@ dependencies = [
  "aes-gcm",
  "byteorder",
  "chacha20poly1305",
- "digest 0.10.5",
+ "digest 0.10.6",
  "generic-array",
  "hkdf 0.12.3",
  "hmac 0.12.1",
@@ -1167,7 +1167,7 @@ checksum = "82e6b795fe2e3b1e845bafcb27aa35405c4d47cdfc92af5fc8d3002f76cebdc0"
 dependencies = [
  "cfg-if",
  "cpufeatures",
- "digest 0.10.5",
+ "digest 0.10.6",
 ]
 
 [[package]]
@@ -1176,7 +1176,7 @@ version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bdf0c33fae925bdc080598b84bc15c55e7b9a4a43b3c704da051f977469691c9"
 dependencies = [
- "digest 0.10.5",
+ "digest 0.10.6",
  "keccak",
 ]
 
@@ -1194,7 +1194,7 @@ dependencies = [
 name = "signature"
 version = "2.0.0-pre.2"
 dependencies = [
- "digest 0.10.5",
+ "digest 0.10.6",
  "hex-literal",
  "rand_core 0.6.4",
  "sha2 0.10.6",
