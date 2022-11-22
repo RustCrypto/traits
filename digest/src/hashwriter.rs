@@ -34,6 +34,18 @@ impl<D: Digest, W: io::Write> HashWriter<D, W> {
         &self.writer
     }
 
+    /// Gets a mutable reference to the underlying hasher
+    /// Updates to the digest are not written to the underlying writer
+    pub fn get_hasher_mut(&mut self) -> &mut D {
+        &mut self.hasher
+    }
+
+    /// Gets a mutable reference to the underlying writer
+    /// Direct writes to the underlying writer are not hashed
+    pub fn get_writer_mut(&mut self) -> &mut W {
+        &mut self.writer
+    }
+
     /// Consume the HashWriter and return its hasher
     pub fn into_hasher(self) -> D {
         self.hasher

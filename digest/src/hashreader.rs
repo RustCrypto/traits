@@ -34,6 +34,17 @@ impl<D: Digest, R: io::Read> HashReader<D, R> {
         &self.reader
     }
 
+    /// Gets a mutable reference to the underlying hasher
+    pub fn get_hasher_mut(&mut self) -> &mut D {
+        &mut self.hasher
+    }
+
+    /// Gets a mutable reference to the underlying reader
+    /// Direct reads from the underlying reader are not hashed
+    pub fn get_reader_mut(&mut self) -> &mut R {
+        &mut self.reader
+    }
+
     /// Consume the HashReader and return its hasher
     pub fn into_hasher(self) -> D {
         self.hasher
