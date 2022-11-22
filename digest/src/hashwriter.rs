@@ -24,6 +24,16 @@ impl<D: Digest, W: io::Write> HashWriter<D, W> {
         self.writer = writer;
     }
 
+    /// Gets a reference to the underlying hasher
+    pub fn get_hasher(&self) -> &D {
+        &self.hasher
+    }
+
+    /// Gets a reference to the underlying writer
+    pub fn get_writer(&self) -> &W {
+        &self.writer
+    }
+
     /// Consume the HashWriter and return its hasher
     pub fn into_hasher(self) -> D {
         self.hasher

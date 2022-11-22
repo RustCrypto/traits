@@ -24,6 +24,16 @@ impl<D: Digest, R: io::Read> HashReader<D, R> {
         self.reader = reader;
     }
 
+    /// Gets a reference to the underlying hasher
+    pub fn get_hasher(&self) -> &D {
+        &self.hasher
+    }
+
+    /// Gets a reference to the underlying reader
+    pub fn get_reader(&self) -> &R {
+        &self.reader
+    }
+
     /// Consume the HashReader and return its hasher
     pub fn into_hasher(self) -> D {
         self.hasher
