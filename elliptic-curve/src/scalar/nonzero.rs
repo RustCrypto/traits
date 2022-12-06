@@ -282,7 +282,7 @@ where
 
         // Write a 1 instead of a 0 to ensure this type's non-zero invariant
         // is upheld.
-        self.scalar = Scalar::<C>::one();
+        self.scalar = Scalar::<C>::ONE;
     }
 }
 
@@ -348,6 +348,6 @@ mod tests {
     fn zeroize() {
         let mut scalar = NonZeroScalar::new(Scalar::from(42u64)).unwrap();
         scalar.zeroize();
-        assert_eq!(*scalar, Scalar::one());
+        assert_eq!(*scalar, Scalar::ONE);
     }
 }

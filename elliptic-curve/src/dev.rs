@@ -16,11 +16,10 @@ use crate::{
     ScalarArithmetic,
 };
 use core::{
-    iter::Sum,
+    iter::{Product, Sum},
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 use ff::{Field, PrimeField};
-use generic_array::arr;
 use hex_literal::hex;
 use pkcs8::AssociatedOid;
 
@@ -102,6 +101,9 @@ impl JwkParameters for MockCurve {
 pub struct Scalar(ScalarCore);
 
 impl Field for Scalar {
+    const ZERO: Self = Self(ScalarCore::ZERO);
+    const ONE: Self = Self(ScalarCore::ONE);
+
     fn random(mut rng: impl RngCore) -> Self {
         let mut bytes = FieldBytes::default();
 
@@ -111,14 +113,6 @@ impl Field for Scalar {
                 return scalar;
             }
         }
-    }
-
-    fn zero() -> Self {
-        Self(ScalarCore::ZERO)
-    }
-
-    fn one() -> Self {
-        Self(ScalarCore::ONE)
     }
 
     fn is_zero(&self) -> Choice {
@@ -142,14 +136,25 @@ impl Field for Scalar {
     fn sqrt(&self) -> CtOption<Self> {
         unimplemented!();
     }
+
+    fn sqrt_ratio(_num: &Self, _div: &Self) -> (Choice, Self) {
+        unimplemented!();
+    }
 }
 
 impl PrimeField for Scalar {
     type Repr = FieldBytes;
 
+    const MODULUS: &'static str =
+        "0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff";
     const NUM_BITS: u32 = 256;
     const CAPACITY: u32 = 255;
+    const TWO_INV: Self = Self::ZERO; // BOGUS!
+    const MULTIPLICATIVE_GENERATOR: Self = Self::ZERO; // BOGUS! Should be 7
     const S: u32 = 4;
+    const ROOT_OF_UNITY: Self = Self::ZERO; // BOGUS! Should be 0xffc97f062a770992ba807ace842a3dfc1546cad004378daf0592d7fbb41e6602
+    const ROOT_OF_UNITY_INV: Self = Self::ZERO; // BOGUS!
+    const DELTA: Self = Self::ZERO; // BOGUS!
 
     fn from_repr(bytes: FieldBytes) -> CtOption<Self> {
         ScalarCore::from_be_bytes(bytes).map(Self)
@@ -161,19 +166,6 @@ impl PrimeField for Scalar {
 
     fn is_odd(&self) -> Choice {
         self.0.is_odd()
-    }
-
-    fn multiplicative_generator() -> Self {
-        7u64.into()
-    }
-
-    fn root_of_unity() -> Self {
-        Self::from_repr(arr![u8;
-            0xff, 0xc9, 0x7f, 0x06, 0x2a, 0x77, 0x09, 0x92, 0xba, 0x80, 0x7a, 0xce, 0x84, 0x2a,
-            0x3d, 0xfc, 0x15, 0x46, 0xca, 0xd0, 0x04, 0x37, 0x8d, 0xaf, 0x05, 0x92, 0xd7, 0xfb,
-            0xb4, 0x1e, 0x66, 0x02,
-        ])
-        .unwrap()
     }
 }
 
@@ -311,6 +303,30 @@ impl Neg for Scalar {
 
     fn neg(self) -> Scalar {
         Self(self.0.neg())
+    }
+}
+
+impl Sum for Scalar {
+    fn sum<I: Iterator<Item = Self>>(_iter: I) -> Self {
+        unimplemented!();
+    }
+}
+
+impl<'a> Sum<&'a Scalar> for Scalar {
+    fn sum<I: Iterator<Item = &'a Scalar>>(_iter: I) -> Self {
+        unimplemented!();
+    }
+}
+
+impl Product for Scalar {
+    fn product<I: Iterator<Item = Self>>(_iter: I) -> Self {
+        unimplemented!();
+    }
+}
+
+impl<'a> Product<&'a Scalar> for Scalar {
+    fn product<I: Iterator<Item = &'a Scalar>>(_iter: I) -> Self {
+        unimplemented!();
     }
 }
 
