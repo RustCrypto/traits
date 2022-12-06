@@ -11,7 +11,7 @@ where
     F: Field,
 {
     /// The first constant term
-    pub c1: [u64; 4],
+    pub c1: &'static [u64],
     /// The second constant term
     pub c2: F,
     /// The ISO A variable or Curve A variable
