@@ -348,9 +348,9 @@ dependencies = [
 
 [[package]]
 name = "der"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13dd2ae565c0a381dde7fade45fce95984c568bdcb4700a4fdbe3175e0380b2f"
+checksum = "f1a467a65c5e759bce6e65eaf91cc29f466cdc57cb65777bd646872a8a1fd4de"
 dependencies = [
  "const-oid 0.9.1",
  "pem-rfc7468 0.6.0",
@@ -418,7 +418,7 @@ dependencies = [
  "base16ct",
  "base64ct",
  "crypto-bigint 0.4.9",
- "der 0.6.0",
+ "der 0.6.1",
  "digest 0.10.6",
  "ff 0.12.1",
  "generic-array",
@@ -445,7 +445,7 @@ checksum = "e7bb888ab5300a19b8e5bceef25ac745ad065f3c9f7efc6de1b91958110891d3"
 dependencies = [
  "base16ct",
  "crypto-bigint 0.4.9",
- "der 0.6.0",
+ "der 0.6.1",
  "digest 0.10.6",
  "ff 0.12.1",
  "generic-array",
@@ -767,7 +767,7 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9eca2c590a5f85da82668fa685c09ce2888b9430e83299debf1f34b65fd4a4ba"
 dependencies = [
- "der 0.6.0",
+ "der 0.6.1",
  "spki 0.6.0",
 ]
 
@@ -929,7 +929,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3be24c1842290c45df0a7bf069e0c268a747ad05a192f2fd7dcfdbc1cba40928"
 dependencies = [
  "base16ct",
- "der 0.6.0",
+ "der 0.6.1",
  "generic-array",
  "pkcs8 0.9.0",
  "serdect",
@@ -1082,7 +1082,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67cf02bbac7a337dc36e4f5a693db6c21e7863f45070f7064577eb4367a3212b"
 dependencies = [
  "base64ct",
- "der 0.6.0",
+ "der 0.6.1",
 ]
 
 [[package]]
