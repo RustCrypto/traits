@@ -27,8 +27,8 @@ zeroize = { version = "1.5", default-features = false }
 # optional dependencies
 base64ct = { version = "1", optional = true, default-features = false }
 digest = { version = "0.10", optional = true }
-ff = { version = "0.12", optional = true, default-features = false }
-group = { version = "0.12", optional = true, default-features = false }
+ff = { version = "0.13", optional = true, default-features = false }
+group = { version = "0.13", optional = true, default-features = false }
 hkdf = { version = "0.12", optional = true, default-features = false }
 hex-literal = { version = "0.3", optional = true }
 pem-rfc7468 = { version = "0.6", optional = true }

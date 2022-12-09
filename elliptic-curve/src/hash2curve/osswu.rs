@@ -46,7 +46,7 @@ pub trait OsswuMap: Field + Sgn0 {
         let tv3 = Self::PARAMS.z * tv1; // Z * u^2
         let mut tv2 = tv3.square(); // tv3^2
         let mut xd = tv2 + tv3; // tv3^2 + tv3
-        let x1n = Self::PARAMS.map_b * (xd + Self::one()); // B * (xd + 1)
+        let x1n = Self::PARAMS.map_b * (xd + Self::ONE); // B * (xd + 1)
         xd *= -Self::PARAMS.map_a; // -A * xd
 
         let tv = Self::PARAMS.z * Self::PARAMS.map_a;
