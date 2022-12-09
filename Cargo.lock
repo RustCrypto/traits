@@ -414,6 +414,26 @@ dependencies = [
 [[package]]
 name = "elliptic-curve"
 version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7bb888ab5300a19b8e5bceef25ac745ad065f3c9f7efc6de1b91958110891d3"
+dependencies = [
+ "base16ct",
+ "crypto-bigint 0.4.9",
+ "der 0.6.1",
+ "digest 0.10.6",
+ "ff 0.12.1",
+ "generic-array",
+ "group 0.12.1",
+ "hkdf 0.12.3",
+ "rand_core 0.6.4",
+ "sec1",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
+name = "elliptic-curve"
+version = "0.13.0-pre"
 dependencies = [
  "base16ct",
  "base64ct",
@@ -433,26 +453,6 @@ dependencies = [
  "serdect",
  "sha2 0.10.6",
  "sha3",
- "subtle",
- "zeroize",
-]
-
-[[package]]
-name = "elliptic-curve"
-version = "0.12.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7bb888ab5300a19b8e5bceef25ac745ad065f3c9f7efc6de1b91958110891d3"
-dependencies = [
- "base16ct",
- "crypto-bigint 0.4.9",
- "der 0.6.1",
- "digest 0.10.6",
- "ff 0.12.1",
- "generic-array",
- "group 0.12.1",
- "hkdf 0.12.3",
- "rand_core 0.6.4",
- "sec1",
  "subtle",
  "zeroize",
 ]
@@ -719,7 +719,7 @@ version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51f44edd08f51e2ade572f141051021c5af22677e42b7dd28a88155151c33594"
 dependencies = [
- "elliptic-curve 0.12.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "elliptic-curve 0.12.3",
 ]
 
 [[package]]
