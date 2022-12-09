@@ -66,9 +66,6 @@ extern crate std;
 #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
 pub use rand_core;
 
-#[macro_use]
-mod macros;
-
 pub mod ops;
 
 #[cfg(feature = "dev")]
