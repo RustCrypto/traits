@@ -48,9 +48,9 @@ pub trait RandomizedPrehashSigner<S> {
     ///
     /// Allowed lengths are algorithm-dependent and up to a particular
     /// implementation to decide.
-    fn sign_prehash_with_rng(
+    fn sign_prehash_with_rng<R: CryptoRngCore + ?Sized>(
         &self,
-        rng: &mut impl CryptoRngCore,
+        rng: &mut R,
         prehash: &[u8],
     ) -> Result<S, Error>;
 }
