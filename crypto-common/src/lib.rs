@@ -41,9 +41,10 @@ pub type Iv<B> = GenericArray<u8, <B as IvSizeUser>::IvSize>;
 /// Types which process data in blocks.
 pub trait BlockSizeUser {
     /// Size of the block in bytes.
-    type BlockSize: ArrayLength<u8> + 'static;
+    type BlockSize: BlockSizes;
 
     /// Return block size in bytes.
+    #[inline(always)]
     fn block_size() -> usize {
         Self::BlockSize::USIZE
     }
@@ -55,6 +56,25 @@ impl<T: BlockSizeUser> BlockSizeUser for &T {
 
 impl<T: BlockSizeUser> BlockSizeUser for &mut T {
     type BlockSize = T::BlockSize;
+}
+
+/// Trait implemented for supported block sizes, i.e. for types from `U1` to `U255`.
+pub trait BlockSizes: ArrayLength<u8> + sealed::BlockSizes + 'static {}
+
+impl<T: ArrayLength<u8> + sealed::BlockSizes> BlockSizes for T {}
+
+mod sealed {
+    use generic_array::typenum::{Gr, IsGreater, IsLess, Le, NonZero, Unsigned, U1, U256};
+
+    pub trait BlockSizes {}
+
+    impl<T: Unsigned> BlockSizes for T
+    where
+        Self: IsLess<U256> + IsGreater<U1>,
+        Le<Self, U256>: NonZero,
+        Gr<Self, U1>: NonZero,
+    {
+    }
 }
 
 /// Types which can process blocks in parallel.
@@ -69,6 +89,7 @@ pub trait OutputSizeUser {
     type OutputSize: ArrayLength<u8> + 'static;
 
     /// Return output size in bytes.
+    #[inline(always)]
     fn output_size() -> usize {
         Self::OutputSize::USIZE
     }
@@ -82,6 +103,7 @@ pub trait KeySizeUser {
     type KeySize: ArrayLength<u8> + 'static;
 
     /// Return key size in bytes.
+    #[inline(always)]
     fn key_size() -> usize {
         Self::KeySize::USIZE
     }
@@ -95,6 +117,7 @@ pub trait IvSizeUser {
     type IvSize: ArrayLength<u8> + 'static;
 
     /// Return IV size in bytes.
+    #[inline(always)]
     fn iv_size() -> usize {
         Self::IvSize::USIZE
     }
@@ -126,6 +149,7 @@ pub trait KeyInit: KeySizeUser + Sized {
     fn new(key: &Key<Self>) -> Self;
 
     /// Create new value from variable size key.
+    #[inline]
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
         if key.len() != Self::KeySize::to_usize() {
             Err(InvalidLength)
@@ -211,6 +235,7 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     fn inner_iv_init(inner: Self::Inner, iv: &Iv<Self>) -> Self;
 
     /// Initialize value using `inner` and `iv` slice.
+    #[inline]
     fn inner_iv_slice_init(inner: Self::Inner, iv: &[u8]) -> Result<Self, InvalidLength> {
         if iv.len() != Self::IvSize::to_usize() {
             Err(InvalidLength)
@@ -302,6 +327,7 @@ where
 pub struct InvalidLength;
 
 impl fmt::Display for InvalidLength {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         f.write_str("Invalid Length")
     }

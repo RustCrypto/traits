@@ -13,7 +13,7 @@ keywords = ["crypto", "mac"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = { version = "0.1.6", path = "../crypto-common" }
+crypto-common = "0.1.6"
 subtle = { version = "=2.4", default-features = false }
 
 [features]
