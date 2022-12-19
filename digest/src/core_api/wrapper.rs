@@ -7,10 +7,7 @@ use crate::{
 };
 use block_buffer::BlockBuffer;
 use core::fmt;
-use crypto_common::{
-    typenum::{IsLess, Le, NonZero, U256},
-    BlockSizeUser, InvalidLength, Key, KeyInit, KeySizeUser, Output,
-};
+use crypto_common::{BlockSizeUser, InvalidLength, Key, KeyInit, KeySizeUser, Output};
 
 #[cfg(feature = "mac")]
 use crate::MacMarker;
@@ -24,37 +21,21 @@ use const_oid::{AssociatedOid, ObjectIdentifier};
 pub struct CoreWrapper<T>
 where
     T: BufferKindUser,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     core: T,
     buffer: BlockBuffer<T::BlockSize, T::BufferKind>,
 }
 
-impl<T> HashMarker for CoreWrapper<T>
-where
-    T: BufferKindUser + HashMarker,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
-{
-}
+impl<T> HashMarker for CoreWrapper<T> where T: BufferKindUser + HashMarker {}
 
 #[cfg(feature = "mac")]
 #[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
-impl<T> MacMarker for CoreWrapper<T>
-where
-    T: BufferKindUser + MacMarker,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
-{
-}
+impl<T> MacMarker for CoreWrapper<T> where T: BufferKindUser + MacMarker {}
 
 // this blanket impl is needed for HMAC
 impl<T> BlockSizeUser for CoreWrapper<T>
 where
     T: BufferKindUser + HashMarker,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     type BlockSize = T::BlockSize;
 }
@@ -62,8 +43,6 @@ where
 impl<T> CoreWrapper<T>
 where
     T: BufferKindUser,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     /// Create new wrapper from `core`.
     #[inline]
@@ -83,8 +62,6 @@ where
 impl<T> KeySizeUser for CoreWrapper<T>
 where
     T: BufferKindUser + KeySizeUser,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     type KeySize = T::KeySize;
 }
@@ -92,8 +69,6 @@ where
 impl<T> KeyInit for CoreWrapper<T>
 where
     T: BufferKindUser + KeyInit,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn new(key: &Key<Self>) -> Self {
@@ -115,8 +90,6 @@ where
 impl<T> fmt::Debug for CoreWrapper<T>
 where
     T: BufferKindUser + AlgorithmName,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
@@ -128,8 +101,6 @@ where
 impl<T> Reset for CoreWrapper<T>
 where
     T: BufferKindUser + Reset,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn reset(&mut self) {
@@ -141,8 +112,6 @@ where
 impl<T> Update for CoreWrapper<T>
 where
     T: BufferKindUser + UpdateCore,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn update(&mut self, input: &[u8]) {
@@ -154,8 +123,6 @@ where
 impl<T> OutputSizeUser for CoreWrapper<T>
 where
     T: BufferKindUser + OutputSizeUser,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     type OutputSize = T::OutputSize;
 }
@@ -163,8 +130,6 @@ where
 impl<T> FixedOutput for CoreWrapper<T>
 where
     T: FixedOutputCore,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn finalize_into(mut self, out: &mut Output<Self>) {
@@ -176,8 +141,6 @@ where
 impl<T> FixedOutputReset for CoreWrapper<T>
 where
     T: FixedOutputCore + Reset,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn finalize_into_reset(&mut self, out: &mut Output<Self>) {
@@ -191,10 +154,6 @@ where
 impl<T> ExtendableOutput for CoreWrapper<T>
 where
     T: ExtendableOutputCore,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
-    <T::ReaderCore as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<T::ReaderCore as BlockSizeUser>::BlockSize, U256>: NonZero,
 {
     type Reader = XofReaderCoreWrapper<T::ReaderCore>;
 
@@ -210,10 +169,6 @@ where
 impl<T> ExtendableOutputReset for CoreWrapper<T>
 where
     T: ExtendableOutputCore + Reset,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
-    <T::ReaderCore as BlockSizeUser>::BlockSize: IsLess<U256>,
-    Le<<T::ReaderCore as BlockSizeUser>::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn finalize_xof_reset(&mut self) -> Self::Reader {
@@ -234,8 +189,6 @@ where
 impl<T> AssociatedOid for CoreWrapper<T>
 where
     T: BufferKindUser + AssociatedOid,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     const OID: ObjectIdentifier = T::OID;
 }
@@ -245,8 +198,6 @@ where
 impl<T> std::io::Write for CoreWrapper<T>
 where
     T: BufferKindUser + UpdateCore,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
@@ -272,19 +223,11 @@ mod sealed {
     pub trait Sealed {}
 }
 
-impl<T> sealed::Sealed for CoreWrapper<T>
-where
-    T: BufferKindUser,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
-{
-}
+impl<T> sealed::Sealed for CoreWrapper<T> where T: BufferKindUser {}
 
 impl<T> CoreProxy for CoreWrapper<T>
 where
     T: BufferKindUser,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     type Core = T;
 }

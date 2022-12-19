@@ -5,16 +5,14 @@ use crate::{HashMarker, InvalidBufferSize};
 use crate::{InvalidOutputSize, Reset, Update, VariableOutput, VariableOutputReset};
 use block_buffer::BlockBuffer;
 use core::fmt;
-use crypto_common::typenum::{IsLess, Le, NonZero, Unsigned, U256};
+use crypto_common::typenum::Unsigned;
 
 /// Wrapper around [`VariableOutputCore`] which selects output size
 /// at run time.
 #[derive(Clone)]
 pub struct RtVariableCoreWrapper<T>
 where
-    T: VariableOutputCore + UpdateCore,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
+    T: VariableOutputCore,
 {
     core: T,
     buffer: BlockBuffer<T::BlockSize, T::BufferKind>,
@@ -24,8 +22,6 @@ where
 impl<T> RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn finalize_dirty(&mut self, out: &mut [u8]) -> Result<(), InvalidBufferSize> {
@@ -49,29 +45,15 @@ where
     }
 }
 
-impl<T> HashMarker for RtVariableCoreWrapper<T>
-where
-    T: VariableOutputCore + HashMarker,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
-{
-}
+impl<T> HashMarker for RtVariableCoreWrapper<T> where T: VariableOutputCore + HashMarker {}
 
 #[cfg(feature = "mac")]
 #[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
-impl<T> MacMarker for RtVariableCoreWrapper<T>
-where
-    T: VariableOutputCore + MacMarker,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
-{
-}
+impl<T> MacMarker for RtVariableCoreWrapper<T> where T: VariableOutputCore + MacMarker {}
 
 impl<T> Reset for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore + Reset,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn reset(&mut self) {
@@ -83,8 +65,6 @@ where
 impl<T> Update for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn update(&mut self, input: &[u8]) {
@@ -96,8 +76,6 @@ where
 impl<T> VariableOutput for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     const MAX_OUTPUT_SIZE: usize = T::OutputSize::USIZE;
 
@@ -122,8 +100,6 @@ where
 impl<T> VariableOutputReset for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore + Reset,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     fn finalize_variable_reset(&mut self, out: &mut [u8]) -> Result<(), InvalidBufferSize> {
         self.finalize_dirty(out)?;
@@ -136,8 +112,6 @@ where
 impl<T> fmt::Debug for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore + AlgorithmName,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         T::write_alg_name(f)?;
@@ -150,8 +124,6 @@ where
 impl<T> std::io::Write for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {

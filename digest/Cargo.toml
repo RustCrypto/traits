@@ -1,21 +1,22 @@
 [package]
 name = "digest"
 description = "Traits for cryptographic hash functions and message authentication codes"
-version = "0.10.6"
+version = "0.11.0"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-edition = "2018"
+edition = "2021"
+rust-version = "1.57"
 documentation = "https://docs.rs/digest"
 repository = "https://github.com/RustCrypto/traits"
 keywords = ["digest", "crypto", "hash"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = { version = "0.1.3", path = "../crypto-common" }
+crypto-common = { git = "https://github.com/RustCrypto/traits", branch = "crypto_common_v0.2" }
 
 # optional dependencies
-block-buffer = { version = "0.10", optional = true }
+block-buffer = { git = "https://github.com/RustCrypto/utils", branch = "hex_literal_0.11", optional = true }
 subtle = { version = "=2.4", default-features = false, optional = true }
 blobby = { version = "0.3", optional = true }
 const-oid = { version = "0.9", optional = true }
@@ -25,7 +26,7 @@ default = ["core-api"]
 core-api = ["block-buffer"] # Enable Core API traits
 mac = ["subtle"] # Enable MAC traits
 rand_core = ["crypto-common/rand_core"] # Enable random key generation methods
-oid = ["const-oid"] # OID support. WARNING: Bumps MSRV to 1.57
+oid = ["const-oid"]
 alloc = []
 std = ["alloc", "crypto-common/std"]
 dev = ["blobby"]

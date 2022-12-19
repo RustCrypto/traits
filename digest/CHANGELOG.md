@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## UNRELEASED
+### Changed
+- `crypto-common` dependency bumped to v0.2
+- Edition changed to 2021 and MSRV bumped to 1.57
+
 ## 0.10.6 (2022-11-17)
 ### Added
 - `Mac::verify_reset` and `Mac::verify_slice_reset` methods ([#1154])

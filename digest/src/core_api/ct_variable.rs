@@ -10,7 +10,7 @@ use const_oid::{AssociatedOid, ObjectIdentifier};
 use core::{fmt, marker::PhantomData};
 use crypto_common::{
     generic_array::{ArrayLength, GenericArray},
-    typenum::{IsLess, IsLessOrEqual, Le, LeEq, NonZero, U256},
+    typenum::{IsLessOrEqual, LeEq, NonZero},
     Block, BlockSizeUser, OutputSizeUser,
 };
 
@@ -27,8 +27,6 @@ where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     inner: T,
     _out: PhantomData<(OutSize, O)>,
@@ -39,8 +37,6 @@ where
     T: VariableOutputCore + HashMarker,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
 }
 
@@ -50,8 +46,6 @@ where
     T: VariableOutputCore + MacMarker,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
 }
 
@@ -60,8 +54,6 @@ where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     type BlockSize = T::BlockSize;
 }
@@ -71,8 +63,6 @@ where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
@@ -85,8 +75,6 @@ where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize> + 'static,
     LeEq<OutSize, T::OutputSize>: NonZero,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     type OutputSize = OutSize;
 }
@@ -96,8 +84,6 @@ where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     type BufferKind = T::BufferKind;
 }
@@ -107,8 +93,6 @@ where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize> + 'static,
     LeEq<OutSize, T::OutputSize>: NonZero,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn finalize_fixed_core(
@@ -132,8 +116,6 @@ where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn default() -> Self {
@@ -149,8 +131,6 @@ where
     T: VariableOutputCore,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     #[inline]
     fn reset(&mut self) {
@@ -163,8 +143,6 @@ where
     T: VariableOutputCore + AlgorithmName,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         T::write_alg_name(f)?;
@@ -181,8 +159,6 @@ where
     O: AssociatedOid,
     OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
 {
     const OID: ObjectIdentifier = O::OID;
 }
