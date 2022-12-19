@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## UNRELEASED
 ### Changed
-- `crypto-common` dependency bumped to v0.2
-- Edition changed to 2021 and MSRV bumped to 1.57
+- `crypto-common` dependency bumped to v0.2 ([#1173])
+- Edition changed to 2021 and MSRV bumped to 1.57 ([#1173])
+
+### Removed
+- `Mac::new` method ([#1173])
+
+[#1173]: https://github.com/RustCrypto/traits/pull/1173
 
 ## 0.10.6 (2022-11-17)
 ### Added

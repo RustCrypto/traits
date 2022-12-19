@@ -17,11 +17,6 @@ pub trait MacMarker {}
 /// traits and provides additional convenience methods.
 #[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 pub trait Mac: OutputSizeUser + Sized {
-    /// Create new value from fixed size key.
-    fn new(key: &Key<Self>) -> Self
-    where
-        Self: KeyInit;
-
     /// Generate random key using the provided [`CryptoRng`].
     #[cfg(feature = "rand_core")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
@@ -95,14 +90,6 @@ pub trait Mac: OutputSizeUser + Sized {
 }
 
 impl<T: Update + FixedOutput + MacMarker> Mac for T {
-    #[inline(always)]
-    fn new(key: &Key<Self>) -> Self
-    where
-        Self: KeyInit,
-    {
-        KeyInit::new(key)
-    }
-
     #[inline(always)]
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength>
     where
