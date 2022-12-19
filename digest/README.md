@@ -16,7 +16,7 @@ See [RustCrypto/hashes][1] for implementations which use this trait.
 
 ## Minimum Supported Rust Version
 
-Rust **1.41** or higher.
+Rust **1.57** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
@@ -35,7 +35,7 @@ First add the `sha2` crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-sha2 = "0.10"
+sha2 = "0.11"
 ```
 
 `sha2` and other crates re-export `digest` crate and `Digest` trait for
@@ -147,7 +147,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/digest/badge.svg
 [docs-link]: https://docs.rs/digest/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.57+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260041-hashes
 [build-image]: https://github.com/RustCrypto/traits/workflows/digest/badge.svg?branch=master&event=push
