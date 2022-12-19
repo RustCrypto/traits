@@ -17,7 +17,7 @@ macro_rules! new_mac_test {
         fn $name() {
             use core::cmp::min;
             use digest::dev::blobby::Blob3Iterator;
-            use digest::{Mac, KeyInit};
+            use digest::{KeyInit, Mac};
 
             fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> Option<&'static str> {
                 let mac0 = <$mac as KeyInit>::new_from_slice(key).unwrap();
@@ -92,7 +92,7 @@ macro_rules! new_resettable_mac_test {
         fn $name() {
             use core::cmp::min;
             use digest::dev::blobby::Blob3Iterator;
-            use digest::{Mac, KeyInit};
+            use digest::{KeyInit, Mac};
 
             fn run_test(key: &[u8], input: &[u8], tag: &[u8]) -> Option<&'static str> {
                 let mac0 = <$mac as KeyInit>::new_from_slice(key).unwrap();
