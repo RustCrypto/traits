@@ -140,6 +140,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "block-buffer"
+version = "0.11.0-pre"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23b6a33d658e9ef24ba0c4566d3d023d7978ca2ea3efb65e4eacd4586695892b"
+dependencies = [
+ "crypto-common 0.2.0-pre (registry+https://github.com/rust-lang/crates.io-index)",
+ "generic-array",
+]
+
+[[package]]
 name = "block-padding"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -306,6 +316,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "crypto-common"
+version = "0.2.0-pre"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6faaa83e7700e0832cbbf84854d4c356270526907d9b14fab927fc7a9b5befb8"
+dependencies = [
+ "generic-array",
+ "rand_core 0.6.4",
+ "typenum",
+]
+
+[[package]]
 name = "crypto-mac"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -374,6 +395,17 @@ checksum = "8168378f4e5023e7218c89c891c0fd8ecdb5e5e4f18cb78f38cf245dd021e76f"
 dependencies = [
  "block-buffer 0.10.3",
  "crypto-common 0.1.6",
+ "subtle",
+]
+
+[[package]]
+name = "digest"
+version = "0.11.0-pre"
+dependencies = [
+ "blobby",
+ "block-buffer 0.11.0-pre",
+ "const-oid 0.9.1",
+ "crypto-common 0.2.0-pre (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
 ]
 
