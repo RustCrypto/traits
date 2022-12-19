@@ -1,8 +1,6 @@
 use crate::{FixedOutput, FixedOutputReset, Update};
-use crypto_common::{InvalidLength, Key, KeyInit, Output, OutputSizeUser, Reset};
+use crypto_common::{Output, OutputSizeUser, Reset};
 
-#[cfg(feature = "rand_core")]
-use crate::rand_core::{CryptoRng, RngCore};
 use core::fmt;
 use crypto_common::typenum::Unsigned;
 use subtle::{Choice, ConstantTimeEq};
@@ -13,22 +11,10 @@ pub trait MacMarker {}
 
 /// Convenience wrapper trait covering functionality of Message Authentication algorithms.
 ///
-/// This trait wraps [`KeyInit`], [`Update`], [`FixedOutput`], and [`MacMarker`]
-/// traits and provides additional convenience methods.
+/// This trait wraps [`Update`], [`FixedOutput`], and [`MacMarker`] traits
+/// and provides additional convenience methods.
 #[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 pub trait Mac: OutputSizeUser + Sized {
-    /// Generate random key using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-    fn generate_key(rng: impl CryptoRng + RngCore) -> Key<Self>
-    where
-        Self: KeyInit;
-
-    /// Create new value from variable size key.
-    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength>
-    where
-        Self: KeyInit;
-
     /// Update state using the provided data.
     fn update(&mut self, data: &[u8]);
 
@@ -90,14 +76,6 @@ pub trait Mac: OutputSizeUser + Sized {
 }
 
 impl<T: Update + FixedOutput + MacMarker> Mac for T {
-    #[inline(always)]
-    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength>
-    where
-        Self: KeyInit,
-    {
-        KeyInit::new_from_slice(key)
-    }
-
     #[inline]
     fn update(&mut self, data: &[u8]) {
         Update::update(self, data);
@@ -209,16 +187,6 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
         } else {
             Err(MacError)
         }
-    }
-
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-    #[inline]
-    fn generate_key(rng: impl CryptoRng + RngCore) -> Key<Self>
-    where
-        Self: KeyInit,
-    {
-        <T as KeyInit>::generate_key(rng)
     }
 }
 

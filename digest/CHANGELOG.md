@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Edition changed to 2021 and MSRV bumped to 1.57 ([#1173])
 
 ### Removed
-- `Mac::new` method ([#1173])
+- `Mac::new`, `Mac::new_from_slice`, and `Mac::generate_key` methods ([#1173])
 
 [#1173]: https://github.com/RustCrypto/traits/pull/1173
 
