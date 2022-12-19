@@ -4,6 +4,7 @@ members = [
     "aead",
     "cipher",
     "crypto",
+    "crypto-common",
     "elliptic-curve",
     "kem",
     "signature",
@@ -11,6 +12,5 @@ members = [
     "universal-hash",
 ]
 exclude = [
-    "crypto-common",
     "digest",
 ]

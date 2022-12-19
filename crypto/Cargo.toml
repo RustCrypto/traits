@@ -15,7 +15,7 @@ edition = "2021"
 rust-version = "1.57"
 
 [dependencies]
-crypto-common = { version = "0.1", default-features = false, path = "../crypto-common" }
+crypto-common = { version = "0.1", default-features = false }
 
 # optional dependencies
 aead = { version = "0.5", optional = true, path = "../aead" }

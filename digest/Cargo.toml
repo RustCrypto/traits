@@ -13,10 +13,10 @@ keywords = ["digest", "crypto", "hash"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = { git = "https://github.com/RustCrypto/traits", branch = "crypto_common_v0.2" }
+crypto-common = "0.2.0-pre"
 
 # optional dependencies
-block-buffer = { git = "https://github.com/RustCrypto/utils", branch = "hex_literal_0.11", optional = true }
+block-buffer = { version = "0.11.0-pre", optional = true }
 subtle = { version = "=2.4", default-features = false, optional = true }
 blobby = { version = "0.3", optional = true }
 const-oid = { version = "0.9", optional = true }
