@@ -41,7 +41,7 @@ pub type Iv<B> = GenericArray<u8, <B as IvSizeUser>::IvSize>;
 /// Types which process data in blocks.
 pub trait BlockSizeUser {
     /// Size of the block in bytes.
-    type BlockSize: ArrayLength<u8> + 'static;
+    type BlockSize: BlockSizes;
 
     /// Return block size in bytes.
     fn block_size() -> usize {
@@ -55,6 +55,25 @@ impl<T: BlockSizeUser> BlockSizeUser for &T {
 
 impl<T: BlockSizeUser> BlockSizeUser for &mut T {
     type BlockSize = T::BlockSize;
+}
+
+/// Trait implemented for supported block sizes, i.e. for types from `U1` to `U255`.
+pub trait BlockSizes: ArrayLength<u8> + sealed::BlockSizes + 'static {}
+
+impl<T: ArrayLength<u8> + sealed::BlockSizes> BlockSizes for T {}
+
+mod sealed {
+    use generic_array::typenum::{Gr, IsGreater, IsLess, Le, NonZero, Unsigned, U1, U256};
+
+    pub trait BlockSizes {}
+
+    impl<T: Unsigned> BlockSizes for T
+    where
+        Self: IsLess<U256> + IsGreater<U1>,
+        Le<Self, U256>: NonZero,
+        Gr<Self, U1>: NonZero,
+    {
+    }
 }
 
 /// Types which can process blocks in parallel.

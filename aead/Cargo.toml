@@ -16,7 +16,7 @@ categories = ["cryptography", "no-std"]
 rust-version = "1.56"
 
 [dependencies]
-crypto-common = { version = "0.1.4", path = "../crypto-common" }
+crypto-common = "0.1.4"
 generic-array = { version = "0.14", default-features = false }
 
 # optional dependencies
