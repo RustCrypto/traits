@@ -44,6 +44,7 @@ pub trait BlockSizeUser {
     type BlockSize: BlockSizes;
 
     /// Return block size in bytes.
+    #[inline(always)]
     fn block_size() -> usize {
         Self::BlockSize::USIZE
     }
@@ -88,6 +89,7 @@ pub trait OutputSizeUser {
     type OutputSize: ArrayLength<u8> + 'static;
 
     /// Return output size in bytes.
+    #[inline(always)]
     fn output_size() -> usize {
         Self::OutputSize::USIZE
     }
@@ -101,6 +103,7 @@ pub trait KeySizeUser {
     type KeySize: ArrayLength<u8> + 'static;
 
     /// Return key size in bytes.
+    #[inline(always)]
     fn key_size() -> usize {
         Self::KeySize::USIZE
     }
@@ -114,6 +117,7 @@ pub trait IvSizeUser {
     type IvSize: ArrayLength<u8> + 'static;
 
     /// Return IV size in bytes.
+    #[inline(always)]
     fn iv_size() -> usize {
         Self::IvSize::USIZE
     }
@@ -145,6 +149,7 @@ pub trait KeyInit: KeySizeUser + Sized {
     fn new(key: &Key<Self>) -> Self;
 
     /// Create new value from variable size key.
+    #[inline]
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
         if key.len() != Self::KeySize::to_usize() {
             Err(InvalidLength)
@@ -230,6 +235,7 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     fn inner_iv_init(inner: Self::Inner, iv: &Iv<Self>) -> Self;
 
     /// Initialize value using `inner` and `iv` slice.
+    #[inline]
     fn inner_iv_slice_init(inner: Self::Inner, iv: &[u8]) -> Result<Self, InvalidLength> {
         if iv.len() != Self::IvSize::to_usize() {
             Err(InvalidLength)
@@ -321,6 +327,7 @@ where
 pub struct InvalidLength;
 
 impl fmt::Display for InvalidLength {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         f.write_str("Invalid Length")
     }
