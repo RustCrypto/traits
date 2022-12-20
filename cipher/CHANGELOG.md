@@ -5,11 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.4.4 [UNRELEASED]
+## UNRELEASED
 ### Changed
 - Move `ParBlocks`/`ParBlocksSizeUser` to the `crypto-common` crate ([#1052])
+- `crypto-common` dependency bumped to v0.2 ([#1174])
 
 [#1052]: https://github.com/RustCrypto/traits/pull/1052
+[#1174]: https://github.com/RustCrypto/traits/pull/1174
 
 ## 0.4.3 (2022-02-22)
 ### Fixed

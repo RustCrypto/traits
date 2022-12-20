@@ -30,7 +30,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "433cfd6710c9986c576a25ca913c39d66a6474107b406f34f91d4a8923395241"
 dependencies = [
  "cfg-if",
- "cipher 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cipher 0.4.3",
  "cpufeatures",
 ]
 
@@ -42,7 +42,7 @@ checksum = "82e1366e0c69c9f927b1fa5ce2c7bf9eafc8f9268c0b9800729e8b267612447c"
 dependencies = [
  "aead 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "aes",
- "cipher 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cipher 0.4.3",
  "ctr",
  "ghash",
  "subtle",
@@ -192,7 +192,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c7fc89c7c5b9e7a02dfe45cd2367bae382f9ed31c61ca8debe5f827c420a2f08"
 dependencies = [
  "cfg-if",
- "cipher 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cipher 0.4.3",
  "cpufeatures",
 ]
 
@@ -204,18 +204,8 @@ checksum = "10cd79432192d1c0f4e1a0fef9527696cc039165d729fb41b3f4f4f354c2dc35"
 dependencies = [
  "aead 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "chacha20",
- "cipher 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cipher 0.4.3",
  "poly1305",
- "zeroize",
-]
-
-[[package]]
-name = "cipher"
-version = "0.4.3"
-dependencies = [
- "blobby",
- "crypto-common 0.1.6",
- "inout",
  "zeroize",
 ]
 
@@ -226,6 +216,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d1873270f8f7942c191139cb8a40fd228da6c3fd2fc376d7e92d47aa14aeb59e"
 dependencies = [
  "crypto-common 0.1.6",
+ "inout",
+ "zeroize",
+]
+
+[[package]]
+name = "cipher"
+version = "0.5.0-pre"
+dependencies = [
+ "blobby",
+ "crypto-common 0.2.0-pre (registry+https://github.com/rust-lang/crates.io-index)",
  "inout",
  "zeroize",
 ]
@@ -262,7 +262,7 @@ name = "crypto"
 version = "0.5.0-pre"
 dependencies = [
  "aead 0.5.1",
- "cipher 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cipher 0.4.3",
  "crypto-common 0.1.6",
  "digest 0.10.6",
  "elliptic-curve 0.12.3",
@@ -342,7 +342,7 @@ version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0369ee1ad671834580515889b80f2ea915f23b8be8d0daa4bbaf2ac5c7590835"
 dependencies = [
- "cipher 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cipher 0.4.3",
 ]
 
 [[package]]
