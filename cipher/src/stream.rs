@@ -204,24 +204,18 @@ macro_rules! impl_seek_num {
             impl SeekNum for $t {
                 fn from_block_byte<T: Counter>(block: T, byte: u8, block_size: u8) -> Result<Self, OverflowError> {
                     debug_assert!(byte != 0 && byte <= block_size);
+                    let rem = block_size - byte;
                     let block: Self = block.try_into().map_err(|_| OverflowError)?;
                     block
                         .checked_mul(block_size.into())
-                        .and_then(|block_bytes| if byte == block_size {
-                            block_bytes.checked_add(byte.into())
-                        } else {
-                            Some(block_bytes)
-                        })
+                        .and_then(|v| v.checked_sub(rem.into()))
                         .ok_or(OverflowError)
                 }
 
                 fn into_block_byte<T: Counter>(self, block_size: u8) -> Result<(T, u8), OverflowError> {
                     let bs: Self = block_size.into();
-                    let mut byte = (self % bs) as u8;
+                    let byte = (self % bs) as u8;
                     let block = T::try_from(self / bs).map_err(|_| OverflowError)?;
-                    if byte == 0 {
-                        byte = block_size;
-                    }
                     Ok((block, byte))
                 }
             }

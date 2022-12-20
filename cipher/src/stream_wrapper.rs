@@ -161,10 +161,12 @@ impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
     fn try_seek<SN: SeekNum>(&mut self, new_pos: SN) -> Result<(), StreamCipherError> {
         let (block_pos, byte_pos) = new_pos.into_block_byte(T::BlockSize::U8)?;
         self.core.set_block_pos(block_pos);
-        if byte_pos != T::BlockSize::U8 {
+        if byte_pos != 0 {
             self.core.write_keystream_block(&mut self.buffer);
+            self.set_pos_unchecked(byte_pos.into());
+        } else {
+            self.set_pos_unchecked(T::BlockSize::USIZE);
         }
-        self.set_pos_unchecked(byte_pos.into());
         Ok(())
     }
 }
