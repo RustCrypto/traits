@@ -9,7 +9,7 @@ use crate::{
     ops::{LinearCombination, Reduce},
     pkcs8,
     rand_core::RngCore,
-    sec1::{FromEncodedPoint, ToEncodedPoint},
+    sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     zeroize::DefaultIsZeroes,
     AffineArithmetic, AffineXCoordinate, Curve, IsHigh, PrimeCurve, ProjectiveArithmetic,
@@ -392,8 +392,15 @@ impl AffineXCoordinate<MockCurve> for AffinePoint {
 }
 
 impl ConstantTimeEq for AffinePoint {
-    fn ct_eq(&self, _other: &Self) -> Choice {
-        unimplemented!();
+    fn ct_eq(&self, other: &Self) -> Choice {
+        match (self, other) {
+            (Self::FixedBaseOutput(scalar), Self::FixedBaseOutput(other_scalar)) => {
+                scalar.ct_eq(other_scalar)
+            }
+            (Self::Identity, Self::Identity) | (Self::Generator, Self::Generator) => 1.into(),
+            (Self::Other(point), Self::Other(other_point)) => u8::from(point == other_point).into(),
+            _ => 0.into(),
+        }
     }
 }
 
@@ -473,14 +480,25 @@ pub enum ProjectivePoint {
 }
 
 impl ConstantTimeEq for ProjectivePoint {
-    fn ct_eq(&self, _other: &Self) -> Choice {
-        unimplemented!();
+    fn ct_eq(&self, other: &Self) -> Choice {
+        match (self, other) {
+            (Self::FixedBaseOutput(scalar), Self::FixedBaseOutput(other_scalar)) => {
+                scalar.ct_eq(other_scalar)
+            }
+            (Self::Identity, Self::Identity) | (Self::Generator, Self::Generator) => 1.into(),
+            (Self::Other(point), Self::Other(other_point)) => point.ct_eq(other_point),
+            _ => 0.into(),
+        }
     }
 }
 
 impl ConditionallySelectable for ProjectivePoint {
-    fn conditional_select(_a: &Self, _b: &Self, _choice: Choice) -> Self {
-        unimplemented!();
+    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
+        if choice.into() {
+            *b
+        } else {
+            *a
+        }
     }
 }
 
@@ -543,6 +561,47 @@ impl group::Group for ProjectivePoint {
     #[must_use]
     fn double(&self) -> Self {
         unimplemented!();
+    }
+}
+
+impl group::GroupEncoding for AffinePoint {
+    type Repr = CompressedPoint<MockCurve>;
+
+    fn from_bytes(bytes: &Self::Repr) -> CtOption<Self> {
+        EncodedPoint::from_bytes(bytes)
+            .map(|point| CtOption::new(point, Choice::from(1)))
+            .unwrap_or_else(|_| {
+                let is_identity = bytes.ct_eq(&Self::Repr::default());
+                CtOption::new(EncodedPoint::identity(), is_identity)
+            })
+            .and_then(|point| Self::from_encoded_point(&point))
+    }
+
+    fn from_bytes_unchecked(bytes: &Self::Repr) -> CtOption<Self> {
+        Self::from_bytes(bytes)
+    }
+
+    fn to_bytes(&self) -> Self::Repr {
+        let encoded = self.to_encoded_point(true);
+        let mut result = CompressedPoint::<MockCurve>::default();
+        result[..encoded.len()].copy_from_slice(encoded.as_bytes());
+        result
+    }
+}
+
+impl group::GroupEncoding for ProjectivePoint {
+    type Repr = CompressedPoint<MockCurve>;
+
+    fn from_bytes(bytes: &Self::Repr) -> CtOption<Self> {
+        <AffinePoint as group::GroupEncoding>::from_bytes(bytes).map(Into::into)
+    }
+
+    fn from_bytes_unchecked(bytes: &Self::Repr) -> CtOption<Self> {
+        Self::from_bytes(bytes)
+    }
+
+    fn to_bytes(&self) -> Self::Repr {
+        group::Curve::to_affine(self).to_bytes()
     }
 }
 

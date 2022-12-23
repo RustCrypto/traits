@@ -1,7 +1,8 @@
 //! Elliptic curve public keys.
 
 use crate::{
-    AffinePoint, Curve, Error, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint, Result,
+    AffinePoint, Curve, Error, NonIdentity, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint,
+    Result,
 };
 use core::fmt::Debug;
 use group::{Curve as _, Group};
@@ -268,6 +269,28 @@ where
 {
     fn from(public_key: &PublicKey<C>) -> EncodedPoint<C> {
         public_key.to_encoded_point(C::COMPRESS_POINTS)
+    }
+}
+
+impl<C, P> From<NonIdentity<P>> for PublicKey<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    P: Copy + Into<AffinePoint<C>>,
+{
+    fn from(value: NonIdentity<P>) -> Self {
+        PublicKey::from(&value)
+    }
+}
+
+impl<C, P> From<&NonIdentity<P>> for PublicKey<C>
+where
+    C: Curve + ProjectiveArithmetic,
+    P: Copy + Into<AffinePoint<C>>,
+{
+    fn from(value: &NonIdentity<P>) -> Self {
+        Self {
+            point: value.to_point().into(),
+        }
     }
 }
 
