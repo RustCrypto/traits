@@ -4,8 +4,7 @@ use crate::{
     bigint::Encoding as _,
     ops::{Invert, Reduce, ReduceNonZero},
     rand_core::{CryptoRng, RngCore},
-    Curve, Error, FieldBytes, IsHigh, PrimeCurve, Result, Scalar, ScalarArithmetic, ScalarCore,
-    SecretKey,
+    Curve, Error, FieldBytes, IsHigh, PrimeCurve, Scalar, ScalarArithmetic, ScalarCore, SecretKey,
 };
 use base16ct::HexDisplay;
 use core::{
@@ -18,6 +17,9 @@ use ff::{Field, PrimeField};
 use generic_array::GenericArray;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
+
+#[cfg(feature = "serde")]
+use serdect::serde::{de, ser, Deserialize, Serialize};
 
 /// Non-zero scalar type.
 ///
@@ -260,7 +262,7 @@ where
 {
     type Error = Error;
 
-    fn try_from(bytes: &[u8]) -> Result<Self> {
+    fn try_from(bytes: &[u8]) -> Result<Self, Error> {
         if bytes.len() == C::UInt::BYTE_SIZE {
             Option::from(NonZeroScalar::from_repr(GenericArray::clone_from_slice(
                 bytes,
@@ -319,7 +321,7 @@ where
 {
     type Err = Error;
 
-    fn from_str(hex: &str) -> Result<Self> {
+    fn from_str(hex: &str) -> Result<Self, Error> {
         let mut bytes = FieldBytes::<C>::default();
 
         if base16ct::mixed::decode(hex, &mut bytes)?.len() == bytes.len() {
@@ -327,6 +329,35 @@ where
         } else {
             Err(Error)
         }
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+impl<C> Serialize for NonZeroScalar<C>
+where
+    C: Curve + ScalarArithmetic,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: ser::Serializer,
+    {
+        ScalarCore::from(self).serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+impl<'de, C> Deserialize<'de> for NonZeroScalar<C>
+where
+    C: Curve + ScalarArithmetic,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        Option::from(Self::new(ScalarCore::deserialize(deserializer)?.into()))
+            .ok_or_else(|| de::Error::custom("expected non-zero scalar"))
     }
 }
 
