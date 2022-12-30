@@ -1,13 +1,11 @@
 //! Encoding support.
 
-use crate::Error;
-
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 
 /// Support for decoding/encoding signatures as bytes.
 pub trait SignatureEncoding:
-    Clone + Sized + for<'a> TryFrom<&'a [u8], Error = Error> + TryInto<Self::Repr>
+    Clone + Sized + for<'a> TryFrom<&'a [u8]> + TryInto<Self::Repr>
 {
     /// Byte representation of a signature.
     type Repr: 'static + AsRef<[u8]> + Clone + Send + Sync;
