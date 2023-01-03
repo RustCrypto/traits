@@ -80,6 +80,10 @@ pub mod ecdh;
 #[cfg_attr(docsrs, doc(cfg(feature = "hash2curve")))]
 pub mod hash2curve;
 
+#[cfg(feature = "arithmetic")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
+pub mod non_identity;
+
 #[cfg(feature = "sec1")]
 #[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 pub mod sec1;
@@ -121,6 +125,7 @@ pub use {
         arithmetic::{
             AffineArithmetic, PrimeCurveArithmetic, ProjectiveArithmetic, ScalarArithmetic,
         },
+        non_identity::NonIdentity,
         public_key::PublicKey,
         scalar::{nonzero::NonZeroScalar, Scalar},
     },
