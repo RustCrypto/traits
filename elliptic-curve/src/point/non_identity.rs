@@ -38,7 +38,7 @@ where
 
 impl<P: Copy> NonIdentity<P> {
     /// Return wrapped point.
-    pub fn to_point(&self) -> P {
+    pub fn to_point(self) -> P {
         self.point
     }
 }
@@ -57,7 +57,7 @@ where
     }
 
     /// Converts this element into its affine representation.
-    pub fn to_affine(&self) -> NonIdentity<P::AffineRepr> {
+    pub fn to_affine(self) -> NonIdentity<P::AffineRepr> {
         NonIdentity {
             point: self.point.to_affine(),
         }
@@ -69,7 +69,7 @@ where
     P: PrimeCurveAffine,
 {
     /// Converts this element to its curve representation.
-    pub fn to_curve(&self) -> NonIdentity<P::Curve> {
+    pub fn to_curve(self) -> NonIdentity<P::Curve> {
         NonIdentity {
             point: self.point.to_curve(),
         }
