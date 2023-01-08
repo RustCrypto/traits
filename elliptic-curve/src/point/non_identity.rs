@@ -161,10 +161,8 @@ where
 
 #[cfg(all(test, feature = "dev"))]
 mod tests {
-    use crate::{
-        dev::{AffinePoint, ProjectivePoint},
-        NonIdentity,
-    };
+    use super::NonIdentity;
+    use crate::dev::{AffinePoint, ProjectivePoint};
     use group::GroupEncoding;
     use hex_literal::hex;
 

@@ -1,8 +1,8 @@
 //! Elliptic curve public keys.
 
 use crate::{
-    AffinePoint, Curve, Error, NonIdentity, NonZeroScalar, ProjectiveArithmetic, ProjectivePoint,
-    Result,
+    point::NonIdentity, AffinePoint, Curve, Error, NonZeroScalar, ProjectiveArithmetic,
+    ProjectivePoint, Result,
 };
 use core::fmt::Debug;
 use group::{Curve as _, Group};
