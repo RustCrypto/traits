@@ -203,7 +203,7 @@ impl<'a> PasswordHash<'a> {
     pub fn generate(
         phf: impl PasswordHasher,
         password: impl AsRef<[u8]>,
-        salt: &'a str,
+        salt: impl Into<Salt<'a>>,
     ) -> Result<Self> {
         phf.hash_password(password.as_ref(), salt)
     }

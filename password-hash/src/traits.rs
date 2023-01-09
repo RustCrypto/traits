@@ -30,17 +30,12 @@ pub trait PasswordHasher {
     /// salt value.
     ///
     /// Uses the default recommended parameters for a given algorithm.
-    fn hash_password<'a, S>(&self, password: &[u8], salt: &'a S) -> Result<PasswordHash<'a>>
-    where
-        S: AsRef<str> + ?Sized,
-    {
-        self.hash_password_customized(
-            password,
-            None,
-            None,
-            Self::Params::default(),
-            Salt::try_from(salt.as_ref())?,
-        )
+    fn hash_password<'a>(
+        &self,
+        password: &[u8],
+        salt: impl Into<Salt<'a>>,
+    ) -> Result<PasswordHash<'a>> {
+        self.hash_password_customized(password, None, None, Self::Params::default(), salt)
     }
 }
 
