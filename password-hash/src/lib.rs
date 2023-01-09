@@ -187,7 +187,7 @@ impl<'a> PasswordHash<'a> {
         }
 
         if fields.next().is_some() {
-            return Err(Error::PhcStringLeftover);
+            return Err(Error::PhcStringTrailingData);
         }
 
         Ok(Self {

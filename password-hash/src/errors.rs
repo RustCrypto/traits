@@ -55,8 +55,8 @@ pub enum Error {
     /// Password hash string invalid.
     PhcStringField,
 
-    /// Password hash string contains leftover characters.
-    PhcStringLeftover,
+    /// Password hash string contains trailing data.
+    PhcStringTrailingData,
 
     /// Salt invalid.
     SaltInvalid(InvalidValue),
@@ -90,8 +90,8 @@ impl fmt::Display for Error {
             Self::ParamsMaxExceeded => f.write_str("maximum number of parameters reached"),
             Self::Password => write!(f, "invalid password"),
             Self::PhcStringField => write!(f, "password hash string missing field"),
-            Self::PhcStringLeftover => {
-                write!(f, "password hash string contains leftover characters")
+            Self::PhcStringTrailingData => {
+                write!(f, "password hash string contains trailing characters")
             }
             Self::SaltInvalid(val_err) => write!(f, "salt invalid: {}", val_err),
             Self::Version => write!(f, "invalid algorithm version"),
