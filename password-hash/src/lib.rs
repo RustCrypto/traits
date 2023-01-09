@@ -132,19 +132,19 @@ impl<'a> PasswordHash<'a> {
     /// Parse a password hash from the given [`Encoding`].
     pub fn parse(s: &'a str, encoding: Encoding) -> Result<Self> {
         if s.is_empty() {
-            return Err(Error::PhcStringTooShort);
+            return Err(Error::PhcStringField);
         }
 
         let mut fields = s.split(PASSWORD_HASH_SEPARATOR);
         let beginning = fields.next().expect("no first field");
 
         if beginning.chars().next().is_some() {
-            return Err(Error::PhcStringInvalid);
+            return Err(Error::PhcStringField);
         }
 
         let algorithm = fields
             .next()
-            .ok_or(Error::PhcStringTooShort)
+            .ok_or(Error::PhcStringField)
             .and_then(Ident::try_from)?;
 
         let mut version = None;
@@ -187,7 +187,7 @@ impl<'a> PasswordHash<'a> {
         }
 
         if fields.next().is_some() {
-            return Err(Error::PhcStringTooLong);
+            return Err(Error::PhcStringTrailingData);
         }
 
         Ok(Self {

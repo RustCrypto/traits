@@ -2,6 +2,7 @@
 
 pub use base64ct::Error as B64Error;
 
+use core::cmp::Ordering;
 use core::fmt;
 
 /// Result type.
@@ -20,11 +21,21 @@ pub enum Error {
     /// Cryptographic error.
     Crypto,
 
-    /// Output too short (min 10-bytes).
-    OutputTooShort,
-
-    /// Output too long (max 64-bytes).
-    OutputTooLong,
+    /// Output size unexpected.
+    OutputSize {
+        /// Indicates why the output size is unexpected.
+        ///
+        /// - [`Ordering::Less`]: Size is too small.
+        /// - [`Ordering::Equal`]: Size is not exactly as `expected`.
+        /// - [`Ordering::Greater`]: Size is too long.
+        provided: Ordering,
+        /// Expected output size in relation to `provided`.
+        ///
+        /// - [`Ordering::Less`]: Minimum size.
+        /// - [`Ordering::Equal`]: Expecrted size.
+        /// - [`Ordering::Greater`]: Maximum size.
+        expected: usize,
+    },
 
     /// Duplicate parameter name encountered.
     ParamNameDuplicated,
@@ -41,14 +52,11 @@ pub enum Error {
     /// Invalid password.
     Password,
 
-    /// Password hash string contains invalid characters.
-    PhcStringInvalid,
+    /// Password hash string invalid.
+    PhcStringField,
 
-    /// Password hash string too short.
-    PhcStringTooShort,
-
-    /// Password hash string too long.
-    PhcStringTooLong,
+    /// Password hash string contains trailing data.
+    PhcStringTrailingData,
 
     /// Salt invalid.
     SaltInvalid(InvalidValue),
@@ -63,16 +71,28 @@ impl fmt::Display for Error {
             Self::Algorithm => write!(f, "unsupported algorithm"),
             Self::B64Encoding(err) => write!(f, "{}", err),
             Self::Crypto => write!(f, "cryptographic error"),
-            Self::OutputTooShort => f.write_str("PHF output too short (min 10-bytes)"),
-            Self::OutputTooLong => f.write_str("PHF output too long (max 64-bytes)"),
+            Self::OutputSize { provided, expected } => match provided {
+                Ordering::Less => write!(
+                    f,
+                    "output size too short, expected at least {} bytes",
+                    expected
+                ),
+                Ordering::Equal => write!(f, "output size unexpected, expected {} bytes", expected),
+                Ordering::Greater => write!(
+                    f,
+                    "output size too long, expected at most {} bytes",
+                    expected
+                ),
+            },
             Self::ParamNameDuplicated => f.write_str("duplicate parameter"),
             Self::ParamNameInvalid => f.write_str("invalid parameter name"),
             Self::ParamValueInvalid(val_err) => write!(f, "invalid parameter value: {}", val_err),
             Self::ParamsMaxExceeded => f.write_str("maximum number of parameters reached"),
             Self::Password => write!(f, "invalid password"),
-            Self::PhcStringInvalid => write!(f, "password hash string invalid"),
-            Self::PhcStringTooShort => write!(f, "password hash string too short"),
-            Self::PhcStringTooLong => write!(f, "password hash string too long"),
+            Self::PhcStringField => write!(f, "password hash string missing field"),
+            Self::PhcStringTrailingData => {
+                write!(f, "password hash string contains trailing characters")
+            }
             Self::SaltInvalid(val_err) => write!(f, "salt invalid: {}", val_err),
             Self::Version => write!(f, "invalid algorithm version"),
         }
