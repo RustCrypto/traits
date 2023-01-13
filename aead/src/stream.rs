@@ -356,7 +356,7 @@ impl_stream_object!(
 );
 
 impl<A, S> Encryptor<A, S>
-    where
+where
     A: AeadInPlace,
     S: StreamPrimitive<A>,
     A::NonceSize: Sub<<S as StreamPrimitive<A>>::NonceOverhead>,
@@ -373,7 +373,8 @@ impl<A, S> Encryptor<A, S>
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
     ) -> Result<Tag<A>> {
-        self.stream.encrypt_in_place_detached(self.position, true, associated_data, buffer)
+        self.stream
+            .encrypt_in_place_detached(self.position, true, associated_data, buffer)
     }
 }
 
@@ -464,9 +465,9 @@ where
         buffer: &mut dyn Buffer,
     ) -> Result<Tag<A>> {
         let nonce = self.aead_nonce(position, last_block);
-        self.aead.encrypt_in_place_detached(&nonce, associated_data,  buffer.as_mut())
+        self.aead
+            .encrypt_in_place_detached(&nonce, associated_data, buffer.as_mut())
     }
-
 }
 
 impl<A> StreamBE32<A>
@@ -546,9 +547,16 @@ where
         self.aead.encrypt_in_place(&nonce, associated_data, buffer)
     }
 
-    fn encrypt_in_place_detached(&self, position: Self::Counter, last_block: bool, associated_data: &[u8], buffer: &mut dyn Buffer) -> Result<Tag<A>> {
+    fn encrypt_in_place_detached(
+        &self,
+        position: Self::Counter,
+        last_block: bool,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<Tag<A>> {
         let nonce = self.aead_nonce(position, last_block)?;
-        self.aead.encrypt_in_place_detached(&nonce, associated_data, buffer.as_mut())
+        self.aead
+            .encrypt_in_place_detached(&nonce, associated_data, buffer.as_mut())
     }
 
     fn decrypt_in_place(
