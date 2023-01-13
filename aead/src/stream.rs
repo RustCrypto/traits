@@ -128,7 +128,7 @@ where
         buffer: &mut dyn Buffer,
     ) -> Result<()>;
 
-    /// Encrypt an AEAD message in-place at the given position in the STREAM.
+    /// Encrypt an AEAD message in-place at the given position in the STREAM. Return tag separately.
     fn encrypt_in_place_detached(
         &self,
         position: Self::Counter,
@@ -136,6 +136,16 @@ where
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
     ) -> Result<Tag<A>>;
+
+    /// Decrypt an AEAD message in-place at the given position in the STREAM. Accept tag separately.
+    fn decrypt_in_place_detached(
+        &self,
+        position: Self::Counter,
+        last_block: bool,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+        tag: &Tag<A>,
+    ) -> Result<()>;
 
     /// Encrypt the given plaintext payload, and return the resulting
     /// ciphertext as a vector of bytes.
@@ -390,6 +400,30 @@ impl_stream_object!(
     "𝒟 STREAM decryptor"
 );
 
+impl<A, S> Decryptor<A, S>
+where
+    A: AeadInPlace,
+    S: StreamPrimitive<A>,
+    A::NonceSize: Sub<<S as StreamPrimitive<A>>::NonceOverhead>,
+    NonceSize<A, S>: ArrayLength<u8>,
+{
+    #[doc = "Use the underlying AEAD to decrypt"]
+    #[doc = "the last AEAD message in this STREAM in-place,"]
+    #[doc = "consuming the "]
+    #[doc = "𝒟 STREAM decryptor"]
+    #[doc = "object in order to prevent further use."]
+    #[doc = "Accepts the tag separately."]
+    pub fn decrypt_last_in_place_detached(
+        self,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+        tag: &Tag<A>,
+    ) -> Result<()> {
+        self.stream
+            .decrypt_in_place_detached(self.position, true, associated_data, buffer, tag)
+    }
+}
+
 /// The original "Rogaway-flavored" STREAM as described in the paper
 /// [Online Authenticated-Encryption and its Nonce-Reuse Misuse-Resistance][1].
 ///
@@ -467,6 +501,19 @@ where
         let nonce = self.aead_nonce(position, last_block);
         self.aead
             .encrypt_in_place_detached(&nonce, associated_data, buffer.as_mut())
+    }
+
+    fn decrypt_in_place_detached(
+        &self,
+        position: Self::Counter,
+        last_block: bool,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+        tag: &Tag<A>,
+    ) -> Result<()> {
+        let nonce = self.aead_nonce(position, last_block);
+        self.aead
+            .decrypt_in_place_detached(&nonce, associated_data, buffer.as_mut(), tag)
     }
 }
 
@@ -568,6 +615,19 @@ where
     ) -> Result<()> {
         let nonce = self.aead_nonce(position, last_block)?;
         self.aead.decrypt_in_place(&nonce, associated_data, buffer)
+    }
+
+    fn decrypt_in_place_detached(
+        &self,
+        position: Self::Counter,
+        last_block: bool,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+        tag: &Tag<A>,
+    ) -> Result<()> {
+        let nonce = self.aead_nonce(position, last_block)?;
+        self.aead
+            .decrypt_in_place_detached(&nonce, associated_data, buffer.as_mut(), tag)
     }
 }
 
