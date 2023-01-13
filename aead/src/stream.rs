@@ -32,7 +32,7 @@
 
 #![allow(clippy::upper_case_acronyms)]
 
-use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, KeyInit, Result};
+use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, KeyInit, Result, Tag};
 use core::ops::{AddAssign, Sub};
 use generic_array::{
     typenum::{Unsigned, U4, U5},
@@ -127,6 +127,15 @@ where
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
     ) -> Result<()>;
+
+    /// Encrypt an AEAD message in-place at the given position in the STREAM.
+    fn encrypt_in_place_detached(
+        &self,
+        position: Self::Counter,
+        last_block: bool,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<Tag<A>>;
 
     /// Encrypt the given plaintext payload, and return the resulting
     /// ciphertext as a vector of bytes.
@@ -346,6 +355,28 @@ impl_stream_object!(
     "ℰ STREAM encryptor"
 );
 
+impl<A, S> Encryptor<A, S>
+    where
+    A: AeadInPlace,
+    S: StreamPrimitive<A>,
+    A::NonceSize: Sub<<S as StreamPrimitive<A>>::NonceOverhead>,
+    NonceSize<A, S>: ArrayLength<u8>,
+{
+    #[doc = "Use the underlying AEAD to encrypt"]
+    #[doc = "the last AEAD message in this STREAM in-place,"]
+    #[doc = "consuming the "]
+    #[doc = "ℰ STREAM encryptor"]
+    #[doc = "object in order to prevent further use."]
+    #[doc = "Returns the tag separately."]
+    pub fn encrypt_last_in_place_detached(
+        self,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<Tag<A>> {
+        self.stream.encrypt_in_place_detached(self.position, true, associated_data, buffer)
+    }
+}
+
 impl_stream_object!(
     Decryptor,
     decrypt_next,
@@ -424,6 +455,18 @@ where
         let nonce = self.aead_nonce(position, last_block);
         self.aead.decrypt_in_place(&nonce, associated_data, buffer)
     }
+
+    fn encrypt_in_place_detached(
+        &self,
+        position: u32,
+        last_block: bool,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<Tag<A>> {
+        let nonce = self.aead_nonce(position, last_block);
+        self.aead.encrypt_in_place_detached(&nonce, associated_data,  buffer.as_mut())
+    }
+
 }
 
 impl<A> StreamBE32<A>
@@ -501,6 +544,11 @@ where
     ) -> Result<()> {
         let nonce = self.aead_nonce(position, last_block)?;
         self.aead.encrypt_in_place(&nonce, associated_data, buffer)
+    }
+
+    fn encrypt_in_place_detached(&self, position: Self::Counter, last_block: bool, associated_data: &[u8], buffer: &mut dyn Buffer) -> Result<Tag<A>> {
+        let nonce = self.aead_nonce(position, last_block)?;
+        self.aead.encrypt_in_place_detached(&nonce, associated_data, buffer.as_mut())
     }
 
     fn decrypt_in_place(
