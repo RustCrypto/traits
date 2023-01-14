@@ -46,7 +46,7 @@ use serdect::serde::{de, ser, Deserialize, Serialize};
 #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub struct ScalarCore<C: Curve> {
     /// Inner unsigned integer type.
-    inner: C::UInt,
+    inner: C::Uint,
 }
 
 impl<C> ScalarCore<C>
@@ -55,37 +55,37 @@ where
 {
     /// Zero scalar.
     pub const ZERO: Self = Self {
-        inner: C::UInt::ZERO,
+        inner: C::Uint::ZERO,
     };
 
     /// Multiplicative identity.
     pub const ONE: Self = Self {
-        inner: C::UInt::ONE,
+        inner: C::Uint::ONE,
     };
 
     /// Scalar modulus.
-    pub const MODULUS: C::UInt = C::ORDER;
+    pub const MODULUS: C::Uint = C::ORDER;
 
     /// Generate a random [`ScalarCore`].
     pub fn random(rng: impl CryptoRng + RngCore) -> Self {
         Self {
-            inner: C::UInt::random_mod(rng, &NonZero::new(Self::MODULUS).unwrap()),
+            inner: C::Uint::random_mod(rng, &NonZero::new(Self::MODULUS).unwrap()),
         }
     }
 
-    /// Create a new scalar from [`Curve::UInt`].
-    pub fn new(uint: C::UInt) -> CtOption<Self> {
+    /// Create a new scalar from [`Curve::Uint`].
+    pub fn new(uint: C::Uint) -> CtOption<Self> {
         CtOption::new(Self { inner: uint }, uint.ct_lt(&Self::MODULUS))
     }
 
     /// Decode [`ScalarCore`] from big endian bytes.
     pub fn from_be_bytes(bytes: FieldBytes<C>) -> CtOption<Self> {
-        Self::new(C::UInt::from_be_byte_array(bytes))
+        Self::new(C::Uint::from_be_byte_array(bytes))
     }
 
     /// Decode [`ScalarCore`] from a big endian byte slice.
     pub fn from_be_slice(slice: &[u8]) -> Result<Self> {
-        if slice.len() == C::UInt::BYTES {
+        if slice.len() == C::Uint::BYTES {
             Option::from(Self::from_be_bytes(GenericArray::clone_from_slice(slice))).ok_or(Error)
         } else {
             Err(Error)
@@ -94,20 +94,20 @@ where
 
     /// Decode [`ScalarCore`] from little endian bytes.
     pub fn from_le_bytes(bytes: FieldBytes<C>) -> CtOption<Self> {
-        Self::new(C::UInt::from_le_byte_array(bytes))
+        Self::new(C::Uint::from_le_byte_array(bytes))
     }
 
     /// Decode [`ScalarCore`] from a little endian byte slice.
     pub fn from_le_slice(slice: &[u8]) -> Result<Self> {
-        if slice.len() == C::UInt::BYTES {
+        if slice.len() == C::Uint::BYTES {
             Option::from(Self::from_le_bytes(GenericArray::clone_from_slice(slice))).ok_or(Error)
         } else {
             Err(Error)
         }
     }
 
-    /// Borrow the inner `C::UInt`.
-    pub fn as_uint(&self) -> &C::UInt {
+    /// Borrow the inner `C::Uint`.
+    pub fn as_uint(&self) -> &C::Uint {
         &self.inner
     }
 
@@ -170,7 +170,7 @@ where
 {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         Self {
-            inner: C::UInt::conditional_select(&a.inner, &b.inner, choice),
+            inner: C::Uint::conditional_select(&a.inner, &b.inner, choice),
         }
     }
 }
@@ -239,7 +239,7 @@ where
 {
     fn from(n: u64) -> Self {
         Self {
-            inner: C::UInt::from(n),
+            inner: C::Uint::from(n),
         }
     }
 }

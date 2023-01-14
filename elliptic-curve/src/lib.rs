@@ -159,30 +159,30 @@ pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
 /// curves (e.g. [`SecretKey`]).
 pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sync {
     /// Integer type used to represent field elements of this elliptic curve.
-    // TODO(tarcieri): replace this with an e.g. `const Curve::MODULUS: UInt`.
+    // TODO(tarcieri): replace this with an e.g. `const Curve::MODULUS: Uint`.
     // Requires rust-lang/rust#60551, i.e. `const_evaluatable_checked`
-    type UInt: bigint::AddMod<Output = Self::UInt>
+    type Uint: bigint::AddMod<Output = Self::Uint>
         + bigint::ArrayEncoding
         + bigint::Encoding
         + bigint::Integer
-        + bigint::NegMod<Output = Self::UInt>
+        + bigint::NegMod<Output = Self::Uint>
         + bigint::Random
         + bigint::RandomMod
-        + bigint::SubMod<Output = Self::UInt>
+        + bigint::SubMod<Output = Self::Uint>
         + zeroize::Zeroize;
 
     /// Order constant.
     ///
     /// Subdivided into either 32-bit or 64-bit "limbs" (depending on the
     /// target CPU's word size), specified from least to most significant.
-    const ORDER: Self::UInt;
+    const ORDER: Self::Uint;
 }
 
 /// Marker trait for elliptic curves with prime order.
 pub trait PrimeCurve: Curve {}
 
 /// Size of field elements of this elliptic curve.
-pub type FieldSize<C> = <<C as Curve>::UInt as bigint::ArrayEncoding>::ByteSize;
+pub type FieldSize<C> = <<C as Curve>::Uint as bigint::ArrayEncoding>::ByteSize;
 
 /// Byte representation of a base/scalar field element of a given curve.
 pub type FieldBytes<C> = GenericArray<u8, FieldSize<C>>;

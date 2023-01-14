@@ -146,7 +146,7 @@ where
 
     /// Deserialize raw secret scalar as a big endian integer.
     pub fn from_be_bytes(bytes: &[u8]) -> Result<Self> {
-        if bytes.len() != C::UInt::BYTES {
+        if bytes.len() != C::Uint::BYTES {
             return Err(Error);
         }
 
