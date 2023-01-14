@@ -22,7 +22,7 @@ use zeroize::DefaultIsZeroes;
 #[cfg(feature = "arithmetic")]
 use {
     super::{Scalar, ScalarArithmetic},
-    group::ff::PrimeField,
+    ff::PrimeField,
 };
 
 #[cfg(feature = "serde")]

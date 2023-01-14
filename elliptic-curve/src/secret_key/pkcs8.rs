@@ -10,8 +10,7 @@ use der::Decode;
 use sec1::EcPrivateKey;
 
 // Imports for the `EncodePrivateKey` impl
-// TODO(tarcieri): use weak activation of `pkcs8/alloc` for gating `EncodePrivateKey` impl
-#[cfg(all(feature = "arithmetic", feature = "pem"))]
+#[cfg(all(feature = "alloc", feature = "arithmetic"))]
 use {
     crate::{
         sec1::{FromEncodedPoint, ToEncodedPoint},
@@ -51,10 +50,7 @@ where
 {
 }
 
-// TODO(tarcieri): use weak activation of `pkcs8/alloc` for this when possible
-// It doesn't strictly depend on `pkcs8/pem` but we can't easily activate `pkcs8/alloc`
-// without adding a separate crate feature just for this functionality.
-#[cfg(all(feature = "arithmetic", feature = "pem"))]
+#[cfg(all(feature = "alloc", feature = "arithmetic"))]
 impl<C> EncodePrivateKey for SecretKey<C>
 where
     C: Curve + AssociatedOid + ProjectiveArithmetic,
