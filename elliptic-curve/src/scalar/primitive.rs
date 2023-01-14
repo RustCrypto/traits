@@ -13,7 +13,7 @@ use core::{
     str,
 };
 use generic_array::GenericArray;
-use rand_core::{CryptoRng, RngCore};
+use rand_core::CryptoRngCore;
 use subtle::{
     Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
     CtOption,
@@ -64,7 +64,7 @@ where
     pub const MODULUS: C::Uint = C::ORDER;
 
     /// Generate a random [`ScalarPrimitive`].
-    pub fn random(rng: impl CryptoRng + RngCore) -> Self {
+    pub fn random(rng: &mut impl CryptoRngCore) -> Self {
         Self {
             inner: C::Uint::random_mod(rng, &NonZero::new(Self::MODULUS).unwrap()),
         }

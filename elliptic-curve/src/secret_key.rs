@@ -26,10 +26,7 @@ use {
 };
 
 #[cfg(feature = "arithmetic")]
-use crate::{
-    rand_core::{CryptoRng, RngCore},
-    CurveArithmetic, NonZeroScalar, PublicKey,
-};
+use crate::{rand_core::CryptoRngCore, CurveArithmetic, NonZeroScalar, PublicKey};
 
 #[cfg(feature = "jwk")]
 use crate::jwk::{JwkEcKey, JwkParameters};
@@ -97,7 +94,7 @@ where
 {
     /// Generate a random [`SecretKey`].
     #[cfg(feature = "arithmetic")]
-    pub fn random(rng: impl CryptoRng + RngCore) -> Self
+    pub fn random(rng: &mut impl CryptoRngCore) -> Self
     where
         C: CurveArithmetic,
     {
