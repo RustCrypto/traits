@@ -235,7 +235,7 @@ where
     ///
     /// Pass `Default::default()` to use the OS's native line endings.
     #[cfg(feature = "pem")]
-    pub fn to_pem(&self, line_ending: pem::LineEnding) -> Result<Zeroizing<String>>
+    pub fn to_sec1_pem(&self, line_ending: pem::LineEnding) -> Result<Zeroizing<String>>
     where
         C: CurveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
