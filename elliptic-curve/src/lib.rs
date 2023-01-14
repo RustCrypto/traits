@@ -69,6 +69,7 @@ extern crate alloc;
 extern crate std;
 
 pub mod ops;
+pub mod scalar;
 
 #[cfg(feature = "dev")]
 pub mod dev;
@@ -83,7 +84,6 @@ pub mod weierstrass;
 
 mod error;
 mod point;
-mod scalar;
 mod secret_key;
 
 #[cfg(feature = "arithmetic")]
@@ -100,7 +100,7 @@ pub use crate::{
         AffineXCoordinate, AffineYIsOdd, DecompactPoint, DecompressPoint, PointCompaction,
         PointCompression,
     },
-    scalar::{core::ScalarCore, IsHigh},
+    scalar::{IsHigh, ScalarCore},
     secret_key::SecretKey,
 };
 pub use crypto_bigint as bigint;
@@ -114,7 +114,7 @@ pub use {
     crate::{
         arithmetic::{CurveArithmetic, PrimeCurveArithmetic},
         public_key::PublicKey,
-        scalar::{nonzero::NonZeroScalar, Scalar},
+        scalar::{NonZeroScalar, Scalar},
     },
     ff::{self, Field, PrimeField},
     group::{self, Group},
