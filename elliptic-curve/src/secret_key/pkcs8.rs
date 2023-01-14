@@ -2,11 +2,10 @@
 
 use super::SecretKey;
 use crate::{
-    pkcs8::{self, AssociatedOid, DecodePrivateKey},
+    pkcs8::{self, der::Decode, AssociatedOid, DecodePrivateKey},
     sec1::{ModulusSize, ValidatePublicKey},
     Curve, FieldSize, ALGORITHM_OID,
 };
-use der::Decode;
 use sec1::EcPrivateKey;
 
 // Imports for the `EncodePrivateKey` impl
@@ -16,7 +15,7 @@ use {
         sec1::{FromEncodedPoint, ToEncodedPoint},
         AffinePoint, ProjectiveArithmetic,
     },
-    pkcs8::EncodePrivateKey,
+    pkcs8::{der, EncodePrivateKey},
 };
 
 // Imports for actual PEM support

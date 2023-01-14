@@ -7,14 +7,11 @@ use crate::{
 use core::fmt::Debug;
 use group::{Curve as _, Group};
 
+#[cfg(feature = "alloc")]
+use alloc::boxed::Box;
+
 #[cfg(feature = "jwk")]
 use crate::{JwkEcKey, JwkParameters};
-
-#[cfg(all(feature = "sec1", feature = "pkcs8"))]
-use crate::{
-    pkcs8::{self, AssociatedOid, DecodePublicKey},
-    ALGORITHM_OID,
-};
 
 #[cfg(feature = "pem")]
 use core::str::FromStr;
@@ -29,17 +26,23 @@ use {
     subtle::CtOption,
 };
 
-#[cfg(feature = "serde")]
-use serdect::serde::{de, ser, Deserialize, Serialize};
-
 #[cfg(all(feature = "alloc", feature = "pkcs8"))]
 use pkcs8::EncodePublicKey;
 
 #[cfg(any(feature = "jwk", feature = "pem"))]
 use alloc::string::{String, ToString};
 
-#[cfg(feature = "alloc")]
-use alloc::boxed::Box;
+#[cfg(all(feature = "pkcs8", feature = "serde"))]
+use serdect::serde::{de, ser, Deserialize, Serialize};
+
+#[cfg(all(feature = "sec1", feature = "pkcs8"))]
+use {
+    crate::{
+        pkcs8::{self, AssociatedOid, DecodePublicKey},
+        ALGORITHM_OID,
+    },
+    pkcs8::der,
+};
 
 /// Elliptic curve public keys.
 ///
@@ -387,7 +390,7 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(all(feature = "pkcs8", feature = "serde"))]
 impl<C> Serialize for PublicKey<C>
 where
     C: Curve + AssociatedOid + ProjectiveArithmetic,
@@ -403,7 +406,7 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(all(feature = "pkcs8", feature = "serde"))]
 impl<'de, C> Deserialize<'de> for PublicKey<C>
 where
     C: Curve + AssociatedOid + ProjectiveArithmetic,
