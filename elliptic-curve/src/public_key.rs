@@ -1,8 +1,7 @@
 //! Elliptic curve public keys.
 
 use crate::{
-    point::NonIdentity, AffinePoint, Curve, Error, NonZeroScalar, ProjectiveArithmetic,
-    ProjectivePoint, Result,
+    point::NonIdentity, AffinePoint, CurveArithmetic, Error, NonZeroScalar, ProjectivePoint, Result,
 };
 use core::fmt::Debug;
 use group::{Curve as _, Group};
@@ -20,7 +19,7 @@ use core::str::FromStr;
 use {
     crate::{
         sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
-        FieldSize, PointCompression,
+        Curve, FieldSize, PointCompression,
     },
     core::cmp::Ordering,
     subtle::CtOption,
@@ -83,14 +82,14 @@ use {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
 {
     point: AffinePoint<C>,
 }
 
 impl<C> PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
 {
     /// Convert an [`AffinePoint`] into a [`PublicKey`]
     pub fn from_affine(point: AffinePoint<C>) -> Result<Self> {
@@ -136,7 +135,7 @@ where
     #[cfg(feature = "alloc")]
     pub fn to_sec1_bytes(&self) -> Box<[u8]>
     where
-        C: Curve + ProjectiveArithmetic + PointCompression,
+        C: CurveArithmetic + PointCompression,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -203,19 +202,19 @@ where
 
 impl<C> AsRef<AffinePoint<C>> for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
 {
     fn as_ref(&self) -> &AffinePoint<C> {
         self.as_affine()
     }
 }
 
-impl<C> Copy for PublicKey<C> where C: Curve + ProjectiveArithmetic {}
+impl<C> Copy for PublicKey<C> where C: CurveArithmetic {}
 
 #[cfg(feature = "sec1")]
 impl<C> FromEncodedPoint<C> for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -231,7 +230,7 @@ where
 #[cfg(feature = "sec1")]
 impl<C> ToEncodedPoint<C> for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -245,7 +244,7 @@ where
 #[cfg(feature = "sec1")]
 impl<C> From<PublicKey<C>> for EncodedPoint<C>
 where
-    C: Curve + ProjectiveArithmetic + PointCompression,
+    C: CurveArithmetic + PointCompression,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -257,7 +256,7 @@ where
 #[cfg(feature = "sec1")]
 impl<C> From<&PublicKey<C>> for EncodedPoint<C>
 where
-    C: Curve + ProjectiveArithmetic + PointCompression,
+    C: CurveArithmetic + PointCompression,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -268,7 +267,7 @@ where
 
 impl<C, P> From<NonIdentity<P>> for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
     P: Copy + Into<AffinePoint<C>>,
 {
     fn from(value: NonIdentity<P>) -> Self {
@@ -278,7 +277,7 @@ where
 
 impl<C, P> From<&NonIdentity<P>> for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
     P: Copy + Into<AffinePoint<C>>,
 {
     fn from(value: &NonIdentity<P>) -> Self {
@@ -291,7 +290,7 @@ where
 #[cfg(feature = "sec1")]
 impl<C> PartialOrd for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -303,7 +302,7 @@ where
 #[cfg(feature = "sec1")]
 impl<C> Ord for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -318,7 +317,7 @@ where
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
 impl<C> TryFrom<pkcs8::SubjectPublicKeyInfo<'_>> for PublicKey<C>
 where
-    C: Curve + AssociatedOid + ProjectiveArithmetic,
+    C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -334,7 +333,7 @@ where
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
 impl<C> DecodePublicKey for PublicKey<C>
 where
-    C: Curve + AssociatedOid + ProjectiveArithmetic,
+    C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -343,7 +342,7 @@ where
 #[cfg(all(feature = "alloc", feature = "pkcs8"))]
 impl<C> EncodePublicKey for PublicKey<C>
 where
-    C: Curve + AssociatedOid + ProjectiveArithmetic,
+    C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -366,7 +365,7 @@ where
 #[cfg(feature = "pem")]
 impl<C> FromStr for PublicKey<C>
 where
-    C: Curve + AssociatedOid + ProjectiveArithmetic,
+    C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -380,7 +379,7 @@ where
 #[cfg(feature = "pem")]
 impl<C> ToString for PublicKey<C>
 where
-    C: Curve + AssociatedOid + ProjectiveArithmetic,
+    C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -393,7 +392,7 @@ where
 #[cfg(all(feature = "pkcs8", feature = "serde"))]
 impl<C> Serialize for PublicKey<C>
 where
-    C: Curve + AssociatedOid + ProjectiveArithmetic,
+    C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -409,7 +408,7 @@ where
 #[cfg(all(feature = "pkcs8", feature = "serde"))]
 impl<'de, C> Deserialize<'de> for PublicKey<C>
 where
-    C: Curve + AssociatedOid + ProjectiveArithmetic,
+    C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {

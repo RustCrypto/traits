@@ -13,7 +13,7 @@ use sec1::EcPrivateKey;
 use {
     crate::{
         sec1::{FromEncodedPoint, ToEncodedPoint},
-        AffinePoint, ProjectiveArithmetic,
+        AffinePoint, CurveArithmetic,
     },
     pkcs8::{der, EncodePrivateKey},
 };
@@ -52,7 +52,7 @@ where
 #[cfg(all(feature = "alloc", feature = "arithmetic"))]
 impl<C> EncodePrivateKey for SecretKey<C>
 where
-    C: Curve + AssociatedOid + ProjectiveArithmetic,
+    C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {

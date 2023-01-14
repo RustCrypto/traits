@@ -104,9 +104,7 @@ pub use zeroize;
 #[cfg(feature = "arithmetic")]
 pub use {
     crate::{
-        arithmetic::{
-            AffineArithmetic, PrimeCurveArithmetic, ProjectiveArithmetic, ScalarArithmetic,
-        },
+        arithmetic::{CurveArithmetic, PrimeCurveArithmetic},
         public_key::PublicKey,
         scalar::{nonzero::NonZeroScalar, Scalar},
     },
@@ -175,12 +173,12 @@ pub type FieldBytes<C> = GenericArray<u8, FieldSize<C>>;
 /// Affine point type for a given curve with a [`ProjectiveArithmetic`]
 /// implementation.
 #[cfg(feature = "arithmetic")]
-pub type AffinePoint<C> = <C as AffineArithmetic>::AffinePoint;
+pub type AffinePoint<C> = <C as CurveArithmetic>::AffinePoint;
 
 /// Projective point type for a given curve with a [`ProjectiveArithmetic`]
 /// implementation.
 #[cfg(feature = "arithmetic")]
-pub type ProjectivePoint<C> = <C as ProjectiveArithmetic>::ProjectivePoint;
+pub type ProjectivePoint<C> = <C as CurveArithmetic>::ProjectivePoint;
 
 /// Elliptic curve parameters used by VOPRF.
 #[cfg(feature = "voprf")]

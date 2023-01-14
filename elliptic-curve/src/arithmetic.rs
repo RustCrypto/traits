@@ -7,8 +7,8 @@ use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq};
 use zeroize::DefaultIsZeroes;
 
-/// Elliptic curve with affine arithmetic implementation.
-pub trait AffineArithmetic: Curve + ScalarArithmetic {
+/// Elliptic curve with an arithmetic implementation.
+pub trait CurveArithmetic: Curve {
     /// Elliptic curve point in affine coordinates.
     type AffinePoint: 'static
         + AffineXCoordinate<Self>
@@ -23,18 +23,7 @@ pub trait AffineArithmetic: Curve + ScalarArithmetic {
         + Sized
         + Send
         + Sync;
-}
 
-/// Prime order elliptic curve with projective arithmetic implementation.
-pub trait PrimeCurveArithmetic:
-    PrimeCurve + ProjectiveArithmetic<ProjectivePoint = Self::CurveGroup>
-{
-    /// Prime order elliptic curve group.
-    type CurveGroup: group::prime::PrimeCurve<Affine = <Self as AffineArithmetic>::AffinePoint>;
-}
-
-/// Elliptic curve with projective arithmetic implementation.
-pub trait ProjectiveArithmetic: Curve + AffineArithmetic {
     /// Elliptic curve point in projective coordinates.
     ///
     /// Note: the following bounds are provided by [`group::Group`]:
@@ -55,12 +44,8 @@ pub trait ProjectiveArithmetic: Curve + AffineArithmetic {
         + LinearCombination
         + group::Curve<AffineRepr = Self::AffinePoint>
         + group::Group<Scalar = Self::Scalar>;
-}
 
-/// Scalar arithmetic.
-#[cfg(feature = "arithmetic")]
-pub trait ScalarArithmetic: Curve {
-    /// Scalar field type.
+    /// Scalar field modulo this curve's order.
     ///
     /// Note: the following bounds are provided by [`ff::Field`]:
     /// - `'static`
@@ -79,4 +64,12 @@ pub trait ScalarArithmetic: Curve {
         + IsHigh
         + ff::Field
         + ff::PrimeField<Repr = FieldBytes<Self>>;
+}
+
+/// Prime order elliptic curve with projective arithmetic implementation.
+pub trait PrimeCurveArithmetic:
+    PrimeCurve + CurveArithmetic<ProjectivePoint = Self::CurveGroup>
+{
+    /// Prime order elliptic curve group.
+    type CurveGroup: group::prime::PrimeCurve<Affine = <Self as CurveArithmetic>::AffinePoint>;
 }

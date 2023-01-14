@@ -21,7 +21,7 @@ use zeroize::DefaultIsZeroes;
 
 #[cfg(feature = "arithmetic")]
 use {
-    super::{Scalar, ScalarArithmetic},
+    super::{CurveArithmetic, Scalar},
     ff::PrimeField,
 };
 
@@ -41,7 +41,7 @@ use serdect::serde::{de, ser, Deserialize, Serialize};
 ///
 /// The serialization is a fixed-width big endian encoding. When used with
 /// textual formats, the binary data is encoded as hexadecimal.
-// TODO(tarcieri): make this a fully generic `Scalar` type and use it for `ScalarArithmetic`
+// TODO(tarcieri): make this a fully generic `Scalar` type and use it for `CurveArithmetic`
 #[derive(Copy, Clone, Debug, Default)]
 pub struct ScalarCore<C: Curve> {
     /// Inner unsigned integer type.
@@ -144,7 +144,7 @@ where
 #[cfg(feature = "arithmetic")]
 impl<C> ScalarCore<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     /// Convert [`ScalarCore`] into a given curve's scalar type
     // TODO(tarcieri): replace curve-specific scalars with `ScalarCore`

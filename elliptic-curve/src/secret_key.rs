@@ -28,7 +28,7 @@ use {
 #[cfg(feature = "arithmetic")]
 use crate::{
     rand_core::{CryptoRng, RngCore},
-    NonZeroScalar, ProjectiveArithmetic, PublicKey,
+    CurveArithmetic, NonZeroScalar, PublicKey,
 };
 
 #[cfg(feature = "jwk")]
@@ -99,7 +99,7 @@ where
     #[cfg(feature = "arithmetic")]
     pub fn random(rng: impl CryptoRng + RngCore) -> Self
     where
-        C: ProjectiveArithmetic,
+        C: CurveArithmetic,
     {
         Self {
             inner: NonZeroScalar::<C>::random(rng).into(),
@@ -132,7 +132,7 @@ where
     #[cfg(feature = "arithmetic")]
     pub fn to_nonzero_scalar(&self) -> NonZeroScalar<C>
     where
-        C: Curve + ProjectiveArithmetic,
+        C: CurveArithmetic,
     {
         self.into()
     }
@@ -141,7 +141,7 @@ where
     #[cfg(feature = "arithmetic")]
     pub fn public_key(&self) -> PublicKey<C>
     where
-        C: Curve + ProjectiveArithmetic,
+        C: CurveArithmetic,
     {
         PublicKey::from_secret_scalar(&self.to_nonzero_scalar())
     }
@@ -185,7 +185,7 @@ where
     #[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
     pub fn to_sec1_der(&self) -> der::Result<Zeroizing<Vec<u8>>>
     where
-        C: Curve + ProjectiveArithmetic,
+        C: CurveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -237,7 +237,7 @@ where
     #[cfg(feature = "pem")]
     pub fn to_pem(&self, line_ending: pem::LineEnding) -> Result<Zeroizing<String>>
     where
-        C: Curve + ProjectiveArithmetic,
+        C: CurveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -272,7 +272,7 @@ where
     #[cfg(all(feature = "arithmetic", feature = "jwk"))]
     pub fn to_jwk(&self) -> JwkEcKey
     where
-        C: Curve + JwkParameters + ProjectiveArithmetic,
+        C: CurveArithmetic + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -283,7 +283,7 @@ where
     #[cfg(all(feature = "arithmetic", feature = "jwk"))]
     pub fn to_jwk_string(&self) -> Zeroizing<String>
     where
-        C: Curve + JwkParameters + ProjectiveArithmetic,
+        C: CurveArithmetic + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -361,7 +361,7 @@ where
 #[cfg(feature = "arithmetic")]
 impl<C> From<NonZeroScalar<C>> for SecretKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
 {
     fn from(scalar: NonZeroScalar<C>) -> SecretKey<C> {
         SecretKey::from(&scalar)
@@ -371,7 +371,7 @@ where
 #[cfg(feature = "arithmetic")]
 impl<C> From<&NonZeroScalar<C>> for SecretKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
 {
     fn from(scalar: &NonZeroScalar<C>) -> SecretKey<C> {
         SecretKey {

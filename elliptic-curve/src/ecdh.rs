@@ -27,8 +27,8 @@
 //! [SIGMA]: https://webee.technion.ac.il/~hugo/sigma-pdf.pdf
 
 use crate::{
-    AffineArithmetic, AffinePoint, AffineXCoordinate, Curve, FieldBytes, NonZeroScalar,
-    ProjectiveArithmetic, ProjectivePoint, PublicKey,
+    AffinePoint, AffineXCoordinate, Curve, CurveArithmetic, FieldBytes, NonZeroScalar,
+    ProjectivePoint, PublicKey,
 };
 use core::borrow::Borrow;
 use digest::{crypto_common::BlockSizeUser, Digest};
@@ -62,7 +62,7 @@ pub fn diffie_hellman<C>(
     public_key: impl Borrow<AffinePoint<C>>,
 ) -> SharedSecret<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
 {
     let public_point = ProjectivePoint::<C>::from(*public_key.borrow());
     let secret_point = (public_point * secret_key.borrow().as_ref()).to_affine();
@@ -92,14 +92,14 @@ where
 /// takes further steps to authenticate the peers in a key exchange.
 pub struct EphemeralSecret<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
 {
     scalar: NonZeroScalar<C>,
 }
 
 impl<C> EphemeralSecret<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
 {
     /// Generate a cryptographically random [`EphemeralSecret`].
     pub fn random(rng: impl CryptoRng + RngCore) -> Self {
@@ -124,7 +124,7 @@ where
 
 impl<C> From<&EphemeralSecret<C>> for PublicKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
 {
     fn from(ephemeral_secret: &EphemeralSecret<C>) -> Self {
         ephemeral_secret.public_key()
@@ -133,18 +133,18 @@ where
 
 impl<C> Zeroize for EphemeralSecret<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
 {
     fn zeroize(&mut self) {
         self.scalar.zeroize()
     }
 }
 
-impl<C> ZeroizeOnDrop for EphemeralSecret<C> where C: Curve + ProjectiveArithmetic {}
+impl<C> ZeroizeOnDrop for EphemeralSecret<C> where C: CurveArithmetic {}
 
 impl<C> Drop for EphemeralSecret<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
 {
     fn drop(&mut self) {
         self.zeroize();
@@ -162,7 +162,7 @@ impl<C: Curve> SharedSecret<C> {
     #[inline]
     fn new(point: AffinePoint<C>) -> Self
     where
-        C: AffineArithmetic,
+        C: CurveArithmetic,
     {
         Self {
             secret_bytes: point.x(),

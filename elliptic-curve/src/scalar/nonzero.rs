@@ -3,7 +3,7 @@
 use crate::{
     ops::{Invert, Reduce, ReduceNonZero},
     rand_core::{CryptoRng, RngCore},
-    Curve, Error, FieldBytes, IsHigh, PrimeCurve, Scalar, ScalarArithmetic, ScalarCore, SecretKey,
+    CurveArithmetic, Error, FieldBytes, IsHigh, PrimeCurve, Scalar, ScalarCore, SecretKey,
 };
 use base16ct::HexDisplay;
 use core::{
@@ -31,14 +31,14 @@ use serdect::serde::{de, ser, Deserialize, Serialize};
 #[derive(Clone)]
 pub struct NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     scalar: Scalar<C>,
 }
 
 impl<C> NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     /// Generate a random `NonZeroScalar`.
     pub fn random(mut rng: impl CryptoRng + RngCore) -> Self {
@@ -70,7 +70,7 @@ where
 
 impl<C> AsRef<Scalar<C>> for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn as_ref(&self) -> &Scalar<C> {
         &self.scalar
@@ -79,7 +79,7 @@ where
 
 impl<C> ConditionallySelectable for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         Self {
@@ -90,18 +90,18 @@ where
 
 impl<C> ConstantTimeEq for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn ct_eq(&self, other: &Self) -> Choice {
         self.scalar.ct_eq(&other.scalar)
     }
 }
 
-impl<C> Copy for NonZeroScalar<C> where C: Curve + ScalarArithmetic {}
+impl<C> Copy for NonZeroScalar<C> where C: CurveArithmetic {}
 
 impl<C> Deref for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     type Target = Scalar<C>;
 
@@ -112,7 +112,7 @@ where
 
 impl<C> From<NonZeroScalar<C>> for FieldBytes<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn from(scalar: NonZeroScalar<C>) -> FieldBytes<C> {
         Self::from(&scalar)
@@ -121,7 +121,7 @@ where
 
 impl<C> From<&NonZeroScalar<C>> for FieldBytes<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn from(scalar: &NonZeroScalar<C>) -> FieldBytes<C> {
         scalar.to_repr()
@@ -130,7 +130,7 @@ where
 
 impl<C> From<NonZeroScalar<C>> for ScalarCore<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn from(scalar: NonZeroScalar<C>) -> ScalarCore<C> {
         ScalarCore::from_be_bytes(scalar.to_repr()).unwrap()
@@ -139,7 +139,7 @@ where
 
 impl<C> From<&NonZeroScalar<C>> for ScalarCore<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn from(scalar: &NonZeroScalar<C>) -> ScalarCore<C> {
         ScalarCore::from_be_bytes(scalar.to_repr()).unwrap()
@@ -148,7 +148,7 @@ where
 
 impl<C> From<SecretKey<C>> for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn from(sk: SecretKey<C>) -> NonZeroScalar<C> {
         Self::from(&sk)
@@ -157,7 +157,7 @@ where
 
 impl<C> From<&SecretKey<C>> for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn from(sk: &SecretKey<C>) -> NonZeroScalar<C> {
         let scalar = sk.as_scalar_core().to_scalar();
@@ -168,7 +168,7 @@ where
 
 impl<C> Invert for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     type Output = Self;
 
@@ -182,7 +182,7 @@ where
 
 impl<C> IsHigh for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn is_high(&self) -> Choice {
         self.scalar.is_high()
@@ -191,7 +191,7 @@ where
 
 impl<C> Neg for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     type Output = NonZeroScalar<C>;
 
@@ -204,7 +204,7 @@ where
 
 impl<C> Mul<NonZeroScalar<C>> for NonZeroScalar<C>
 where
-    C: PrimeCurve + ScalarArithmetic,
+    C: PrimeCurve + CurveArithmetic,
 {
     type Output = Self;
 
@@ -216,7 +216,7 @@ where
 
 impl<C> Mul<&NonZeroScalar<C>> for NonZeroScalar<C>
 where
-    C: PrimeCurve + ScalarArithmetic,
+    C: PrimeCurve + CurveArithmetic,
 {
     type Output = Self;
 
@@ -232,7 +232,7 @@ where
 /// Note: implementation is the same as `ReduceNonZero`
 impl<C, I> Reduce<I> for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
     I: Integer + ArrayEncoding,
     Scalar<C>: ReduceNonZero<I>,
 {
@@ -243,7 +243,7 @@ where
 
 impl<C, I> ReduceNonZero<I> for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
     I: Integer + ArrayEncoding,
     Scalar<C>: ReduceNonZero<I>,
 {
@@ -256,7 +256,7 @@ where
 
 impl<C> TryFrom<&[u8]> for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     type Error = Error;
 
@@ -274,7 +274,7 @@ where
 
 impl<C> Zeroize for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn zeroize(&mut self) {
         // Use zeroize's volatile writes to ensure value is cleared.
@@ -288,7 +288,7 @@ where
 
 impl<C> fmt::Display for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:X}", self)
@@ -297,7 +297,7 @@ where
 
 impl<C> fmt::LowerHex for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:x}", HexDisplay(&self.to_repr()))
@@ -306,7 +306,7 @@ where
 
 impl<C> fmt::UpperHex for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:}", HexDisplay(&self.to_repr()))
@@ -315,7 +315,7 @@ where
 
 impl<C> str::FromStr for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     type Err = Error;
 
@@ -333,7 +333,7 @@ where
 #[cfg(feature = "serde")]
 impl<C> Serialize for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -346,7 +346,7 @@ where
 #[cfg(feature = "serde")]
 impl<'de, C> Deserialize<'de> for NonZeroScalar<C>
 where
-    C: Curve + ScalarArithmetic,
+    C: CurveArithmetic,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
