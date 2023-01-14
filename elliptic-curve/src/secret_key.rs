@@ -22,7 +22,6 @@ use {
         AffinePoint,
     },
     alloc::vec::Vec,
-    der::Encode,
     zeroize::Zeroizing,
 };
 
@@ -34,6 +33,12 @@ use crate::{
 
 #[cfg(feature = "jwk")]
 use crate::jwk::{JwkEcKey, JwkParameters};
+
+#[cfg(feature = "sec1")]
+use sec1::der;
+
+#[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
+use sec1::der::Encode;
 
 #[cfg(all(feature = "arithmetic", any(feature = "jwk", feature = "pem")))]
 use alloc::string::String;

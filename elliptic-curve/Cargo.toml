@@ -18,7 +18,6 @@ rust-version = "1.61"
 [dependencies]
 base16ct = "0.1.1"
 crypto-bigint = { version = "=0.5.0-pre.1", default-features = false, features = ["rand_core", "generic-array", "zeroize"] }
-der = { version = "0.6", default-features = false, features = ["oid"] }
 generic-array = { version = "0.14", default-features = false }
 rand_core = { version = "0.6", default-features = false }
 subtle = { version = "2", default-features = false }
@@ -44,8 +43,19 @@ sha3 = "0.10"
 
 [features]
 default = ["arithmetic"]
-alloc = ["base16ct/alloc", "der/alloc", "ff?/alloc", "group?/alloc", "sec1?/alloc", "zeroize/alloc"]
-std = ["alloc", "rand_core/std", "sec1?/std"]
+alloc = [
+    "base16ct/alloc",
+    "ff?/alloc",
+    "group?/alloc",
+    "pkcs8?/alloc",
+    "sec1?/alloc",
+    "zeroize/alloc"
+]
+std = [
+    "alloc",
+    "rand_core/std",
+    "sec1?/std"
+]
 
 arithmetic = ["group"]
 bits = ["arithmetic", "ff/bits"]
@@ -56,8 +66,8 @@ group = ["dep:group", "ff"]
 hazmat = []
 jwk = ["alloc", "base64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
 pkcs8 = ["dep:pkcs8", "sec1"]
-pem = ["alloc", "arithmetic", "der/pem", "pem-rfc7468/alloc", "pkcs8", "sec1/pem"]
-serde = ["alloc", "pkcs8", "sec1/serde", "serdect"]
+pem = ["alloc", "arithmetic", "pem-rfc7468/alloc", "pkcs8", "sec1/pem"]
+serde = ["alloc", "sec1/serde", "serdect"]
 voprf = ["digest"]
 
 [package.metadata.docs.rs]

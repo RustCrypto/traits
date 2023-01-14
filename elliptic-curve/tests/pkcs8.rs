@@ -8,6 +8,7 @@ use elliptic_curve::{
     sec1::ToEncodedPoint,
 };
 use hex_literal::hex;
+use pkcs8::der;
 
 /// DER-encoded PKCS#8 public key
 const PKCS8_PUBLIC_KEY_DER: &[u8; 91] = include_bytes!("examples/pkcs8-public-key.der");
