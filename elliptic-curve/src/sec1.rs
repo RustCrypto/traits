@@ -68,7 +68,7 @@ where
 /// Validate that the given [`EncodedPoint`] represents the encoded public key
 /// value of the given secret.
 ///
-/// Curve implementations which also impl [`ProjectiveArithmetic`] will receive
+/// Curve implementations which also impl [`CurveArithmetic`] will receive
 /// a blanket default impl of this trait.
 pub trait ValidatePublicKey
 where

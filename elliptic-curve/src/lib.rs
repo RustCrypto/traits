@@ -178,12 +178,12 @@ pub type FieldSize<C> = <<C as Curve>::Uint as bigint::ArrayEncoding>::ByteSize;
 /// Byte representation of a base/scalar field element of a given curve.
 pub type FieldBytes<C> = GenericArray<u8, FieldSize<C>>;
 
-/// Affine point type for a given curve with a [`ProjectiveArithmetic`]
+/// Affine point type for a given curve with a [`CurveArithmetic`]
 /// implementation.
 #[cfg(feature = "arithmetic")]
 pub type AffinePoint<C> = <C as CurveArithmetic>::AffinePoint;
 
-/// Projective point type for a given curve with a [`ProjectiveArithmetic`]
+/// Projective point type for a given curve with a [`CurveArithmetic`]
 /// implementation.
 #[cfg(feature = "arithmetic")]
 pub type ProjectivePoint<C> = <C as CurveArithmetic>::ProjectivePoint;
