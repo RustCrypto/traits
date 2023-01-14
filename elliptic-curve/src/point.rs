@@ -10,9 +10,18 @@ use crate::{Curve, FieldBytes};
 use subtle::{Choice, CtOption};
 
 /// Obtain the affine x-coordinate of an elliptic curve point.
-pub trait AffineXCoordinate<C: Curve> {
+pub trait AffineXCoordinate {
+    /// Field element representation.
+    type FieldRepr: AsRef<[u8]>;
+
     /// Get the affine x-coordinate as a serialized field element.
-    fn x(&self) -> FieldBytes<C>;
+    fn x(&self) -> Self::FieldRepr;
+}
+
+/// Is the affine y-coordinate of this elliptic curve point odd?
+pub trait AffineYIsOdd {
+    /// Is the affine y-coordinate odd?
+    fn y_is_odd(&self) -> Choice;
 }
 
 /// Decompress an elliptic curve point.

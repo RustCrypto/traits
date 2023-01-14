@@ -97,7 +97,8 @@ mod jwk;
 pub use crate::{
     error::{Error, Result},
     point::{
-        AffineXCoordinate, DecompactPoint, DecompressPoint, PointCompaction, PointCompression,
+        AffineXCoordinate, AffineYIsOdd, DecompactPoint, DecompressPoint, PointCompaction,
+        PointCompression,
     },
     scalar::{core::ScalarCore, IsHigh},
     secret_key::SecretKey,
