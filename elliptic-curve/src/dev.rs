@@ -9,6 +9,7 @@ use crate::{
     ops::{LinearCombination, MulByGenerator, Reduce},
     pkcs8,
     rand_core::RngCore,
+    scalar::FromUintUnchecked,
     sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     zeroize::DefaultIsZeroes,
@@ -178,20 +179,6 @@ impl PrimeFieldBits for Scalar {
     }
 }
 
-impl TryFrom<U256> for Scalar {
-    type Error = Error;
-
-    fn try_from(w: U256) -> Result<Self> {
-        Option::from(ScalarPrimitive::new(w)).map(Self).ok_or(Error)
-    }
-}
-
-impl From<Scalar> for U256 {
-    fn from(scalar: Scalar) -> U256 {
-        *scalar.0.as_uint()
-    }
-}
-
 impl ConditionallySelectable for Scalar {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         Self(ScalarPrimitive::conditional_select(&a.0, &b.0, choice))
@@ -340,6 +327,34 @@ impl From<u64> for Scalar {
 impl From<ScalarPrimitive> for Scalar {
     fn from(scalar: ScalarPrimitive) -> Scalar {
         Self(scalar)
+    }
+}
+
+impl From<Scalar> for ScalarPrimitive {
+    fn from(scalar: Scalar) -> ScalarPrimitive {
+        scalar.0
+    }
+}
+
+impl From<Scalar> for U256 {
+    fn from(scalar: Scalar) -> U256 {
+        scalar.0.to_uint()
+    }
+}
+
+impl TryFrom<U256> for Scalar {
+    type Error = Error;
+
+    fn try_from(w: U256) -> Result<Self> {
+        Option::from(ScalarPrimitive::new(w)).map(Self).ok_or(Error)
+    }
+}
+
+impl FromUintUnchecked for Scalar {
+    type Uint = U256;
+
+    fn from_uint_unchecked(uint: U256) -> Self {
+        Self(ScalarPrimitive::from_uint_unchecked(uint))
     }
 }
 
