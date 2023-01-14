@@ -12,8 +12,7 @@ use crate::{
     sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     zeroize::DefaultIsZeroes,
-    AffineArithmetic, AffineXCoordinate, Curve, IsHigh, PrimeCurve, ProjectiveArithmetic,
-    ScalarArithmetic,
+    AffineXCoordinate, Curve, CurveArithmetic, IsHigh, PrimeCurve,
 };
 use core::{
     iter::{Product, Sum},
@@ -73,15 +72,9 @@ impl Curve for MockCurve {
 
 impl PrimeCurve for MockCurve {}
 
-impl AffineArithmetic for MockCurve {
+impl CurveArithmetic for MockCurve {
     type AffinePoint = AffinePoint;
-}
-
-impl ProjectiveArithmetic for MockCurve {
     type ProjectivePoint = ProjectivePoint;
-}
-
-impl ScalarArithmetic for MockCurve {
     type Scalar = Scalar;
 }
 

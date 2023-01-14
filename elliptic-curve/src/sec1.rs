@@ -9,7 +9,7 @@ use generic_array::GenericArray;
 use subtle::CtOption;
 
 #[cfg(feature = "arithmetic")]
-use crate::{AffinePoint, Error, ProjectiveArithmetic};
+use crate::{AffinePoint, CurveArithmetic, Error};
 
 /// Encoded elliptic curve point with point compression.
 pub type CompressedPoint<C> = GenericArray<u8, CompressedPointSize<C>>;
@@ -96,7 +96,7 @@ where
 #[cfg(all(feature = "arithmetic"))]
 impl<C> ValidatePublicKey for C
 where
-    C: Curve + ProjectiveArithmetic,
+    C: CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {

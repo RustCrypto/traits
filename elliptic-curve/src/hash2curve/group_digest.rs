@@ -1,11 +1,11 @@
 //! Traits for handling hash to curve.
 
 use super::{hash_to_field, ExpandMsg, FromOkm, MapToCurve};
-use crate::{ProjectiveArithmetic, ProjectivePoint, Result};
+use crate::{CurveArithmetic, ProjectivePoint, Result};
 use group::cofactor::CofactorGroup;
 
 /// Adds hashing arbitrary byte sequences to a valid group element
-pub trait GroupDigest: ProjectiveArithmetic
+pub trait GroupDigest: CurveArithmetic
 where
     ProjectivePoint<Self>: CofactorGroup,
 {

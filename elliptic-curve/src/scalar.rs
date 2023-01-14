@@ -8,11 +8,11 @@ pub(crate) mod core;
 pub(crate) mod nonzero;
 
 #[cfg(feature = "arithmetic")]
-use crate::ScalarArithmetic;
+use crate::CurveArithmetic;
 
 /// Scalar field element for a particular elliptic curve.
 #[cfg(feature = "arithmetic")]
-pub type Scalar<C> = <C as ScalarArithmetic>::Scalar;
+pub type Scalar<C> = <C as CurveArithmetic>::Scalar;
 
 /// Bit representation of a scalar field element of a given curve.
 #[cfg(feature = "bits")]

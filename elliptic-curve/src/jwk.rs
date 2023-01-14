@@ -26,7 +26,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 use crate::{
     public_key::PublicKey,
     sec1::{FromEncodedPoint, ToEncodedPoint},
-    AffinePoint, ProjectiveArithmetic,
+    AffinePoint, CurveArithmetic,
 };
 
 /// Key Type (`kty`) for elliptic curve keys.
@@ -110,7 +110,7 @@ impl JwkEcKey {
     #[cfg(feature = "arithmetic")]
     pub fn to_public_key<C>(&self) -> Result<PublicKey<C>>
     where
-        C: Curve + JwkParameters + ProjectiveArithmetic,
+        C: CurveArithmetic + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldSize<C>: ModulusSize,
     {
@@ -213,7 +213,7 @@ where
 #[cfg(feature = "arithmetic")]
 impl<C> From<SecretKey<C>> for JwkEcKey
 where
-    C: Curve + JwkParameters + ProjectiveArithmetic,
+    C: CurveArithmetic + JwkParameters,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -225,7 +225,7 @@ where
 #[cfg(feature = "arithmetic")]
 impl<C> From<&SecretKey<C>> for JwkEcKey
 where
-    C: Curve + JwkParameters + ProjectiveArithmetic,
+    C: CurveArithmetic + JwkParameters,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -241,7 +241,7 @@ where
 #[cfg(feature = "arithmetic")]
 impl<C> TryFrom<JwkEcKey> for PublicKey<C>
 where
-    C: Curve + JwkParameters + ProjectiveArithmetic,
+    C: CurveArithmetic + JwkParameters,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -255,7 +255,7 @@ where
 #[cfg(feature = "arithmetic")]
 impl<C> TryFrom<&JwkEcKey> for PublicKey<C>
 where
-    C: Curve + JwkParameters + ProjectiveArithmetic,
+    C: CurveArithmetic + JwkParameters,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -269,7 +269,7 @@ where
 #[cfg(feature = "arithmetic")]
 impl<C> From<PublicKey<C>> for JwkEcKey
 where
-    C: Curve + JwkParameters + ProjectiveArithmetic,
+    C: CurveArithmetic + JwkParameters,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
@@ -281,7 +281,7 @@ where
 #[cfg(feature = "arithmetic")]
 impl<C> From<&PublicKey<C>> for JwkEcKey
 where
-    C: Curve + JwkParameters + ProjectiveArithmetic,
+    C: CurveArithmetic + JwkParameters,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     FieldSize<C>: ModulusSize,
 {
