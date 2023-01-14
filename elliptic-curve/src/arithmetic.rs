@@ -1,7 +1,8 @@
 //! Elliptic curve arithmetic traits.
 
 use crate::{
-    ops::LinearCombination, AffineXCoordinate, Curve, FieldBytes, IsHigh, PrimeCurve, ScalarCore,
+    ops::{LinearCombination, MulByGenerator},
+    AffineXCoordinate, Curve, FieldBytes, IsHigh, PrimeCurve, ScalarCore,
 };
 use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq};
@@ -42,6 +43,7 @@ pub trait CurveArithmetic: Curve {
         + From<Self::AffinePoint>
         + Into<Self::AffinePoint>
         + LinearCombination
+        + MulByGenerator
         + group::Curve<AffineRepr = Self::AffinePoint>
         + group::Group<Scalar = Self::Scalar>;
 

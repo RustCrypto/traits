@@ -6,7 +6,7 @@
 use crate::{
     bigint::{Limb, U256},
     error::{Error, Result},
-    ops::{LinearCombination, Reduce},
+    ops::{LinearCombination, MulByGenerator, Reduce},
     pkcs8,
     rand_core::RngCore,
     sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
@@ -765,6 +765,8 @@ impl MulAssign<&Scalar> for ProjectivePoint {
         unimplemented!();
     }
 }
+
+impl MulByGenerator for ProjectivePoint {}
 
 impl Neg for ProjectivePoint {
     type Output = ProjectivePoint;
