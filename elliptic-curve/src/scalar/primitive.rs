@@ -2,6 +2,7 @@
 
 use crate::{
     bigint::{prelude::*, Limb, NonZero},
+    scalar::FromUintUnchecked,
     Curve, Error, FieldBytes, IsHigh, Result,
 };
 use base16ct::HexDisplay;
@@ -20,10 +21,7 @@ use subtle::{
 use zeroize::DefaultIsZeroes;
 
 #[cfg(feature = "arithmetic")]
-use {
-    super::{CurveArithmetic, Scalar},
-    ff::PrimeField,
-};
+use super::{CurveArithmetic, Scalar};
 
 #[cfg(feature = "serde")]
 use serdect::serde::{de, ser, Deserialize, Serialize};
@@ -131,13 +129,29 @@ where
     }
 
     /// Encode [`ScalarPrimitive`] as big endian bytes.
-    pub fn to_be_bytes(self) -> FieldBytes<C> {
+    pub fn to_be_bytes(&self) -> FieldBytes<C> {
         self.inner.to_be_byte_array()
     }
 
     /// Encode [`ScalarPrimitive`] as little endian bytes.
-    pub fn to_le_bytes(self) -> FieldBytes<C> {
+    pub fn to_le_bytes(&self) -> FieldBytes<C> {
         self.inner.to_le_byte_array()
+    }
+
+    /// Convert to a `C::Uint`.
+    pub fn to_uint(&self) -> C::Uint {
+        self.inner
+    }
+}
+
+impl<C> FromUintUnchecked for ScalarPrimitive<C>
+where
+    C: Curve,
+{
+    type Uint = C::Uint;
+
+    fn from_uint_unchecked(uint: C::Uint) -> Self {
+        Self { inner: uint }
     }
 }
 
@@ -146,10 +160,9 @@ impl<C> ScalarPrimitive<C>
 where
     C: CurveArithmetic,
 {
-    /// Convert [`ScalarPrimitive`] into a given curve's scalar type
-    // TODO(tarcieri): replace curve-specific scalars with `ScalarPrimitive`
+    /// Convert [`ScalarPrimitive`] into a given curve's scalar type.
     pub(super) fn to_scalar(self) -> Scalar<C> {
-        Scalar::<C>::from_repr(self.to_be_bytes()).unwrap()
+        Scalar::<C>::from_uint_unchecked(self.inner)
     }
 }
 

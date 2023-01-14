@@ -2,6 +2,7 @@
 
 use crate::{
     ops::{LinearCombination, MulByGenerator},
+    scalar::FromUintUnchecked,
     AffineXCoordinate, AffineYIsOdd, Curve, FieldBytes, IsHigh, PrimeCurve, ScalarPrimitive,
 };
 use core::fmt::Debug;
@@ -62,8 +63,10 @@ pub trait CurveArithmetic: Curve {
     /// - [`Sync`]
     type Scalar: DefaultIsZeroes
         + From<ScalarPrimitive<Self>>
+        + FromUintUnchecked<Uint = Self::Uint>
         + Into<FieldBytes<Self>>
         + Into<Self::Uint>
+        + Into<ScalarPrimitive<Self>>
         + IsHigh
         + ff::Field
         + ff::PrimeField<Repr = FieldBytes<Self>>;

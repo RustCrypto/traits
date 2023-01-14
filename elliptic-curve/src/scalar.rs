@@ -10,10 +10,11 @@ pub use self::primitive::ScalarPrimitive;
 #[cfg(feature = "arithmetic")]
 pub use self::{invert::invert_vartime, nonzero::NonZeroScalar};
 
+use crypto_bigint::Integer;
 use subtle::Choice;
 
 #[cfg(feature = "arithmetic")]
-use crate::{bigint::Integer, CurveArithmetic};
+use crate::CurveArithmetic;
 
 /// Scalar field element for a particular elliptic curve.
 #[cfg(feature = "arithmetic")]
@@ -24,8 +25,7 @@ pub type Scalar<C> = <C as CurveArithmetic>::Scalar;
 pub type ScalarBits<C> = ff::FieldBits<<Scalar<C> as ff::PrimeFieldBits>::ReprBits>;
 
 /// Instantiate a scalar from an unsigned integer without checking for overflow.
-#[cfg(feature = "arithmetic")]
-pub trait FromUintUnchecked: ff::Field {
+pub trait FromUintUnchecked {
     /// Unsigned integer type (i.e. `Curve::Uint`)
     type Uint: Integer;
 
