@@ -16,6 +16,7 @@ defaults:
 env:
   CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-Dwarnings"
+  RUSTDOCFLAGS: "-Dwarnings"
 
 jobs:
   build:
@@ -93,3 +94,14 @@ jobs:
       - run: cargo test --no-default-features
       - run: cargo test
       - run: cargo test --all-features
+
+  doc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+      - run: cargo doc --all-features

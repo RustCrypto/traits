@@ -55,7 +55,7 @@ use crate::{
     FieldSize,
 };
 
-#[cfg(all(docsrs, feature = "pkcs8"))]
+#[cfg(all(doc, feature = "pkcs8"))]
 use {crate::pkcs8::DecodePrivateKey, core::str::FromStr};
 
 /// Type label for PEM-encoded SEC1 private keys.

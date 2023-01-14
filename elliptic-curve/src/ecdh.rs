@@ -1,7 +1,7 @@
 //! Elliptic Curve Diffie-Hellman Support.
 //!
 //! This module contains a generic ECDH implementation which is usable with
-//! any elliptic curve which implements the [`ProjectiveArithmetic`] trait (presently
+//! any elliptic curve which implements the [`CurveArithmetic`] trait (presently
 //! the `k256` and `p256` crates)
 //!
 //! # ECDH Ephemeral (ECDHE) Usage
