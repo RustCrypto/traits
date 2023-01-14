@@ -129,7 +129,7 @@ pub use crate::jwk::{JwkEcKey, JwkParameters};
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;
 
-use core::fmt::Debug;
+use core::{fmt::Debug, ops::ShrAssign};
 use generic_array::GenericArray;
 
 /// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic
@@ -160,7 +160,8 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
         + bigint::Random
         + bigint::RandomMod
         + bigint::SubMod<Output = Self::Uint>
-        + zeroize::Zeroize;
+        + zeroize::Zeroize
+        + ShrAssign<usize>;
 
     /// Order constant.
     ///

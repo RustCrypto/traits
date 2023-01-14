@@ -32,7 +32,11 @@ pub trait FromUintUnchecked {
     /// Instantiate scalar from an unsigned integer without checking
     /// whether the value overflows the field modulus.
     ///
-    /// Incorrectly used this can lead to mathematically invalid results.
+    /// ⚠️ WARNING!
+    ///
+    /// Incorrectly used this can lead to mathematically invalid results,
+    /// which can lead to potential security vulnerabilities.
+    ///
     /// Use with care!
     fn from_uint_unchecked(uint: Self::Uint) -> Self;
 }

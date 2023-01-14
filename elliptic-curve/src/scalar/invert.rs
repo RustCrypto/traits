@@ -1,17 +1,21 @@
 use super::FromUintUnchecked;
 use crate::{ops::Shr1, CurveArithmetic, Scalar};
 use ff::{Field, PrimeField};
-use subtle::{ConstantTimeLess, CtOption};
 
 /// Fast variable-time inversion using Stein's algorithm.
 ///
+/// Returns `None` if the scalar is zero.
+///
 /// <https://link.springer.com/article/10.1007/s13389-016-0135-4>
 #[allow(non_snake_case)]
-pub fn invert_vartime<C>(scalar: &Scalar<C>) -> CtOption<Scalar<C>>
+pub fn invert_vartime<C>(scalar: &Scalar<C>) -> Option<Scalar<C>>
 where
     C: CurveArithmetic,
-    Scalar<C>: ConstantTimeLess + FromUintUnchecked<Uint = C::Uint> + Shr1,
 {
+    if scalar.is_zero().into() {
+        return None;
+    }
+
     let order_div_2 = Scalar::<C>::from_uint_unchecked(C::ORDER >> 1);
 
     let mut u = *scalar;
@@ -47,7 +51,7 @@ where
         }
 
         // sub-step
-        if bool::from(u.ct_lt(&v)) {
+        if u < v {
             v -= &u;
             C -= &A;
         } else {
@@ -56,5 +60,5 @@ where
         }
     }
 
-    CtOption::new(C, !scalar.is_zero())
+    Some(C)
 }

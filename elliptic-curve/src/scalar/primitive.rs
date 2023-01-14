@@ -2,16 +2,12 @@
 
 use crate::{
     bigint::{prelude::*, Limb, NonZero},
+    ops::{Add, AddAssign, Neg, Shr1, Sub, SubAssign},
     scalar::FromUintUnchecked,
     Curve, Error, FieldBytes, IsHigh, Result,
 };
 use base16ct::HexDisplay;
-use core::{
-    cmp::Ordering,
-    fmt,
-    ops::{Add, AddAssign, Neg, Sub, SubAssign},
-    str,
-};
+use core::{cmp::Ordering, fmt, str};
 use generic_array::GenericArray;
 use rand_core::CryptoRngCore;
 use subtle::{
@@ -361,6 +357,15 @@ where
 
     fn neg(self) -> ScalarPrimitive<C> {
         -*self
+    }
+}
+
+impl<C> Shr1 for ScalarPrimitive<C>
+where
+    C: Curve,
+{
+    fn shr1(&mut self) {
+        self.inner >>= 1;
     }
 }
 
