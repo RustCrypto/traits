@@ -44,7 +44,9 @@ sha3 = "0.10"
 
 [features]
 default = ["arithmetic"]
-alloc = ["base16ct/alloc", "der/alloc", "sec1/alloc", "zeroize/alloc"] # todo: use weak activation for `group`/`sec1` alloc when available
+alloc = ["base16ct/alloc", "der/alloc", "ff?/alloc", "group?/alloc", "sec1?/alloc", "zeroize/alloc"]
+std = ["alloc", "rand_core/std", "sec1?/std"]
+
 arithmetic = ["ff", "group"]
 bits = ["arithmetic", "ff/bits"]
 dev = ["arithmetic", "hex-literal", "pem", "pkcs8"]
@@ -54,7 +56,6 @@ hazmat = []
 jwk = ["alloc", "base64ct/alloc", "serde", "serde_json", "zeroize/alloc"]
 pem = ["alloc", "arithmetic", "der/pem", "pem-rfc7468/alloc", "pkcs8", "sec1/pem"]
 serde = ["alloc", "pkcs8", "sec1/serde", "serdect"]
-std = ["alloc", "rand_core/std", "sec1/std"]
 voprf = ["digest"]
 
 [package.metadata.docs.rs]
