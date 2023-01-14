@@ -94,7 +94,7 @@ where
     pub fn data(&self) -> &[u8] {
         match self {
             Self::Hashed(d) => &d[..],
-            Self::Array(d) => *d,
+            Self::Array(d) => d,
         }
     }
 

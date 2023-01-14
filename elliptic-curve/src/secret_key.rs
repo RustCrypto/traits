@@ -227,7 +227,7 @@ where
             return Err(Error);
         }
 
-        Self::from_sec1_der(&*der_bytes).map_err(|_| Error)
+        Self::from_sec1_der(&der_bytes).map_err(|_| Error)
     }
 
     /// Serialize private key as self-zeroizing PEM-encoded SEC1 `ECPrivateKey`

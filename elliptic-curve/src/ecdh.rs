@@ -118,7 +118,7 @@ where
     /// Compute a Diffie-Hellman shared secret from an ephemeral secret and the
     /// public key of the other participant in the exchange.
     pub fn diffie_hellman(&self, public_key: &PublicKey<C>) -> SharedSecret<C> {
-        diffie_hellman(&self.scalar, public_key.as_affine())
+        diffie_hellman(self.scalar, public_key.as_affine())
     }
 }
 

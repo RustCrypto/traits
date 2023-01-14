@@ -64,7 +64,7 @@ pub trait OsswuMap: Field + Sgn0 {
         tv2 = gx1 * gxd; // gx1 * gxd
         tv4 *= tv2;
 
-        let y1 = tv4.pow_vartime(&Self::PARAMS.c1) * tv2; // tv4^C1 * tv2
+        let y1 = tv4.pow_vartime(Self::PARAMS.c1) * tv2; // tv4^C1 * tv2
         let x2n = tv3 * x1n; // tv3 * x1n
 
         let y2 = y1 * Self::PARAMS.c2 * tv1 * self; // y1 * c2 * tv1 * u
