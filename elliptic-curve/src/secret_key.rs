@@ -305,8 +305,8 @@ where
     C: Curve,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // TODO(tarcieri): use `debug_struct` and `finish_non_exhaustive` when stable
-        write!(f, "SecretKey<{:?}>{{ ... }}", C::default())
+        f.debug_struct(core::any::type_name::<Self>())
+            .finish_non_exhaustive()
     }
 }
 
