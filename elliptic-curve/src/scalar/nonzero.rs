@@ -2,7 +2,6 @@
 
 use crate::{
     ops::{Invert, Reduce, ReduceNonZero},
-    rand_core::{CryptoRng, RngCore},
     CurveArithmetic, Error, FieldBytes, IsHigh, PrimeCurve, Scalar, ScalarPrimitive, SecretKey,
 };
 use base16ct::HexDisplay;
@@ -14,6 +13,7 @@ use core::{
 use crypto_bigint::{ArrayEncoding, Integer};
 use ff::{Field, PrimeField};
 use generic_array::GenericArray;
+use rand_core::CryptoRngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
@@ -41,7 +41,7 @@ where
     C: CurveArithmetic,
 {
     /// Generate a random `NonZeroScalar`.
-    pub fn random(mut rng: impl CryptoRng + RngCore) -> Self {
+    pub fn random(mut rng: &mut impl CryptoRngCore) -> Self {
         // Use rejection sampling to eliminate zero values.
         // While this method isn't constant-time, the attacker shouldn't learn
         // anything about unrelated outputs so long as `rng` is a secure `CryptoRng`.
