@@ -63,8 +63,8 @@ where
         Scalar::<C>::from_repr(repr).and_then(Self::new)
     }
 
-    /// Create a [`NonZeroScalar`] from a `C::UInt`.
-    pub fn from_uint(uint: C::UInt) -> CtOption<Self> {
+    /// Create a [`NonZeroScalar`] from a `C::Uint`.
+    pub fn from_uint(uint: C::Uint) -> CtOption<Self> {
         ScalarCore::new(uint).and_then(|scalar| Self::new(scalar.into()))
     }
 }
@@ -262,7 +262,7 @@ where
     type Error = Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self, Error> {
-        if bytes.len() == C::UInt::BYTES {
+        if bytes.len() == C::Uint::BYTES {
             Option::from(NonZeroScalar::from_repr(GenericArray::clone_from_slice(
                 bytes,
             )))

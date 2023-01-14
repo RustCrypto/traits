@@ -80,7 +80,7 @@ pub trait ScalarArithmetic: Curve {
     type Scalar: DefaultIsZeroes
         + From<ScalarCore<Self>>
         + Into<FieldBytes<Self>>
-        + Into<Self::UInt>
+        + Into<Self::Uint>
         + IsHigh
         + ff::Field
         + ff::PrimeField<Repr = FieldBytes<Self>>;

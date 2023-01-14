@@ -65,7 +65,7 @@ pub type ScalarBits = crate::ScalarBits<MockCurve>;
 pub struct MockCurve;
 
 impl Curve for MockCurve {
-    type UInt = U256;
+    type Uint = U256;
 
     const ORDER: U256 =
         U256::from_be_hex("ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
