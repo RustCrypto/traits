@@ -91,7 +91,6 @@ impl AssociatedOid for MockCurve {
 }
 
 #[cfg(feature = "jwk")]
-#[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
 impl JwkParameters for MockCurve {
     const CRV: &'static str = "P-256";
 }

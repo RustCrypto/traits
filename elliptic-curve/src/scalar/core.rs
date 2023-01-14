@@ -43,7 +43,6 @@ use serdect::serde::{de, ser, Deserialize, Serialize};
 /// textual formats, the binary data is encoded as hexadecimal.
 // TODO(tarcieri): make this a fully generic `Scalar` type and use it for `ScalarArithmetic`
 #[derive(Copy, Clone, Debug, Default)]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub struct ScalarCore<C: Curve> {
     /// Inner unsigned integer type.
     inner: C::Uint,
@@ -403,7 +402,6 @@ where
 }
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<C> Serialize for ScalarCore<C>
 where
     C: Curve,
@@ -417,7 +415,6 @@ where
 }
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de, C> Deserialize<'de> for ScalarCore<C>
 where
     C: Curve,
