@@ -47,9 +47,9 @@ pub type PublicKey = crate::PublicKey<MockCurve>;
 /// Secret key.
 pub type SecretKey = crate::SecretKey<MockCurve>;
 
-/// Scalar core.
-// TODO(tarcieri): make this the scalar type
-pub type ScalarCore = crate::ScalarCore<MockCurve>;
+/// Scalar primitive type.
+// TODO(tarcieri): make this the scalar type when it's more capable
+pub type ScalarPrimitive = crate::ScalarPrimitive<MockCurve>;
 
 /// Scalar bits.
 #[cfg(feature = "bits")]
@@ -90,11 +90,11 @@ impl JwkParameters for MockCurve {
 
 /// Example scalar type
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct Scalar(ScalarCore);
+pub struct Scalar(ScalarPrimitive);
 
 impl Field for Scalar {
-    const ZERO: Self = Self(ScalarCore::ZERO);
-    const ONE: Self = Self(ScalarCore::ONE);
+    const ZERO: Self = Self(ScalarPrimitive::ZERO);
+    const ONE: Self = Self(ScalarPrimitive::ONE);
 
     fn random(mut rng: impl RngCore) -> Self {
         let mut bytes = FieldBytes::default();
@@ -149,7 +149,7 @@ impl PrimeField for Scalar {
     const DELTA: Self = Self::ZERO; // BOGUS!
 
     fn from_repr(bytes: FieldBytes) -> CtOption<Self> {
-        ScalarCore::from_be_bytes(bytes).map(Self)
+        ScalarPrimitive::from_be_bytes(bytes).map(Self)
     }
 
     fn to_repr(&self) -> FieldBytes {
@@ -182,7 +182,7 @@ impl TryFrom<U256> for Scalar {
     type Error = Error;
 
     fn try_from(w: U256) -> Result<Self> {
-        Option::from(ScalarCore::new(w)).map(Self).ok_or(Error)
+        Option::from(ScalarPrimitive::new(w)).map(Self).ok_or(Error)
     }
 }
 
@@ -194,7 +194,7 @@ impl From<Scalar> for U256 {
 
 impl ConditionallySelectable for Scalar {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        Self(ScalarCore::conditional_select(&a.0, &b.0, choice))
+        Self(ScalarPrimitive::conditional_select(&a.0, &b.0, choice))
     }
 }
 
@@ -327,7 +327,7 @@ impl Reduce<U256> for Scalar {
         let (r, underflow) = w.sbb(&MockCurve::ORDER, Limb::ZERO);
         let underflow = Choice::from((underflow.0 >> (Limb::BITS - 1)) as u8);
         let reduced = U256::conditional_select(&w, &r, !underflow);
-        Self(ScalarCore::new(reduced).unwrap())
+        Self(ScalarPrimitive::new(reduced).unwrap())
     }
 }
 
@@ -337,8 +337,8 @@ impl From<u64> for Scalar {
     }
 }
 
-impl From<ScalarCore> for Scalar {
-    fn from(scalar: ScalarCore) -> Scalar {
+impl From<ScalarPrimitive> for Scalar {
+    fn from(scalar: ScalarPrimitive) -> Scalar {
         Self(scalar)
     }
 }

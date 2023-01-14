@@ -3,7 +3,7 @@
 use crate::{
     ops::{Invert, Reduce, ReduceNonZero},
     rand_core::{CryptoRng, RngCore},
-    CurveArithmetic, Error, FieldBytes, IsHigh, PrimeCurve, Scalar, ScalarCore, SecretKey,
+    CurveArithmetic, Error, FieldBytes, IsHigh, PrimeCurve, Scalar, ScalarPrimitive, SecretKey,
 };
 use base16ct::HexDisplay;
 use core::{
@@ -64,7 +64,7 @@ where
 
     /// Create a [`NonZeroScalar`] from a `C::Uint`.
     pub fn from_uint(uint: C::Uint) -> CtOption<Self> {
-        ScalarCore::new(uint).and_then(|scalar| Self::new(scalar.into()))
+        ScalarPrimitive::new(uint).and_then(|scalar| Self::new(scalar.into()))
     }
 }
 
@@ -128,21 +128,21 @@ where
     }
 }
 
-impl<C> From<NonZeroScalar<C>> for ScalarCore<C>
+impl<C> From<NonZeroScalar<C>> for ScalarPrimitive<C>
 where
     C: CurveArithmetic,
 {
-    fn from(scalar: NonZeroScalar<C>) -> ScalarCore<C> {
-        ScalarCore::from_be_bytes(scalar.to_repr()).unwrap()
+    fn from(scalar: NonZeroScalar<C>) -> ScalarPrimitive<C> {
+        ScalarPrimitive::from_be_bytes(scalar.to_repr()).unwrap()
     }
 }
 
-impl<C> From<&NonZeroScalar<C>> for ScalarCore<C>
+impl<C> From<&NonZeroScalar<C>> for ScalarPrimitive<C>
 where
     C: CurveArithmetic,
 {
-    fn from(scalar: &NonZeroScalar<C>) -> ScalarCore<C> {
-        ScalarCore::from_be_bytes(scalar.to_repr()).unwrap()
+    fn from(scalar: &NonZeroScalar<C>) -> ScalarPrimitive<C> {
+        ScalarPrimitive::from_be_bytes(scalar.to_repr()).unwrap()
     }
 }
 
@@ -339,7 +339,7 @@ where
     where
         S: ser::Serializer,
     {
-        ScalarCore::from(self).serialize(serializer)
+        ScalarPrimitive::from(self).serialize(serializer)
     }
 }
 
@@ -352,7 +352,8 @@ where
     where
         D: de::Deserializer<'de>,
     {
-        Option::from(Self::new(ScalarCore::deserialize(deserializer)?.into()))
+        let scalar = ScalarPrimitive::deserialize(deserializer)?;
+        Option::from(Self::new(scalar.into()))
             .ok_or_else(|| de::Error::custom("expected non-zero scalar"))
     }
 }

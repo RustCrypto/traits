@@ -8,7 +8,7 @@
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
 mod pkcs8;
 
-use crate::{Curve, Error, FieldBytes, Result, ScalarCore};
+use crate::{Curve, Error, FieldBytes, Result, ScalarPrimitive};
 use core::fmt::{self, Debug};
 use crypto_bigint::Integer;
 use generic_array::GenericArray;
@@ -88,7 +88,7 @@ pub(crate) const SEC1_PEM_TYPE_LABEL: &str = "EC PRIVATE KEY";
 #[derive(Clone)]
 pub struct SecretKey<C: Curve> {
     /// Scalar value
-    inner: ScalarCore<C>,
+    inner: ScalarPrimitive<C>,
 }
 
 impl<C> SecretKey<C>
@@ -107,18 +107,18 @@ where
     }
 
     /// Create a new secret key from a scalar value.
-    pub fn new(scalar: ScalarCore<C>) -> Self {
+    pub fn new(scalar: ScalarPrimitive<C>) -> Self {
         Self { inner: scalar }
     }
 
-    /// Borrow the inner secret [`ScalarCore`] value.
+    /// Borrow the inner secret [`ScalarPrimitive`] value.
     ///
     /// # ⚠️ Warning
     ///
     /// This value is key material.
     ///
     /// Please treat it with the care it deserves!
-    pub fn as_scalar_core(&self) -> &ScalarCore<C> {
+    pub fn as_scalar_core(&self) -> &ScalarPrimitive<C> {
         &self.inner
     }
 
@@ -152,7 +152,7 @@ where
             return Err(Error);
         }
 
-        let inner: ScalarCore<C> = Option::from(ScalarCore::from_be_bytes(
+        let inner: ScalarPrimitive<C> = Option::from(ScalarPrimitive::from_be_bytes(
             GenericArray::clone_from_slice(bytes),
         ))
         .ok_or(Error)?;

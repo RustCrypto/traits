@@ -49,7 +49,7 @@
 //!
 //! - [`JwkEcKey`]
 //! - [`PublicKey`]
-//! - [`ScalarCore`]
+//! - [`ScalarPrimitive`]
 //!
 //! Please see type-specific documentation for more information.
 //!
@@ -100,7 +100,7 @@ pub use crate::{
         AffineXCoordinate, AffineYIsOdd, DecompactPoint, DecompressPoint, PointCompaction,
         PointCompression,
     },
-    scalar::{IsHigh, ScalarCore},
+    scalar::{IsHigh, ScalarPrimitive},
     secret_key::SecretKey,
 };
 pub use crypto_bigint as bigint;
