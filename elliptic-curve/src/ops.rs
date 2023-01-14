@@ -35,7 +35,6 @@ impl<F: ff::Field> Invert for F {
 /// non-optimized implementation.
 // TODO(tarcieri): replace this with a trait from the `group` crate? (see zkcrypto/group#25)
 #[cfg(feature = "arithmetic")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub trait LinearCombination: Group {
     /// Calculates `x * k + y * l`.
     fn lincomb(x: &Self, k: &Self::Scalar, y: &Self, l: &Self::Scalar) -> Self {
@@ -63,7 +62,6 @@ pub trait Reduce<Uint: Integer + ArrayEncoding>: Sized {
     /// Interpret a digest as a big endian integer and perform a modular
     /// reduction.
     #[cfg(feature = "digest")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
     fn from_be_digest_reduced<D>(digest: D) -> Self
     where
         D: FixedOutput<OutputSize = Uint::ByteSize>,
@@ -74,7 +72,6 @@ pub trait Reduce<Uint: Integer + ArrayEncoding>: Sized {
     /// Interpret a digest as a little endian integer and perform a modular
     /// reduction.
     #[cfg(feature = "digest")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
     fn from_le_digest_reduced<D>(digest: D) -> Self
     where
         D: FixedOutput<OutputSize = Uint::ByteSize>,

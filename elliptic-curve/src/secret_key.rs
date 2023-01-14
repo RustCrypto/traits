@@ -92,7 +92,6 @@ where
 {
     /// Generate a random [`SecretKey`].
     #[cfg(feature = "arithmetic")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn random(rng: impl CryptoRng + RngCore) -> Self
     where
         C: ProjectiveArithmetic,
@@ -126,7 +125,6 @@ where
     ///
     /// Please treat it with the care it deserves!
     #[cfg(feature = "arithmetic")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn to_nonzero_scalar(&self) -> NonZeroScalar<C>
     where
         C: Curve + ProjectiveArithmetic,
@@ -136,7 +134,6 @@ where
 
     /// Get the [`PublicKey`] which corresponds to this secret key
     #[cfg(feature = "arithmetic")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
     pub fn public_key(&self) -> PublicKey<C>
     where
         C: Curve + ProjectiveArithmetic,
@@ -169,7 +166,6 @@ where
 
     /// Deserialize secret key encoded in the SEC1 ASN.1 DER `ECPrivateKey` format.
     #[cfg(all(feature = "sec1"))]
-    #[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
     pub fn from_sec1_der(der_bytes: &[u8]) -> Result<Self>
     where
         C: Curve + ValidatePublicKey,
@@ -182,10 +178,6 @@ where
 
     /// Serialize secret key in the SEC1 ASN.1 DER `ECPrivateKey` format.
     #[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
-    #[cfg_attr(
-        docsrs,
-        doc(cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1")))
-    )]
     pub fn to_sec1_der(&self) -> der::Result<Zeroizing<Vec<u8>>>
     where
         C: Curve + ProjectiveArithmetic,
@@ -219,7 +211,6 @@ where
     /// -----BEGIN EC PRIVATE KEY-----
     /// ```
     #[cfg(feature = "pem")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
     pub fn from_sec1_pem(s: &str) -> Result<Self>
     where
         C: Curve + ValidatePublicKey,
@@ -239,7 +230,6 @@ where
     ///
     /// Pass `Default::default()` to use the OS's native line endings.
     #[cfg(feature = "pem")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
     pub fn to_pem(&self, line_ending: pem::LineEnding) -> Result<Zeroizing<String>>
     where
         C: Curve + ProjectiveArithmetic,
@@ -255,7 +245,6 @@ where
 
     /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`SecretKey`].
     #[cfg(feature = "jwk")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
     where
         C: JwkParameters + ValidatePublicKey,
@@ -266,7 +255,6 @@ where
 
     /// Parse a string containing a JSON Web Key (JWK) into a [`SecretKey`].
     #[cfg(feature = "jwk")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn from_jwk_str(jwk: &str) -> Result<Self>
     where
         C: JwkParameters + ValidatePublicKey,
@@ -277,8 +265,6 @@ where
 
     /// Serialize this secret key as [`JwkEcKey`] JSON Web Key (JWK).
     #[cfg(all(feature = "arithmetic", feature = "jwk"))]
-    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk(&self) -> JwkEcKey
     where
         C: Curve + JwkParameters + ProjectiveArithmetic,
@@ -290,8 +276,6 @@ where
 
     /// Serialize this secret key as JSON Web Key (JWK) string.
     #[cfg(all(feature = "arithmetic", feature = "jwk"))]
-    #[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk_string(&self) -> Zeroizing<String>
     where
         C: Curve + JwkParameters + ProjectiveArithmetic,
@@ -344,7 +328,6 @@ where
 }
 
 #[cfg(all(feature = "sec1"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> TryFrom<sec1::EcPrivateKey<'_>> for SecretKey<C>
 where
     C: Curve + ValidatePublicKey,
@@ -371,7 +354,6 @@ where
 }
 
 #[cfg(feature = "arithmetic")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 impl<C> From<NonZeroScalar<C>> for SecretKey<C>
 where
     C: Curve + ProjectiveArithmetic,
@@ -382,7 +364,6 @@ where
 }
 
 #[cfg(feature = "arithmetic")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 impl<C> From<&NonZeroScalar<C>> for SecretKey<C>
 where
     C: Curve + ProjectiveArithmetic,

@@ -77,7 +77,6 @@ use alloc::boxed::Box;
 /// Subject Public Key Info (SPKI) as the encoding format.
 ///
 /// For a more text-friendly encoding of public keys, use [`JwkEcKey`] instead.
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PublicKey<C>
 where
@@ -156,7 +155,6 @@ where
 
     /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`PublicKey`].
     #[cfg(feature = "jwk")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
     where
         C: Curve + JwkParameters,
@@ -168,7 +166,6 @@ where
 
     /// Parse a string containing a JSON Web Key (JWK) into a [`PublicKey`].
     #[cfg(feature = "jwk")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn from_jwk_str(jwk: &str) -> Result<Self>
     where
         C: Curve + JwkParameters,
@@ -180,7 +177,6 @@ where
 
     /// Serialize this public key as [`JwkEcKey`] JSON Web Key (JWK).
     #[cfg(feature = "jwk")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk(&self) -> JwkEcKey
     where
         C: Curve + JwkParameters,
@@ -192,7 +188,6 @@ where
 
     /// Serialize this public key as JSON Web Key (JWK) string.
     #[cfg(feature = "jwk")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "jwk")))]
     pub fn to_jwk_string(&self) -> String
     where
         C: Curve + JwkParameters,
@@ -215,7 +210,6 @@ where
 impl<C> Copy for PublicKey<C> where C: Curve + ProjectiveArithmetic {}
 
 #[cfg(feature = "sec1")]
-#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> FromEncodedPoint<C> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
@@ -232,7 +226,6 @@ where
 }
 
 #[cfg(feature = "sec1")]
-#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> ToEncodedPoint<C> for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
@@ -247,7 +240,6 @@ where
 }
 
 #[cfg(feature = "sec1")]
-#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> From<PublicKey<C>> for EncodedPoint<C>
 where
     C: Curve + ProjectiveArithmetic + PointCompression,
@@ -260,7 +252,6 @@ where
 }
 
 #[cfg(feature = "sec1")]
-#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> From<&PublicKey<C>> for EncodedPoint<C>
 where
     C: Curve + ProjectiveArithmetic + PointCompression,
@@ -295,7 +286,6 @@ where
 }
 
 #[cfg(feature = "sec1")]
-#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> PartialOrd for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
@@ -308,7 +298,6 @@ where
 }
 
 #[cfg(feature = "sec1")]
-#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 impl<C> Ord for PublicKey<C>
 where
     C: Curve + ProjectiveArithmetic,
@@ -324,7 +313,6 @@ where
 }
 
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "pkcs8", feature = "sec1"))))]
 impl<C> TryFrom<pkcs8::SubjectPublicKeyInfo<'_>> for PublicKey<C>
 where
     C: Curve + AssociatedOid + ProjectiveArithmetic,
@@ -341,7 +329,6 @@ where
 }
 
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "pkcs8", feature = "sec1"))))]
 impl<C> DecodePublicKey for PublicKey<C>
 where
     C: Curve + AssociatedOid + ProjectiveArithmetic,
@@ -351,7 +338,6 @@ where
 }
 
 #[cfg(all(feature = "alloc", feature = "pkcs8"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "alloc", feature = "pkcs8"))))]
 impl<C> EncodePublicKey for PublicKey<C>
 where
     C: Curve + AssociatedOid + ProjectiveArithmetic,
@@ -375,7 +361,6 @@ where
 }
 
 #[cfg(feature = "pem")]
-#[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for PublicKey<C>
 where
     C: Curve + AssociatedOid + ProjectiveArithmetic,
@@ -390,7 +375,6 @@ where
 }
 
 #[cfg(feature = "pem")]
-#[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> ToString for PublicKey<C>
 where
     C: Curve + AssociatedOid + ProjectiveArithmetic,
@@ -404,7 +388,6 @@ where
 }
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<C> Serialize for PublicKey<C>
 where
     C: Curve + AssociatedOid + ProjectiveArithmetic,
@@ -421,7 +404,6 @@ where
 }
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de, C> Deserialize<'de> for PublicKey<C>
 where
     C: Curve + AssociatedOid + ProjectiveArithmetic,

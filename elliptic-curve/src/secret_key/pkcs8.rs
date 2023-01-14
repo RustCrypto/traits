@@ -27,7 +27,6 @@ use {
     core::str::FromStr,
 };
 
-#[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 impl<C> TryFrom<pkcs8::PrivateKeyInfo<'_>> for SecretKey<C>
 where
     C: Curve + AssociatedOid + ValidatePublicKey,
@@ -45,7 +44,6 @@ where
     }
 }
 
-#[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 impl<C> DecodePrivateKey for SecretKey<C>
 where
     C: Curve + AssociatedOid + ValidatePublicKey,
@@ -57,8 +55,6 @@ where
 // It doesn't strictly depend on `pkcs8/pem` but we can't easily activate `pkcs8/alloc`
 // without adding a separate crate feature just for this functionality.
 #[cfg(all(feature = "arithmetic", feature = "pem"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
-#[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> EncodePrivateKey for SecretKey<C>
 where
     C: Curve + AssociatedOid + ProjectiveArithmetic,
@@ -78,7 +74,6 @@ where
 }
 
 #[cfg(feature = "pem")]
-#[cfg_attr(docsrs, doc(cfg(feature = "pem")))]
 impl<C> FromStr for SecretKey<C>
 where
     C: Curve + AssociatedOid + ValidatePublicKey,

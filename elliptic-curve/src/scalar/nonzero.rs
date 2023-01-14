@@ -28,7 +28,6 @@ use serdect::serde::{de, ser, Deserialize, Serialize};
 ///
 /// In the context of ECC, it's useful for ensuring that scalar multiplication
 /// cannot result in the point at infinity.
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 #[derive(Clone)]
 pub struct NonZeroScalar<C>
 where
@@ -332,7 +331,6 @@ where
 }
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<C> Serialize for NonZeroScalar<C>
 where
     C: Curve + ScalarArithmetic,
@@ -346,7 +344,6 @@ where
 }
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de, C> Deserialize<'de> for NonZeroScalar<C>
 where
     C: Curve + ScalarArithmetic,

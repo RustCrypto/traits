@@ -15,7 +15,6 @@ use serdect::serde::{de, ser, Deserialize, Serialize};
 ///
 /// In the context of ECC, it's useful for ensuring that certain arithmetic
 /// cannot result in the identity point.
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 #[derive(Clone, Copy)]
 pub struct NonIdentity<P> {
     point: P,
@@ -131,7 +130,6 @@ where
 }
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<P> Serialize for NonIdentity<P>
 where
     P: Serialize,
@@ -145,7 +143,6 @@ where
 }
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de, P> Deserialize<'de> for NonIdentity<P>
 where
     P: ConditionallySelectable + ConstantTimeEq + Default + Deserialize<'de> + GroupEncoding,

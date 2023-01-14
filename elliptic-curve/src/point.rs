@@ -1,7 +1,6 @@
 //! Traits for elliptic curve points.
 
 #[cfg(feature = "arithmetic")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 mod non_identity;
 
 #[cfg(feature = "arithmetic")]

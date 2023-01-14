@@ -1,5 +1,5 @@
 #![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![doc = include_str!("../README.md")]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
@@ -58,34 +58,20 @@
 #[allow(unused_imports)]
 #[macro_use]
 extern crate alloc;
-
 #[cfg(feature = "std")]
 extern crate std;
-
-#[cfg(feature = "rand_core")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-pub use rand_core;
 
 pub mod ops;
 
 #[cfg(feature = "dev")]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
-
 #[cfg(feature = "ecdh")]
-#[cfg_attr(docsrs, doc(cfg(feature = "ecdh")))]
 pub mod ecdh;
-
 #[cfg(feature = "hash2curve")]
-#[cfg_attr(docsrs, doc(cfg(feature = "hash2curve")))]
 pub mod hash2curve;
-
 #[cfg(feature = "sec1")]
-#[cfg_attr(docsrs, doc(cfg(feature = "sec1")))]
 pub mod sec1;
-
 #[cfg(feature = "arithmetic")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub mod weierstrass;
 
 mod error;
@@ -145,7 +131,6 @@ use generic_array::GenericArray;
 ///
 /// <http://oid-info.com/get/1.2.840.10045.2.1>
 #[cfg(feature = "pkcs8")]
-#[cfg_attr(docsrs, doc(cfg(feature = "pkcs8")))]
 pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
     pkcs8::ObjectIdentifier::new_unwrap("1.2.840.10045.2.1");
 
@@ -189,19 +174,16 @@ pub type FieldBytes<C> = GenericArray<u8, FieldSize<C>>;
 
 /// Affine point type for a given curve with a [`ProjectiveArithmetic`]
 /// implementation.
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 #[cfg(feature = "arithmetic")]
 pub type AffinePoint<C> = <C as AffineArithmetic>::AffinePoint;
 
 /// Projective point type for a given curve with a [`ProjectiveArithmetic`]
 /// implementation.
 #[cfg(feature = "arithmetic")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arithmetic")))]
 pub type ProjectivePoint<C> = <C as ProjectiveArithmetic>::ProjectivePoint;
 
 /// Elliptic curve parameters used by VOPRF.
 #[cfg(feature = "voprf")]
-#[cfg_attr(docsrs, doc(cfg(feature = "voprf")))]
 pub trait VoprfParameters: Curve {
     /// The `ID` parameter which identifies a particular elliptic curve
     /// as defined in [section 4 of `draft-irtf-cfrg-voprf-08`][voprf].
