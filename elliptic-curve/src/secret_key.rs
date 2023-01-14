@@ -10,7 +10,7 @@ mod pkcs8;
 
 use crate::{Curve, Error, FieldBytes, Result, ScalarCore};
 use core::fmt::{self, Debug};
-use crypto_bigint::Encoding;
+use crypto_bigint::Integer;
 use generic_array::GenericArray;
 use subtle::{Choice, ConstantTimeEq};
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -146,7 +146,7 @@ where
 
     /// Deserialize raw secret scalar as a big endian integer.
     pub fn from_be_bytes(bytes: &[u8]) -> Result<Self> {
-        if bytes.len() != C::UInt::BYTE_SIZE {
+        if bytes.len() != C::UInt::BYTES {
             return Err(Error);
         }
 

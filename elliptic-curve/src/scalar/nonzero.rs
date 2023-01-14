@@ -1,7 +1,6 @@
 //! Non-zero scalar type.
 
 use crate::{
-    bigint::Encoding as _,
     ops::{Invert, Reduce, ReduceNonZero},
     rand_core::{CryptoRng, RngCore},
     Curve, Error, FieldBytes, IsHigh, PrimeCurve, Scalar, ScalarArithmetic, ScalarCore, SecretKey,
@@ -263,7 +262,7 @@ where
     type Error = Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self, Error> {
-        if bytes.len() == C::UInt::BYTE_SIZE {
+        if bytes.len() == C::UInt::BYTES {
             Option::from(NonZeroScalar::from_repr(GenericArray::clone_from_slice(
                 bytes,
             )))

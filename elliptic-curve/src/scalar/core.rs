@@ -85,7 +85,7 @@ where
 
     /// Decode [`ScalarCore`] from a big endian byte slice.
     pub fn from_be_slice(slice: &[u8]) -> Result<Self> {
-        if slice.len() == C::UInt::BYTE_SIZE {
+        if slice.len() == C::UInt::BYTES {
             Option::from(Self::from_be_bytes(GenericArray::clone_from_slice(slice))).ok_or(Error)
         } else {
             Err(Error)
@@ -99,7 +99,7 @@ where
 
     /// Decode [`ScalarCore`] from a little endian byte slice.
     pub fn from_le_slice(slice: &[u8]) -> Result<Self> {
-        if slice.len() == C::UInt::BYTE_SIZE {
+        if slice.len() == C::UInt::BYTES {
             Option::from(Self::from_le_bytes(GenericArray::clone_from_slice(slice))).ok_or(Error)
         } else {
             Err(Error)
