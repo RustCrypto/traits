@@ -6,7 +6,7 @@
 use crate::{
     bigint::{Limb, U256},
     error::{Error, Result},
-    ops::{LinearCombination, MulByGenerator, Reduce},
+    ops::{LinearCombination, MulByGenerator, Reduce, Shr1},
     pkcs8,
     rand_core::RngCore,
     scalar::FromUintUnchecked,
@@ -90,7 +90,7 @@ impl JwkParameters for MockCurve {
 }
 
 /// Example scalar type
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, PartialOrd, Ord)]
 pub struct Scalar(ScalarPrimitive);
 
 impl Field for Scalar {
@@ -282,6 +282,12 @@ impl Neg for Scalar {
 
     fn neg(self) -> Scalar {
         Self(self.0.neg())
+    }
+}
+
+impl Shr1 for Scalar {
+    fn shr1(&mut self) {
+        self.0.shr1();
     }
 }
 

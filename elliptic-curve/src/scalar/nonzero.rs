@@ -66,6 +66,19 @@ where
     pub fn from_uint(uint: C::Uint) -> CtOption<Self> {
         ScalarPrimitive::new(uint).and_then(|scalar| Self::new(scalar.into()))
     }
+
+    /// Perform an inversion in variable-time.
+    ///
+    /// ⚠️ WARNING!
+    ///
+    /// This method should not be used with (unblinded) secret scalars, as its
+    /// variable-time operation can potentially leak secrets through
+    /// sidechannels.
+    pub fn invert_vartime(&self) -> Self {
+        Self {
+            scalar: super::invert_vartime::<C>(&self.scalar).expect("nonzero input"),
+        }
+    }
 }
 
 impl<C> AsRef<Scalar<C>> for NonZeroScalar<C>

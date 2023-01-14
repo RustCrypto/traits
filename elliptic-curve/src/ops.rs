@@ -105,8 +105,8 @@ pub trait ReduceNonZero<Uint: Integer + ArrayEncoding>: Sized {
     fn from_uint_reduced_nonzero(n: Uint) -> Self;
 }
 
-/// Right shift this value by one, storing the result in-place.
+/// Right shift this value by one bit, storing the result in-place.
 pub trait Shr1 {
-    /// Right shift this value by one in-place.
+    /// Right shift this value by one bit in-place.
     fn shr1(&mut self);
 }
