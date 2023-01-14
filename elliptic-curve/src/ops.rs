@@ -104,3 +104,9 @@ pub trait ReduceNonZero<Uint: Integer + ArrayEncoding>: Sized {
     /// Perform a modular reduction, returning a field element.
     fn from_uint_reduced_nonzero(n: Uint) -> Self;
 }
+
+/// Right shift this value by one, storing the result in-place.
+pub trait Shr1 {
+    /// Right shift this value by one in-place.
+    fn shr1(&mut self);
+}
