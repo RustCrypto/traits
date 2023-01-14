@@ -2,7 +2,7 @@
 
 use crate::{
     ops::{LinearCombination, MulByGenerator},
-    AffineXCoordinate, AffineYIsOdd, Curve, FieldBytes, IsHigh, PrimeCurve, ScalarCore,
+    AffineXCoordinate, AffineYIsOdd, Curve, FieldBytes, IsHigh, PrimeCurve, ScalarPrimitive,
 };
 use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq};
@@ -61,7 +61,7 @@ pub trait CurveArithmetic: Curve {
     /// - [`Send`]
     /// - [`Sync`]
     type Scalar: DefaultIsZeroes
-        + From<ScalarCore<Self>>
+        + From<ScalarPrimitive<Self>>
         + Into<FieldBytes<Self>>
         + Into<Self::Uint>
         + IsHigh

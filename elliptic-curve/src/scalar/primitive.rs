@@ -1,12 +1,7 @@
-//! Generic scalar type with core functionality.
+//! Generic scalar type with primitive functionality.
 
 use crate::{
     bigint::{prelude::*, Limb, NonZero},
-    rand_core::{CryptoRng, RngCore},
-    subtle::{
-        Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
-        CtOption,
-    },
     Curve, Error, FieldBytes, IsHigh, Result,
 };
 use base16ct::HexDisplay;
@@ -17,6 +12,11 @@ use core::{
     str,
 };
 use generic_array::GenericArray;
+use rand_core::{CryptoRng, RngCore};
+use subtle::{
+    Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
+    CtOption,
+};
 use zeroize::DefaultIsZeroes;
 
 #[cfg(feature = "arithmetic")]
@@ -28,7 +28,7 @@ use {
 #[cfg(feature = "serde")]
 use serdect::serde::{de, ser, Deserialize, Serialize};
 
-/// Generic scalar type with core functionality.
+/// Generic scalar type with primitive functionality.
 ///
 /// This type provides a baseline level of scalar arithmetic functionality
 /// which is always available for all curves, regardless of if they implement
@@ -41,14 +41,14 @@ use serdect::serde::{de, ser, Deserialize, Serialize};
 ///
 /// The serialization is a fixed-width big endian encoding. When used with
 /// textual formats, the binary data is encoded as hexadecimal.
-// TODO(tarcieri): make this a fully generic `Scalar` type and use it for `CurveArithmetic`
+// TODO(tarcieri): use `crypto-bigint`'s `Residue` type, expose more functionality?
 #[derive(Copy, Clone, Debug, Default)]
-pub struct ScalarCore<C: Curve> {
+pub struct ScalarPrimitive<C: Curve> {
     /// Inner unsigned integer type.
     inner: C::Uint,
 }
 
-impl<C> ScalarCore<C>
+impl<C> ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -65,7 +65,7 @@ where
     /// Scalar modulus.
     pub const MODULUS: C::Uint = C::ORDER;
 
-    /// Generate a random [`ScalarCore`].
+    /// Generate a random [`ScalarPrimitive`].
     pub fn random(rng: impl CryptoRng + RngCore) -> Self {
         Self {
             inner: C::Uint::random_mod(rng, &NonZero::new(Self::MODULUS).unwrap()),
@@ -77,12 +77,12 @@ where
         CtOption::new(Self { inner: uint }, uint.ct_lt(&Self::MODULUS))
     }
 
-    /// Decode [`ScalarCore`] from big endian bytes.
+    /// Decode [`ScalarPrimitive`] from big endian bytes.
     pub fn from_be_bytes(bytes: FieldBytes<C>) -> CtOption<Self> {
         Self::new(C::Uint::from_be_byte_array(bytes))
     }
 
-    /// Decode [`ScalarCore`] from a big endian byte slice.
+    /// Decode [`ScalarPrimitive`] from a big endian byte slice.
     pub fn from_be_slice(slice: &[u8]) -> Result<Self> {
         if slice.len() == C::Uint::BYTES {
             Option::from(Self::from_be_bytes(GenericArray::clone_from_slice(slice))).ok_or(Error)
@@ -91,12 +91,12 @@ where
         }
     }
 
-    /// Decode [`ScalarCore`] from little endian bytes.
+    /// Decode [`ScalarPrimitive`] from little endian bytes.
     pub fn from_le_bytes(bytes: FieldBytes<C>) -> CtOption<Self> {
         Self::new(C::Uint::from_le_byte_array(bytes))
     }
 
-    /// Decode [`ScalarCore`] from a little endian byte slice.
+    /// Decode [`ScalarPrimitive`] from a little endian byte slice.
     pub fn from_le_slice(slice: &[u8]) -> Result<Self> {
         if slice.len() == C::Uint::BYTES {
             Option::from(Self::from_le_bytes(GenericArray::clone_from_slice(slice))).ok_or(Error)
@@ -115,46 +115,46 @@ where
         self.inner.as_ref()
     }
 
-    /// Is this [`ScalarCore`] value equal to zero?
+    /// Is this [`ScalarPrimitive`] value equal to zero?
     pub fn is_zero(&self) -> Choice {
         self.inner.is_zero()
     }
 
-    /// Is this [`ScalarCore`] value even?
+    /// Is this [`ScalarPrimitive`] value even?
     pub fn is_even(&self) -> Choice {
         self.inner.is_even()
     }
 
-    /// Is this [`ScalarCore`] value odd?
+    /// Is this [`ScalarPrimitive`] value odd?
     pub fn is_odd(&self) -> Choice {
         self.inner.is_odd()
     }
 
-    /// Encode [`ScalarCore`] as big endian bytes.
+    /// Encode [`ScalarPrimitive`] as big endian bytes.
     pub fn to_be_bytes(self) -> FieldBytes<C> {
         self.inner.to_be_byte_array()
     }
 
-    /// Encode [`ScalarCore`] as little endian bytes.
+    /// Encode [`ScalarPrimitive`] as little endian bytes.
     pub fn to_le_bytes(self) -> FieldBytes<C> {
         self.inner.to_le_byte_array()
     }
 }
 
 #[cfg(feature = "arithmetic")]
-impl<C> ScalarCore<C>
+impl<C> ScalarPrimitive<C>
 where
     C: CurveArithmetic,
 {
-    /// Convert [`ScalarCore`] into a given curve's scalar type
-    // TODO(tarcieri): replace curve-specific scalars with `ScalarCore`
+    /// Convert [`ScalarPrimitive`] into a given curve's scalar type
+    // TODO(tarcieri): replace curve-specific scalars with `ScalarPrimitive`
     pub(super) fn to_scalar(self) -> Scalar<C> {
         Scalar::<C>::from_repr(self.to_be_bytes()).unwrap()
     }
 }
 
 // TODO(tarcieri): better encapsulate this?
-impl<C> AsRef<[Limb]> for ScalarCore<C>
+impl<C> AsRef<[Limb]> for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -163,7 +163,7 @@ where
     }
 }
 
-impl<C> ConditionallySelectable for ScalarCore<C>
+impl<C> ConditionallySelectable for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -174,7 +174,7 @@ where
     }
 }
 
-impl<C> ConstantTimeEq for ScalarCore<C>
+impl<C> ConstantTimeEq for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -183,7 +183,7 @@ where
     }
 }
 
-impl<C> ConstantTimeLess for ScalarCore<C>
+impl<C> ConstantTimeLess for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -192,7 +192,7 @@ where
     }
 }
 
-impl<C> ConstantTimeGreater for ScalarCore<C>
+impl<C> ConstantTimeGreater for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -201,11 +201,11 @@ where
     }
 }
 
-impl<C: Curve> DefaultIsZeroes for ScalarCore<C> {}
+impl<C: Curve> DefaultIsZeroes for ScalarPrimitive<C> {}
 
-impl<C: Curve> Eq for ScalarCore<C> {}
+impl<C: Curve> Eq for ScalarPrimitive<C> {}
 
-impl<C> PartialEq for ScalarCore<C>
+impl<C> PartialEq for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -214,7 +214,7 @@ where
     }
 }
 
-impl<C> PartialOrd for ScalarCore<C>
+impl<C> PartialOrd for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -223,7 +223,7 @@ where
     }
 }
 
-impl<C> Ord for ScalarCore<C>
+impl<C> Ord for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -232,7 +232,7 @@ where
     }
 }
 
-impl<C> From<u64> for ScalarCore<C>
+impl<C> From<u64> for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -243,7 +243,7 @@ where
     }
 }
 
-impl<C> Add<ScalarCore<C>> for ScalarCore<C>
+impl<C> Add<ScalarPrimitive<C>> for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -254,7 +254,7 @@ where
     }
 }
 
-impl<C> Add<&ScalarCore<C>> for ScalarCore<C>
+impl<C> Add<&ScalarPrimitive<C>> for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -267,7 +267,7 @@ where
     }
 }
 
-impl<C> AddAssign<ScalarCore<C>> for ScalarCore<C>
+impl<C> AddAssign<ScalarPrimitive<C>> for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -276,7 +276,7 @@ where
     }
 }
 
-impl<C> AddAssign<&ScalarCore<C>> for ScalarCore<C>
+impl<C> AddAssign<&ScalarPrimitive<C>> for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -285,7 +285,7 @@ where
     }
 }
 
-impl<C> Sub<ScalarCore<C>> for ScalarCore<C>
+impl<C> Sub<ScalarPrimitive<C>> for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -296,7 +296,7 @@ where
     }
 }
 
-impl<C> Sub<&ScalarCore<C>> for ScalarCore<C>
+impl<C> Sub<&ScalarPrimitive<C>> for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -309,7 +309,7 @@ where
     }
 }
 
-impl<C> SubAssign<ScalarCore<C>> for ScalarCore<C>
+impl<C> SubAssign<ScalarPrimitive<C>> for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -318,7 +318,7 @@ where
     }
 }
 
-impl<C> SubAssign<&ScalarCore<C>> for ScalarCore<C>
+impl<C> SubAssign<&ScalarPrimitive<C>> for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -327,7 +327,7 @@ where
     }
 }
 
-impl<C> Neg for ScalarCore<C>
+impl<C> Neg for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -340,18 +340,18 @@ where
     }
 }
 
-impl<C> Neg for &ScalarCore<C>
+impl<C> Neg for &ScalarPrimitive<C>
 where
     C: Curve,
 {
-    type Output = ScalarCore<C>;
+    type Output = ScalarPrimitive<C>;
 
-    fn neg(self) -> ScalarCore<C> {
+    fn neg(self) -> ScalarPrimitive<C> {
         -*self
     }
 }
 
-impl<C> IsHigh for ScalarCore<C>
+impl<C> IsHigh for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -361,7 +361,7 @@ where
     }
 }
 
-impl<C> fmt::Display for ScalarCore<C>
+impl<C> fmt::Display for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -370,7 +370,7 @@ where
     }
 }
 
-impl<C> fmt::LowerHex for ScalarCore<C>
+impl<C> fmt::LowerHex for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -379,7 +379,7 @@ where
     }
 }
 
-impl<C> fmt::UpperHex for ScalarCore<C>
+impl<C> fmt::UpperHex for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -388,7 +388,7 @@ where
     }
 }
 
-impl<C> str::FromStr for ScalarCore<C>
+impl<C> str::FromStr for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -402,7 +402,7 @@ where
 }
 
 #[cfg(feature = "serde")]
-impl<C> Serialize for ScalarCore<C>
+impl<C> Serialize for ScalarPrimitive<C>
 where
     C: Curve,
 {
@@ -415,7 +415,7 @@ where
 }
 
 #[cfg(feature = "serde")]
-impl<'de, C> Deserialize<'de> for ScalarCore<C>
+impl<'de, C> Deserialize<'de> for ScalarPrimitive<C>
 where
     C: Curve,
 {

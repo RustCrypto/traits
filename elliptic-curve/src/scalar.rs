@@ -1,12 +1,12 @@
 //! Scalar types.
 
-mod core;
 #[cfg(feature = "arithmetic")]
 mod invert;
 #[cfg(feature = "arithmetic")]
 mod nonzero;
+mod primitive;
 
-pub use self::core::ScalarCore;
+pub use self::primitive::ScalarPrimitive;
 #[cfg(feature = "arithmetic")]
 pub use self::{invert::invert_vartime, nonzero::NonZeroScalar};
 
