@@ -24,7 +24,7 @@ use hex_literal::hex;
 use pkcs8::AssociatedOid;
 
 #[cfg(feature = "bits")]
-use crate::group::ff::PrimeFieldBits;
+use ff::PrimeFieldBits;
 
 #[cfg(feature = "jwk")]
 use crate::JwkParameters;

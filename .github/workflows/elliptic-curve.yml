@@ -52,10 +52,9 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features sec1
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features serde
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features voprf
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,arithmetic,pkcs8
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,serde
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features arithmetic,serde
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features pkcs8,sec1
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features pem,pkcs8,sec1
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,digest,ecdh,hazmat,hash2curve,jwk,pem,pkcs8,sec1,serde,voprf
 
   # TODO: use the reusable workflow after this crate is re-added to the
