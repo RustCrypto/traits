@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.0.0 (2023-01-15)
+### Added
+- `SignatureEncoding` trait as a replacement for `Signature` trait and the
+  now removed `AsRef<[u8]>` bound on signatures ([#1141])
+- New `Keypair` trait which returns owned keys instead of borrowed ([#1141])
+
+### Changed
+- `derive-preview` has been renamed to `derive` and stabilized ([#1141])
+- `digest-preview` renamed to `digest`, still unstable ([#1210])
+- `hazmat-preview` feature stabilized and removed, always on ([#1141])
+- `rand-preview` renamed to `rand_core`, still unstable ([#1210])
+- `std` feature is no longer enabled by default ([#1141])
+- Old `Keypair` trait renamed to `KeypairRef` ([#1141])
+- Signature generic parameter removed from `Keypair`/`KeypairRef` ([#1141])
+- Use `&mut impl CryptoRngCore` RNG arguments ([#1147])
+
+### Removed
+- `Signature` trait - replaced by `SignatureEncoding` ([#1141])
+- `hazmat-preview` feature, now always on ([#1141])
+
+[#1141]: https://github.com/RustCrypto/traits/pull/1141
+[#1147]: https://github.com/RustCrypto/traits/pull/1147
+[#1210]: https://github.com/RustCrypto/traits/pull/1141
+
 ## 1.6.4 (2022-10-06)
 ### Added
 - `RandomizedPrehashSigner` trait in `hazmat` module ([#1130])
