@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.0 (2022-01-15)
+### Changed
+- Bump `signature` to v2 ([#1141], [#1211])
+
+### Removed
+- `AsyncKeypair` is no longer needed due to `signature` v2 bounds changes ([#1141])
+
+[#1141]: https://github.com/RustCrypto/traits/pull/1141
+[#1211]: https://github.com/RustCrypto/traits/pull/1211
+
 ## 0.2.1 (2022-09-15)
 ### Changed
 - Relax `AsyncKeypair` bounds ([#1107])
