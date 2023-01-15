@@ -25,7 +25,6 @@ use crate::{
 /// types which impl [`DigestVerifier`].
 ///
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
-#[cfg_attr(docsrs, doc(cfg(feature = "digest")))]
 pub trait PrehashSignature {
     /// Preferred `Digest` algorithm to use when computing this signature type.
     type Digest: digest::Digest;

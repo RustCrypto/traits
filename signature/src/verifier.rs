@@ -35,7 +35,6 @@ pub trait Verifier<S> {
 ///
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 #[cfg(feature = "digest-preview")]
-#[cfg_attr(docsrs, doc(cfg(feature = "digest-preview")))]
 pub trait DigestVerifier<D: Digest, S> {
     /// Verify the signature against the given [`Digest`] output.
     fn verify_digest(&self, digest: D, signature: &S) -> Result<(), Error>;

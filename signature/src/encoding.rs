@@ -20,7 +20,6 @@ pub trait SignatureEncoding:
 
     /// Encode signature as a byte vector.
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn to_vec(&self) -> Vec<u8> {
         self.to_bytes().as_ref().to_vec()
     }

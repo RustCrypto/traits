@@ -34,7 +34,6 @@ pub trait PrehashSigner<S> {
 
 /// Sign the provided message prehash using the provided external randomness source, returning a digital signature.
 #[cfg(feature = "rand-preview")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand-preview")))]
 pub trait RandomizedPrehashSigner<S> {
     /// Attempt to sign the given message digest, returning a digital signature
     /// on success, or an error if something went wrong.

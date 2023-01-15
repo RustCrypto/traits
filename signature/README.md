@@ -61,6 +61,7 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (links)
 
+[RustCrypto]: https://github.com/RustCrypto/
 [digital signatures]: https://en.wikipedia.org/wiki/Digital_signature
 [`dsa`]: https://github.com/RustCrypto/signatures/tree/master/dsa
 [`ecdsa`]: https://github.com/RustCrypto/signatures/tree/master/ecdsa

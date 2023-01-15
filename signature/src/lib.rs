@@ -4,7 +4,7 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg"
 )]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms, unused_qualifications)]
 
@@ -162,16 +162,13 @@ mod prehash_signature;
 pub use crate::{encoding::*, error::*, keypair::*, signer::*, verifier::*};
 
 #[cfg(feature = "derive")]
-#[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
 pub use derive::{Signer, Verifier};
 
 #[cfg(all(feature = "derive", feature = "digest-preview"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "derive", feature = "digest-preview"))))]
 pub use derive::{DigestSigner, DigestVerifier};
 
 #[cfg(feature = "digest-preview")]
 pub use {crate::prehash_signature::*, digest};
 
 #[cfg(feature = "rand-preview")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand-preview")))]
 pub use rand_core;
