@@ -95,8 +95,8 @@
 //!
 //! ## Unstable features
 //!
-//! Despite being post-1.0, this crate includes a number of off-by-default
-//! unstable features named `*-preview`, each of which depends on a pre-1.0
+//! Despite being post-1.0, this crate includes off-by-default unstable
+//! optional features, each of which depends on a pre-1.0
 //! crate.
 //!
 //! These features are considered exempt from SemVer. See the
@@ -104,21 +104,21 @@
 //!
 //! The following unstable features are presently supported:
 //!
-//! - `derive-preview`: for implementers of signature systems using
-//!   [`DigestSigner`] and [`DigestVerifier`], the `derive-preview` feature
-//!   can be used to derive [`Signer`] and [`Verifier`] traits which prehash
-//!   the input message using the [`PrehashSignature::Digest`] algorithm for
-//!   a given signature type. When the `derive-preview` feature is enabled
+//! - `derive`: for implementers of signature systems using [`DigestSigner`]
+//!   and [`DigestVerifier`], the `derive` feature can be used to
+//!   derive [`Signer`] and [`Verifier`] traits which prehash the input
+//!   message using the [`PrehashSignature::Digest`] algorithm for
+//!   a given signature type. When the `derive` feature is enabled
 //!   import the proc macros with `use signature::{Signer, Verifier}` and then
 //!   add a `derive(Signer)` or `derive(Verifier)` attribute to the given
 //!   digest signer/verifier type. Enabling this feature also enables `digest`
 //!   support (see immediately below).
-//! - `digest-preview`: enables the [`DigestSigner`] and [`DigestVerifier`]
+//! - `digest`: enables the [`DigestSigner`] and [`DigestVerifier`]
 //!   traits which are based on the [`Digest`] trait from the [`digest`] crate.
 //!   These traits are used for representing signature systems based on the
 //!   [Fiat-Shamir heuristic] which compute a random challenge value to sign
 //!   by computing a cryptographically secure digest of the input message.
-//! - `rand-preview`: enables the [`RandomizedSigner`] trait for signature
+//! - `rand_core`: enables the [`RandomizedSigner`] trait for signature
 //!   systems which rely on a cryptographically secure random number generator
 //!   for security.
 //!
@@ -132,21 +132,8 @@
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
-
 #[cfg(feature = "std")]
 extern crate std;
-
-#[cfg(all(feature = "digest", not(feature = "digest-preview")))]
-compile_error!(
-    "The `digest` feature should not be enabled directly. \
-    Use the `digest-preview` feature instead."
-);
-
-#[cfg(all(feature = "rand_core", not(feature = "rand-preview")))]
-compile_error!(
-    "The `rand_core` feature should not be enabled directly. \
-    Use the `rand-preview` feature instead."
-);
 
 pub mod hazmat;
 
@@ -156,7 +143,7 @@ mod keypair;
 mod signer;
 mod verifier;
 
-#[cfg(feature = "digest-preview")]
+#[cfg(feature = "digest")]
 mod prehash_signature;
 
 pub use crate::{encoding::*, error::*, keypair::*, signer::*, verifier::*};
@@ -164,11 +151,11 @@ pub use crate::{encoding::*, error::*, keypair::*, signer::*, verifier::*};
 #[cfg(feature = "derive")]
 pub use derive::{Signer, Verifier};
 
-#[cfg(all(feature = "derive", feature = "digest-preview"))]
+#[cfg(all(feature = "derive", feature = "digest"))]
 pub use derive::{DigestSigner, DigestVerifier};
 
-#[cfg(feature = "digest-preview")]
+#[cfg(feature = "digest")]
 pub use {crate::prehash_signature::*, digest};
 
-#[cfg(feature = "rand-preview")]
+#[cfg(feature = "rand_core")]
 pub use rand_core;

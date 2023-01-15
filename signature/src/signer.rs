@@ -2,10 +2,10 @@
 
 use crate::error::Error;
 
-#[cfg(feature = "digest-preview")]
+#[cfg(feature = "digest")]
 use crate::digest::Digest;
 
-#[cfg(feature = "rand-preview")]
+#[cfg(feature = "rand_core")]
 use crate::rand_core::CryptoRngCore;
 
 /// Sign the provided message bytestring using `Self` (e.g. a cryptographic key
@@ -67,7 +67,7 @@ impl<S, T: Signer<S>> SignerMut<S> for T {
 /// API accepts a [`Digest`] instance, rather than a raw digest value.
 ///
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
-#[cfg(feature = "digest-preview")]
+#[cfg(feature = "digest")]
 pub trait DigestSigner<D: Digest, S> {
     /// Sign the given prehashed message [`Digest`], returning a signature.
     ///
@@ -83,7 +83,7 @@ pub trait DigestSigner<D: Digest, S> {
 }
 
 /// Sign the given message using the provided external randomness source.
-#[cfg(feature = "rand-preview")]
+#[cfg(feature = "rand_core")]
 pub trait RandomizedSigner<S> {
     /// Sign the given message and return a digital signature
     fn sign_with_rng(&self, rng: &mut impl CryptoRngCore, msg: &[u8]) -> S {
@@ -101,7 +101,7 @@ pub trait RandomizedSigner<S> {
 
 /// Combination of [`DigestSigner`] and [`RandomizedSigner`] with support for
 /// computing a signature over a digest which requires entropy from an RNG.
-#[cfg(all(feature = "digest-preview", feature = "rand-preview"))]
+#[cfg(all(feature = "digest", feature = "rand_core"))]
 pub trait RandomizedDigestSigner<D: Digest, S> {
     /// Sign the given prehashed message `Digest`, returning a signature.
     ///
