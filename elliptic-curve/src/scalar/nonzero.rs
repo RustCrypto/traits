@@ -76,7 +76,7 @@ where
     /// sidechannels.
     pub fn invert_vartime(&self) -> Self {
         Self {
-            scalar: super::invert_vartime::<C>(&self.scalar).expect("nonzero input"),
+            scalar: super::invert_vartime::<C>(&self.scalar).unwrap(),
         }
     }
 }
