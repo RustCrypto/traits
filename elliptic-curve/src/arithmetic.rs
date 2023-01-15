@@ -61,7 +61,8 @@ pub trait CurveArithmetic: Curve {
     /// - [`Default`]
     /// - [`Send`]
     /// - [`Sync`]
-    type Scalar: DefaultIsZeroes
+    type Scalar: AsRef<Self::Scalar>
+        + DefaultIsZeroes
         + From<ScalarPrimitive<Self>>
         + FromUintUnchecked<Uint = Self::Uint>
         + Into<FieldBytes<Self>>

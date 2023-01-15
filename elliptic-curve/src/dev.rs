@@ -179,6 +179,12 @@ impl PrimeFieldBits for Scalar {
     }
 }
 
+impl AsRef<Scalar> for Scalar {
+    fn as_ref(&self) -> &Scalar {
+        self
+    }
+}
+
 impl ConditionallySelectable for Scalar {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         Self(ScalarPrimitive::conditional_select(&a.0, &b.0, choice))
