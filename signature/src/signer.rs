@@ -24,10 +24,11 @@ pub trait Signer<S> {
     fn try_sign(&self, msg: &[u8]) -> Result<S, Error>;
 }
 
-/// Sign the provided message bytestring using `&mut Self` (e.g., an evolving
-/// cryptographic key), returning a digital signature.
+/// Sign the provided message bytestring using `&mut Self` (e.g. an evolving
+/// cryptographic key such as a stateful hash-based signature), returning a
+/// digital signature.
 pub trait SignerMut<S> {
-    /// Sign the given message, update the state, and return a digital signature
+    /// Sign the given message, update the state, and return a digital signature.
     fn sign(&mut self, msg: &[u8]) -> S {
         self.try_sign(msg).expect("signature operation failed")
     }
@@ -67,7 +68,6 @@ impl<S, T: Signer<S>> SignerMut<S> for T {
 ///
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 #[cfg(feature = "digest-preview")]
-#[cfg_attr(docsrs, doc(cfg(feature = "digest-preview")))]
 pub trait DigestSigner<D: Digest, S> {
     /// Sign the given prehashed message [`Digest`], returning a signature.
     ///
@@ -84,7 +84,6 @@ pub trait DigestSigner<D: Digest, S> {
 
 /// Sign the given message using the provided external randomness source.
 #[cfg(feature = "rand-preview")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand-preview")))]
 pub trait RandomizedSigner<S> {
     /// Sign the given message and return a digital signature
     fn sign_with_rng(&self, rng: &mut impl CryptoRngCore, msg: &[u8]) -> S {
@@ -103,8 +102,6 @@ pub trait RandomizedSigner<S> {
 /// Combination of [`DigestSigner`] and [`RandomizedSigner`] with support for
 /// computing a signature over a digest which requires entropy from an RNG.
 #[cfg(all(feature = "digest-preview", feature = "rand-preview"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "digest-preview")))]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand-preview")))]
 pub trait RandomizedDigestSigner<D: Digest, S> {
     /// Sign the given prehashed message `Digest`, returning a signature.
     ///

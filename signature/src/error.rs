@@ -42,7 +42,6 @@ impl Error {
     /// cases are for propagating errors related to external signers, e.g.
     /// communication/authentication errors with HSMs, KMS, etc.
     #[cfg(feature = "std")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     pub fn from_source(
         source: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>>,
     ) -> Self {
