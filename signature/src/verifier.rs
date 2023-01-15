@@ -2,7 +2,7 @@
 
 use crate::error::Error;
 
-#[cfg(feature = "digest-preview")]
+#[cfg(feature = "digest")]
 use crate::digest::Digest;
 
 /// Verify the provided message bytestring using `Self` (e.g. a public key)
@@ -34,7 +34,7 @@ pub trait Verifier<S> {
 /// API accepts a [`Digest`] instance, rather than a raw digest value.
 ///
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
-#[cfg(feature = "digest-preview")]
+#[cfg(feature = "digest")]
 pub trait DigestVerifier<D: Digest, S> {
     /// Verify the signature against the given [`Digest`] output.
     fn verify_digest(&self, digest: D, signature: &S) -> Result<(), Error>;

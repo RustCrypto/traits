@@ -26,10 +26,11 @@ done with a minor version bump.
 
 - All on-by-default features of this library are covered by SemVer
 - MSRV is considered exempt from SemVer as noted above
-- The off-by-default features `derive-preview` and `digest-preview` are
-  unstable "preview" features which are also considered exempt from SemVer.
-  Breaking changes to these features will, like MSRV, be done with a minor
-  version bump.
+- The `derive` feature is stable and covered by SemVer
+- The off-by-default features `digest` and `rand_core` are unstable features 
+  which are also considered exempt from SemVer as they correspond to pre-1.0
+  crates which are still subject to changes. Breaking changes to these features
+  will, like MSRV, be done with a minor version bump.
 
 ## License
 

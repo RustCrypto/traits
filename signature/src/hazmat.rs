@@ -5,14 +5,10 @@
 //!
 //! Using them incorrectly can introduce security vulnerabilities. Please
 //! carefully read the documentation before attempting to use them.
-//!
-//! To use them, enable the `hazmat-preview` crate feature. Note that this
-//! feature is semi-unstable and not subject to regular 1.x SemVer guarantees.
-//! However, any breaking changes will be accompanied with a minor version bump.
 
 use crate::Error;
 
-#[cfg(feature = "rand-preview")]
+#[cfg(feature = "rand_core")]
 use crate::rand_core::CryptoRngCore;
 
 /// Sign the provided message prehash, returning a digital signature.
@@ -33,7 +29,7 @@ pub trait PrehashSigner<S> {
 }
 
 /// Sign the provided message prehash using the provided external randomness source, returning a digital signature.
-#[cfg(feature = "rand-preview")]
+#[cfg(feature = "rand_core")]
 pub trait RandomizedPrehashSigner<S> {
     /// Attempt to sign the given message digest, returning a digital signature
     /// on success, or an error if something went wrong.
