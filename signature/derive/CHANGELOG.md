@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.0.0 (2023-01-15)
+### Changed
+- `Signature` trait has been removed, so don't emit it in custom derive ([#1141])
+
+[#1141]: https://github.com/RustCrypto/traits/pull/1141
+
 ## 1.0.0-pre.7 (2022-09-16)
 ### Fixed
 - Support for `where` bounds ([#1118])
