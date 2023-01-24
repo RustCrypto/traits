@@ -29,7 +29,7 @@ impl PasswordHasher for StubPasswordHasher {
             }
         }
 
-        for slice in &[b"pw", password, b",salt:", salt.as_bytes()] {
+        for slice in &[b"pw", password, b",salt:", salt.as_str().as_bytes()] {
             output.extend_from_slice(slice);
         }
 
@@ -68,7 +68,7 @@ impl<'a> TryFrom<StubParams> for ParamsString {
 #[test]
 fn verify_password_hash() {
     let valid_password = "test password";
-    let salt = Salt::new("test-salt").unwrap();
+    let salt = Salt::from_b64("test-salt").unwrap();
     let hash = PasswordHash::generate(StubPasswordHasher, valid_password, salt).unwrap();
 
     // Sanity tests for StubFunction impl above

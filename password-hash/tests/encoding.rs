@@ -8,7 +8,7 @@
 //!
 //! <https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#b64>
 
-use password_hash::{Output, Salt};
+use password_hash::{Output, Salt, SaltString};
 
 // Example salt encoded as a B64 string.
 const EXAMPLE_SALT_B64: &str = "REVBREJFRUZERUFEQkVFRg";
@@ -23,10 +23,21 @@ const EXAMPLE_OUTPUT_RAW: &[u8] =
 #[test]
 fn salt_roundtrip() {
     let mut buffer = [0u8; 64];
-    let salt = Salt::new(EXAMPLE_SALT_B64).unwrap();
+    let salt = Salt::from_b64(EXAMPLE_SALT_B64).unwrap();
     assert_eq!(salt.as_ref(), EXAMPLE_SALT_B64);
 
-    let salt_decoded = salt.b64_decode(&mut buffer).unwrap();
+    let salt_decoded = salt.to_raw(&mut buffer).unwrap();
+    assert_eq!(salt_decoded, EXAMPLE_SALT_RAW);
+}
+
+#[test]
+fn saltstring_roundtrip() {
+    let mut buffer = [0u8; 64];
+    let salt = SaltString::from_b64(EXAMPLE_SALT_B64).unwrap();
+    assert_eq!(EXAMPLE_SALT_B64.len(), salt.len());
+    assert_eq!(salt.as_ref(), EXAMPLE_SALT_B64);
+
+    let salt_decoded = salt.to_raw(&mut buffer).unwrap();
     assert_eq!(salt_decoded, EXAMPLE_SALT_RAW);
 }
 
