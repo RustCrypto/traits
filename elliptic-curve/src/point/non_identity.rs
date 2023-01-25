@@ -1,6 +1,6 @@
 //! Non-identity point type.
 
-use core::ops::Deref;
+use core::ops::{Deref, Mul};
 
 use group::{prime::PrimeCurveAffine, Curve, GroupEncoding};
 use rand_core::{CryptoRng, RngCore};
@@ -8,6 +8,8 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "serde")]
 use serdect::serde::{de, ser, Deserialize, Serialize};
+
+use crate::{CurveArithmetic, NonZeroScalar, Scalar};
 
 /// Non-identity point type.
 ///
@@ -22,13 +24,22 @@ pub struct NonIdentity<P> {
 
 impl<P> NonIdentity<P>
 where
-    P: ConditionallySelectable + ConstantTimeEq + Default + GroupEncoding,
+    P: ConditionallySelectable + ConstantTimeEq + Default,
 {
     /// Create a [`NonIdentity`] from a point.
     pub fn new(point: P) -> CtOption<Self> {
         CtOption::new(Self { point }, !point.ct_eq(&P::default()))
     }
 
+    pub(crate) fn new_unchecked(point: P) -> Self {
+        Self { point }
+    }
+}
+
+impl<P> NonIdentity<P>
+where
+    P: ConditionallySelectable + ConstantTimeEq + Default + GroupEncoding,
+{
     /// Decode a [`NonIdentity`] from its encoding.
     pub fn from_repr(repr: &P::Repr) -> CtOption<Self> {
         Self::from_bytes(repr)
@@ -44,7 +55,7 @@ impl<P: Copy> NonIdentity<P> {
 
 impl<P> NonIdentity<P>
 where
-    P: ConditionallySelectable + ConstantTimeEq + Curve + Default + GroupEncoding,
+    P: ConditionallySelectable + ConstantTimeEq + Curve + Default,
 {
     /// Generate a random `NonIdentity<ProjectivePoint>`.
     pub fn random(mut rng: impl CryptoRng + RngCore) -> Self {
@@ -126,6 +137,32 @@ where
 
     fn to_bytes(&self) -> Self::Repr {
         self.point.to_bytes()
+    }
+}
+
+impl<C, P> Mul<NonZeroScalar<C>> for NonIdentity<P>
+where
+    C: CurveArithmetic,
+    P: Copy + Mul<Scalar<C>, Output = P>,
+{
+    type Output = NonIdentity<P>;
+
+    fn mul(self, rhs: NonZeroScalar<C>) -> Self::Output {
+        &self * &rhs
+    }
+}
+
+impl<C, P> Mul<&NonZeroScalar<C>> for &NonIdentity<P>
+where
+    C: CurveArithmetic,
+    P: Copy + Mul<Scalar<C>, Output = P>,
+{
+    type Output = NonIdentity<P>;
+
+    fn mul(self, rhs: &NonZeroScalar<C>) -> Self::Output {
+        NonIdentity {
+            point: self.point * *rhs.as_ref(),
+        }
     }
 }
 

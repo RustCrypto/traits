@@ -113,6 +113,7 @@ pub use zeroize;
 pub use {
     crate::{
         arithmetic::{CurveArithmetic, PrimeCurveArithmetic},
+        point::NonIdentity,
         public_key::PublicKey,
         scalar::{NonZeroScalar, Scalar},
     },
