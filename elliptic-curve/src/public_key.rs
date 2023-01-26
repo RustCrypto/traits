@@ -155,6 +155,11 @@ where
         self.point.into()
     }
 
+    /// Convert this [`PublicKey`] to a [`NonIdentity`] of the inner [`AffinePoint`]
+    pub fn to_non_identity(&self) -> NonIdentity<AffinePoint<C>> {
+        NonIdentity::new_unchecked(self.point)
+    }
+
     /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`PublicKey`].
     #[cfg(feature = "jwk")]
     pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
@@ -271,7 +276,7 @@ where
     P: Copy + Into<AffinePoint<C>>,
 {
     fn from(value: NonIdentity<P>) -> Self {
-        PublicKey::from(&value)
+        Self::from(&value)
     }
 }
 
@@ -284,6 +289,24 @@ where
         Self {
             point: value.to_point().into(),
         }
+    }
+}
+
+impl<C> From<PublicKey<C>> for NonIdentity<AffinePoint<C>>
+where
+    C: CurveArithmetic,
+{
+    fn from(value: PublicKey<C>) -> Self {
+        Self::from(&value)
+    }
+}
+
+impl<C> From<&PublicKey<C>> for NonIdentity<AffinePoint<C>>
+where
+    C: CurveArithmetic,
+{
+    fn from(value: &PublicKey<C>) -> Self {
+        PublicKey::to_non_identity(value)
     }
 }
 

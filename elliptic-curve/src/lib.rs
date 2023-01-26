@@ -69,6 +69,7 @@ extern crate alloc;
 extern crate std;
 
 pub mod ops;
+pub mod point;
 pub mod scalar;
 
 #[cfg(feature = "dev")]
@@ -83,7 +84,6 @@ pub mod sec1;
 pub mod weierstrass;
 
 mod error;
-mod point;
 mod secret_key;
 
 #[cfg(feature = "arithmetic")]
