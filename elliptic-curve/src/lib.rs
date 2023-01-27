@@ -105,11 +105,7 @@ mod voprf;
 pub use crate::{
     error::{Error, Result},
     field::{FieldBytes, FieldBytesSize},
-    point::{
-        AffineXCoordinate, AffineYIsOdd, DecompactPoint, DecompressPoint, PointCompaction,
-        PointCompression,
-    },
-    scalar::{IsHigh, ScalarPrimitive},
+    scalar::ScalarPrimitive,
     secret_key::SecretKey,
 };
 pub use crypto_bigint as bigint;
@@ -129,9 +125,6 @@ pub use {
     ff::{self, Field, PrimeField},
     group::{self, Group},
 };
-
-#[cfg(feature = "bits")]
-pub use crate::scalar::ScalarBits;
 
 #[cfg(feature = "jwk")]
 pub use crate::jwk::{JwkEcKey, JwkParameters};

@@ -4,7 +4,8 @@ use crate::{
     bigint::{prelude::*, Limb, NonZero},
     ops::{Add, AddAssign, Neg, ShrAssign, Sub, SubAssign},
     scalar::FromUintUnchecked,
-    Curve, Error, FieldBytes, IsHigh, Result,
+    scalar::IsHigh,
+    Curve, Error, FieldBytes, Result,
 };
 use base16ct::HexDisplay;
 use core::{cmp::Ordering, fmt, str};

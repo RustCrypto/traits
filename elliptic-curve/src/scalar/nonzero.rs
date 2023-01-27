@@ -2,7 +2,8 @@
 
 use crate::{
     ops::{Invert, Reduce, ReduceNonZero},
-    CurveArithmetic, Error, FieldBytes, IsHigh, PrimeCurve, Scalar, ScalarPrimitive, SecretKey,
+    scalar::IsHigh,
+    CurveArithmetic, Error, FieldBytes, PrimeCurve, Scalar, ScalarPrimitive, SecretKey,
 };
 use base16ct::HexDisplay;
 use core::{
