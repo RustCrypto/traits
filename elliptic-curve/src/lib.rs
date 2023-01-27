@@ -27,8 +27,10 @@
 //! - [`bp256`]: brainpoolP256r1 and brainpoolP256t1
 //! - [`bp384`]: brainpoolP384r1 and brainpoolP384t1
 //! - [`k256`]: secp256k1 a.k.a. K-256
+//! - [`p224`]: NIST P-224 a.k.a. secp224r1
 //! - [`p256`]: NIST P-256 a.k.a secp256r1, prime256v1
 //! - [`p384`]: NIST P-384 a.k.a. secp384r1
+//! - [`p521`]: NIST P-521 a.k.a. secp521r1
 //!
 //! The [`ecdsa`] crate provides a generic implementation of the
 //! Elliptic Curve Digital Signature Algorithm which can be used with any of
@@ -57,8 +59,10 @@
 //! [`bp256`]: https://github.com/RustCrypto/elliptic-curves/tree/master/bp256
 //! [`bp384`]: https://github.com/RustCrypto/elliptic-curves/tree/master/bp384
 //! [`k256`]: https://github.com/RustCrypto/elliptic-curves/tree/master/k256
+//! [`p224`]: https://github.com/RustCrypto/elliptic-curves/tree/master/p224
 //! [`p256`]: https://github.com/RustCrypto/elliptic-curves/tree/master/p256
 //! [`p384`]: https://github.com/RustCrypto/elliptic-curves/tree/master/p384
+//! [`p521`]: https://github.com/RustCrypto/elliptic-curves/tree/master/p521
 //! [`ecdsa`]: https://github.com/RustCrypto/signatures/tree/master/ecdsa
 
 #[cfg(feature = "alloc")]
@@ -84,6 +88,7 @@ pub mod sec1;
 pub mod weierstrass;
 
 mod error;
+mod field;
 mod secret_key;
 
 #[cfg(feature = "arithmetic")]
@@ -94,8 +99,12 @@ mod public_key;
 #[cfg(feature = "jwk")]
 mod jwk;
 
+#[cfg(feature = "voprf")]
+mod voprf;
+
 pub use crate::{
     error::{Error, Result},
+    field::{FieldBytes, FieldBytesSize},
     point::{
         AffineXCoordinate, AffineYIsOdd, DecompactPoint, DecompressPoint, PointCompaction,
         PointCompression,
@@ -113,6 +122,7 @@ pub use zeroize;
 pub use {
     crate::{
         arithmetic::{CurveArithmetic, PrimeCurveArithmetic},
+        point::{AffinePoint, ProjectivePoint},
         public_key::PublicKey,
         scalar::{NonZeroScalar, Scalar},
     },
@@ -129,8 +139,15 @@ pub use crate::jwk::{JwkEcKey, JwkParameters};
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;
 
-use core::{fmt::Debug, ops::ShrAssign};
-use generic_array::GenericArray;
+#[cfg(feature = "voprf")]
+pub use crate::voprf::VoprfParameters;
+
+use core::{
+    fmt::Debug,
+    ops::{Add, ShrAssign},
+};
+use crypto_bigint::{ArrayEncoding, ByteArray};
+use generic_array::{typenum::Unsigned, ArrayLength};
 
 /// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic
 /// curve public key cryptography (`id-ecPublicKey`).
@@ -149,11 +166,15 @@ pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
 /// be impl'd by these ZSTs, facilitating types which are generic over elliptic
 /// curves (e.g. [`SecretKey`]).
 pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sync {
+    /// Size of a serialized field element in bytes.
+    ///
+    /// This is typically the same as `Self::Uint::ByteSize` but for curves
+    /// with an unusual field modulus (e.g. P-224, P-521) it may be different.
+    type FieldBytesSize: ArrayLength<u8> + Add + Eq;
+
     /// Integer type used to represent field elements of this elliptic curve.
-    // TODO(tarcieri): replace this with an e.g. `const Curve::MODULUS: Uint`.
-    // Requires rust-lang/rust#60551, i.e. `const_evaluatable_checked`
     type Uint: bigint::AddMod<Output = Self::Uint>
-        + bigint::ArrayEncoding
+        + ArrayEncoding
         + bigint::Encoding
         + bigint::Integer
         + bigint::NegMod<Output = Self::Uint>
@@ -163,44 +184,32 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
         + zeroize::Zeroize
         + ShrAssign<usize>;
 
-    /// Order constant.
-    ///
-    /// Subdivided into either 32-bit or 64-bit "limbs" (depending on the
-    /// target CPU's word size), specified from least to most significant.
+    /// Order of this elliptic curve, i.e. number of elements in the scalar
+    /// field.
     const ORDER: Self::Uint;
+
+    /// Decode unsigned integer from serialized field element.
+    ///
+    /// The default implementation assumes a big endian encoding.
+    fn decode_field_bytes(field_bytes: &FieldBytes<Self>) -> Self::Uint {
+        debug_assert!(field_bytes.len() <= <Self::Uint as ArrayEncoding>::ByteSize::USIZE);
+        let mut byte_array = ByteArray::<Self::Uint>::default();
+        byte_array[..field_bytes.len()].copy_from_slice(field_bytes);
+        Self::Uint::from_be_byte_array(byte_array)
+    }
+
+    /// Encode unsigned integer into serialized field element.
+    ///
+    /// The default implementation assumes a big endian encoding.
+    fn encode_field_bytes(uint: &Self::Uint) -> FieldBytes<Self> {
+        let mut field_bytes = FieldBytes::<Self>::default();
+        debug_assert!(field_bytes.len() <= <Self::Uint as ArrayEncoding>::ByteSize::USIZE);
+
+        let len = field_bytes.len();
+        field_bytes.copy_from_slice(&uint.to_be_byte_array()[..len]);
+        field_bytes
+    }
 }
 
 /// Marker trait for elliptic curves with prime order.
 pub trait PrimeCurve: Curve {}
-
-/// Size of field elements of this elliptic curve.
-pub type FieldSize<C> = <<C as Curve>::Uint as bigint::ArrayEncoding>::ByteSize;
-
-/// Byte representation of a base/scalar field element of a given curve.
-pub type FieldBytes<C> = GenericArray<u8, FieldSize<C>>;
-
-/// Affine point type for a given curve with a [`CurveArithmetic`]
-/// implementation.
-#[cfg(feature = "arithmetic")]
-pub type AffinePoint<C> = <C as CurveArithmetic>::AffinePoint;
-
-/// Projective point type for a given curve with a [`CurveArithmetic`]
-/// implementation.
-#[cfg(feature = "arithmetic")]
-pub type ProjectivePoint<C> = <C as CurveArithmetic>::ProjectivePoint;
-
-/// Elliptic curve parameters used by VOPRF.
-#[cfg(feature = "voprf")]
-pub trait VoprfParameters: Curve {
-    /// The `ID` parameter which identifies a particular elliptic curve
-    /// as defined in [section 4 of `draft-irtf-cfrg-voprf-08`][voprf].
-    ///
-    /// [voprf]: https://www.ietf.org/archive/id/draft-irtf-cfrg-voprf-08.html#section-4
-    const ID: u16;
-
-    /// The `Hash` parameter which assigns a particular hash function to this
-    /// ciphersuite as defined in [section 4 of `draft-irtf-cfrg-voprf-08`][voprf].
-    ///
-    /// [voprf]: https://www.ietf.org/archive/id/draft-irtf-cfrg-voprf-08.html#section-4
-    type Hash: digest::Digest;
-}

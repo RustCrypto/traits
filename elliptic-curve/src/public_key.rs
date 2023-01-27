@@ -19,7 +19,7 @@ use core::str::FromStr;
 use {
     crate::{
         sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
-        Curve, FieldSize, PointCompression,
+        Curve, FieldBytesSize, PointCompression,
     },
     core::cmp::Ordering,
     subtle::CtOption,
@@ -119,7 +119,7 @@ where
     pub fn from_sec1_bytes(bytes: &[u8]) -> Result<Self>
     where
         C: Curve,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     {
         let point = EncodedPoint::<C>::from_bytes(bytes).map_err(|_| Error)?;
@@ -137,7 +137,7 @@ where
     where
         C: CurveArithmetic + PointCompression,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         let point = EncodedPoint::<C>::from(self);
         point.to_bytes()
@@ -166,7 +166,7 @@ where
     where
         C: Curve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         jwk.to_public_key::<C>()
     }
@@ -177,7 +177,7 @@ where
     where
         C: Curve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         jwk.parse::<JwkEcKey>().and_then(|jwk| Self::from_jwk(&jwk))
     }
@@ -188,7 +188,7 @@ where
     where
         C: Curve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         self.into()
     }
@@ -199,7 +199,7 @@ where
     where
         C: Curve + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         self.to_jwk().to_string()
     }
@@ -221,7 +221,7 @@ impl<C> FromEncodedPoint<C> for PublicKey<C>
 where
     C: CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     /// Initialize [`PublicKey`] from an [`EncodedPoint`]
     fn from_encoded_point(encoded_point: &EncodedPoint<C>) -> CtOption<Self> {
@@ -237,7 +237,7 @@ impl<C> ToEncodedPoint<C> for PublicKey<C>
 where
     C: CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     /// Serialize this [`PublicKey`] as a SEC1 [`EncodedPoint`], optionally applying
     /// point compression
@@ -251,7 +251,7 @@ impl<C> From<PublicKey<C>> for EncodedPoint<C>
 where
     C: CurveArithmetic + PointCompression,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn from(public_key: PublicKey<C>) -> EncodedPoint<C> {
         EncodedPoint::<C>::from(&public_key)
@@ -263,7 +263,7 @@ impl<C> From<&PublicKey<C>> for EncodedPoint<C>
 where
     C: CurveArithmetic + PointCompression,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn from(public_key: &PublicKey<C>) -> EncodedPoint<C> {
         public_key.to_encoded_point(C::COMPRESS_POINTS)
@@ -315,7 +315,7 @@ impl<C> PartialOrd for PublicKey<C>
 where
     C: CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
@@ -327,7 +327,7 @@ impl<C> Ord for PublicKey<C>
 where
     C: CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn cmp(&self, other: &Self) -> Ordering {
         // TODO(tarcieri): more efficient implementation?
@@ -342,7 +342,7 @@ impl<C> TryFrom<pkcs8::SubjectPublicKeyInfo<'_>> for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     type Error = pkcs8::spki::Error;
 
@@ -358,7 +358,7 @@ impl<C> DecodePublicKey for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
 }
 
@@ -367,7 +367,7 @@ impl<C> EncodePublicKey for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn to_public_key_der(&self) -> pkcs8::spki::Result<der::Document> {
         let algorithm = pkcs8::AlgorithmIdentifier {
@@ -390,7 +390,7 @@ impl<C> FromStr for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     type Err = Error;
 
@@ -404,7 +404,7 @@ impl<C> ToString for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn to_string(&self) -> String {
         self.to_public_key_pem(Default::default())
@@ -417,7 +417,7 @@ impl<C> Serialize for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
     where
@@ -433,7 +433,7 @@ impl<'de, C> Deserialize<'de> for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
     where

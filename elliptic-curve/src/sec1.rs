@@ -4,7 +4,7 @@
 
 pub use sec1::point::{Coordinates, ModulusSize, Tag};
 
-use crate::{Curve, FieldSize, Result, SecretKey};
+use crate::{Curve, FieldBytesSize, Result, SecretKey};
 use generic_array::GenericArray;
 use subtle::CtOption;
 
@@ -15,16 +15,16 @@ use crate::{AffinePoint, CurveArithmetic, Error};
 pub type CompressedPoint<C> = GenericArray<u8, CompressedPointSize<C>>;
 
 /// Size of a compressed elliptic curve point.
-pub type CompressedPointSize<C> = <FieldSize<C> as ModulusSize>::CompressedPointSize;
+pub type CompressedPointSize<C> = <FieldBytesSize<C> as ModulusSize>::CompressedPointSize;
 
 /// Encoded elliptic curve point sized appropriately for a given curve.
-pub type EncodedPoint<C> = sec1::point::EncodedPoint<FieldSize<C>>;
+pub type EncodedPoint<C> = sec1::point::EncodedPoint<FieldBytesSize<C>>;
 
 /// Encoded elliptic curve point *without* point compression.
 pub type UncompressedPoint<C> = GenericArray<u8, UncompressedPointSize<C>>;
 
 /// Size of an uncompressed elliptic curve point.
-pub type UncompressedPointSize<C> = <FieldSize<C> as ModulusSize>::UncompressedPointSize;
+pub type UncompressedPointSize<C> = <FieldBytesSize<C> as ModulusSize>::UncompressedPointSize;
 
 /// Trait for deserializing a value from a SEC1 encoded curve point.
 ///
@@ -33,7 +33,7 @@ pub trait FromEncodedPoint<C>
 where
     Self: Sized,
     C: Curve,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     /// Deserialize the type this trait is impl'd on from an [`EncodedPoint`].
     fn from_encoded_point(point: &EncodedPoint<C>) -> CtOption<Self>;
@@ -45,7 +45,7 @@ where
 pub trait ToEncodedPoint<C>
 where
     C: Curve,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     /// Serialize this value as a SEC1 [`EncodedPoint`], optionally applying
     /// point compression.
@@ -58,7 +58,7 @@ where
 pub trait ToCompactEncodedPoint<C>
 where
     C: Curve,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     /// Serialize this value as a SEC1 [`EncodedPoint`], optionally applying
     /// point compression.
@@ -73,7 +73,7 @@ where
 pub trait ValidatePublicKey
 where
     Self: Curve,
-    FieldSize<Self>: ModulusSize,
+    FieldBytesSize<Self>: ModulusSize,
 {
     /// Validate that the given [`EncodedPoint`] is a valid public key for the
     /// provided secret value.
@@ -98,7 +98,7 @@ impl<C> ValidatePublicKey for C
 where
     C: CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn validate_public_key(secret_key: &SecretKey<C>, public_key: &EncodedPoint<C>) -> Result<()> {
         let pk = secret_key

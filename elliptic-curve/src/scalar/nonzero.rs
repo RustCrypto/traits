@@ -145,8 +145,9 @@ impl<C> From<NonZeroScalar<C>> for ScalarPrimitive<C>
 where
     C: CurveArithmetic,
 {
+    #[inline]
     fn from(scalar: NonZeroScalar<C>) -> ScalarPrimitive<C> {
-        ScalarPrimitive::from_be_bytes(scalar.to_repr()).unwrap()
+        Self::from(&scalar)
     }
 }
 
@@ -155,7 +156,7 @@ where
     C: CurveArithmetic,
 {
     fn from(scalar: &NonZeroScalar<C>) -> ScalarPrimitive<C> {
-        ScalarPrimitive::from_be_bytes(scalar.to_repr()).unwrap()
+        ScalarPrimitive::from_bytes(&scalar.to_repr()).unwrap()
     }
 }
 

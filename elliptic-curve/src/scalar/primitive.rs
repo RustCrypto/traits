@@ -71,29 +71,15 @@ where
         CtOption::new(Self { inner: uint }, uint.ct_lt(&Self::MODULUS))
     }
 
-    /// Decode [`ScalarPrimitive`] from big endian bytes.
-    pub fn from_be_bytes(bytes: FieldBytes<C>) -> CtOption<Self> {
-        Self::new(C::Uint::from_be_byte_array(bytes))
+    /// Decode [`ScalarPrimitive`] from a serialized field element
+    pub fn from_bytes(bytes: &FieldBytes<C>) -> CtOption<Self> {
+        Self::new(C::decode_field_bytes(bytes))
     }
 
     /// Decode [`ScalarPrimitive`] from a big endian byte slice.
-    pub fn from_be_slice(slice: &[u8]) -> Result<Self> {
+    pub fn from_slice(slice: &[u8]) -> Result<Self> {
         if slice.len() == C::Uint::BYTES {
-            Option::from(Self::from_be_bytes(GenericArray::clone_from_slice(slice))).ok_or(Error)
-        } else {
-            Err(Error)
-        }
-    }
-
-    /// Decode [`ScalarPrimitive`] from little endian bytes.
-    pub fn from_le_bytes(bytes: FieldBytes<C>) -> CtOption<Self> {
-        Self::new(C::Uint::from_le_byte_array(bytes))
-    }
-
-    /// Decode [`ScalarPrimitive`] from a little endian byte slice.
-    pub fn from_le_slice(slice: &[u8]) -> Result<Self> {
-        if slice.len() == C::Uint::BYTES {
-            Option::from(Self::from_le_bytes(GenericArray::clone_from_slice(slice))).ok_or(Error)
+            Option::from(Self::from_bytes(GenericArray::from_slice(slice))).ok_or(Error)
         } else {
             Err(Error)
         }
@@ -124,14 +110,9 @@ where
         self.inner.is_odd()
     }
 
-    /// Encode [`ScalarPrimitive`] as big endian bytes.
-    pub fn to_be_bytes(&self) -> FieldBytes<C> {
-        self.inner.to_be_byte_array()
-    }
-
-    /// Encode [`ScalarPrimitive`] as little endian bytes.
-    pub fn to_le_bytes(&self) -> FieldBytes<C> {
-        self.inner.to_le_byte_array()
+    /// Encode [`ScalarPrimitive`] as a serialized field element.
+    pub fn to_bytes(&self) -> FieldBytes<C> {
+        C::encode_field_bytes(&self.inner)
     }
 
     /// Convert to a `C::Uint`.
@@ -393,7 +374,7 @@ where
     C: Curve,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:x}", HexDisplay(&self.to_be_bytes()))
+        write!(f, "{:x}", HexDisplay(&self.to_bytes()))
     }
 }
 
@@ -402,7 +383,7 @@ where
     C: Curve,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:X}", HexDisplay(&self.to_be_bytes()))
+        write!(f, "{:X}", HexDisplay(&self.to_bytes()))
     }
 }
 
@@ -415,7 +396,7 @@ where
     fn from_str(hex: &str) -> Result<Self> {
         let mut bytes = FieldBytes::<C>::default();
         base16ct::lower::decode(hex, &mut bytes)?;
-        Option::from(Self::from_be_bytes(bytes)).ok_or(Error)
+        Self::from_slice(&bytes)
     }
 }
 
@@ -428,7 +409,7 @@ where
     where
         S: ser::Serializer,
     {
-        serdect::array::serialize_hex_upper_or_bin(&self.to_be_bytes(), serializer)
+        serdect::array::serialize_hex_upper_or_bin(&self.to_bytes(), serializer)
     }
 }
 
@@ -443,7 +424,6 @@ where
     {
         let mut bytes = FieldBytes::<C>::default();
         serdect::array::deserialize_hex_or_bin(&mut bytes, deserializer)?;
-        Option::from(Self::from_be_bytes(bytes))
-            .ok_or_else(|| de::Error::custom("scalar out of range"))
+        Self::from_slice(&bytes).map_err(|_| de::Error::custom("scalar out of range"))
     }
 }

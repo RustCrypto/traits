@@ -6,7 +6,7 @@
 use crate::{
     sec1::{Coordinates, EncodedPoint, ModulusSize, ValidatePublicKey},
     secret_key::SecretKey,
-    Curve, Error, FieldBytes, FieldSize, Result,
+    Curve, Error, FieldBytes, FieldBytesSize, Result,
 };
 use alloc::{
     borrow::ToOwned,
@@ -112,7 +112,7 @@ impl JwkEcKey {
     where
         C: CurveArithmetic + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         PublicKey::from_sec1_bytes(self.to_encoded_point::<C>()?.as_bytes())
     }
@@ -121,7 +121,7 @@ impl JwkEcKey {
     pub fn from_encoded_point<C>(point: &EncodedPoint<C>) -> Option<Self>
     where
         C: Curve + JwkParameters,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         match point.coordinates() {
             Coordinates::Uncompressed { x, y } => Some(JwkEcKey {
@@ -138,7 +138,7 @@ impl JwkEcKey {
     pub fn to_encoded_point<C>(&self) -> Result<EncodedPoint<C>>
     where
         C: Curve + JwkParameters,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         if self.crv != C::CRV {
             return Err(Error);
@@ -154,7 +154,7 @@ impl JwkEcKey {
     pub fn to_secret_key<C>(&self) -> Result<SecretKey<C>>
     where
         C: Curve + JwkParameters + ValidatePublicKey,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         self.try_into()
     }
@@ -177,7 +177,7 @@ impl ToString for JwkEcKey {
 impl<C> TryFrom<JwkEcKey> for SecretKey<C>
 where
     C: Curve + JwkParameters + ValidatePublicKey,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     type Error = Error;
 
@@ -189,7 +189,7 @@ where
 impl<C> TryFrom<&JwkEcKey> for SecretKey<C>
 where
     C: Curve + JwkParameters + ValidatePublicKey,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     type Error = Error;
 
@@ -197,7 +197,7 @@ where
         if let Some(d_base64) = &jwk.d {
             let pk = jwk.to_encoded_point::<C>()?;
             let mut d_bytes = decode_base64url_fe::<C>(d_base64)?;
-            let result = SecretKey::from_be_bytes(&d_bytes);
+            let result = SecretKey::from_slice(&d_bytes);
             d_bytes.zeroize();
 
             result.and_then(|secret_key| {
@@ -215,7 +215,7 @@ impl<C> From<SecretKey<C>> for JwkEcKey
 where
     C: CurveArithmetic + JwkParameters,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn from(sk: SecretKey<C>) -> JwkEcKey {
         (&sk).into()
@@ -227,11 +227,11 @@ impl<C> From<&SecretKey<C>> for JwkEcKey
 where
     C: CurveArithmetic + JwkParameters,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn from(sk: &SecretKey<C>) -> JwkEcKey {
         let mut jwk = sk.public_key().to_jwk();
-        let mut d = sk.to_be_bytes();
+        let mut d = sk.to_bytes();
         jwk.d = Some(Base64Url::encode_string(&d));
         d.zeroize();
         jwk
@@ -243,7 +243,7 @@ impl<C> TryFrom<JwkEcKey> for PublicKey<C>
 where
     C: CurveArithmetic + JwkParameters,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     type Error = Error;
 
@@ -257,7 +257,7 @@ impl<C> TryFrom<&JwkEcKey> for PublicKey<C>
 where
     C: CurveArithmetic + JwkParameters,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     type Error = Error;
 
@@ -271,7 +271,7 @@ impl<C> From<PublicKey<C>> for JwkEcKey
 where
     C: CurveArithmetic + JwkParameters,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn from(pk: PublicKey<C>) -> JwkEcKey {
         (&pk).into()
@@ -283,7 +283,7 @@ impl<C> From<&PublicKey<C>> for JwkEcKey
 where
     C: CurveArithmetic + JwkParameters,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn from(pk: &PublicKey<C>) -> JwkEcKey {
         Self::from_encoded_point::<C>(&pk.to_encoded_point(false)).expect("JWK encoding error")
