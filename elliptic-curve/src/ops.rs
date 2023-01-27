@@ -1,6 +1,6 @@
 //! Traits for arithmetic operations on elliptic curve field elements.
 
-pub use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
+pub use core::ops::{Add, AddAssign, Mul, Neg, Shr, ShrAssign, Sub, SubAssign};
 
 use crypto_bigint::{ArrayEncoding, ByteArray, Integer};
 
@@ -103,10 +103,4 @@ pub trait Reduce<Uint: Integer + ArrayEncoding>: Sized {
 pub trait ReduceNonZero<Uint: Integer + ArrayEncoding>: Sized {
     /// Perform a modular reduction, returning a field element.
     fn from_uint_reduced_nonzero(n: Uint) -> Self;
-}
-
-/// Right shift this value by one bit, storing the result in-place.
-pub trait Shr1 {
-    /// Right shift this value by one bit in-place.
-    fn shr1(&mut self);
 }

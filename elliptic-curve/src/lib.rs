@@ -173,8 +173,8 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
     type FieldBytesSize: ArrayLength<u8> + Add + Eq;
 
     /// Integer type used to represent field elements of this elliptic curve.
-    type Uint: bigint::AddMod<Output = Self::Uint>
-        + ArrayEncoding
+    type Uint: ArrayEncoding
+        + bigint::AddMod<Output = Self::Uint>
         + bigint::Encoding
         + bigint::Integer
         + bigint::NegMod<Output = Self::Uint>

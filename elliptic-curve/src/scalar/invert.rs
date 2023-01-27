@@ -1,5 +1,5 @@
 use super::FromUintUnchecked;
-use crate::{ops::Shr1, CurveArithmetic, Scalar};
+use crate::{CurveArithmetic, Scalar};
 use ff::{Field, PrimeField};
 use subtle::CtOption;
 
@@ -23,10 +23,10 @@ where
     while !bool::from(u.is_zero()) {
         // u-loop
         while bool::from(u.is_even()) {
-            u.shr1();
+            u >>= 1;
 
             let was_odd: bool = A.is_odd().into();
-            A.shr1();
+            A >>= 1;
 
             if was_odd {
                 A += order_div_2;
@@ -36,10 +36,10 @@ where
 
         // v-loop
         while bool::from(v.is_even()) {
-            v.shr1();
+            v >>= 1;
 
             let was_odd: bool = C.is_odd().into();
-            C.shr1();
+            C >>= 1;
 
             if was_odd {
                 C += order_div_2;

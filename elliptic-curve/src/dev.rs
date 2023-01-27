@@ -7,7 +7,7 @@ use crate::{
     bigint::{Limb, U256},
     error::{Error, Result},
     generic_array::typenum::U32,
-    ops::{LinearCombination, MulByGenerator, Reduce, Shr1},
+    ops::{LinearCombination, MulByGenerator, Reduce, ShrAssign},
     pkcs8,
     rand_core::RngCore,
     scalar::FromUintUnchecked,
@@ -293,9 +293,9 @@ impl Neg for Scalar {
     }
 }
 
-impl Shr1 for Scalar {
-    fn shr1(&mut self) {
-        self.0.shr1();
+impl ShrAssign<usize> for Scalar {
+    fn shr_assign(&mut self, rhs: usize) {
+        self.0 >>= rhs;
     }
 }
 
