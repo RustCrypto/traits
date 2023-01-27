@@ -365,7 +365,7 @@ where
     C: Curve,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:X}", self)
+        write!(f, "{self:X}")
     }
 }
 

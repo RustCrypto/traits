@@ -440,7 +440,7 @@ impl<'de> Deserialize<'de> for JwkEcKey {
                     .ok_or_else(|| de::Error::invalid_length(0, &DE_ERROR_MSG))?;
 
                 if kty != EC_KTY {
-                    return Err(de::Error::custom(format!("unsupported JWK kty: {:?}", kty)));
+                    return Err(de::Error::custom(format!("unsupported JWK kty: {kty:?}")));
                 }
 
                 let crv = de::SeqAccess::next_element::<String>(&mut seq)?
@@ -512,7 +512,7 @@ impl<'de> Deserialize<'de> for JwkEcKey {
                 let kty = kty.ok_or_else(|| de::Error::missing_field("kty"))?;
 
                 if kty != EC_KTY {
-                    return Err(de::Error::custom(format!("unsupported JWK kty: {}", kty)));
+                    return Err(de::Error::custom(format!("unsupported JWK kty: {kty}")));
                 }
 
                 let crv = crv.ok_or_else(|| de::Error::missing_field("crv"))?;
