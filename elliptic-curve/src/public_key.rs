@@ -18,8 +18,9 @@ use core::str::FromStr;
 #[cfg(feature = "sec1")]
 use {
     crate::{
+        point::PointCompression,
         sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
-        Curve, FieldBytesSize, PointCompression,
+        Curve, FieldBytesSize,
     },
     core::cmp::Ordering,
     subtle::CtOption,

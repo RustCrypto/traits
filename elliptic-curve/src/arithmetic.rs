@@ -2,8 +2,10 @@
 
 use crate::{
     ops::{LinearCombination, MulByGenerator, ShrAssign},
+    point::{AffineXCoordinate, AffineYIsOdd},
     scalar::FromUintUnchecked,
-    AffineXCoordinate, AffineYIsOdd, Curve, FieldBytes, IsHigh, PrimeCurve, ScalarPrimitive,
+    scalar::IsHigh,
+    Curve, FieldBytes, PrimeCurve, ScalarPrimitive,
 };
 use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq};

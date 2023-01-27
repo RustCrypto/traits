@@ -9,12 +9,13 @@ use crate::{
     generic_array::typenum::U32,
     ops::{LinearCombination, MulByGenerator, Reduce, ShrAssign},
     pkcs8,
+    point::{AffineXCoordinate, AffineYIsOdd},
     rand_core::RngCore,
-    scalar::FromUintUnchecked,
+    scalar::{FromUintUnchecked, IsHigh},
     sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     zeroize::DefaultIsZeroes,
-    AffineXCoordinate, AffineYIsOdd, Curve, CurveArithmetic, IsHigh, PrimeCurve,
+    Curve, CurveArithmetic, PrimeCurve,
 };
 use core::{
     iter::{Product, Sum},
@@ -55,7 +56,7 @@ pub type ScalarPrimitive = crate::ScalarPrimitive<MockCurve>;
 
 /// Scalar bits.
 #[cfg(feature = "bits")]
-pub type ScalarBits = crate::ScalarBits<MockCurve>;
+pub type ScalarBits = crate::scalar::ScalarBits<MockCurve>;
 
 /// Mock elliptic curve type useful for writing tests which require a concrete
 /// curve type.
