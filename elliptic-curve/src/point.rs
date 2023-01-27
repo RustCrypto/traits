@@ -24,6 +24,12 @@ pub trait AffineYIsOdd {
     fn y_is_odd(&self) -> Choice;
 }
 
+/// Double a point (i.e. add it to itself)
+pub trait Double {
+    /// Double this point.
+    fn double(&self) -> Self;
+}
+
 /// Decompress an elliptic curve point.
 ///
 /// Point decompression recovers an original curve point from its x-coordinate
