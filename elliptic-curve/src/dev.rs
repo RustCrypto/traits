@@ -325,7 +325,7 @@ impl<'a> Product<&'a Scalar> for Scalar {
 }
 
 impl Reduce<U256> for Scalar {
-    fn from_uint_reduced(w: U256) -> Self {
+    fn reduce(w: U256) -> Self {
         let (r, underflow) = w.sbb(&MockCurve::ORDER, Limb::ZERO);
         let underflow = Choice::from((underflow.0 >> (Limb::BITS - 1)) as u8);
         let reduced = U256::conditional_select(&w, &r, !underflow);

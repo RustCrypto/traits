@@ -251,8 +251,8 @@ where
     I: Integer + ArrayEncoding,
     Scalar<C>: ReduceNonZero<I>,
 {
-    fn from_uint_reduced(n: I) -> Self {
-        Self::from_uint_reduced_nonzero(n)
+    fn reduce(n: I) -> Self {
+        Self::reduce_nonzero(n)
     }
 }
 
@@ -262,8 +262,8 @@ where
     I: Integer + ArrayEncoding,
     Scalar<C>: ReduceNonZero<I>,
 {
-    fn from_uint_reduced_nonzero(n: I) -> Self {
-        let scalar = Scalar::<C>::from_uint_reduced_nonzero(n);
+    fn reduce_nonzero(n: I) -> Self {
+        let scalar = Scalar::<C>::reduce_nonzero(n);
         debug_assert!(!bool::from(scalar.is_zero()));
         Self::new(scalar).unwrap()
     }

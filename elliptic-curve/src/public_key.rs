@@ -157,7 +157,7 @@ where
     }
 
     /// Convert this [`PublicKey`] to a [`NonIdentity`] of the inner [`AffinePoint`]
-    pub fn to_non_identity(&self) -> NonIdentity<AffinePoint<C>> {
+    pub fn to_nonidentity(&self) -> NonIdentity<AffinePoint<C>> {
         NonIdentity::new_unchecked(self.point)
     }
 
@@ -307,7 +307,7 @@ where
     C: CurveArithmetic,
 {
     fn from(value: &PublicKey<C>) -> Self {
-        PublicKey::to_non_identity(value)
+        PublicKey::to_nonidentity(value)
     }
 }
 

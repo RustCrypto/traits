@@ -2,13 +2,10 @@
 
 pub use core::ops::{Add, AddAssign, Mul, Neg, Shr, ShrAssign, Sub, SubAssign};
 
-use crypto_bigint::{ArrayEncoding, ByteArray, Integer};
+use crypto_bigint::Integer;
 
 #[cfg(feature = "arithmetic")]
 use {group::Group, subtle::CtOption};
-
-#[cfg(feature = "digest")]
-use digest::FixedOutput;
 
 /// Perform an inversion on a field element (i.e. base field element or scalar)
 pub trait Invert {
@@ -56,41 +53,9 @@ pub trait MulByGenerator: Group {
 }
 
 /// Modular reduction.
-pub trait Reduce<Uint: Integer + ArrayEncoding>: Sized {
+pub trait Reduce<Uint: Integer>: Sized {
     /// Perform a modular reduction, returning a field element.
-    fn from_uint_reduced(n: Uint) -> Self;
-
-    /// Interpret the given byte array as a big endian integer and perform
-    /// a modular reduction.
-    fn from_be_bytes_reduced(bytes: ByteArray<Uint>) -> Self {
-        Self::from_uint_reduced(Uint::from_be_byte_array(bytes))
-    }
-
-    /// Interpret the given byte array as a little endian integer and perform a
-    /// modular reduction.
-    fn from_le_bytes_reduced(bytes: ByteArray<Uint>) -> Self {
-        Self::from_uint_reduced(Uint::from_le_byte_array(bytes))
-    }
-
-    /// Interpret a digest as a big endian integer and perform a modular
-    /// reduction.
-    #[cfg(feature = "digest")]
-    fn from_be_digest_reduced<D>(digest: D) -> Self
-    where
-        D: FixedOutput<OutputSize = Uint::ByteSize>,
-    {
-        Self::from_be_bytes_reduced(digest.finalize_fixed())
-    }
-
-    /// Interpret a digest as a little endian integer and perform a modular
-    /// reduction.
-    #[cfg(feature = "digest")]
-    fn from_le_digest_reduced<D>(digest: D) -> Self
-    where
-        D: FixedOutput<OutputSize = Uint::ByteSize>,
-    {
-        Self::from_le_bytes_reduced(digest.finalize_fixed())
-    }
+    fn reduce(n: Uint) -> Self;
 }
 
 /// Modular reduction to a non-zero output.
@@ -100,7 +65,7 @@ pub trait Reduce<Uint: Integer + ArrayEncoding>: Sized {
 ///
 /// End users should use the [`Reduce`] impl on
 /// [`NonZeroScalar`][`crate::NonZeroScalar`] instead.
-pub trait ReduceNonZero<Uint: Integer + ArrayEncoding>: Sized {
+pub trait ReduceNonZero<Uint: Integer>: Sized {
     /// Perform a modular reduction, returning a field element.
-    fn from_uint_reduced_nonzero(n: Uint) -> Self;
+    fn reduce_nonzero(n: Uint) -> Self;
 }
