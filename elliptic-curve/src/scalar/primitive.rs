@@ -2,7 +2,7 @@
 
 use crate::{
     bigint::{prelude::*, Limb, NonZero},
-    ops::{Add, AddAssign, Neg, Shr1, Sub, SubAssign},
+    ops::{Add, AddAssign, Neg, ShrAssign, Sub, SubAssign},
     scalar::FromUintUnchecked,
     Curve, Error, FieldBytes, IsHigh, Result,
 };
@@ -341,12 +341,12 @@ where
     }
 }
 
-impl<C> Shr1 for ScalarPrimitive<C>
+impl<C> ShrAssign<usize> for ScalarPrimitive<C>
 where
     C: Curve,
 {
-    fn shr1(&mut self) {
-        self.inner >>= 1;
+    fn shr_assign(&mut self, rhs: usize) {
+        self.inner >>= rhs;
     }
 }
 
