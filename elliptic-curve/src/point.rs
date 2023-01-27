@@ -4,10 +4,20 @@
 mod non_identity;
 
 #[cfg(feature = "arithmetic")]
-pub use self::non_identity::NonIdentity;
+pub use {self::non_identity::NonIdentity, crate::CurveArithmetic};
 
 use crate::{Curve, FieldBytes};
 use subtle::{Choice, CtOption};
+
+/// Affine point type for a given curve with a [`CurveArithmetic`]
+/// implementation.
+#[cfg(feature = "arithmetic")]
+pub type AffinePoint<C> = <C as CurveArithmetic>::AffinePoint;
+
+/// Projective point type for a given curve with a [`CurveArithmetic`]
+/// implementation.
+#[cfg(feature = "arithmetic")]
+pub type ProjectivePoint<C> = <C as CurveArithmetic>::ProjectivePoint;
 
 /// Obtain the affine x-coordinate of an elliptic curve point.
 pub trait AffineXCoordinate {

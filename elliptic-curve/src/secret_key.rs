@@ -49,7 +49,7 @@ use pem_rfc7468 as pem;
 #[cfg(feature = "sec1")]
 use crate::{
     sec1::{EncodedPoint, ModulusSize, ValidatePublicKey},
-    FieldSize,
+    FieldBytesSize,
 };
 
 #[cfg(all(doc, feature = "pkcs8"))]
@@ -143,16 +143,10 @@ where
         PublicKey::from_secret_scalar(&self.to_nonzero_scalar())
     }
 
-    /// Deserialize raw secret scalar as a big endian integer.
-    pub fn from_be_bytes(bytes: &[u8]) -> Result<Self> {
-        if bytes.len() != C::Uint::BYTES {
-            return Err(Error);
-        }
-
-        let inner: ScalarPrimitive<C> = Option::from(ScalarPrimitive::from_be_bytes(
-            GenericArray::clone_from_slice(bytes),
-        ))
-        .ok_or(Error)?;
+    /// Deserialize secret key from an encoded secret scalar.
+    pub fn from_bytes(bytes: &FieldBytes<C>) -> Result<Self> {
+        let inner: ScalarPrimitive<C> =
+            Option::from(ScalarPrimitive::from_bytes(bytes)).ok_or(Error)?;
 
         if inner.is_zero().into() {
             return Err(Error);
@@ -161,9 +155,19 @@ where
         Ok(Self { inner })
     }
 
+    /// Deserialize secret key from an encoded secret scalar passed as a
+    /// byte slice.
+    pub fn from_slice(slice: &[u8]) -> Result<Self> {
+        if slice.len() == C::Uint::BYTES {
+            Self::from_bytes(GenericArray::from_slice(slice))
+        } else {
+            Err(Error)
+        }
+    }
+
     /// Serialize raw secret scalar as a big endian integer.
-    pub fn to_be_bytes(&self) -> FieldBytes<C> {
-        self.inner.to_be_bytes()
+    pub fn to_bytes(&self) -> FieldBytes<C> {
+        self.inner.to_bytes()
     }
 
     /// Deserialize secret key encoded in the SEC1 ASN.1 DER `ECPrivateKey` format.
@@ -171,7 +175,7 @@ where
     pub fn from_sec1_der(der_bytes: &[u8]) -> Result<Self>
     where
         C: Curve + ValidatePublicKey,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         sec1::EcPrivateKey::try_from(der_bytes)?
             .try_into()
@@ -184,10 +188,10 @@ where
     where
         C: CurveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         // TODO(tarcieri): wrap `secret_key_bytes` in `Zeroizing`
-        let mut private_key_bytes = self.to_be_bytes();
+        let mut private_key_bytes = self.to_bytes();
         let public_key_bytes = self.public_key().to_encoded_point(false);
 
         let ec_private_key = Zeroizing::new(
@@ -216,7 +220,7 @@ where
     pub fn from_sec1_pem(s: &str) -> Result<Self>
     where
         C: Curve + ValidatePublicKey,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         let (label, der_bytes) = pem::decode_vec(s.as_bytes()).map_err(|_| Error)?;
 
@@ -236,7 +240,7 @@ where
     where
         C: CurveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         self.to_sec1_der()
             .ok()
@@ -250,7 +254,7 @@ where
     pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
     where
         C: JwkParameters + ValidatePublicKey,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         Self::try_from(jwk)
     }
@@ -260,7 +264,7 @@ where
     pub fn from_jwk_str(jwk: &str) -> Result<Self>
     where
         C: JwkParameters + ValidatePublicKey,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         jwk.parse::<JwkEcKey>().and_then(|jwk| Self::from_jwk(&jwk))
     }
@@ -271,7 +275,7 @@ where
     where
         C: CurveArithmetic + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         self.into()
     }
@@ -282,7 +286,7 @@ where
     where
         C: CurveArithmetic + JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldSize<C>: ModulusSize,
+        FieldBytesSize<C>: ModulusSize,
     {
         Zeroizing::new(self.to_jwk().to_string())
     }
@@ -333,12 +337,12 @@ where
 impl<C> TryFrom<sec1::EcPrivateKey<'_>> for SecretKey<C>
 where
     C: Curve + ValidatePublicKey,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     type Error = der::Error;
 
     fn try_from(sec1_private_key: sec1::EcPrivateKey<'_>) -> der::Result<Self> {
-        let secret_key = Self::from_be_bytes(sec1_private_key.private_key)
+        let secret_key = Self::from_slice(sec1_private_key.private_key)
             .map_err(|_| der::Tag::Sequence.value_error())?;
 
         // TODO(tarcieri): validate `sec1_private_key.params`?

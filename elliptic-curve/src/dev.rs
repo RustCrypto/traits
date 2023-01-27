@@ -6,6 +6,7 @@
 use crate::{
     bigint::{Limb, U256},
     error::{Error, Result},
+    generic_array::typenum::U32,
     ops::{LinearCombination, MulByGenerator, Reduce, Shr1},
     pkcs8,
     rand_core::RngCore,
@@ -65,6 +66,7 @@ pub type ScalarBits = crate::ScalarBits<MockCurve>;
 pub struct MockCurve;
 
 impl Curve for MockCurve {
+    type FieldBytesSize = U32;
     type Uint = U256;
 
     const ORDER: U256 =
@@ -150,11 +152,11 @@ impl PrimeField for Scalar {
     const DELTA: Self = Self::ZERO; // BOGUS!
 
     fn from_repr(bytes: FieldBytes) -> CtOption<Self> {
-        ScalarPrimitive::from_be_bytes(bytes).map(Self)
+        ScalarPrimitive::from_bytes(&bytes).map(Self)
     }
 
     fn to_repr(&self) -> FieldBytes {
-        self.0.to_be_bytes()
+        self.0.to_bytes()
     }
 
     fn is_odd(&self) -> Choice {
