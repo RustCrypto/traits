@@ -39,6 +39,10 @@ pub mod stream;
 pub use crypto_common::{Key, KeyInit, KeySizeUser};
 pub use generic_array::{self, typenum::consts};
 
+#[cfg(feature = "arrayvec")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arrayvec")))]
+pub use arrayvec;
+
 #[cfg(feature = "bytes")]
 #[cfg_attr(docsrs, doc(cfg(feature = "bytes")))]
 pub use bytes;
@@ -546,6 +550,17 @@ impl Buffer for BytesMut {
 
     fn truncate(&mut self, len: usize) {
         BytesMut::truncate(self, len);
+    }
+}
+
+#[cfg(feature = "arrayvec")]
+impl<const N: usize> Buffer for arrayvec::ArrayVec<u8, N> {
+    fn extend_from_slice(&mut self, other: &[u8]) -> Result<()> {
+        arrayvec::ArrayVec::try_extend_from_slice(self, other).map_err(|_| Error)
+    }
+
+    fn truncate(&mut self, len: usize) {
+        arrayvec::ArrayVec::truncate(self, len);
     }
 }
 
