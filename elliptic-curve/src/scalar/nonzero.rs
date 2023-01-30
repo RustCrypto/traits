@@ -175,7 +175,7 @@ where
     C: CurveArithmetic,
 {
     fn from(sk: &SecretKey<C>) -> NonZeroScalar<C> {
-        let scalar = sk.as_scalar_core().to_scalar();
+        let scalar = sk.as_scalar_primitive().to_scalar();
         debug_assert!(!bool::from(scalar.is_zero()));
         Self { scalar }
     }

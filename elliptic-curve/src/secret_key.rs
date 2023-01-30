@@ -115,7 +115,7 @@ where
     /// This value is key material.
     ///
     /// Please treat it with the care it deserves!
-    pub fn as_scalar_core(&self) -> &ScalarPrimitive<C> {
+    pub fn as_scalar_primitive(&self) -> &ScalarPrimitive<C> {
         &self.inner
     }
 
