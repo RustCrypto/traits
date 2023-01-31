@@ -251,7 +251,7 @@ where
     I: Integer + ArrayEncoding,
     Scalar<C>: Reduce<I, Bytes = FieldBytes<C>> + ReduceNonZero<I>,
 {
-    type Bytes = FieldBytes<C>;
+    type Bytes = <Scalar<C> as Reduce<I>>::Bytes;
 
     fn reduce(n: I) -> Self {
         Self::reduce_nonzero(n)
@@ -264,9 +264,10 @@ where
 
 impl<C, I> ReduceNonZero<I> for NonZeroScalar<C>
 where
+    Self: Reduce<I>,
     C: CurveArithmetic,
     I: Integer + ArrayEncoding,
-    Scalar<C>: Reduce<I, Bytes = FieldBytes<C>> + ReduceNonZero<I>,
+    Scalar<C>: Reduce<I, Bytes = Self::Bytes> + ReduceNonZero<I>,
 {
     fn reduce_nonzero(n: I) -> Self {
         let scalar = Scalar::<C>::reduce_nonzero(n);
@@ -274,7 +275,7 @@ where
         Self::new(scalar).unwrap()
     }
 
-    fn reduce_nonzero_bytes(bytes: &FieldBytes<C>) -> Self {
+    fn reduce_nonzero_bytes(bytes: &Self::Bytes) -> Self {
         let scalar = Scalar::<C>::reduce_nonzero_bytes(bytes);
         debug_assert!(!bool::from(scalar.is_zero()));
         Self::new(scalar).unwrap()
