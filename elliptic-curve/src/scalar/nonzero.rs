@@ -244,24 +244,29 @@ where
     }
 }
 
-/// Note: implementation is the same as `ReduceNonZero`
+/// Note: this is a non-zero reduction, as it's impl'd for [`NonZeroScalar`].
 impl<C, I> Reduce<I> for NonZeroScalar<C>
 where
     C: CurveArithmetic,
     I: Integer + ArrayEncoding,
-    Scalar<C>: Reduce<I, Bytes = FieldBytes<C>> + ReduceNonZero<I>,
+    Scalar<C>: Reduce<I> + ReduceNonZero<I>,
 {
     type Bytes = <Scalar<C> as Reduce<I>>::Bytes;
 
     fn reduce(n: I) -> Self {
-        Self::reduce_nonzero(n)
+        let scalar = Scalar::<C>::reduce_nonzero(n);
+        debug_assert!(!bool::from(scalar.is_zero()));
+        Self { scalar }
     }
 
-    fn reduce_bytes(bytes: &FieldBytes<C>) -> Self {
-        Self::reduce_nonzero_bytes(bytes)
+    fn reduce_bytes(bytes: &Self::Bytes) -> Self {
+        let scalar = Scalar::<C>::reduce_nonzero_bytes(bytes);
+        debug_assert!(!bool::from(scalar.is_zero()));
+        Self { scalar }
     }
 }
 
+/// Note: forwards to the [`Reduce`] impl.
 impl<C, I> ReduceNonZero<I> for NonZeroScalar<C>
 where
     Self: Reduce<I>,
@@ -270,15 +275,11 @@ where
     Scalar<C>: Reduce<I, Bytes = Self::Bytes> + ReduceNonZero<I>,
 {
     fn reduce_nonzero(n: I) -> Self {
-        let scalar = Scalar::<C>::reduce_nonzero(n);
-        debug_assert!(!bool::from(scalar.is_zero()));
-        Self::new(scalar).unwrap()
+        Self::reduce(n)
     }
 
     fn reduce_nonzero_bytes(bytes: &Self::Bytes) -> Self {
-        let scalar = Scalar::<C>::reduce_nonzero_bytes(bytes);
-        debug_assert!(!bool::from(scalar.is_zero()));
-        Self::new(scalar).unwrap()
+        Self::reduce_bytes(bytes)
     }
 }
 
