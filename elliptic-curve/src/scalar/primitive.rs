@@ -2,13 +2,17 @@
 
 use crate::{
     bigint::{prelude::*, Limb, NonZero},
-    ops::{Add, AddAssign, Neg, ShrAssign, Sub, SubAssign},
     scalar::FromUintUnchecked,
     scalar::IsHigh,
     Curve, Error, FieldBytes, Result,
 };
 use base16ct::HexDisplay;
-use core::{cmp::Ordering, fmt, str};
+use core::{
+    cmp::Ordering,
+    fmt,
+    ops::{Add, AddAssign, Neg, ShrAssign, Sub, SubAssign},
+    str,
+};
 use generic_array::GenericArray;
 use rand_core::CryptoRngCore;
 use subtle::{
