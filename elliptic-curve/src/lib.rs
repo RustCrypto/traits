@@ -72,7 +72,6 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-pub mod ops;
 pub mod point;
 pub mod scalar;
 
@@ -82,6 +81,8 @@ pub mod dev;
 pub mod ecdh;
 #[cfg(feature = "hash2curve")]
 pub mod hash2curve;
+#[cfg(feature = "arithmetic")]
+pub mod ops;
 #[cfg(feature = "sec1")]
 pub mod sec1;
 #[cfg(feature = "arithmetic")]
