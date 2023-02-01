@@ -9,7 +9,7 @@ use crate::{
     generic_array::typenum::U32,
     ops::{LinearCombination, MulByGenerator, Reduce, ShrAssign},
     pkcs8,
-    point::{AffineXCoordinate, AffineYIsOdd},
+    point::AffineCoordinates,
     rand_core::RngCore,
     scalar::{FromUintUnchecked, IsHigh},
     sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
@@ -415,15 +415,13 @@ pub enum AffinePoint {
     Other(EncodedPoint),
 }
 
-impl AffineXCoordinate for AffinePoint {
+impl AffineCoordinates for AffinePoint {
     type FieldRepr = FieldBytes;
 
     fn x(&self) -> FieldBytes {
         unimplemented!();
     }
-}
 
-impl AffineYIsOdd for AffinePoint {
     fn y_is_odd(&self) -> Choice {
         unimplemented!();
     }
