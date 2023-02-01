@@ -15,7 +15,7 @@ use crate::{
     sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     zeroize::DefaultIsZeroes,
-    Curve, CurveArithmetic, PrimeCurve,
+    Curve, CurveArithmetic, FieldBytesEncoding, PrimeCurve,
 };
 use core::{
     iter::{Product, Sum},
@@ -338,6 +338,8 @@ impl Reduce<U256> for Scalar {
         todo!()
     }
 }
+
+impl FieldBytesEncoding<MockCurve> for U256 {}
 
 impl From<u64> for Scalar {
     fn from(n: u64) -> Scalar {
