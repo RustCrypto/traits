@@ -27,7 +27,7 @@
 //! [SIGMA]: https://webee.technion.ac.il/~hugo/sigma-pdf.pdf
 
 use crate::{
-    point::AffineXCoordinate, AffinePoint, Curve, CurveArithmetic, FieldBytes, NonZeroScalar,
+    point::AffineCoordinates, AffinePoint, Curve, CurveArithmetic, FieldBytes, NonZeroScalar,
     ProjectivePoint, PublicKey,
 };
 use core::borrow::Borrow;

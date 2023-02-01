@@ -2,7 +2,7 @@
 
 use crate::{
     ops::{LinearCombination, MulByGenerator, Reduce, ShrAssign},
-    point::{AffineXCoordinate, AffineYIsOdd},
+    point::AffineCoordinates,
     scalar::FromUintUnchecked,
     scalar::IsHigh,
     Curve, FieldBytes, PrimeCurve, ScalarPrimitive,
@@ -15,8 +15,7 @@ use zeroize::DefaultIsZeroes;
 pub trait CurveArithmetic: Curve {
     /// Elliptic curve point in affine coordinates.
     type AffinePoint: 'static
-        + AffineXCoordinate<FieldRepr = FieldBytes<Self>>
-        + AffineYIsOdd
+        + AffineCoordinates<FieldRepr = FieldBytes<Self>>
         + Copy
         + ConditionallySelectable
         + ConstantTimeEq

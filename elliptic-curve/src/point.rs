@@ -19,17 +19,15 @@ pub type AffinePoint<C> = <C as CurveArithmetic>::AffinePoint;
 #[cfg(feature = "arithmetic")]
 pub type ProjectivePoint<C> = <C as CurveArithmetic>::ProjectivePoint;
 
-/// Obtain the affine x-coordinate of an elliptic curve point.
-pub trait AffineXCoordinate {
+/// Access to the affine coordinates of an elliptic curve point.
+// TODO: use zkcrypto/group#30 coordinate API when available
+pub trait AffineCoordinates {
     /// Field element representation.
     type FieldRepr: AsRef<[u8]>;
 
     /// Get the affine x-coordinate as a serialized field element.
     fn x(&self) -> Self::FieldRepr;
-}
 
-/// Is the affine y-coordinate of this elliptic curve point odd?
-pub trait AffineYIsOdd {
     /// Is the affine y-coordinate odd?
     fn y_is_odd(&self) -> Choice;
 }
