@@ -4,7 +4,7 @@ use crate::{
     bigint::{prelude::*, Limb, NonZero},
     scalar::FromUintUnchecked,
     scalar::IsHigh,
-    Curve, Error, FieldBytes, Result,
+    Curve, Error, FieldBytes, FieldBytesEncoding, Result,
 };
 use base16ct::HexDisplay;
 use core::{
@@ -78,7 +78,7 @@ where
 
     /// Decode [`ScalarPrimitive`] from a serialized field element
     pub fn from_bytes(bytes: &FieldBytes<C>) -> CtOption<Self> {
-        Self::new(C::decode_field_bytes(bytes))
+        Self::new(C::Uint::decode_field_bytes(bytes))
     }
 
     /// Decode [`ScalarPrimitive`] from a big endian byte slice.
@@ -117,7 +117,7 @@ where
 
     /// Encode [`ScalarPrimitive`] as a serialized field element.
     pub fn to_bytes(&self) -> FieldBytes<C> {
-        C::encode_field_bytes(&self.inner)
+        self.inner.encode_field_bytes()
     }
 
     /// Convert to a `C::Uint`.

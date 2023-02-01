@@ -105,7 +105,7 @@ mod voprf;
 
 pub use crate::{
     error::{Error, Result},
-    field::{FieldBytes, FieldBytesSize},
+    field::{FieldBytes, FieldBytesEncoding, FieldBytesSize},
     scalar::ScalarPrimitive,
     secret_key::SecretKey,
 };
@@ -140,8 +140,7 @@ use core::{
     fmt::Debug,
     ops::{Add, ShrAssign},
 };
-use crypto_bigint::{ArrayEncoding, ByteArray};
-use generic_array::{typenum::Unsigned, ArrayLength};
+use generic_array::ArrayLength;
 
 /// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic
 /// curve public key cryptography (`id-ecPublicKey`).
@@ -167,7 +166,7 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
     type FieldBytesSize: ArrayLength<u8> + Add + Eq;
 
     /// Integer type used to represent field elements of this elliptic curve.
-    type Uint: ArrayEncoding
+    type Uint: bigint::ArrayEncoding
         + bigint::AddMod<Output = Self::Uint>
         + bigint::Encoding
         + bigint::Integer
@@ -176,33 +175,12 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
         + bigint::RandomMod
         + bigint::SubMod<Output = Self::Uint>
         + zeroize::Zeroize
+        + FieldBytesEncoding<Self>
         + ShrAssign<usize>;
 
     /// Order of this elliptic curve, i.e. number of elements in the scalar
     /// field.
     const ORDER: Self::Uint;
-
-    /// Decode unsigned integer from serialized field element.
-    ///
-    /// The default implementation assumes a big endian encoding.
-    fn decode_field_bytes(field_bytes: &FieldBytes<Self>) -> Self::Uint {
-        debug_assert!(field_bytes.len() <= <Self::Uint as ArrayEncoding>::ByteSize::USIZE);
-        let mut byte_array = ByteArray::<Self::Uint>::default();
-        byte_array[..field_bytes.len()].copy_from_slice(field_bytes);
-        Self::Uint::from_be_byte_array(byte_array)
-    }
-
-    /// Encode unsigned integer into serialized field element.
-    ///
-    /// The default implementation assumes a big endian encoding.
-    fn encode_field_bytes(uint: &Self::Uint) -> FieldBytes<Self> {
-        let mut field_bytes = FieldBytes::<Self>::default();
-        debug_assert!(field_bytes.len() <= <Self::Uint as ArrayEncoding>::ByteSize::USIZE);
-
-        let len = field_bytes.len();
-        field_bytes.copy_from_slice(&uint.to_be_byte_array()[..len]);
-        field_bytes
-    }
 }
 
 /// Marker trait for elliptic curves with prime order.
