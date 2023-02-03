@@ -3,14 +3,12 @@
 #[cfg(feature = "arithmetic")]
 mod blinded;
 #[cfg(feature = "arithmetic")]
-mod invert;
-#[cfg(feature = "arithmetic")]
 mod nonzero;
 mod primitive;
 
 pub use self::primitive::ScalarPrimitive;
 #[cfg(feature = "arithmetic")]
-pub use self::{blinded::BlindedScalar, invert::invert_vartime, nonzero::NonZeroScalar};
+pub use self::{blinded::BlindedScalar, nonzero::NonZeroScalar};
 
 use crypto_bigint::Integer;
 use subtle::Choice;
