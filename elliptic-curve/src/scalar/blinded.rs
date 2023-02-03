@@ -1,6 +1,6 @@
 //! Random blinding support for [`Scalar`]
 
-use super::{invert_vartime, Scalar};
+use super::Scalar;
 use crate::{ops::Invert, CurveArithmetic};
 use group::ff::Field;
 use rand_core::CryptoRngCore;
@@ -57,8 +57,9 @@ where
     fn invert(&self) -> CtOption<Scalar<C>> {
         // prevent side channel analysis of scalar inversion by pre-and-post-multiplying
         // with the random masking scalar
-        let masked_scalar = self.scalar * self.mask;
-        invert_vartime::<C>(&masked_scalar).map(|s| s * self.mask)
+        (self.scalar * self.mask)
+            .invert_vartime()
+            .map(|s| s * self.mask)
     }
 }
 
