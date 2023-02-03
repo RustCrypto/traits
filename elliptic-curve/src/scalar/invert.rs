@@ -8,6 +8,14 @@ use subtle::CtOption;
 /// Returns none if the scalar is zero.
 ///
 /// <https://link.springer.com/article/10.1007/s13389-016-0135-4>
+///
+/// ⚠️ WARNING!
+///
+/// This generic implementation relies on special properties of the scalar
+/// field implementation and may not work correctly! Please ensure your use
+/// cases are well-tested!
+///
+/// USE AT YOUR OWN RISK!
 #[allow(non_snake_case)]
 pub fn invert_vartime<C>(scalar: &Scalar<C>) -> CtOption<Scalar<C>>
 where
