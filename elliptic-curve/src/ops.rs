@@ -3,7 +3,7 @@
 pub use core::ops::{Add, AddAssign, Mul, Neg, Shr, ShrAssign, Sub, SubAssign};
 
 use crypto_bigint::Integer;
-use {group::Group, subtle::CtOption};
+use group::Group;
 
 /// Perform an inversion on a field element (i.e. base field element or scalar)
 pub trait Invert {
@@ -22,14 +22,6 @@ pub trait Invert {
     fn invert_vartime(&self) -> Self::Output {
         // Fall back on constant-time implementation by default.
         self.invert()
-    }
-}
-
-impl<F: ff::Field> Invert for F {
-    type Output = CtOption<F>;
-
-    fn invert(&self) -> CtOption<F> {
-        ff::Field::invert(self)
     }
 }
 
