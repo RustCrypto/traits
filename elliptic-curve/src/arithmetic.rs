@@ -1,14 +1,13 @@
 //! Elliptic curve arithmetic traits.
 
 use crate::{
-    ops::{LinearCombination, MulByGenerator, Reduce, ShrAssign},
+    ops::{Invert, LinearCombination, MulByGenerator, Reduce, ShrAssign},
     point::AffineCoordinates,
-    scalar::FromUintUnchecked,
-    scalar::IsHigh,
+    scalar::{FromUintUnchecked, IsHigh},
     Curve, FieldBytes, PrimeCurve, ScalarPrimitive,
 };
 use core::fmt::Debug;
-use subtle::{ConditionallySelectable, ConstantTimeEq};
+use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::DefaultIsZeroes;
 
 /// Elliptic curve with an arithmetic implementation.
@@ -69,6 +68,7 @@ pub trait CurveArithmetic: Curve {
         + Into<FieldBytes<Self>>
         + Into<ScalarPrimitive<Self>>
         + Into<Self::Uint>
+        + Invert<Output = CtOption<Self::Scalar>>
         + IsHigh
         + PartialOrd
         + Reduce<Self::Uint, Bytes = FieldBytes<Self>>

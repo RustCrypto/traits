@@ -7,7 +7,7 @@ use crate::{
     bigint::{Limb, U256},
     error::{Error, Result},
     generic_array::typenum::U32,
-    ops::{LinearCombination, MulByGenerator, Reduce, ShrAssign},
+    ops::{Invert, LinearCombination, MulByGenerator, Reduce, ShrAssign},
     pkcs8,
     point::AffineCoordinates,
     rand_core::RngCore,
@@ -320,6 +320,14 @@ impl Product for Scalar {
 
 impl<'a> Product<&'a Scalar> for Scalar {
     fn product<I: Iterator<Item = &'a Scalar>>(_iter: I) -> Self {
+        unimplemented!();
+    }
+}
+
+impl Invert for Scalar {
+    type Output = CtOption<Scalar>;
+
+    fn invert(&self) -> CtOption<Scalar> {
         unimplemented!();
     }
 }
