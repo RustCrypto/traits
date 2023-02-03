@@ -12,6 +12,17 @@ pub trait Invert {
 
     /// Invert a field element.
     fn invert(&self) -> Self::Output;
+
+    /// Invert a field element in variable time.
+    ///
+    /// ⚠️ WARNING!
+    ///
+    /// This method should not be used with secret values, as its variable-time
+    /// operation can potentially leak secrets through sidechannels.
+    fn invert_vartime(&self) -> Self::Output {
+        // Fall back on constant-time implementation by default.
+        self.invert()
+    }
 }
 
 impl<F: ff::Field> Invert for F {
