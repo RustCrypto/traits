@@ -32,7 +32,7 @@ use pkcs8::EncodePublicKey;
 #[cfg(any(feature = "jwk", feature = "pem"))]
 use alloc::string::{String, ToString};
 
-#[cfg(all(feature = "pkcs8", feature = "serde"))]
+#[cfg(feature = "serde")]
 use serdect::serde::{de, ser, Deserialize, Serialize};
 
 #[cfg(all(feature = "sec1", feature = "pkcs8"))]
@@ -413,7 +413,7 @@ where
     }
 }
 
-#[cfg(all(feature = "pkcs8", feature = "serde"))]
+#[cfg(feature = "serde")]
 impl<C> Serialize for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
@@ -429,7 +429,7 @@ where
     }
 }
 
-#[cfg(all(feature = "pkcs8", feature = "serde"))]
+#[cfg(feature = "serde")]
 impl<'de, C> Deserialize<'de> for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
