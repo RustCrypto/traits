@@ -198,7 +198,7 @@ impl SaltString {
 
         let length = s.as_bytes().len();
 
-        if length < Salt::MAX_LENGTH {
+        if length <= Salt::MAX_LENGTH {
             let mut bytes = [0u8; Salt::MAX_LENGTH];
             bytes[..length].copy_from_slice(s.as_bytes());
             Ok(SaltString {
