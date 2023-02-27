@@ -10,7 +10,7 @@ readme        = "README.md"
 edition       = "2021"
 keywords      = ["crypto"]
 categories    = ["cryptography", "no-std"]
-rust-version  = "1.56"
+rust-version  = "1.60"
 
 [dependencies]
 rand_core = "0.6"

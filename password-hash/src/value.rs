@@ -130,7 +130,7 @@ impl<'a> Value<'a> {
 
         // Ensure all characters are digits
         for c in value.chars() {
-            if !matches!(c, '0'..='9') {
+            if !c.is_ascii_digit() {
                 return Err(Error::ParamValueInvalid(InvalidValue::InvalidChar(c)));
             }
         }
