@@ -117,7 +117,7 @@ impl<'a> TryFrom<&'a str> for Ident<'a> {
 
 impl<'a> fmt::Display for Ident<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&*self)
+        f.write_str(self)
     }
 }
 

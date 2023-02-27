@@ -12,7 +12,7 @@ keywords = ["crypto", "encryption", "rustcrypto"]
 categories = ["cryptography", "no-std"]
 readme = "README.md"
 edition = "2021"
-rust-version = "1.57"
+rust-version = "1.60"
 
 [dependencies]
 crypto-common = { version = "0.1", default-features = false }
