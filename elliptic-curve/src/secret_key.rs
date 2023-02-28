@@ -190,8 +190,7 @@ where
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldBytesSize<C>: ModulusSize,
     {
-        // TODO(tarcieri): wrap `secret_key_bytes` in `Zeroizing`
-        let mut private_key_bytes = self.to_bytes();
+        let private_key_bytes = Zeroizing::new(self.to_bytes());
         let public_key_bytes = self.public_key().to_encoded_point(false);
 
         let ec_private_key = Zeroizing::new(
@@ -200,11 +199,8 @@ where
                 parameters: None,
                 public_key: Some(public_key_bytes.as_bytes()),
             }
-            .to_vec()?,
+            .to_der()?,
         );
-
-        // TODO(tarcieri): wrap `private_key_bytes` in `Zeroizing`
-        private_key_bytes.zeroize();
 
         Ok(ec_private_key)
     }

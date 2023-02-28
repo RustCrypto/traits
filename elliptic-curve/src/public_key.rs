@@ -35,10 +35,13 @@ use alloc::string::{String, ToString};
 #[cfg(feature = "serde")]
 use serdect::serde::{de, ser, Deserialize, Serialize};
 
+#[cfg(any(feature = "pem", feature = "serde"))]
+use pkcs8::DecodePublicKey;
+
 #[cfg(all(feature = "sec1", feature = "pkcs8"))]
 use {
     crate::{
-        pkcs8::{self, AssociatedOid, DecodePublicKey},
+        pkcs8::{self, AssociatedOid},
         ALGORITHM_OID,
     },
     pkcs8::der,
@@ -339,7 +342,7 @@ where
 }
 
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
-impl<C> TryFrom<pkcs8::SubjectPublicKeyInfo<'_>> for PublicKey<C>
+impl<C> TryFrom<pkcs8::SubjectPublicKeyInfoRef<'_>> for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
@@ -347,20 +350,17 @@ where
 {
     type Error = pkcs8::spki::Error;
 
-    fn try_from(spki: pkcs8::SubjectPublicKeyInfo<'_>) -> pkcs8::spki::Result<Self> {
+    fn try_from(spki: pkcs8::SubjectPublicKeyInfoRef<'_>) -> pkcs8::spki::Result<Self> {
         spki.algorithm.assert_oids(ALGORITHM_OID, C::OID)?;
-        Self::from_sec1_bytes(spki.subject_public_key)
+
+        let public_key_bytes = spki
+            .subject_public_key
+            .as_bytes()
+            .ok_or_else(|| der::Tag::BitString.value_error())?;
+
+        Self::from_sec1_bytes(public_key_bytes)
             .map_err(|_| der::Tag::BitString.value_error().into())
     }
-}
-
-#[cfg(all(feature = "pkcs8", feature = "sec1"))]
-impl<C> DecodePublicKey for PublicKey<C>
-where
-    C: AssociatedOid + CurveArithmetic,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldBytesSize<C>: ModulusSize,
-{
 }
 
 #[cfg(all(feature = "alloc", feature = "pkcs8"))]
@@ -371,16 +371,17 @@ where
     FieldBytesSize<C>: ModulusSize,
 {
     fn to_public_key_der(&self) -> pkcs8::spki::Result<der::Document> {
-        let algorithm = pkcs8::AlgorithmIdentifier {
+        let algorithm = pkcs8::AlgorithmIdentifierRef {
             oid: ALGORITHM_OID,
             parameters: Some((&C::OID).into()),
         };
 
         let public_key_bytes = self.to_encoded_point(false);
+        let subject_public_key = der::asn1::BitStringRef::new(0, public_key_bytes.as_bytes())?;
 
-        pkcs8::SubjectPublicKeyInfo {
+        pkcs8::SubjectPublicKeyInfoRef {
             algorithm,
-            subject_public_key: public_key_bytes.as_ref(),
+            subject_public_key,
         }
         .try_into()
     }
