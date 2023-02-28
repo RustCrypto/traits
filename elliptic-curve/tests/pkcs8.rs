@@ -31,6 +31,7 @@ fn example_private_key() -> der::SecretDocument {
 
 #[test]
 fn decode_pkcs8_private_key_from_der() {
+    dbg!(example_private_key().as_bytes());
     let secret_key = SecretKey::from_pkcs8_der(example_private_key().as_bytes()).unwrap();
     assert_eq!(secret_key.to_bytes().as_slice(), &EXAMPLE_SCALAR);
 }

@@ -2,7 +2,7 @@
 
 use super::SecretKey;
 use crate::{
-    pkcs8::{self, der::Decode, AssociatedOid, DecodePrivateKey},
+    pkcs8::{self, der::Decode, AssociatedOid},
     sec1::{ModulusSize, ValidatePublicKey},
     Curve, FieldBytesSize, ALGORITHM_OID,
 };
@@ -23,6 +23,7 @@ use {
 use {
     crate::{error::Error, Result},
     core::str::FromStr,
+    pkcs8::DecodePrivateKey,
 };
 
 impl<C> TryFrom<pkcs8::PrivateKeyInfo<'_>> for SecretKey<C>
@@ -42,13 +43,6 @@ where
     }
 }
 
-impl<C> DecodePrivateKey for SecretKey<C>
-where
-    C: Curve + AssociatedOid + ValidatePublicKey,
-    FieldBytesSize<C>: ModulusSize,
-{
-}
-
 #[cfg(all(feature = "alloc", feature = "arithmetic"))]
 impl<C> EncodePrivateKey for SecretKey<C>
 where
@@ -57,7 +51,7 @@ where
     FieldBytesSize<C>: ModulusSize,
 {
     fn to_pkcs8_der(&self) -> pkcs8::Result<der::SecretDocument> {
-        let algorithm_identifier = pkcs8::AlgorithmIdentifier {
+        let algorithm_identifier = pkcs8::AlgorithmIdentifierRef {
             oid: ALGORITHM_OID,
             parameters: Some((&C::OID).into()),
         };
