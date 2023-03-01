@@ -10,8 +10,7 @@ mod pkcs8;
 
 use crate::{Curve, Error, FieldBytes, Result, ScalarPrimitive};
 use core::fmt::{self, Debug};
-use crypto_bigint::Integer;
-use generic_array::GenericArray;
+use generic_array::typenum::Unsigned;
 use subtle::{Choice, ConstantTimeEq};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
@@ -157,9 +156,29 @@ where
 
     /// Deserialize secret key from an encoded secret scalar passed as a
     /// byte slice.
+    ///
+    /// The slice is expected to be at most `C::FieldBytesSize` bytes in
+    /// length but may be up to 4-bytes shorter than that, which is handled by
+    /// zero-padding the value.
     pub fn from_slice(slice: &[u8]) -> Result<Self> {
-        if slice.len() == C::Uint::BYTES {
-            Self::from_bytes(GenericArray::from_slice(slice))
+        if slice.len() > C::FieldBytesSize::USIZE {
+            return Err(Error);
+        }
+
+        /// Maximum number of "missing" bytes to interpret as zeroes.
+        const MAX_LEADING_ZEROES: usize = 4;
+
+        let offset = C::FieldBytesSize::USIZE.saturating_sub(slice.len());
+
+        if offset == 0 {
+            Self::from_bytes(FieldBytes::<C>::from_slice(slice))
+        } else if offset <= MAX_LEADING_ZEROES {
+            let mut bytes = FieldBytes::<C>::default();
+            bytes[offset..].copy_from_slice(slice);
+
+            let ret = Self::from_bytes(&bytes);
+            bytes.zeroize();
+            ret
         } else {
             Err(Error)
         }
