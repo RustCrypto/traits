@@ -1,6 +1,6 @@
 [package]
 name = "elliptic-curve"
-version = "0.13.0-rc.0"
+version = "0.13.0"
 description = """
 General purpose Elliptic Curve Cryptography (ECC) support, including types
 and traits for representing various elliptic curve forms, scalars, points,
