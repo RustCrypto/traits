@@ -11,7 +11,7 @@ use inout::{InOutBuf, NotEqualError};
 /// Marker trait for block-level asynchronous stream ciphers
 pub trait AsyncStreamCipher: Sized {
     /// Encrypt data using `InOutBuf`.
-    fn encrypt_inout(mut self, data: InOutBuf<'_, '_, u8>)
+    fn encrypt_inout(&mut self, data: InOutBuf<'_, '_, u8>)
     where
         Self: BlockEncryptMut,
     {
@@ -27,7 +27,7 @@ pub trait AsyncStreamCipher: Sized {
     }
 
     /// Decrypt data using `InOutBuf`.
-    fn decrypt_inout(mut self, data: InOutBuf<'_, '_, u8>)
+    fn decrypt_inout(&mut self, data: InOutBuf<'_, '_, u8>)
     where
         Self: BlockDecryptMut,
     {
@@ -42,7 +42,7 @@ pub trait AsyncStreamCipher: Sized {
         }
     }
     /// Encrypt data in place.
-    fn encrypt(self, buf: &mut [u8])
+    fn encrypt(&mut self, buf: &mut [u8])
     where
         Self: BlockEncryptMut,
     {
@@ -50,7 +50,7 @@ pub trait AsyncStreamCipher: Sized {
     }
 
     /// Decrypt data in place.
-    fn decrypt(self, buf: &mut [u8])
+    fn decrypt(&mut self, buf: &mut [u8])
     where
         Self: BlockDecryptMut,
     {
@@ -58,7 +58,7 @@ pub trait AsyncStreamCipher: Sized {
     }
 
     /// Encrypt data from buffer to buffer.
-    fn encrypt_b2b(self, in_buf: &[u8], out_buf: &mut [u8]) -> Result<(), NotEqualError>
+    fn encrypt_b2b(&mut self, in_buf: &[u8], out_buf: &mut [u8]) -> Result<(), NotEqualError>
     where
         Self: BlockEncryptMut,
     {
@@ -66,7 +66,7 @@ pub trait AsyncStreamCipher: Sized {
     }
 
     /// Decrypt data from buffer to buffer.
-    fn decrypt_b2b(self, in_buf: &[u8], out_buf: &mut [u8]) -> Result<(), NotEqualError>
+    fn decrypt_b2b(&mut self, in_buf: &[u8], out_buf: &mut [u8]) -> Result<(), NotEqualError>
     where
         Self: BlockDecryptMut,
     {
