@@ -203,7 +203,6 @@ pub struct SaltString {
 impl SaltString {
     /// Generate a random B64-encoded [`SaltString`].
     #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     pub fn generate(mut rng: impl CryptoRngCore) -> Self {
         let mut bytes = [0u8; Salt::RECOMMENDED_LENGTH];
         rng.fill_bytes(&mut bytes);

@@ -1,5 +1,5 @@
 #![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![doc = include_str!("../README.md")]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
@@ -26,7 +26,6 @@ extern crate alloc;
 extern crate std;
 
 #[cfg(feature = "rand_core")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
 pub use rand_core;
 
 pub mod errors;
@@ -231,7 +230,6 @@ impl<'a> PasswordHash<'a> {
 
     /// Serialize this [`PasswordHash`] as a [`PasswordHashString`].
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     pub fn serialize(&self) -> PasswordHashString {
         self.into()
     }
@@ -277,7 +275,6 @@ impl<'a> fmt::Display for PasswordHash<'a> {
 /// parse successfully.
 // TODO(tarcieri): cached parsed representations? or at least structural data
 #[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PasswordHashString {
     /// String value
