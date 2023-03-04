@@ -54,6 +54,7 @@ alloc = [
 std = [
     "alloc",
     "rand_core/std",
+    "pkcs8?/std",
     "sec1?/std"
 ]
 
