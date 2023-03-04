@@ -57,7 +57,7 @@ fn salt() {
         algorithm: EXAMPLE_ALGORITHM,
         version: None,
         params: ParamsString::new(),
-        salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
+        salt: Some(Salt::from_b64(EXAMPLE_SALT).unwrap()),
         hash: None,
     };
 
@@ -77,7 +77,7 @@ fn one_param_and_salt() {
         algorithm: EXAMPLE_ALGORITHM,
         version: None,
         params,
-        salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
+        salt: Some(Salt::from_b64(EXAMPLE_SALT).unwrap()),
         hash: None,
     };
 
@@ -94,7 +94,7 @@ fn params_and_salt() {
         algorithm: EXAMPLE_ALGORITHM,
         version: None,
         params: example_params(),
-        salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
+        salt: Some(Salt::from_b64(EXAMPLE_SALT).unwrap()),
         hash: None,
     };
 
@@ -111,7 +111,7 @@ fn salt_and_hash() {
         algorithm: EXAMPLE_ALGORITHM,
         version: None,
         params: ParamsString::default(),
-        salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
+        salt: Some(Salt::from_b64(EXAMPLE_SALT).unwrap()),
         hash: Some(EXAMPLE_HASH.try_into().unwrap()),
     };
 
@@ -131,7 +131,7 @@ fn all_fields() {
         algorithm: EXAMPLE_ALGORITHM,
         version: None,
         params: example_params(),
-        salt: Some(Salt::new(EXAMPLE_SALT).unwrap()),
+        salt: Some(Salt::from_b64(EXAMPLE_SALT).unwrap()),
         hash: Some(EXAMPLE_HASH.try_into().unwrap()),
     };
 
