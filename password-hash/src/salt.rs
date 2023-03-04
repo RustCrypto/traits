@@ -5,7 +5,7 @@ use core::{fmt, str};
 
 use crate::errors::InvalidValue;
 #[cfg(feature = "rand_core")]
-use rand_core::{CryptoRng, RngCore};
+use rand_core::CryptoRngCore;
 
 /// Error message used with `expect` for when internal invariants are violated
 /// (i.e. the contents of a [`Salt`] should always be valid)
@@ -100,9 +100,9 @@ impl<'a> Salt<'a> {
     /// [PHC string format specification]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#function-duties
     pub const RECOMMENDED_LENGTH: usize = 16;
 
-    /// Create a [`Salt`] from the given `str`, validating it according to
-    /// [`Salt::MIN_LENGTH`] and [`Salt::MAX_LENGTH`] length restrictions.
-    pub fn new(input: &'a str) -> Result<Self> {
+    /// Create a [`Salt`] from the given B64-encoded input string, validating
+    /// [`Salt::MIN_LENGTH`] and [`Salt::MAX_LENGTH`] restrictions.
+    pub fn from_b64(input: &'a str) -> Result<Self> {
         let length = input.as_bytes().len();
 
         if length < Self::MIN_LENGTH {
@@ -113,18 +113,27 @@ impl<'a> Salt<'a> {
             return Err(Error::SaltInvalid(InvalidValue::TooLong));
         }
 
+        // TODO(tarcieri): full B64 decoding check?
+        for char in input.chars() {
+            // From the PHC string format spec:
+            //
+            // > The salt consists in a sequence of characters in: `[a-zA-Z0-9/+.-]`
+            // > (lowercase letters, uppercase letters, digits, /, +, . and -).
+            if !matches!(char, 'a'..='z' | 'A'..='Z' | '0'..='9' | '/' | '+' | '.' | '-') {
+                return Err(Error::SaltInvalid(InvalidValue::InvalidChar(char)));
+            }
+        }
+
         input.try_into().map(Self).map_err(|e| match e {
             Error::ParamValueInvalid(value_err) => Error::SaltInvalid(value_err),
             err => err,
         })
     }
 
-    /// Attempt to decode a B64-encoded [`Salt`], writing the decoded result
-    /// into the provided buffer, and returning a slice of the buffer
-    /// containing the decoded result on success.
-    ///
-    /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
-    pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8]> {
+    /// Attempt to decode a B64-encoded [`Salt`] into bytes, writing the
+    /// decoded output into the provided buffer, and returning a slice of the
+    /// portion of the buffer containing the decoded result on success.
+    pub fn decode_b64<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8]> {
         self.0.b64_decode(buf)
     }
 
@@ -133,14 +142,24 @@ impl<'a> Salt<'a> {
         self.0.as_str()
     }
 
-    /// Borrow this value as bytes.
-    pub fn as_bytes(&self) -> &'a [u8] {
-        self.as_str().as_bytes()
-    }
-
     /// Get the length of this value in ASCII characters.
     pub fn len(&self) -> usize {
         self.as_str().len()
+    }
+
+    /// Create a [`Salt`] from the given B64-encoded input string, validating
+    /// [`Salt::MIN_LENGTH`] and [`Salt::MAX_LENGTH`] restrictions.
+    #[deprecated(since = "0.5.0", note = "use `from_b64` instead")]
+    pub fn new(input: &'a str) -> Result<Self> {
+        Self::from_b64(input)
+    }
+
+    /// Attempt to decode a B64-encoded [`Salt`] into bytes, writing the
+    /// decoded output into the provided buffer, and returning a slice of the
+    /// portion of the buffer containing the decoded result on success.
+    #[deprecated(since = "0.5.0", note = "use `decode_b64` instead")]
+    pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8]> {
+        self.decode_b64(buf)
     }
 }
 
@@ -154,7 +173,7 @@ impl<'a> TryFrom<&'a str> for Salt<'a> {
     type Error = Error;
 
     fn try_from(input: &'a str) -> Result<Self> {
-        Self::new(input)
+        Self::from_b64(input)
     }
 }
 
@@ -173,8 +192,8 @@ impl<'a> fmt::Debug for Salt<'a> {
 /// Owned stack-allocated equivalent of [`Salt`].
 #[derive(Clone, Eq)]
 pub struct SaltString {
-    /// Byte array containing an ASCiI-encoded string.
-    bytes: [u8; Salt::MAX_LENGTH],
+    /// ASCII-encoded characters which comprise the salt.
+    chars: [u8; Salt::MAX_LENGTH],
 
     /// Length of the string in ASCII characters (i.e. bytes).
     length: u8,
@@ -185,63 +204,80 @@ impl SaltString {
     /// Generate a random B64-encoded [`SaltString`].
     #[cfg(feature = "rand_core")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-    pub fn generate(mut rng: impl CryptoRng + RngCore) -> Self {
+    pub fn generate(mut rng: impl CryptoRngCore) -> Self {
         let mut bytes = [0u8; Salt::RECOMMENDED_LENGTH];
         rng.fill_bytes(&mut bytes);
-        Self::b64_encode(&bytes).expect(INVARIANT_VIOLATED_MSG)
+        Self::encode_b64(&bytes).expect(INVARIANT_VIOLATED_MSG)
     }
 
-    /// Create a new [`SaltString`].
-    pub fn new(s: &str) -> Result<Self> {
+    /// Create a new [`SaltString`] from the given B64-encoded input string,
+    /// validating [`Salt::MIN_LENGTH`] and [`Salt::MAX_LENGTH`] restrictions.
+    pub fn from_b64(s: &str) -> Result<Self> {
         // Assert `s` parses successfully as a `Salt`
-        Salt::new(s)?;
+        Salt::from_b64(s)?;
 
-        let length = s.as_bytes().len();
+        let len = s.as_bytes().len();
 
-        if length <= Salt::MAX_LENGTH {
-            let mut bytes = [0u8; Salt::MAX_LENGTH];
-            bytes[..length].copy_from_slice(s.as_bytes());
-            Ok(SaltString {
-                bytes,
-                length: length as u8,
-            })
-        } else {
-            Err(Error::SaltInvalid(InvalidValue::TooLong))
-        }
+        let mut bytes = [0u8; Salt::MAX_LENGTH];
+        bytes[..len].copy_from_slice(s.as_bytes());
+
+        Ok(SaltString {
+            chars: bytes,
+            length: len as u8, // `Salt::from_b64` check prevents overflow
+        })
+    }
+
+    /// Decode this [`SaltString`] from B64 into the provided output buffer.
+    pub fn decode_b64<'a>(&self, buf: &'a mut [u8]) -> Result<&'a [u8]> {
+        self.as_salt().decode_b64(buf)
     }
 
     /// Encode the given byte slice as B64 into a new [`SaltString`].
     ///
-    /// Returns `None` if the slice is too long.
-    pub fn b64_encode(input: &[u8]) -> Result<Self> {
+    /// Returns `Error` if the slice is too long.
+    pub fn encode_b64(input: &[u8]) -> Result<Self> {
         let mut bytes = [0u8; Salt::MAX_LENGTH];
         let length = Encoding::B64.encode(input, &mut bytes)?.len() as u8;
-        Ok(Self { bytes, length })
-    }
-
-    /// Decode this [`SaltString`] from B64 into the provided output buffer.
-    pub fn b64_decode<'a>(&self, buf: &'a mut [u8]) -> Result<&'a [u8]> {
-        self.as_salt().b64_decode(buf)
+        Ok(Self {
+            chars: bytes,
+            length,
+        })
     }
 
     /// Borrow the contents of a [`SaltString`] as a [`Salt`].
     pub fn as_salt(&self) -> Salt<'_> {
-        Salt::new(self.as_str()).expect(INVARIANT_VIOLATED_MSG)
+        Salt::from_b64(self.as_str()).expect(INVARIANT_VIOLATED_MSG)
     }
 
     /// Borrow the contents of a [`SaltString`] as a `str`.
     pub fn as_str(&self) -> &str {
-        str::from_utf8(&self.bytes[..(self.length as usize)]).expect(INVARIANT_VIOLATED_MSG)
-    }
-
-    /// Borrow this value as bytes.
-    pub fn as_bytes(&self) -> &[u8] {
-        self.as_str().as_bytes()
+        str::from_utf8(&self.chars[..(self.length as usize)]).expect(INVARIANT_VIOLATED_MSG)
     }
 
     /// Get the length of this value in ASCII characters.
     pub fn len(&self) -> usize {
         self.as_str().len()
+    }
+
+    /// Create a new [`SaltString`] from the given B64-encoded input string,
+    /// validating [`Salt::MIN_LENGTH`] and [`Salt::MAX_LENGTH`] restrictions.
+    #[deprecated(since = "0.5.0", note = "use `from_b64` instead")]
+    pub fn new(s: &str) -> Result<Self> {
+        Self::from_b64(s)
+    }
+
+    /// Decode this [`SaltString`] from B64 into the provided output buffer.
+    #[deprecated(since = "0.5.0", note = "use `decode_b64` instead")]
+    pub fn b64_decode<'a>(&self, buf: &'a mut [u8]) -> Result<&'a [u8]> {
+        self.decode_b64(buf)
+    }
+
+    /// Encode the given byte slice as B64 into a new [`SaltString`].
+    ///
+    /// Returns `Error` if the slice is too long.
+    #[deprecated(since = "0.5.0", note = "use `encode_b64` instead")]
+    pub fn b64_encode(input: &[u8]) -> Result<Self> {
+        Self::encode_b64(input)
     }
 }
 
@@ -284,21 +320,21 @@ mod tests {
     #[test]
     fn new_with_valid_min_length_input() {
         let s = "abcd";
-        let salt = Salt::new(s).unwrap();
+        let salt = Salt::from_b64(s).unwrap();
         assert_eq!(salt.as_ref(), s);
     }
 
     #[test]
     fn new_with_valid_max_length_input() {
         let s = "012345678911234567892123456789312345678941234567";
-        let salt = Salt::new(s).unwrap();
+        let salt = Salt::from_b64(s).unwrap();
         assert_eq!(salt.as_ref(), s);
     }
 
     #[test]
     fn reject_new_too_short() {
         for &too_short in &["", "a", "ab", "abc"] {
-            let err = Salt::new(too_short).err().unwrap();
+            let err = Salt::from_b64(too_short).err().unwrap();
             assert_eq!(err, Error::SaltInvalid(InvalidValue::TooShort));
         }
     }
@@ -306,14 +342,14 @@ mod tests {
     #[test]
     fn reject_new_too_long() {
         let s = "01234567891123456789212345678931234567894123456785234567896234567";
-        let err = Salt::new(s).err().unwrap();
+        let err = Salt::from_b64(s).err().unwrap();
         assert_eq!(err, Error::SaltInvalid(InvalidValue::TooLong));
     }
 
     #[test]
     fn reject_new_invalid_char() {
         let s = "01234_abcd";
-        let err = Salt::new(s).err().unwrap();
+        let err = Salt::from_b64(s).err().unwrap();
         assert_eq!(err, Error::SaltInvalid(InvalidValue::InvalidChar('_')));
     }
 }

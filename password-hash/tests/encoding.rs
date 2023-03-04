@@ -23,10 +23,10 @@ const EXAMPLE_OUTPUT_RAW: &[u8] =
 #[test]
 fn salt_roundtrip() {
     let mut buffer = [0u8; 64];
-    let salt = Salt::new(EXAMPLE_SALT_B64).unwrap();
+    let salt = Salt::from_b64(EXAMPLE_SALT_B64).unwrap();
     assert_eq!(salt.as_ref(), EXAMPLE_SALT_B64);
 
-    let salt_decoded = salt.b64_decode(&mut buffer).unwrap();
+    let salt_decoded = salt.decode_b64(&mut buffer).unwrap();
     assert_eq!(salt_decoded, EXAMPLE_SALT_RAW);
 }
 

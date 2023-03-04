@@ -21,7 +21,7 @@ base64ct = "1"
 subtle = { version = "2", default-features = false }
 
 # optional dependencies
-rand_core = { version = "0.6", optional = true, default-features = false }
+rand_core = { version = "0.6.4", optional = true, default-features = false }
 
 [features]
 default = ["rand_core"]
