@@ -13,9 +13,9 @@ Collection of traits which describe functionality of cryptographic primitives.
 | [`cipher`]          | [Block] and [stream cipher]   | [![crates.io](https://img.shields.io/crates/v/cipher.svg)](https://crates.io/crates/cipher) | [![Documentation](https://docs.rs/cipher/badge.svg)](https://docs.rs/cipher) | ![MSRV 1.56][msrv-1.56] |
 | [`crypto‑common`]      | Common cryptographic traits | [![crates.io](https://img.shields.io/crates/v/crypto-common.svg)](https://crates.io/crates/crypto-common) | [![Documentation](https://docs.rs/crypto-common/badge.svg)](https://docs.rs/crypto-common) | ![MSRV 1.56][msrv-1.56] |
 | [`digest`]          | [Cryptographic hash function] | [![crates.io](https://img.shields.io/crates/v/digest.svg)](https://crates.io/crates/digest) | [![Documentation](https://docs.rs/digest/badge.svg)](https://docs.rs/digest) | ![MSRV 1.57][msrv-1.57] |
-| [`elliptic‑curve`]  | [Elliptic curve cryptography] | [![crates.io](https://img.shields.io/crates/v/elliptic-curve.svg)](https://crates.io/crates/elliptic-curve) | [![Documentation](https://docs.rs/elliptic-curve/badge.svg)](https://docs.rs/elliptic-curve) | ![MSRV 1.57][msrv-1.57] |
+| [`elliptic‑curve`]  | [Elliptic curve cryptography] | [![crates.io](https://img.shields.io/crates/v/elliptic-curve.svg)](https://crates.io/crates/elliptic-curve) | [![Documentation](https://docs.rs/elliptic-curve/badge.svg)](https://docs.rs/elliptic-curve) | ![MSRV 1.65][msrv-1.65] |
 | [`kem`]             | [Key encapsulation mechanism] | [![crates.io](https://img.shields.io/crates/v/kem.svg)](https://crates.io/crates/kem) | [![Documentation](https://docs.rs/kem/badge.svg)](https://docs.rs/kem) | ![MSRV 1.56][msrv-1.56] |
-| [`password-hash`]   | [Password hashing]            | [![crates.io](https://img.shields.io/crates/v/password-hash.svg)](https://crates.io/crates/password-hash) | [![Documentation](https://docs.rs/password-hash/badge.svg)](https://docs.rs/password-hash) | ![MSRV 1.57][msrv-1.57] |
+| [`password-hash`]   | [Password hashing]            | [![crates.io](https://img.shields.io/crates/v/password-hash.svg)](https://crates.io/crates/password-hash) | [![Documentation](https://docs.rs/password-hash/badge.svg)](https://docs.rs/password-hash) | ![MSRV 1.60][msrv-1.60] |
 | [`signature`]       | [Digital signature]           | [![crates.io](https://img.shields.io/crates/v/signature.svg)](https://crates.io/crates/signature) | [![Documentation](https://docs.rs/signature/badge.svg)](https://docs.rs/signature) | ![MSRV 1.56][msrv-1.56] |
 | [`universal‑hash`]  | [Universal hash function]     | [![crates.io](https://img.shields.io/crates/v/universal-hash.svg)](https://crates.io/crates/universal-hash) | [![Documentation](https://docs.rs/universal-hash/badge.svg)](https://docs.rs/universal-hash) | ![MSRV 1.56][msrv-1.56] |
 
@@ -51,6 +51,8 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [deps-link]: https://deps.rs/repo/github/RustCrypto/traits
 [msrv-1.56]: https://img.shields.io/badge/rustc-1.56.0+-blue.svg
 [msrv-1.57]: https://img.shields.io/badge/rustc-1.57.0+-blue.svg
+[msrv-1.60]: https://img.shields.io/badge/rustc-1.60.0+-blue.svg
+[msrv-1.65]: https://img.shields.io/badge/rustc-1.65.0+-blue.svg
 
 [//]: # (crates)
 
