@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.5.0 (2023-03-04)
+### Added
+- `Error::OutputSize` ([#1026])
+- `std::error::Error::source` for `Error` ([#1264])
+- `getrandom` feature ([#1267])
+
+### Changed
+- Use `Salt` type with `PasswordHasher` ([#1187])
+- Rename `Salt::new` => `Salt::from_b64` ([#1266])
+- Rename `Salt::b64_decode` => `Salt::decode_b64` ([#1266])
+- Rename `SaltString::new` => `SaltString::from_b64` ([#1266])
+- Rename `SaltString::b64_decode` => `SaltString::decode_b64` ([#1266])
+- Rename `SaltString::b64_encode` => `SaltString::encode_b64` ([#1266])
+
+### Fixed
+- Allow `Salt` to be exactly the same amount as `MAX_LENGTH` value ([#1246])
+
+[#1026]: https://github.com/RustCrypto/traits/pull/1026
+[#1187]: https://github.com/RustCrypto/traits/pull/1187
+[#1246]: https://github.com/RustCrypto/traits/pull/1246
+[#1264]: https://github.com/RustCrypto/traits/pull/1264
+[#1266]: https://github.com/RustCrypto/traits/pull/1266
+[#1267]: https://github.com/RustCrypto/traits/pull/1267
+
 ## 0.4.2 (2022-06-27)
 ### Fixed
 - docs.rs metadata ([#1031])
