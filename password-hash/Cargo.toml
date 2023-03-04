@@ -28,6 +28,8 @@ default = ["rand_core"]
 alloc = ["base64ct/alloc"]
 std = ["alloc", "base64ct/std", "rand_core/std"]
 
+getrandom = ["rand_core/getrandom"]
+
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
