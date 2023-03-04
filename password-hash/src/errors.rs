@@ -103,19 +103,10 @@ impl fmt::Display for Error {
 impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::Algorithm => None,
             Self::B64Encoding(err) => Some(err),
-            Self::Crypto => None,
-            Self::OutputSize { .. } => None,
-            Self::ParamNameDuplicated => None,
-            Self::ParamNameInvalid => None,
             Self::ParamValueInvalid(err) => Some(err),
-            Self::ParamsMaxExceeded => None,
-            Self::Password => None,
-            Self::PhcStringField => None,
-            Self::PhcStringTrailingData => None,
             Self::SaltInvalid(err) => Some(err),
-            Self::Version => None,
+            _ => None,
         }
     }
 }
