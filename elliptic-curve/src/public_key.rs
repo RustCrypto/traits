@@ -4,7 +4,7 @@ use crate::{
     point::NonIdentity, AffinePoint, CurveArithmetic, Error, NonZeroScalar, ProjectivePoint, Result,
 };
 use core::fmt::Debug;
-use group::{Curve as _, Group};
+use group::{Curve, Group};
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
@@ -20,7 +20,7 @@ use {
     crate::{
         point::PointCompression,
         sec1::{CompressedPoint, EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
-        Curve, FieldBytesSize,
+        FieldBytesSize,
     },
     core::cmp::Ordering,
     subtle::CtOption,
@@ -122,7 +122,6 @@ where
     #[cfg(feature = "sec1")]
     pub fn from_sec1_bytes(bytes: &[u8]) -> Result<Self>
     where
-        C: Curve,
         FieldBytesSize<C>: ModulusSize,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     {
@@ -139,7 +138,7 @@ where
     #[cfg(feature = "alloc")]
     pub fn to_sec1_bytes(&self) -> Box<[u8]>
     where
-        C: CurveArithmetic + PointCompression,
+        C: PointCompression,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldBytesSize<C>: ModulusSize,
     {
@@ -167,7 +166,7 @@ where
     #[cfg(feature = "jwk")]
     pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
     where
-        C: Curve + JwkParameters,
+        C: JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldBytesSize<C>: ModulusSize,
     {
@@ -178,7 +177,7 @@ where
     #[cfg(feature = "jwk")]
     pub fn from_jwk_str(jwk: &str) -> Result<Self>
     where
-        C: Curve + JwkParameters,
+        C: JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldBytesSize<C>: ModulusSize,
     {
@@ -189,7 +188,7 @@ where
     #[cfg(feature = "jwk")]
     pub fn to_jwk(&self) -> JwkEcKey
     where
-        C: Curve + JwkParameters,
+        C: JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldBytesSize<C>: ModulusSize,
     {
@@ -200,7 +199,7 @@ where
     #[cfg(feature = "jwk")]
     pub fn to_jwk_string(&self) -> String
     where
-        C: Curve + JwkParameters,
+        C: JwkParameters,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldBytesSize<C>: ModulusSize,
     {
