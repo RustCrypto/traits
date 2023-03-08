@@ -47,6 +47,9 @@ where
     #[inline]
     fn get_pos(&self) -> usize {
         let pos = self.pos as usize;
+        if T::BlockSize::USIZE == 0 {
+            panic!("Block size can not be equal to zero");
+        }
         if pos >= T::BlockSize::USIZE {
             debug_assert!(false);
             // SAFETY: `pos` is set only to values smaller than block size
