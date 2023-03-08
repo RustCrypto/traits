@@ -19,7 +19,7 @@ use core::str::FromStr;
 use {
     crate::{
         point::PointCompression,
-        sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
+        sec1::{CompressedPoint, EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
         Curve, FieldBytesSize,
     },
     core::cmp::Ordering,
@@ -143,8 +143,7 @@ where
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldBytesSize<C>: ModulusSize,
     {
-        let point = EncodedPoint::<C>::from(self);
-        point.to_bytes()
+        EncodedPoint::<C>::from(self).to_bytes()
     }
 
     /// Borrow the inner [`AffinePoint`] from this [`PublicKey`].
@@ -251,6 +250,30 @@ where
 }
 
 #[cfg(feature = "sec1")]
+impl<C> From<PublicKey<C>> for CompressedPoint<C>
+where
+    C: CurveArithmetic + PointCompression,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldBytesSize<C>: ModulusSize,
+{
+    fn from(public_key: PublicKey<C>) -> CompressedPoint<C> {
+        CompressedPoint::<C>::from(&public_key)
+    }
+}
+
+#[cfg(feature = "sec1")]
+impl<C> From<&PublicKey<C>> for CompressedPoint<C>
+where
+    C: CurveArithmetic + PointCompression,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldBytesSize<C>: ModulusSize,
+{
+    fn from(public_key: &PublicKey<C>) -> CompressedPoint<C> {
+        CompressedPoint::<C>::clone_from_slice(public_key.to_encoded_point(true).as_bytes())
+    }
+}
+
+#[cfg(feature = "sec1")]
 impl<C> From<PublicKey<C>> for EncodedPoint<C>
 where
     C: CurveArithmetic + PointCompression,
@@ -341,6 +364,62 @@ where
     }
 }
 
+#[cfg(feature = "sec1")]
+impl<C> TryFrom<CompressedPoint<C>> for PublicKey<C>
+where
+    C: CurveArithmetic,
+    FieldBytesSize<C>: ModulusSize,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+{
+    type Error = Error;
+
+    fn try_from(point: CompressedPoint<C>) -> Result<Self> {
+        Self::from_sec1_bytes(&point)
+    }
+}
+
+#[cfg(feature = "sec1")]
+impl<C> TryFrom<&CompressedPoint<C>> for PublicKey<C>
+where
+    C: CurveArithmetic,
+    FieldBytesSize<C>: ModulusSize,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+{
+    type Error = Error;
+
+    fn try_from(point: &CompressedPoint<C>) -> Result<Self> {
+        Self::from_sec1_bytes(point)
+    }
+}
+
+#[cfg(feature = "sec1")]
+impl<C> TryFrom<EncodedPoint<C>> for PublicKey<C>
+where
+    C: CurveArithmetic,
+    FieldBytesSize<C>: ModulusSize,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+{
+    type Error = Error;
+
+    fn try_from(point: EncodedPoint<C>) -> Result<Self> {
+        Self::from_sec1_bytes(point.as_bytes())
+    }
+}
+
+#[cfg(feature = "sec1")]
+impl<C> TryFrom<&EncodedPoint<C>> for PublicKey<C>
+where
+    C: CurveArithmetic,
+    FieldBytesSize<C>: ModulusSize,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+{
+    type Error = Error;
+
+    fn try_from(point: &EncodedPoint<C>) -> Result<Self> {
+        Self::from_sec1_bytes(point.as_bytes())
+    }
+}
+
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
 impl<C> TryFrom<pkcs8::SubjectPublicKeyInfoRef<'_>> for PublicKey<C>
 where
@@ -351,6 +430,20 @@ where
     type Error = pkcs8::spki::Error;
 
     fn try_from(spki: pkcs8::SubjectPublicKeyInfoRef<'_>) -> pkcs8::spki::Result<Self> {
+        Self::try_from(&spki)
+    }
+}
+
+#[cfg(all(feature = "pkcs8", feature = "sec1"))]
+impl<C> TryFrom<&pkcs8::SubjectPublicKeyInfoRef<'_>> for PublicKey<C>
+where
+    C: AssociatedOid + CurveArithmetic,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldBytesSize<C>: ModulusSize,
+{
+    type Error = pkcs8::spki::Error;
+
+    fn try_from(spki: &pkcs8::SubjectPublicKeyInfoRef<'_>) -> pkcs8::spki::Result<Self> {
         spki.algorithm.assert_oids(ALGORITHM_OID, C::OID)?;
 
         let public_key_bytes = spki
