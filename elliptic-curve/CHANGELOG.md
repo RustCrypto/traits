@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.13.2 (2023-03-08)
+### Added
+- Weakly activate `pkcs8?/std` ([#1263])
+- More `PublicKey` <-> SEC1 conversions ([#1272])
+
+[#1263]: https://github.com/RustCrypto/traits/pull/1263
+[#1272]: https://github.com/RustCrypto/traits/pull/1272
+
 ## 0.13.1 (2023-03-01)
 ### Added
 - `SecretKey::from_slice` short input support ([#1256])
