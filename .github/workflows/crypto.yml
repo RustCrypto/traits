@@ -30,12 +30,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.target }}
-          override: true
-          profile: minimal
+          targets: ${{ matrix.target }}
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
                --features aead,cipher,digest,elliptic-curve,signature,universal-hash
@@ -45,11 +43,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: nightly
-          override: true
-          profile: minimal
       - uses: RustCrypto/actions/cargo-hack-install@master
       - run: cargo update -Z minimal-versions
       - run: cargo hack test --release --feature-powerset
@@ -64,11 +60,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-          override: true
-          profile: minimal
       - run: cargo check --all-features
       - run: cargo test --no-default-features --release
       - run: cargo test --release
@@ -79,10 +73,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.60.0
           components: clippy
-          override: true
-          profile: minimal
       - run: cargo clippy --all --all-features -- -D warnings

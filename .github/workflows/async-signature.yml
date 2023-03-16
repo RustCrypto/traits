@@ -27,11 +27,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-          override: true
-          profile: minimal
       - run: cargo check --all-features
       - run: cargo test --release
       - run: cargo test --all-features --release
@@ -41,11 +39,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: nightly
-          override: true
-          profile: minimal
       - uses: RustCrypto/actions/cargo-hack-install@master
       - run: rm ../../Cargo.toml
       - run: cargo update -Z minimal-versions
