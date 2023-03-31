@@ -2,6 +2,7 @@
 //!
 //! Implementation of the STREAM online authenticated encryption construction
 //! as described in the paper
+//!
 //! [Online Authenticated-Encryption and its Nonce-Reuse Misuse-Resistance][1].
 //!
 //! ## About
@@ -34,6 +35,7 @@
 
 use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, KeyInit, Result};
 use core::ops::{AddAssign, Sub};
+use crypto_common::rand_core;
 use generic_array::{
     typenum::{Unsigned, U4, U5},
     ArrayLength, GenericArray,
@@ -84,6 +86,15 @@ where
 
     /// Create a new STREAM from the given AEAD cipher.
     fn from_aead(aead: A, nonce: &Nonce<A, Self>) -> Self;
+
+    /// Create a nonce prefix of the appropriate size to pass to Self::new
+    fn generate_nonce_prefix<R>(
+        mut rng: impl rand_core::CryptoRng + rand_core::RngCore,
+    ) -> Nonce<A, Self> {
+        let mut nonce = Nonce::<A, Self>::default();
+        rng.fill_bytes(&mut nonce);
+        nonce
+    }
 }
 
 /// Low-level STREAM implementation.
