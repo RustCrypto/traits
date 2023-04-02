@@ -5,6 +5,16 @@ version = 3
 [[package]]
 name = "aead"
 version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c192eb8f11fc081b0fe4259ba5af04217d4e0faddd02417310a927911abd7c8"
+dependencies = [
+ "crypto-common 0.1.6",
+ "generic-array",
+]
+
+[[package]]
+name = "aead"
+version = "0.5.2"
 dependencies = [
  "arrayvec",
  "blobby",
@@ -12,16 +22,6 @@ dependencies = [
  "crypto-common 0.1.6",
  "generic-array",
  "heapless",
-]
-
-[[package]]
-name = "aead"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c192eb8f11fc081b0fe4259ba5af04217d4e0faddd02417310a927911abd7c8"
-dependencies = [
- "crypto-common 0.1.6",
- "generic-array",
 ]
 
 [[package]]
@@ -41,7 +41,7 @@ version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "82e1366e0c69c9f927b1fa5ce2c7bf9eafc8f9268c0b9800729e8b267612447c"
 dependencies = [
- "aead 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "aead 0.5.1",
  "aes",
  "cipher 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "ctr",
@@ -197,7 +197,7 @@ version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "10cd79432192d1c0f4e1a0fef9527696cc039165d729fb41b3f4f4f354c2dc35"
 dependencies = [
- "aead 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "aead 0.5.1",
  "chacha20",
  "cipher 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "poly1305",
@@ -256,7 +256,7 @@ checksum = "6548a0ad5d2549e111e1f6a11a6c2e2d00ce6a3dafe22948d67c2b443f775e52"
 name = "crypto"
 version = "0.5.0-pre"
 dependencies = [
- "aead 0.5.1",
+ "aead 0.5.2",
  "cipher 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "crypto-common 0.1.6",
  "digest 0.10.6",
@@ -608,7 +608,7 @@ version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf39e5461bfdc6ad0fbc97067519fcaf96a7a2e67f24cc0eb8a1e7c0c45af792"
 dependencies = [
- "aead 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "aead 0.5.1",
  "aes-gcm",
  "byteorder",
  "chacha20poly1305",
