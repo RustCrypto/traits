@@ -12,6 +12,9 @@ use alloc::boxed::Box;
 #[cfg(feature = "jwk")]
 use crate::{JwkEcKey, JwkParameters};
 
+#[cfg(feature = "pkcs8")]
+use pkcs8::spki::{AlgorithmIdentifier, AssociatedAlgorithmIdentifier, ObjectIdentifier};
+
 #[cfg(feature = "pem")]
 use core::str::FromStr;
 
@@ -419,7 +422,20 @@ where
     }
 }
 
-#[cfg(all(feature = "pkcs8", feature = "sec1"))]
+#[cfg(feature = "pkcs8")]
+impl<C> AssociatedAlgorithmIdentifier for PublicKey<C>
+where
+    C: AssociatedOid + CurveArithmetic,
+{
+    type Params = ObjectIdentifier;
+
+    const ALGORITHM_IDENTIFIER: AlgorithmIdentifier<ObjectIdentifier> = AlgorithmIdentifier {
+        oid: ALGORITHM_OID,
+        parameters: Some(C::OID),
+    };
+}
+
+#[cfg(feature = "pkcs8")]
 impl<C> TryFrom<pkcs8::SubjectPublicKeyInfoRef<'_>> for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
@@ -433,7 +449,7 @@ where
     }
 }
 
-#[cfg(all(feature = "pkcs8", feature = "sec1"))]
+#[cfg(feature = "pkcs8")]
 impl<C> TryFrom<&pkcs8::SubjectPublicKeyInfoRef<'_>> for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
@@ -463,16 +479,11 @@ where
     FieldBytesSize<C>: ModulusSize,
 {
     fn to_public_key_der(&self) -> pkcs8::spki::Result<der::Document> {
-        let algorithm = pkcs8::AlgorithmIdentifierRef {
-            oid: ALGORITHM_OID,
-            parameters: Some((&C::OID).into()),
-        };
-
         let public_key_bytes = self.to_encoded_point(false);
         let subject_public_key = der::asn1::BitStringRef::new(0, public_key_bytes.as_bytes())?;
 
-        pkcs8::SubjectPublicKeyInfoRef {
-            algorithm,
+        pkcs8::SubjectPublicKeyInfo {
+            algorithm: Self::ALGORITHM_IDENTIFIER,
             subject_public_key,
         }
         .try_into()
