@@ -6,6 +6,7 @@ use crate::{
     sec1::{ModulusSize, ValidatePublicKey},
     Curve, FieldBytesSize, ALGORITHM_OID,
 };
+use pkcs8::spki::{AlgorithmIdentifier, AssociatedAlgorithmIdentifier, ObjectIdentifier};
 use sec1::EcPrivateKey;
 
 // Imports for the `EncodePrivateKey` impl
@@ -26,9 +27,21 @@ use {
     pkcs8::DecodePrivateKey,
 };
 
+impl<C> AssociatedAlgorithmIdentifier for SecretKey<C>
+where
+    C: AssociatedOid + Curve,
+{
+    type Params = ObjectIdentifier;
+
+    const ALGORITHM_IDENTIFIER: AlgorithmIdentifier<ObjectIdentifier> = AlgorithmIdentifier {
+        oid: ALGORITHM_OID,
+        parameters: Some(C::OID),
+    };
+}
+
 impl<C> TryFrom<pkcs8::PrivateKeyInfo<'_>> for SecretKey<C>
 where
-    C: Curve + AssociatedOid + ValidatePublicKey,
+    C: AssociatedOid + Curve + ValidatePublicKey,
     FieldBytesSize<C>: ModulusSize,
 {
     type Error = pkcs8::Error;
@@ -51,6 +64,7 @@ where
     FieldBytesSize<C>: ModulusSize,
 {
     fn to_pkcs8_der(&self) -> pkcs8::Result<der::SecretDocument> {
+        // TODO(tarcieri): make `PrivateKeyInfo` generic around `Params`
         let algorithm_identifier = pkcs8::AlgorithmIdentifierRef {
             oid: ALGORITHM_OID,
             parameters: Some((&C::OID).into()),

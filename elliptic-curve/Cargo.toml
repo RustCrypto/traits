@@ -74,3 +74,8 @@ voprf = ["digest"]
 [package.metadata.docs.rs]
 features = ["bits", "ecdh", "hash2curve", "jwk", "pem", "std", "voprf"]
 rustdoc-args = ["--cfg", "docsrs"]
+
+
+[patch.crates-io]
+der = { git = "https://github.com/RustCrypto/formats.git" }
+spki = { git = "https://github.com/RustCrypto/formats.git" }
