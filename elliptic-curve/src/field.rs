@@ -32,7 +32,7 @@ where
     fn decode_field_bytes(field_bytes: &FieldBytes<C>) -> Self {
         debug_assert!(field_bytes.len() <= Self::ByteSize::USIZE);
         let mut byte_array = ByteArray::<Self>::default();
-        let offset = Self::ByteSize::USIZE - field_bytes.len();
+        let offset = Self::ByteSize::USIZE.saturating_sub(field_bytes.len());
         byte_array[offset..].copy_from_slice(field_bytes);
         Self::from_be_byte_array(byte_array)
     }
@@ -44,7 +44,7 @@ where
         let mut field_bytes = FieldBytes::<C>::default();
         debug_assert!(field_bytes.len() <= Self::ByteSize::USIZE);
 
-        let offset = Self::ByteSize::USIZE - field_bytes.len();
+        let offset = Self::ByteSize::USIZE.saturating_sub(field_bytes.len());
         field_bytes.copy_from_slice(&self.to_be_byte_array()[offset..]);
         field_bytes
     }

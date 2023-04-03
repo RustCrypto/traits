@@ -1,5 +1,8 @@
 //! `expand_message_xmd` based on a hash function.
 
+// TODO(tarcieri): checked arithmetic
+#![allow(clippy::integer_arithmetic)]
+
 use core::marker::PhantomData;
 
 use super::{Domain, ExpandMsg, Expander};
