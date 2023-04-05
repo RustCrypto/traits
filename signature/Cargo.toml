@@ -18,7 +18,7 @@ digest = { version = "0.10.6", optional = true, default-features = false }
 rand_core = { version = "0.6.4", optional = true, default-features = false }
 
 [dev-dependencies]
-hex-literal = "0.3"
+hex-literal = "0.4"
 sha2 = { version = "0.10", default-features = false }
 
 [features]
