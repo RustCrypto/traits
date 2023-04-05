@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.13.3 (2023-04-04)
+### Added
+- Impl `AssociatedAlgorithmIdentifier` for `SecretKey` and `PublicKey` ([#1286])
+
+### Changed
+- Update OSSWU code ([#1157])
+- Bump `pkcs8` to v0.10.2 ([#1291])
+
+### Fixed
+- `FieldBytesEncoding` provided impl ([#1287])
+
+[#1157]: https://github.com/RustCrypto/traits/pull/1157
+[#1286]: https://github.com/RustCrypto/traits/pull/1286
+[#1287]: https://github.com/RustCrypto/traits/pull/1287
+[#1291]: https://github.com/RustCrypto/traits/pull/1291
+
 ## 0.13.2 (2023-03-08)
 ### Added
 - Weakly activate `pkcs8?/std` ([#1263])
