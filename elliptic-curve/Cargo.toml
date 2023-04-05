@@ -31,7 +31,7 @@ group = { version = "0.13", optional = true, default-features = false }
 hkdf = { version = "0.12", optional = true, default-features = false }
 hex-literal = { version = "0.3", optional = true }
 pem-rfc7468 = { version = "0.7", optional = true, features = ["alloc"] }
-pkcs8 = { version = "0.10", optional = true, default-features = false }
+pkcs8 = { version = "0.10.2", optional = true, default-features = false }
 sec1 = { version = "0.7.1", optional = true, features = ["subtle", "zeroize"] }
 serdect = { version = "0.2", optional = true, default-features = false, features = ["alloc"] }
 serde_json = { version = "1", optional = true, default-features = false, features = ["alloc"] }
@@ -74,8 +74,3 @@ voprf = ["digest"]
 [package.metadata.docs.rs]
 features = ["bits", "ecdh", "hash2curve", "jwk", "pem", "std", "voprf"]
 rustdoc-args = ["--cfg", "docsrs"]
-
-
-[patch.crates-io]
-der = { git = "https://github.com/RustCrypto/formats.git" }
-spki = { git = "https://github.com/RustCrypto/formats.git" }
