@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.13.4 (2023-04-08)
+### Changed
+- Bump `hex-literal` to v0.4 ([#1295])
+
+### Fixed
+- `NonZeroScalar::from_slice` ([#1296])
+- `ScalarPrimitive::from_slice` ([#1296])
+
+[#1295]: https://github.com/RustCrypto/traits/pull/1295
+[#1296]: https://github.com/RustCrypto/traits/pull/1296
+
 ## 0.13.3 (2023-04-04)
 ### Added
 - Impl `AssociatedAlgorithmIdentifier` for `SecretKey` and `PublicKey` ([#1286])
