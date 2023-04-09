@@ -13,7 +13,7 @@ use core::{
 };
 use crypto_bigint::{ArrayEncoding, Integer};
 use ff::{Field, PrimeField};
-use generic_array::GenericArray;
+use generic_array::{typenum::Unsigned, GenericArray};
 use rand_core::CryptoRngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
@@ -285,7 +285,7 @@ where
     type Error = Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self, Error> {
-        if bytes.len() == C::Uint::BYTES {
+        if bytes.len() == C::FieldBytesSize::USIZE {
             Option::from(NonZeroScalar::from_repr(GenericArray::clone_from_slice(
                 bytes,
             )))
