@@ -92,13 +92,12 @@
 //!   and compiler errors, and in our experience makes them unsuitable for this
 //!   sort of API. We believe such an API is the natural one for signature
 //!   systems, reflecting the natural way they are written absent a trait.
-//! - Associated types preclude multiple (or generic) implementations of the
-//!   same trait. These parameters are common in signature systems, notably
-//!   ones which support different digest algorithms.
+//! - Associated types preclude multiple implementations of the same trait.
+//!   These parameters are common in signature systems, notably ones which
+//!   support different serializations of a signature (e.g. raw vs ASN.1).
 //! - Digital signatures are almost always larger than the present 32-entry
-//!   trait impl limitation on array types, which complicates trait signatures
+//!   trait impl limitation on array types, which complicates bounds
 //!   for these types (particularly things like `From` or `Borrow` bounds).
-//!   This may be more interesting to explore after const generics.
 //!
 //! ## Unstable features
 //!
@@ -111,15 +110,6 @@
 //!
 //! The following unstable features are presently supported:
 //!
-//! - `derive`: for implementers of signature systems using [`DigestSigner`]
-//!   and [`DigestVerifier`], the `derive` feature can be used to
-//!   derive [`Signer`] and [`Verifier`] traits which prehash the input
-//!   message using the [`PrehashSignature::Digest`] algorithm for
-//!   a given signature type. When the `derive` feature is enabled
-//!   import the proc macros with `use signature::{Signer, Verifier}` and then
-//!   add a `derive(Signer)` or `derive(Verifier)` attribute to the given
-//!   digest signer/verifier type. Enabling this feature also enables `digest`
-//!   support (see immediately below).
 //! - `digest`: enables the [`DigestSigner`] and [`DigestVerifier`]
 //!   traits which are based on the [`Digest`] trait from the [`digest`] crate.
 //!   These traits are used for representing signature systems based on the
