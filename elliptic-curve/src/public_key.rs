@@ -6,9 +6,6 @@ use crate::{
 use core::fmt::Debug;
 use group::{Curve, Group};
 
-#[cfg(feature = "alloc")]
-use alloc::boxed::Box;
-
 #[cfg(feature = "jwk")]
 use crate::{JwkEcKey, JwkParameters};
 
@@ -31,6 +28,9 @@ use {
 
 #[cfg(all(feature = "alloc", feature = "pkcs8"))]
 use pkcs8::EncodePublicKey;
+
+#[cfg(all(feature = "alloc", feature = "sec1"))]
+use alloc::boxed::Box;
 
 #[cfg(any(feature = "jwk", feature = "pem"))]
 use alloc::string::{String, ToString};
@@ -138,7 +138,7 @@ where
     /// (page 10).
     ///
     /// <http://www.secg.org/sec1-v2.pdf>
-    #[cfg(feature = "alloc")]
+    #[cfg(all(feature = "alloc", feature = "sec1"))]
     pub fn to_sec1_bytes(&self) -> Box<[u8]>
     where
         C: PointCompression,
