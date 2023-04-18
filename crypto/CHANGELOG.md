@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.5.0 (2023-04-17)
+### Changed
+- Bump `signature` to v2 ([#1211])
+- Bump `password-hash` to v0.5 ([#1271])
+- Bump `elliptic-curve` to v0.13; MSRV 1.65 ([#1302])
+
+[#1211]: https://github.com/RustCrypto/traits/pull/1211
+[#1271]: https://github.com/RustCrypto/traits/pull/1271
+[#1302]: https://github.com/RustCrypto/traits/pull/1302
+
 ## 0.4.0 (2022-08-09)
 ### Added
 - Re-export `crypto-common` as `common` ([#1076])

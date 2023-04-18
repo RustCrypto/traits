@@ -12,6 +12,44 @@ access compatible versions of all traits from the Rust Crypto project.
 
 [Documentation][docs-link]
 
+## About
+
+Facade crate for [RustCrypto Traits][1], providing a single place to
+access compatible versions of all traits from the Rust Crypto project.
+
+# About
+
+The [RustCrypto Project][2] publishes and maintains independently versioned
+crates containing traits for many different kinds of cryptographic
+algorithms.
+
+However, these algorithms are often interdependent (e.g. many depend on digest
+algorithms), which requires figuring out which versions of the trait crates
+are compatible with each other.
+
+This crate will automatically pull in compatible versions of these crates,
+with each one gated under a cargo feature, providing a single place to both
+import and upgrade these crates while ensuring they remain compatible.
+
+# Traits
+
+The following traits are available as re-exports of RustCrypto crates through
+this crate's facade. To access a particular re-export you (or a crate you
+depend on) must enable the associated Cargo feature named below.
+
+| Re-export | Cargo feature | Description |
+|-----------|---------------|-------------|
+| [`aead`](https://docs.rs/aead) | `aead` | Authenticated Encryption with Associated Data (i.e. high-level symmetric encryption) |
+| [`cipher`](https://docs.rs/cipher) | `cipher` | Block and stream ciphers (i.e. low-level symmetric encryption) |
+| [`digest`](https://docs.rs/digest) | `digest` | Cryptographic hash functions |
+| [`elliptic_curve`](https://docs.rs/elliptic-curve) | `elliptic-curve` | Elliptic curve cryptography |
+| [`password_hash`](https://docs.rs/password-hash) | `password-hash` | Password hashing functions |
+| [`signature`](https://docs.rs/signature) | `signature` | Digital signatures (i.e. public key-based message authentication) |
+| [`universal_hash`](https://docs.rs/universal-hash) | `universal‑hash` | Universal Hash Functions (used to build MACs) |
+
+[1]: https://github.com/RustCrypto/traits
+[2]: https://github.com/RustCrypto
+
 ## Minimum Supported Rust Version
 
 Rust **1.65** or higher.
