@@ -253,20 +253,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6548a0ad5d2549e111e1f6a11a6c2e2d00ce6a3dafe22948d67c2b443f775e52"
 
 [[package]]
-name = "crypto"
-version = "0.5.0-pre"
-dependencies = [
- "aead 0.5.2",
- "cipher 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "crypto-common 0.1.6",
- "digest 0.10.6",
- "elliptic-curve 0.12.3",
- "password-hash",
- "signature 2.1.0",
- "universal-hash 0.5.0",
-]
-
-[[package]]
 name = "crypto-bigint"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -369,7 +355,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1a467a65c5e759bce6e65eaf91cc29f466cdc57cb65777bd646872a8a1fd4de"
 dependencies = [
  "const-oid 0.9.2",
- "zeroize",
 ]
 
 [[package]]
@@ -431,7 +416,7 @@ dependencies = [
  "ff 0.10.1",
  "generic-array",
  "group 0.10.0",
- "pkcs8 0.7.6",
+ "pkcs8",
  "rand_core 0.6.4",
  "subtle",
  "zeroize",
@@ -726,18 +711,8 @@ checksum = "ee3ef9b64d26bad0536099c816c6734379e45bbd5f14798def6809e5cc350447"
 dependencies = [
  "der 0.4.5",
  "pem-rfc7468",
- "spki 0.4.1",
+ "spki",
  "zeroize",
-]
-
-[[package]]
-name = "pkcs8"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9eca2c590a5f85da82668fa685c09ce2888b9430e83299debf1f34b65fd4a4ba"
-dependencies = [
- "der 0.6.1",
- "spki 0.6.0",
 ]
 
 [[package]]
@@ -888,7 +863,6 @@ dependencies = [
  "base16ct",
  "der 0.6.1",
  "generic-array",
- "pkcs8 0.9.0",
  "subtle",
  "zeroize",
 ]
@@ -998,16 +972,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c01a0c15da1b0b0e1494112e7af814a678fec9bd157881b49beac661e9b6f32"
 dependencies = [
  "der 0.4.5",
-]
-
-[[package]]
-name = "spki"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67cf02bbac7a337dc36e4f5a693db6c21e7863f45070f7064577eb4367a3212b"
-dependencies = [
- "base64ct",
- "der 0.6.1",
 ]
 
 [[package]]
