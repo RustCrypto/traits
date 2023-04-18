@@ -14,16 +14,6 @@ use generic_array::typenum::Unsigned;
 use subtle::{Choice, ConstantTimeEq};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-#[cfg(all(feature = "alloc", feature = "arithmetic"))]
-use {
-    crate::{
-        sec1::{FromEncodedPoint, ToEncodedPoint},
-        AffinePoint,
-    },
-    alloc::vec::Vec,
-    zeroize::Zeroizing,
-};
-
 #[cfg(feature = "arithmetic")]
 use crate::{rand_core::CryptoRngCore, CurveArithmetic, NonZeroScalar, PublicKey};
 
@@ -34,7 +24,15 @@ use crate::jwk::{JwkEcKey, JwkParameters};
 use sec1::der;
 
 #[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
-use sec1::der::Encode;
+use {
+    crate::{
+        sec1::{FromEncodedPoint, ToEncodedPoint},
+        AffinePoint,
+    },
+    alloc::vec::Vec,
+    sec1::der::Encode,
+    zeroize::Zeroizing,
+};
 
 #[cfg(all(feature = "arithmetic", any(feature = "jwk", feature = "pem")))]
 use alloc::string::String;
