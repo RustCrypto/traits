@@ -23,7 +23,7 @@ use {
         FieldBytesSize,
     },
     core::cmp::Ordering,
-    subtle::CtOption,
+    subtle::{Choice, CtOption},
 };
 
 #[cfg(all(feature = "alloc", feature = "pkcs8"))]
@@ -231,7 +231,7 @@ where
     /// Initialize [`PublicKey`] from an [`EncodedPoint`]
     fn from_encoded_point(encoded_point: &EncodedPoint<C>) -> CtOption<Self> {
         AffinePoint::<C>::from_encoded_point(encoded_point).and_then(|point| {
-            let is_identity = ProjectivePoint::<C>::from(point).is_identity();
+            let is_identity = Choice::from(encoded_point.is_identity() as u8);
             CtOption::new(PublicKey { point }, !is_identity)
         })
     }
