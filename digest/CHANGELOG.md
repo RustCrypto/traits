@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#1173]: https://github.com/RustCrypto/traits/pull/1173
 
+## 0.10.7 (2023-05-19)
+### Changed
+- Loosen `subtle` version requirement ([#1260])
+
+[#1260]: https://github.com/RustCrypto/traits/pull/1260
+
 ## 0.10.6 (2022-11-17)
 ### Added
 - `Mac::verify_reset` and `Mac::verify_slice_reset` methods ([#1154])
