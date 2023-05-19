@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.13.5 (2023-05-19)
+### Changed
+- Faster `PublicKey::from_encoded_point` ([#1310])
+
+### Fixed
+- `alloc`+`arithmetic` features w/o `sec1` feature ([#1301])
+
+[#1301]: https://github.com/RustCrypto/traits/pull/1301
+[#1310]: https://github.com/RustCrypto/traits/pull/1310
+
 ## 0.13.4 (2023-04-08)
 ### Changed
 - Bump `hex-literal` to v0.4 ([#1295])
