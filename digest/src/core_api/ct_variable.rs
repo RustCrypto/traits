@@ -21,7 +21,7 @@ pub struct NoOid;
 
 /// Wrapper around [`VariableOutputCore`] which selects output size
 /// at compile time.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct CtVariableCoreWrapper<T, OutSize, O = NoOid>
 where
     T: VariableOutputCore,

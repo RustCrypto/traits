@@ -9,6 +9,7 @@
 #![warn(
     clippy::mod_module_files,
     clippy::unwrap_used,
+    missing_debug_implementations,
     missing_docs,
     rust_2018_idioms,
     unused_lifetimes,

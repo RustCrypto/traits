@@ -24,7 +24,7 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms)]
+#![warn(missing_debug_implementations, missing_docs, rust_2018_idioms)]
 
 #[cfg(feature = "std")]
 extern crate std;

@@ -239,6 +239,7 @@ impl fmt::Debug for ParamsString {
 }
 
 /// Iterator over algorithm parameters stored in a [`ParamsString`] struct.
+#[derive(Debug)]
 pub struct Iter<'a> {
     inner: Option<str::Split<'a, char>>,
 }

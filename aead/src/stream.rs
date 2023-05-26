@@ -201,6 +201,7 @@ macro_rules! impl_stream_object {
         #[doc = "[Online Authenticated-Encryption and its Nonce-Reuse Misuse-Resistance][1]."]
         #[doc = ""]
         #[doc = "[1]: https://eprint.iacr.org/2015/189.pdf"]
+        #[derive(Debug)]
         pub struct $name<A, S>
         where
             A: AeadInPlace,
@@ -365,6 +366,7 @@ impl_stream_object!(
 /// the last 5-bytes of the AEAD nonce.
 ///
 /// [1]: https://eprint.iacr.org/2015/189.pdf
+#[derive(Debug)]
 pub struct StreamBE32<A>
 where
     A: AeadInPlace,
@@ -454,6 +456,7 @@ where
 /// when interpreted as a 32-bit integer.
 ///
 /// The 31-bit + 1-bit value is stored as the last 4 bytes of the AEAD nonce.
+#[derive(Debug)]
 pub struct StreamLE31<A>
 where
     A: AeadInPlace,

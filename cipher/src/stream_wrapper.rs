@@ -13,7 +13,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 /// Wrapper around [`StreamCipherCore`] implementations.
 ///
 /// It handles data buffering and implements the slice-based traits.
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct StreamCipherCoreWrapper<T: BlockSizeUser>
 where
     T::BlockSize: IsLess<U256>,

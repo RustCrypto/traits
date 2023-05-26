@@ -6,7 +6,7 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg"
 )]
 #![forbid(unsafe_code)]
-#![warn(rust_2018_idioms)]
+#![warn(missing_debug_implementations, rust_2018_idioms)]
 
 pub use crypto_common as common;
 

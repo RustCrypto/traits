@@ -7,7 +7,7 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg"
 )]
 #![forbid(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms)]
+#![warn(missing_debug_implementations, missing_docs, rust_2018_idioms)]
 
 #[cfg(feature = "std")]
 extern crate std;
