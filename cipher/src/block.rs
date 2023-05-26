@@ -134,9 +134,9 @@ pub trait BlockEncrypt: BlockSizeUser + Sized {
     #[cfg(feature = "block-padding")]
     #[cfg_attr(docsrs, doc(cfg(feature = "block-padding")))]
     #[inline]
-    fn encrypt_padded_inout<'inp, 'out, P: Padding<Self::BlockSize>>(
+    fn encrypt_padded_inout<'out, P: Padding<Self::BlockSize>>(
         &self,
-        data: InOutBufReserved<'inp, 'out, u8>,
+        data: InOutBufReserved<'_, 'out, u8>,
     ) -> Result<&'out [u8], PadError> {
         let mut buf = data.into_padded_blocks::<P, Self::BlockSize>()?;
         self.encrypt_blocks_inout(buf.get_blocks());
@@ -250,9 +250,9 @@ pub trait BlockDecrypt: BlockSizeUser {
     #[cfg(feature = "block-padding")]
     #[cfg_attr(docsrs, doc(cfg(feature = "block-padding")))]
     #[inline]
-    fn decrypt_padded_inout<'inp, 'out, P: Padding<Self::BlockSize>>(
+    fn decrypt_padded_inout<'out, P: Padding<Self::BlockSize>>(
         &self,
-        data: InOutBuf<'inp, 'out, u8>,
+        data: InOutBuf<'_, 'out, u8>,
     ) -> Result<&'out [u8], UnpadError> {
         let (mut blocks, tail) = data.into_chunks();
         if !tail.is_empty() {
@@ -379,9 +379,9 @@ pub trait BlockEncryptMut: BlockSizeUser + Sized {
     #[cfg(feature = "block-padding")]
     #[cfg_attr(docsrs, doc(cfg(feature = "block-padding")))]
     #[inline]
-    fn encrypt_padded_inout_mut<'inp, 'out, P: Padding<Self::BlockSize>>(
+    fn encrypt_padded_inout_mut<'out, P: Padding<Self::BlockSize>>(
         mut self,
-        data: InOutBufReserved<'inp, 'out, u8>,
+        data: InOutBufReserved<'_, 'out, u8>,
     ) -> Result<&'out [u8], PadError> {
         let mut buf = data.into_padded_blocks::<P, Self::BlockSize>()?;
         self.encrypt_blocks_inout_mut(buf.get_blocks());
@@ -499,9 +499,9 @@ pub trait BlockDecryptMut: BlockSizeUser + Sized {
     #[cfg(feature = "block-padding")]
     #[cfg_attr(docsrs, doc(cfg(feature = "block-padding")))]
     #[inline]
-    fn decrypt_padded_inout_mut<'inp, 'out, P: Padding<Self::BlockSize>>(
+    fn decrypt_padded_inout_mut<'out, P: Padding<Self::BlockSize>>(
         mut self,
-        data: InOutBuf<'inp, 'out, u8>,
+        data: InOutBuf<'_, 'out, u8>,
     ) -> Result<&'out [u8], UnpadError> {
         let (mut blocks, tail) = data.into_chunks();
         if !tail.is_empty() {
