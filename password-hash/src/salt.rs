@@ -50,14 +50,14 @@ const INVARIANT_VIOLATED_MSG: &str = "salt string invariant violated";
 /// guidelines from the spec:
 ///
 /// - Minimum length: **4**-bytes
-/// - Maximum length: **64**-bytes
+/// - Maximum length: **48**-bytes
 ///
 /// A maximum length is enforced based on the above recommendation for
 /// supporting stack-allocated buffers (which this library uses), and the
-/// specific determination of 64-bytes is taken as a best practice from the
+/// specific determination of 48-bytes is taken as a best practice from the
 /// [Argon2 Encoding][3] specification in the same document:
 ///
-/// > The length in bytes of the salt is between 8 and 64 bytes<sup>†</sup>, thus
+/// > The length in bytes of the salt is between 8 and 48 bytes<sup>†</sup>, thus
 /// > yielding a length in characters between 11 and 64 characters (and that
 /// > length is never equal to 1 modulo 4). The default byte length of the salt
 /// > is 16 bytes (22 characters in B64 encoding). An encoded UUID, or a
