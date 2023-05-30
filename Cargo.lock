@@ -291,9 +291,8 @@ dependencies = [
 name = "crypto-common"
 version = "0.2.0-pre"
 dependencies = [
- "generic-array",
+ "hybrid-array",
  "rand_core 0.6.4",
- "typenum",
 ]
 
 [[package]]
@@ -607,6 +606,15 @@ dependencies = [
  "subtle",
  "x25519-dalek",
  "zeroize",
+]
+
+[[package]]
+name = "hybrid-array"
+version = "0.2.0-pre.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b16010d3e71f5288f3fe2a9c6c8410dc94d71753c6b4b8f9f6c67a46cd46ef5"
+dependencies = [
+ "typenum",
 ]
 
 [[package]]
