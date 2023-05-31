@@ -21,7 +21,7 @@ pub use generic_array::typenum;
 use core::fmt;
 use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
 #[cfg(feature = "rand_core")]
-use rand_core::{CryptoRng, RngCore};
+use rand_core::CryptoRngCore;
 
 /// Block on which [`BlockSizeUser`] implementors operate.
 pub type Block<B> = GenericArray<u8, <B as BlockSizeUser>::BlockSize>;
@@ -158,11 +158,11 @@ pub trait KeyInit: KeySizeUser + Sized {
         }
     }
 
-    /// Generate random key using the provided [`CryptoRng`].
+    /// Generate random key using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
-    fn generate_key(mut rng: impl CryptoRng + RngCore) -> Key<Self> {
+    fn generate_key(mut rng: impl CryptoRngCore) -> Key<Self> {
         let mut key = Key::<Self>::default();
         rng.fill_bytes(&mut key);
         key
@@ -189,31 +189,31 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
         }
     }
 
-    /// Generate random key using the provided [`CryptoRng`].
+    /// Generate random key using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
-    fn generate_key(mut rng: impl CryptoRng + RngCore) -> Key<Self> {
+    fn generate_key(mut rng: impl CryptoRngCore) -> Key<Self> {
         let mut key = Key::<Self>::default();
         rng.fill_bytes(&mut key);
         key
     }
 
-    /// Generate random IV using the provided [`CryptoRng`].
+    /// Generate random IV using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
-    fn generate_iv(mut rng: impl CryptoRng + RngCore) -> Iv<Self> {
+    fn generate_iv(mut rng: impl CryptoRngCore) -> Iv<Self> {
         let mut iv = Iv::<Self>::default();
         rng.fill_bytes(&mut iv);
         iv
     }
 
-    /// Generate random key and nonce using the provided [`CryptoRng`].
+    /// Generate random key and nonce using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
-    fn generate_key_iv(mut rng: impl CryptoRng + RngCore) -> (Key<Self>, Iv<Self>) {
+    fn generate_key_iv(mut rng: impl CryptoRngCore) -> (Key<Self>, Iv<Self>) {
         (Self::generate_key(&mut rng), Self::generate_iv(&mut rng))
     }
 }
@@ -244,11 +244,11 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
         }
     }
 
-    /// Generate random IV using the provided [`CryptoRng`].
+    /// Generate random IV using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
-    fn generate_iv(mut rng: impl CryptoRng + RngCore) -> Iv<Self> {
+    fn generate_iv(mut rng: impl CryptoRngCore) -> Iv<Self> {
         let mut iv = Iv::<Self>::default();
         rng.fill_bytes(&mut iv);
         iv
