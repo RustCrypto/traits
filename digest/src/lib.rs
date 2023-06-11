@@ -201,16 +201,16 @@ pub trait ExtendableOutputReset: ExtendableOutput + Reset {
 
 /// Trait for hash functions with variable-size output.
 pub trait VariableOutput: Sized + Update {
-    /// Maximum size of output hash.
+    /// Maximum size of output hash in bytes.
     const MAX_OUTPUT_SIZE: usize;
 
-    /// Create new hasher instance with the given output size.
+    /// Create new hasher instance with the given output size in bytes.
     ///
     /// It will return `Err(InvalidOutputSize)` in case if hasher can not return
     /// hash of the specified output size.
     fn new(output_size: usize) -> Result<Self, InvalidOutputSize>;
 
-    /// Get output size of the hasher instance provided to the `new` method
+    /// Get output size in bytes of the hasher instance provided to the `new` method
     fn output_size(&self) -> usize;
 
     /// Write result into the output buffer.
