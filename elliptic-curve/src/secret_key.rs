@@ -20,8 +20,17 @@ use crate::{rand_core::CryptoRngCore, CurveArithmetic, NonZeroScalar, PublicKey}
 #[cfg(feature = "jwk")]
 use crate::jwk::{JwkEcKey, JwkParameters};
 
+#[cfg(feature = "pem")]
+use pem_rfc7468::{self as pem, PemLabel};
+
 #[cfg(feature = "sec1")]
-use sec1::der;
+use {
+    crate::{
+        sec1::{EncodedPoint, ModulusSize, ValidatePublicKey},
+        FieldBytesSize,
+    },
+    sec1::der,
+};
 
 #[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
 use {
@@ -40,21 +49,8 @@ use alloc::string::String;
 #[cfg(all(feature = "arithmetic", feature = "jwk"))]
 use alloc::string::ToString;
 
-#[cfg(feature = "pem")]
-use pem_rfc7468 as pem;
-
-#[cfg(feature = "sec1")]
-use crate::{
-    sec1::{EncodedPoint, ModulusSize, ValidatePublicKey},
-    FieldBytesSize,
-};
-
 #[cfg(all(doc, feature = "pkcs8"))]
 use {crate::pkcs8::DecodePrivateKey, core::str::FromStr};
-
-/// Type label for PEM-encoded SEC1 private keys.
-#[cfg(feature = "pem")]
-pub(crate) const SEC1_PEM_TYPE_LABEL: &str = "EC PRIVATE KEY";
 
 /// Elliptic curve secret keys.
 ///
@@ -237,7 +233,7 @@ where
     {
         let (label, der_bytes) = pem::decode_vec(s.as_bytes()).map_err(|_| Error)?;
 
-        if label != SEC1_PEM_TYPE_LABEL {
+        if label != sec1::EcPrivateKey::PEM_LABEL {
             return Err(Error);
         }
 
@@ -257,7 +253,9 @@ where
     {
         self.to_sec1_der()
             .ok()
-            .and_then(|der| pem::encode_string(SEC1_PEM_TYPE_LABEL, line_ending, &der).ok())
+            .and_then(|der| {
+                pem::encode_string(sec1::EcPrivateKey::PEM_LABEL, line_ending, &der).ok()
+            })
             .map(Zeroizing::new)
             .ok_or(Error)
     }
