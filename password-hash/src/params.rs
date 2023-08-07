@@ -362,7 +362,7 @@ mod tests {
         let mut params = ParamsString::new();
         params.add_decimal(name, 1).unwrap();
 
-        let err = params.add_decimal(name, 2u32.into()).err().unwrap();
+        let err = params.add_decimal(name, 2u32).err().unwrap();
         assert_eq!(err, Error::ParamNameDuplicated);
     }
 

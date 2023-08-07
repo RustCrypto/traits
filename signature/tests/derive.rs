@@ -35,9 +35,7 @@ impl TryFrom<&[u8]> for DummySignature {
     type Error = Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self, Error> {
-        Ok(DummySignature(GenericArray::clone_from_slice(
-            bytes.as_ref(),
-        )))
+        Ok(DummySignature(GenericArray::clone_from_slice(bytes)))
     }
 }
 

@@ -32,7 +32,7 @@ impl EncappedKey for X25519EncappedKey {
     type SenderPublicKey = X25519PublicKey;
 
     fn from_bytes(bytes: &GenericArray<u8, Self::EncappedKeySize>) -> Result<Self, Error> {
-        Ok(X25519EncappedKey(bytes.clone()))
+        Ok(X25519EncappedKey(*bytes))
     }
 }
 impl AsRef<[u8]> for X25519EncappedKey {
