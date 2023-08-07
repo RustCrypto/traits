@@ -57,7 +57,7 @@ impl<'a> TryFrom<&PasswordHash<'a>> for StubParams {
     }
 }
 
-impl<'a> TryFrom<StubParams> for ParamsString {
+impl TryFrom<StubParams> for ParamsString {
     type Error = Error;
 
     fn try_from(_: StubParams) -> Result<Self> {
