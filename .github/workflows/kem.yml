@@ -28,7 +28,7 @@ jobs:
           - thumbv7em-none-eabi
           - wasm32-unknown-unknown
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -41,7 +41,7 @@ jobs:
   # minimal-versions:
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: actions/checkout@v3
+  #     - uses: actions/checkout@v4
   #     - uses: RustCrypto/actions/cargo-cache@master
   #     - uses: dtolnay/rust-toolchain@master
   #       with:
@@ -58,7 +58,7 @@ jobs:
           - 1.60.0 # Next MSRV candidate
           - stable
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
