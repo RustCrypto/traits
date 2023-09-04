@@ -13,7 +13,7 @@ jobs:
     name: Security Audit Workspace
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Cache cargo bin
         uses: actions/cache@v3
         with:
@@ -30,7 +30,7 @@ jobs:
       run:
         working-directory: crypto
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Cache cargo bin
         uses: actions/cache@v3
         with:
@@ -47,7 +47,7 @@ jobs:
       run:
         working-directory: elliptic-curve
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Cache cargo bin
         uses: actions/cache@v3
         with:
@@ -64,7 +64,7 @@ jobs:
       run:
         working-directory: kem
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Cache cargo bin
         uses: actions/cache@v3
         with:
@@ -81,7 +81,7 @@ jobs:
       run:
         working-directory: password-hash
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Cache cargo bin
         uses: actions/cache@v3
         with:
