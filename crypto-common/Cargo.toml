@@ -14,7 +14,7 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = { version = "0.14.6", features = ["more_lengths"] }
-typenum = "1.14" # earlier versions of typenum don't satisfy the 'static bound on U* types
+typenum = "1.17" # earlier versions of typenum don't satisfy the 'static bound on U* types
 
 # optional dependencies
 rand_core = { version = "0.6.4", optional = true }
