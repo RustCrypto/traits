@@ -64,8 +64,13 @@ where
         T::BlockSize::USIZE
     }
 
+    /// Set buffer position without checking that it's smaller
+    /// than buffer size.
+    ///
+    /// # Safety
+    /// `pos` MUST be smaller than `T::BlockSize::USIZE`.
     #[inline]
-    fn set_pos_unchecked(&mut self, pos: usize) {
+    unsafe fn set_pos_unchecked(&mut self, pos: usize) {
         debug_assert!(pos < T::BlockSize::USIZE);
         self.pos = pos as u8;
     }
@@ -124,7 +129,13 @@ where
             let n = data.len();
             if n < rem.len() {
                 data.xor_in2out(&rem[..n]);
-                self.set_pos_unchecked(pos + n);
+                // SAFETY: we have checked that `n` is less than length of `rem`,
+                // which is equal to buffer length minus `pos`, thus `pos + n` is
+                // less than buffer length and satisfies the `set_pos_unchecked`
+                // safety condition
+                unsafe {
+                    self.set_pos_unchecked(pos + n);
+                }
                 return Ok(());
             }
             let (mut left, right) = data.split_at(rem.len());
@@ -140,7 +151,12 @@ where
             self.core.write_keystream_block(&mut self.buffer);
             leftover.xor_in2out(&self.buffer[..n]);
         }
-        self.set_pos_unchecked(n);
+        // SAFETY: `into_chunks` always returns tail with size
+        // less than buffer length, thus `n` satisfies the `set_pos_unchecked`
+        // safety condition
+        unsafe {
+            self.set_pos_unchecked(n);
+        }
 
         Ok(())
     }
