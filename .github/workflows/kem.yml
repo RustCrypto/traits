@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.60.0 # Next MSRV candidate
+          - 1.61.0 # Next MSRV candidate
           - stable
         target:
           - thumbv7em-none-eabi
@@ -55,7 +55,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.60.0 # Next MSRV candidate
+          - 1.61.0 # Next MSRV candidate
           - stable
     steps:
       - uses: actions/checkout@v4
@@ -67,3 +67,15 @@ jobs:
       - run: cargo test --no-default-features --release
       - run: cargo test --release
       - run: cargo test --all-features --release
+
+  # build-only test of MSRV
+  # TODO: remove on MSRV bump higher than MSRV of `cc`
+  test-msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.60.0
+      - run: cargo check --all-features
