@@ -104,7 +104,7 @@ pub trait AeadCore {
     /// The length of a nonce.
     type NonceSize: ArrayLength<u8>;
 
-    /// The maximum length of the nonce.
+    /// The maximum length of the tag.
     type TagSize: ArrayLength<u8>;
 
     /// The upper bound amount of additional space required to support a
