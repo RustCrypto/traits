@@ -1,7 +1,8 @@
 //! Base64 encoding variants.
 
 use base64ct::{
-    Base64Bcrypt, Base64Crypt, Base64Unpadded as B64, Encoding as _, Error as B64Error,
+    Base64Bcrypt, Base64Crypt, Base64ShaCrypt, Base64Unpadded as B64, Encoding as _,
+    Error as B64Error,
 };
 
 /// Base64 encoding variants.
@@ -31,6 +32,15 @@ pub enum Encoding {
     /// 0x2e-0x39, 0x41-0x5a, 0x61-0x7a
     /// ```
     Crypt,
+
+    /// `crypt(3)` Base64 encoding for the following schemes.
+    /// - sha1_crypt,
+    /// - sha256_crypt,
+    /// - sha512_crypt,
+    /// - md5_crypt
+    /// [.-9]      [A-Z]      [a-z]
+    /// 0x2e-0x39, 0x41-0x5a, 0x61-0x7a
+    ShaCrypt,
 }
 
 impl Default for Encoding {
@@ -46,6 +56,7 @@ impl Encoding {
             Self::B64 => B64::decode(src, dst),
             Self::Bcrypt => Base64Bcrypt::decode(src, dst),
             Self::Crypt => Base64Crypt::decode(src, dst),
+            Self::ShaCrypt => Base64ShaCrypt::decode(src, dst),
         }
     }
 
@@ -58,6 +69,7 @@ impl Encoding {
             Self::B64 => B64::encode(src, dst),
             Self::Bcrypt => Base64Bcrypt::encode(src, dst),
             Self::Crypt => Base64Crypt::encode(src, dst),
+            Self::ShaCrypt => Base64ShaCrypt::encode(src, dst),
         }
         .map_err(Into::into)
     }
@@ -68,6 +80,7 @@ impl Encoding {
             Self::B64 => B64::encoded_len(bytes),
             Self::Bcrypt => Base64Bcrypt::encoded_len(bytes),
             Self::Crypt => Base64Crypt::encoded_len(bytes),
+            Self::ShaCrypt => Base64ShaCrypt::encoded_len(bytes),
         }
     }
 }

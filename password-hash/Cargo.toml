@@ -17,7 +17,7 @@ edition = "2021"
 rust-version = "1.60"
 
 [dependencies]
-base64ct = "1"
+base64ct = "1.6"
 subtle = { version = "2", default-features = false }
 
 # optional dependencies
