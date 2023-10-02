@@ -35,6 +35,7 @@ pkcs8 = { version = "0.10.2", optional = true, default-features = false }
 sec1 = { version = "0.7.1", optional = true, features = ["subtle", "zeroize"] }
 serdect = { version = "0.2", optional = true, default-features = false, features = ["alloc"] }
 serde_json = { version = "1.0.47", optional = true, default-features = false, features = ["alloc"] }
+tap = { version = "1.0.1", optional = true, default-features = false } # hack for minimal-versions support for `bits`
 
 [dev-dependencies]
 hex-literal = "0.4"
@@ -59,7 +60,7 @@ std = [
 ]
 
 arithmetic = ["group"]
-bits = ["arithmetic", "ff/bits"]
+bits = ["arithmetic", "ff/bits", "dep:tap"]
 dev = ["arithmetic", "dep:hex-literal", "pem", "pkcs8"]
 hash2curve = ["arithmetic", "digest"]
 ecdh = ["arithmetic", "digest", "dep:hkdf"]
