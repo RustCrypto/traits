@@ -7,6 +7,7 @@ use base64ct::{
 
 /// Base64 encoding variants.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[non_exhaustive]
 pub enum Encoding {
     /// "B64" encoding: standard Base64 without padding.
     ///
