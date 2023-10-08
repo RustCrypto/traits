@@ -140,17 +140,16 @@ version = "0.11.0-pre"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23b6a33d658e9ef24ba0c4566d3d023d7978ca2ea3efb65e4eacd4586695892b"
 dependencies = [
- "crypto-common 0.2.0-pre (registry+https://github.com/rust-lang/crates.io-index)",
+ "crypto-common 0.2.0-pre",
  "generic-array",
 ]
 
 [[package]]
 name = "block-padding"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8894febbff9f758034a5b8e12d87918f56dfc64a8e1fe757d65e29041538d93"
+version = "0.4.0-pre"
+source = "git+https://github.com/RustCrypto/utils.git?branch=migrate-to-hybrid-array#f887f5ee6fdd5c097a75c136ab024684cc5777b4"
 dependencies = [
- "generic-array",
+ "hybrid-array",
 ]
 
 [[package]]
@@ -209,8 +208,8 @@ name = "cipher"
 version = "0.4.4"
 dependencies = [
  "blobby",
- "crypto-common 0.1.6",
- "inout",
+ "crypto-common 0.2.0-pre",
+ "inout 0.2.0-pre",
  "zeroize",
 ]
 
@@ -221,7 +220,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
 dependencies = [
  "crypto-common 0.1.6",
- "inout",
+ "inout 0.1.3",
  "zeroize",
 ]
 
@@ -293,17 +292,6 @@ version = "0.2.0-pre"
 dependencies = [
  "hybrid-array",
  "rand_core 0.6.4",
-]
-
-[[package]]
-name = "crypto-common"
-version = "0.2.0-pre"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6faaa83e7700e0832cbbf84854d4c356270526907d9b14fab927fc7a9b5befb8"
-dependencies = [
- "generic-array",
- "rand_core 0.6.4",
- "typenum",
 ]
 
 [[package]]
@@ -383,7 +371,7 @@ dependencies = [
  "blobby",
  "block-buffer 0.11.0-pre",
  "const-oid 0.9.5",
- "crypto-common 0.2.0-pre (registry+https://github.com/rust-lang/crates.io-index)",
+ "crypto-common 0.2.0-pre",
  "subtle",
 ]
 
@@ -611,8 +599,7 @@ dependencies = [
 [[package]]
 name = "hybrid-array"
 version = "0.2.0-pre.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b16010d3e71f5288f3fe2a9c6c8410dc94d71753c6b4b8f9f6c67a46cd46ef5"
+source = "git+https://github.com/RustCrypto/utils.git?branch=migrate-to-hybrid-array#f887f5ee6fdd5c097a75c136ab024684cc5777b4"
 dependencies = [
  "typenum",
 ]
@@ -623,8 +610,16 @@ version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a0c10553d664a4d0bcff9f4215d0aac67a639cc68ef660840afe309b807bc9f5"
 dependencies = [
- "block-padding",
  "generic-array",
+]
+
+[[package]]
+name = "inout"
+version = "0.2.0-pre"
+source = "git+https://github.com/RustCrypto/utils.git?branch=migrate-to-hybrid-array#f887f5ee6fdd5c097a75c136ab024684cc5777b4"
+dependencies = [
+ "block-padding",
+ "hybrid-array",
 ]
 
 [[package]]
@@ -1007,9 +1002,9 @@ dependencies = [
 
 [[package]]
 name = "typenum"
-version = "1.16.0"
+version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
+checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
 name = "unicode-ident"
