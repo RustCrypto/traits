@@ -10,14 +10,14 @@ macro_rules! block_cipher_test {
         #[test]
         fn $name() {
             use cipher::{
-                blobby::Blob3Iterator, generic_array::GenericArray, typenum::Unsigned,
-                BlockDecryptMut, BlockEncryptMut, BlockSizeUser, KeyInit,
+                array::Array, blobby::Blob3Iterator, typenum::Unsigned, BlockDecryptMut,
+                BlockEncryptMut, BlockSizeUser, KeyInit,
             };
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
                 let mut state = <$cipher as KeyInit>::new_from_slice(key).unwrap();
 
-                let mut block = GenericArray::clone_from_slice(pt);
+                let mut block = Array::clone_from_slice(pt);
                 state.encrypt_block_mut(&mut block);
                 if ct != block.as_slice() {
                     return false;
@@ -105,8 +105,8 @@ macro_rules! block_mode_enc_test {
         #[test]
         fn $name() {
             use cipher::{
-                blobby::Blob4Iterator, generic_array::GenericArray, inout::InOutBuf,
-                typenum::Unsigned, BlockEncryptMut, BlockSizeUser, KeyIvInit,
+                array::Array, blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
+                BlockEncryptMut, BlockSizeUser, KeyIvInit,
             };
 
             fn run_test(key: &[u8], iv: &[u8], pt: &[u8], ct: &[u8]) -> bool {
@@ -164,8 +164,8 @@ macro_rules! block_mode_dec_test {
         #[test]
         fn $name() {
             use cipher::{
-                blobby::Blob4Iterator, generic_array::GenericArray, inout::InOutBuf,
-                typenum::Unsigned, BlockDecryptMut, BlockSizeUser, KeyIvInit,
+                array::Array, blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
+                BlockDecryptMut, BlockSizeUser, KeyIvInit,
             };
 
             fn run_test(key: &[u8], iv: &[u8], pt: &[u8], ct: &[u8]) -> bool {

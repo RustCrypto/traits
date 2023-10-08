@@ -196,21 +196,15 @@ impl<D: Update + FixedOutputReset + Reset + Clone + 'static> DynDigest for D {
     }
 
     fn finalize_into(self, buf: &mut [u8]) -> Result<(), InvalidBufferSize> {
-        if buf.len() == self.output_size() {
-            FixedOutput::finalize_into(self, Output::<Self>::from_mut_slice(buf));
-            Ok(())
-        } else {
-            Err(InvalidBufferSize)
-        }
+        let buf = <&mut Output<Self>>::try_from(buf).map_err(|_| InvalidBufferSize)?;
+        FixedOutput::finalize_into(self, buf);
+        Ok(())
     }
 
     fn finalize_into_reset(&mut self, buf: &mut [u8]) -> Result<(), InvalidBufferSize> {
-        if buf.len() == self.output_size() {
-            FixedOutputReset::finalize_into_reset(self, Output::<Self>::from_mut_slice(buf));
-            Ok(())
-        } else {
-            Err(InvalidBufferSize)
-        }
+        let buf = <&mut Output<Self>>::try_from(buf).map_err(|_| InvalidBufferSize)?;
+        FixedOutputReset::finalize_into_reset(self, buf);
+        Ok(())
     }
 
     fn reset(&mut self) {

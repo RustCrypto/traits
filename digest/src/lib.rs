@@ -65,7 +65,7 @@ pub use const_oid;
 pub use crypto_common;
 
 pub use crate::digest::{Digest, DynDigest, HashMarker};
-pub use crypto_common::{generic_array, typenum, typenum::consts, Output, OutputSizeUser, Reset};
+pub use crypto_common::{array, typenum, typenum::consts, Output, OutputSizeUser, Reset};
 #[cfg(feature = "mac")]
 pub use crypto_common::{InnerInit, InvalidLength, Key, KeyInit};
 #[cfg(feature = "mac")]

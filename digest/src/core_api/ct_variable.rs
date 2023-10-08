@@ -9,7 +9,7 @@ use crate::MacMarker;
 use const_oid::{AssociatedOid, ObjectIdentifier};
 use core::{fmt, marker::PhantomData};
 use crypto_common::{
-    generic_array::{ArrayLength, GenericArray},
+    array::{Array, ArraySize},
     typenum::{IsLessOrEqual, LeEq, NonZero},
     Block, BlockSizeUser, OutputSizeUser,
 };
@@ -25,7 +25,7 @@ pub struct NoOid;
 pub struct CtVariableCoreWrapper<T, OutSize, O = NoOid>
 where
     T: VariableOutputCore,
-    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     inner: T,
@@ -35,7 +35,7 @@ where
 impl<T, OutSize, O> HashMarker for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore + HashMarker,
-    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
 }
@@ -44,7 +44,7 @@ where
 impl<T, OutSize, O> MacMarker for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore + MacMarker,
-    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
 }
@@ -52,7 +52,7 @@ where
 impl<T, OutSize, O> BlockSizeUser for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore,
-    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     type BlockSize = T::BlockSize;
@@ -61,7 +61,7 @@ where
 impl<T, OutSize, O> UpdateCore for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore,
-    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     #[inline]
@@ -73,7 +73,7 @@ where
 impl<T, OutSize, O> OutputSizeUser for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore,
-    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize> + 'static,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize> + 'static,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     type OutputSize = OutSize;
@@ -82,7 +82,7 @@ where
 impl<T, OutSize, O> BufferKindUser for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore,
-    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     type BufferKind = T::BufferKind;
@@ -91,14 +91,14 @@ where
 impl<T, OutSize, O> FixedOutputCore for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore,
-    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize> + 'static,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize> + 'static,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     #[inline]
     fn finalize_fixed_core(
         &mut self,
         buffer: &mut Buffer<Self>,
-        out: &mut GenericArray<u8, Self::OutputSize>,
+        out: &mut Array<u8, Self::OutputSize>,
     ) {
         let mut full_res = Default::default();
         self.inner.finalize_variable_core(buffer, &mut full_res);
@@ -114,7 +114,7 @@ where
 impl<T, OutSize, O> Default for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore,
-    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     #[inline]
@@ -129,7 +129,7 @@ where
 impl<T, OutSize, O> Reset for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore,
-    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     #[inline]
@@ -141,7 +141,7 @@ where
 impl<T, OutSize, O> AlgorithmName for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore + AlgorithmName,
-    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -157,7 +157,7 @@ impl<T, OutSize, O> AssociatedOid for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore,
     O: AssociatedOid,
-    OutSize: ArrayLength<u8> + IsLessOrEqual<T::OutputSize>,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     const OID: ObjectIdentifier = O::OID;
