@@ -16,3 +16,9 @@ exclude = [
     "crypto",
     "elliptic-curve"
 ]
+
+[patch.crates-io]
+block-buffer = { git = "https://github.com/RustCrypto/utils.git", branch = "migrate-to-hybrid-array" }
+crypto-common = { path = "crypto-common" }
+hybrid-array = { git = "https://github.com/RustCrypto/utils.git", branch = "migrate-to-hybrid-array" }
+inout = { git = "https://github.com/RustCrypto/utils.git", branch = "migrate-to-hybrid-array" }

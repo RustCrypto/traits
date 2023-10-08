@@ -13,6 +13,7 @@
 use crate::{ParBlocks, ParBlocksSizeUser};
 #[cfg(all(feature = "block-padding", feature = "alloc"))]
 use alloc::{vec, vec::Vec};
+use crypto_common::BlockSizes;
 #[cfg(feature = "block-padding")]
 use inout::{
     block_padding::{Padding, UnpadError},
@@ -20,7 +21,7 @@ use inout::{
 };
 use inout::{InOut, InOutBuf, NotEqualError};
 
-pub use crypto_common::{generic_array::ArrayLength, typenum::Unsigned, Block, BlockSizeUser};
+pub use crypto_common::{array::ArraySize, typenum::Unsigned, Block, BlockSizeUser};
 
 /// Marker trait for block ciphers.
 pub trait BlockCipher: BlockSizeUser {}
@@ -593,15 +594,15 @@ impl<Alg: BlockDecrypt> BlockDecrypt for &Alg {
 }
 
 /// Closure used in methods which operate over separate blocks.
-struct BlockCtx<'inp, 'out, BS: ArrayLength<u8>> {
+struct BlockCtx<'inp, 'out, BS: BlockSizes> {
     block: InOut<'inp, 'out, Block<Self>>,
 }
 
-impl<'inp, 'out, BS: ArrayLength<u8>> BlockSizeUser for BlockCtx<'inp, 'out, BS> {
+impl<'inp, 'out, BS: BlockSizes> BlockSizeUser for BlockCtx<'inp, 'out, BS> {
     type BlockSize = BS;
 }
 
-impl<'inp, 'out, BS: ArrayLength<u8>> BlockClosure for BlockCtx<'inp, 'out, BS> {
+impl<'inp, 'out, BS: BlockSizes> BlockClosure for BlockCtx<'inp, 'out, BS> {
     #[inline(always)]
     fn call<B: BlockBackend<BlockSize = BS>>(self, backend: &mut B) {
         backend.proc_block(self.block);
@@ -609,15 +610,15 @@ impl<'inp, 'out, BS: ArrayLength<u8>> BlockClosure for BlockCtx<'inp, 'out, BS> 
 }
 
 /// Closure used in methods which operate over slice of blocks.
-struct BlocksCtx<'inp, 'out, BS: ArrayLength<u8>> {
+struct BlocksCtx<'inp, 'out, BS: BlockSizes> {
     blocks: InOutBuf<'inp, 'out, Block<Self>>,
 }
 
-impl<'inp, 'out, BS: ArrayLength<u8>> BlockSizeUser for BlocksCtx<'inp, 'out, BS> {
+impl<'inp, 'out, BS: BlockSizes> BlockSizeUser for BlocksCtx<'inp, 'out, BS> {
     type BlockSize = BS;
 }
 
-impl<'inp, 'out, BS: ArrayLength<u8>> BlockClosure for BlocksCtx<'inp, 'out, BS> {
+impl<'inp, 'out, BS: BlockSizes> BlockClosure for BlocksCtx<'inp, 'out, BS> {
     #[inline(always)]
     fn call<B: BlockBackend<BlockSize = BS>>(self, backend: &mut B) {
         if B::ParBlocksSize::USIZE > 1 {
