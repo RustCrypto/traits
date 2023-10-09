@@ -36,6 +36,9 @@ pub mod dev;
 #[cfg_attr(docsrs, doc(cfg(feature = "stream")))]
 pub mod stream;
 
+// Include the module unconditionally because of marker traits
+pub mod committing_aead;
+
 pub use crypto_common::{Key, KeyInit, KeySizeUser};
 pub use generic_array::{self, typenum::consts};
 

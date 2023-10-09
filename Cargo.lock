@@ -12,6 +12,7 @@ dependencies = [
  "crypto-common 0.1.6",
  "generic-array",
  "heapless",
+ "subtle",
 ]
 
 [[package]]
