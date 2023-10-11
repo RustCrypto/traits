@@ -304,7 +304,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6faaa83e7700e0832cbbf84854d4c356270526907d9b14fab927fc7a9b5befb8"
 dependencies = [
  "generic-array",
- "rand_core 0.6.4",
  "typenum",
 ]
 
@@ -385,7 +384,7 @@ dependencies = [
  "blobby",
  "block-buffer 0.11.0-pre",
  "const-oid 0.9.5",
- "crypto-common 0.2.0-pre (registry+https://github.com/rust-lang/crates.io-index)",
+ "crypto-common 0.2.0-pre",
  "subtle",
 ]
 
