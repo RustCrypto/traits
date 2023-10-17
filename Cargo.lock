@@ -137,7 +137,7 @@ dependencies = [
 [[package]]
 name = "block-buffer"
 version = "0.11.0-pre"
-source = "git+https://github.com/RustCrypto/utils.git?branch=migrate-to-hybrid-array#7362ec1ec67a6da614ae218c884c2c994873602a"
+source = "git+https://github.com/RustCrypto/utils.git?branch=migrate-to-hybrid-array#36baf45e5b0a7c02643e902ab279c5adf242ecae"
 dependencies = [
  "crypto-common 0.2.0-pre",
 ]
@@ -145,7 +145,7 @@ dependencies = [
 [[package]]
 name = "block-padding"
 version = "0.4.0-pre"
-source = "git+https://github.com/RustCrypto/utils.git?branch=migrate-to-hybrid-array#7362ec1ec67a6da614ae218c884c2c994873602a"
+source = "git+https://github.com/RustCrypto/utils.git?branch=migrate-to-hybrid-array#36baf45e5b0a7c02643e902ab279c5adf242ecae"
 dependencies = [
  "hybrid-array",
 ]
@@ -597,7 +597,7 @@ dependencies = [
 [[package]]
 name = "hybrid-array"
 version = "0.2.0-pre.4"
-source = "git+https://github.com/RustCrypto/utils.git?branch=migrate-to-hybrid-array#7362ec1ec67a6da614ae218c884c2c994873602a"
+source = "git+https://github.com/RustCrypto/utils.git?branch=migrate-to-hybrid-array#36baf45e5b0a7c02643e902ab279c5adf242ecae"
 dependencies = [
  "typenum",
 ]
@@ -614,7 +614,7 @@ dependencies = [
 [[package]]
 name = "inout"
 version = "0.2.0-pre"
-source = "git+https://github.com/RustCrypto/utils.git?branch=migrate-to-hybrid-array#7362ec1ec67a6da614ae218c884c2c994873602a"
+source = "git+https://github.com/RustCrypto/utils.git?branch=migrate-to-hybrid-array#36baf45e5b0a7c02643e902ab279c5adf242ecae"
 dependencies = [
  "block-padding",
  "hybrid-array",
