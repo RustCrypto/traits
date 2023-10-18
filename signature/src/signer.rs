@@ -1,12 +1,32 @@
 //! Traits for generating digital signatures
 
 use crate::error::Error;
+use crate::verifier::Verifier;
 
 #[cfg(feature = "digest")]
-use crate::digest::Digest;
+use crate::{digest::Digest, verifier::DigestVerifier};
 
 #[cfg(feature = "rand_core")]
 use crate::rand_core::CryptoRngCore;
+
+/// This object can be used to obtain a verifier for the signature type `S`.
+pub trait HasVerifier<S> {
+    /// The corresponding verifier type.
+    type Verifier: Verifier<S>;
+
+    /// Returns a verifier object.
+    fn verifier(&self) -> Self::Verifier;
+}
+
+/// This object can be used to obtain a digest verifier for the signature type `S`.
+#[cfg(feature = "digest")]
+pub trait HasDigestVerifier<D: Digest, S> {
+    /// The corresponding digest verifier type.
+    type DigestVerifier: DigestVerifier<D, S>;
+
+    /// Returns a digest verifier object.
+    fn digest_verifier(&self) -> Self::DigestVerifier;
+}
 
 /// Sign the provided message bytestring using `Self` (e.g. a cryptographic key
 /// or connection to an HSM), returning a digital signature.
