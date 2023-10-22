@@ -37,6 +37,10 @@ pub use padded_aead::PaddedAead;
 #[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
 pub use ctx::CtxAead;
 
+#[cfg(feature = "committing_ae")]
+#[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
+pub use ctx::CtxishHmacAead;
+
 /// Marker trait that signals that an AEAD commits to its key.
 pub trait KeyCommittingAead: AeadCore {}
 /// Marker trait that signals that an AEAD commits to all its inputs.
@@ -175,8 +179,13 @@ mod padded_aead {
 #[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
 mod ctx {
     use crate::{AeadCore, AeadInPlace};
-    use crypto_common::{KeyInit, KeySizeUser};
-    use digest::Digest;
+    use crypto_common::{KeyInit, KeySizeUser, BlockSizeUser};
+    use core::ops::Add;
+    use digest::{Digest, Mac, FixedOutput};
+    use hmac::SimpleHmac;
+    use generic_array::ArrayLength;
+    use generic_array::typenum::Unsigned;
+    use subtle::Choice;
     use super::{KeyCommittingAead, CommittingAead};
 
     #[cfg(feature = "committing_ae")]
@@ -278,5 +287,159 @@ mod ctx {
     impl<Aead: AeadCore, CrHash: Digest> KeyCommittingAead for CtxAead<Aead, CrHash>
         where Self: AeadCore {}
     impl<Aead: AeadCore, CrHash: Digest> CommittingAead for CtxAead<Aead, CrHash>
+        where Self: AeadCore {}
+
+    #[cfg(feature = "committing_ae")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
+    #[derive(Debug, Clone)]
+    /// Implementation of a modified version of the CTX scheme.
+    /// 
+    /// Instead of returning tag `H(key || nonce || aad || orig_tag)`, we return
+    /// `orig_tag || HMAC_key(nonce || aad || orig_tag)`. The AEAD API requires
+    /// that we treat the underlying AEAD as a black box, without access to the
+    /// expected tag at decryption time, so we have to also send it along with
+    /// the committment to the other inputs to the AEAD. (Ideally, the need to
+    /// send `orig_tag` as well can be removed in a future version of the 
+    /// crate.) At decryption time, we verify both `orig_tag` and the hash
+    /// commitment.
+    /// 
+    /// ## Security analysis for the modified construction
+    /// 
+    /// HMAC invokes the underlying hash function twice such that the inputs to
+    /// the hash functions are computed only by XOR, concatenation, and hashing.
+    /// Thus, if we trust the underlying hash function to serve as a committment
+    /// to its inputs, we can also trust HMAC-hash to commit to its inputs and
+    /// provide `hash_output_len/2` bits of committment security, as with CTX.
+    /// 
+    /// If the underlying AEAD provides proper confidentiality and integrity
+    /// protections, we can assume that this new construction also provides
+    /// propert confidentiality and integrity, since it has the same ciphertext
+    /// and includes the original tag without exposing cryptographic secrets in
+    /// a recoverable form. Moreover, HMAC is supposed to be a secure keyed MAC,
+    /// so an attacker cannot forge a commitment without knowing the key, even
+    /// with full knowledge of the other input to the HMAC.
+    /// 
+    /// We use `HMAC_key(nonce || aad || orig_tag)` instead of the original CTX
+    /// construction of `H(key || nonce || aad || orig_tag)` to mitigate length
+    /// extension attacks that may become possible when `orig_tag` is sent in
+    /// the clear (with the result that `H(key || nonce || aad || orig_tag)`
+    /// decomposes into `H(secret || public)`), even though returning
+    /// `orig_tag || H(key || nonce || aad || orig_tag)` as the tag would allow
+    /// for increased interoperability with other CTX implementations. (In fact,
+    /// revealing `orig_tag` would be fatal for the CTX+ construction which
+    /// omits `aad` from the `orig_tag` computation by allowing forgery of the
+    /// hash committment via length extension on `aad`.)
+    pub struct CtxishHmacAead<Aead: AeadCore, CrHash: Digest+BlockSizeUser> {
+        inner_aead: Aead,
+        hasher: SimpleHmac<CrHash>
+    }
+    impl <Aead: AeadCore, CrHash: Digest+BlockSizeUser> CtxishHmacAead<Aead, CrHash> {
+        /// Extracts the inner Aead object.
+        #[inline]
+        pub fn into_inner(self) -> Aead {
+            self.inner_aead
+        }
+    }
+
+    impl <Aead: AeadCore+KeySizeUser, CrHash: Digest+BlockSizeUser> KeySizeUser for CtxishHmacAead<Aead, CrHash> {
+        type KeySize = Aead::KeySize;
+    }
+    impl <Aead: AeadCore+KeyInit, CrHash: Digest+BlockSizeUser> KeyInit for CtxishHmacAead<Aead, CrHash> {
+        fn new(key: &crypto_common::Key<Self>) -> Self {
+            CtxishHmacAead {
+                inner_aead: Aead::new(key),
+                hasher: <SimpleHmac<_> as KeyInit>::new_from_slice(key).unwrap()
+            }
+        }
+    }
+    impl <Aead: AeadCore+KeySizeUser, CrHash: Digest+BlockSizeUser> AeadCore for CtxishHmacAead<Aead, CrHash>
+    where
+        Aead::TagSize: Add<CrHash::OutputSize>,
+        <Aead::TagSize as Add<CrHash::OutputSize>>::Output: ArrayLength<u8>
+    {
+        type NonceSize = Aead::NonceSize;
+
+        type TagSize = <Aead::TagSize as Add<CrHash::OutputSize>>::Output;
+
+        type CiphertextOverhead = Aead::CiphertextOverhead;
+    }
+    // TODO: don't see a way to provide impls for both AeadInPlace
+    // and AeadMutInPlace, as having both would conflict with the blanket impl
+    // Choose AeadInPlace because all the current rustcrypto/AEADs do not have
+    // a mutable state
+    impl <Aead: AeadCore+AeadInPlace+KeySizeUser, CrHash: Digest+BlockSizeUser+Clone> AeadInPlace for CtxishHmacAead<Aead, CrHash>
+    where
+        Self: AeadCore
+    {
+        fn encrypt_in_place_detached(
+            &self,
+            nonce: &crate::Nonce<Self>,
+            associated_data: &[u8],
+            buffer: &mut [u8],
+        ) -> crate::Result<crate::Tag<Self>> {
+            // Compiler can't see that Self::NonceSize == Aead::NonceSize
+            let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
+
+            let tag_inner = self.inner_aead.encrypt_in_place_detached(nonce_recast, associated_data, buffer)?;
+
+            let mut tag_computer = self.hasher.clone();
+            tag_computer.update(nonce);
+            tag_computer.update(associated_data);
+            tag_computer.update(&tag_inner);
+            let hmac_tag = tag_computer.finalize_fixed();
+
+            let final_tag_iter = tag_inner.iter().copied().chain(hmac_tag);
+
+            let final_tag = crate::Tag::<Self>::from_exact_iter(final_tag_iter).unwrap();
+            Ok(final_tag)
+        }
+
+        #[allow(unused_variables)]
+        fn decrypt_in_place_detached(
+            &self,
+            nonce: &crate::Nonce<Self>,
+            associated_data: &[u8],
+            buffer: &mut [u8],
+            tag: &crate::Tag<Self>,
+        ) -> crate::Result<()> {
+            // Compiler can't see that Self::NonceSize == Aead::NonceSize
+            let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
+            // Get the inner tag
+            let tag_inner = crate::Tag::<Aead>::from_slice(&tag[..Aead::TagSize::to_usize()]);
+
+            // Prevent timing side channels by not returning early on inner AEAD
+            // decryption failure
+            let tag_inner_is_ok = Choice::from(match self.inner_aead.decrypt_in_place_detached(nonce_recast, associated_data, buffer, tag_inner) {
+                Ok(_) => 1,
+                Err(_) => 0
+            });
+
+            let mut tag_computer = self.hasher.clone();
+            tag_computer.update(nonce);
+            tag_computer.update(associated_data);
+            // At this point we know whether tag_inner has the correct value
+            // If it doesn't then we'll likely get a mismatch here too
+            // Regardless, we require both `Choice`s to be OK
+            // So it doesn't matter if we ingest a potentially tainted tag here
+            tag_computer.update(&tag_inner);
+
+            // Get the HMAC tag
+            let expected_hmac_tag = &tag[Aead::TagSize::to_usize()..];
+
+            let hmac_tag_is_ok = Choice::from(match tag_computer.verify_slice(expected_hmac_tag) {
+                Ok(_) => 1,
+                Err(_) => 0
+            });
+
+            if (tag_inner_is_ok & hmac_tag_is_ok).into() {
+                Ok(())
+            } else {
+                Err(crate::Error)
+            }
+        }
+    }
+    impl<Aead: AeadCore, CrHash: Digest+BlockSizeUser> KeyCommittingAead for CtxishHmacAead<Aead, CrHash>
+        where Self: AeadCore {}
+    impl<Aead: AeadCore, CrHash: Digest+BlockSizeUser> CommittingAead for CtxishHmacAead<Aead, CrHash>
         where Self: AeadCore {}
 }
