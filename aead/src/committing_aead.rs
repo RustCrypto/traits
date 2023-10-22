@@ -11,15 +11,15 @@
 //! decrypts under two different keys into two different plaintexts][1].
 //! Moreover, the lack of committment properties has lead to breaks in real
 //! cryptographic protocols, e.g. the password-authenticated key exchange
-//! [OPAQUE][2] and the Shadowsocks proxy, as described in [3].
+//! [OPAQUE][2] and the Shadowsocks proxy, as described in [this paper
+//! introducing partitioning oracle attacks].
 //! 
 //! This module provides the [`KeyCommittingAead`] marker trait to indicate that
 //! an AEAD commits to its key, along with the [`CommittingAead`] marker trait
 //! to incidate that an AEAD commits to all of its inputs. (This can
 //! equivalently be thought of as collision resistance of an AEAD with respect
 //! to its inputs.) When the `committing_ae` feature is enabled, it also
-//! provides a [padding construction][4] that wraps an AEAD using ideal 
-//! primitives and makes it key-committing.
+//! provides constructions that wrap an AEAD and make it committing.
 //!
 //! [1]: https://eprint.iacr.org/2019/016.pdf
 //! [2]: https://eprint.iacr.org/2018/163.pdf
@@ -45,7 +45,7 @@ mod padded_aead {
     use crypto_common::{KeyInit, KeySizeUser};
     use core::ops::{Add, Mul};
     use generic_array::ArrayLength;
-    use generic_array::typenum::{U2, Unsigned};
+    use generic_array::typenum::{U3, Unsigned};
     use subtle::{Choice, ConstantTimeEq};
     use super::KeyCommittingAead;
 
@@ -53,17 +53,21 @@ mod padded_aead {
     #[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
     #[derive(Debug, Clone)]
     /// A wrapper around a non-committing AEAD that implements the
-    /// "padding fix" from <https://eprint.iacr.org/2020/1456.pdf> of prepending
-    /// `2*key_len` zeros to the plaintext before encryption and verifying
-    /// their presence upon decryption.
+    /// [padding fix][1] of prepending zeros to the plaintext before encryption 
+    /// and verifying their presence upon decryption. Based on the formulas
+    /// of [2], we append `3*key_len` zeros to obtain `3/4*key_len` bits of
+    /// key committment security.
     /// 
-    /// The linked paper proves that this construction is key-committing for
-    /// AES-GCM, ChaCha20Poly1305, and other AEADs that internally use
+    /// The padding fix paper proves that this construction is key-committing
+    /// for AES-GCM, ChaCha20Poly1305, and other AEADs that internally use
     /// primitives that can be modelled as ideal. However, security is not
     /// guaranteed with weak primitives. For example, e.g. HMAC-SHA-1 can be
     /// used as a MAC in normal circumstances because HMAC does not require a
     /// collision resistant hash, but an AEAD using HMAC-SHA-1 to provide
     /// integrity cannot be made committing using this padding scheme.
+    /// 
+    /// [1]: https://eprint.iacr.org/2020/1456.pdf
+    /// [2]: https://csrc.nist.gov/csrc/media/Events/2023/third-workshop-on-block-cipher-modes-of-operation/documents/accepted-papers/The%20Landscape%20of%20Committing%20Authenticated%20Encryption.pdf
     pub struct PaddedAead<Aead: AeadCore> {
         inner_aead: Aead,
     }
@@ -87,18 +91,20 @@ mod padded_aead {
     }
     impl <Aead: AeadCore+KeySizeUser> AeadCore for PaddedAead<Aead>
     where
-        Aead::CiphertextOverhead: Add<<Aead::KeySize as Mul<U2>>::Output>,
-        <Aead as KeySizeUser>::KeySize: Mul<U2>,
-        <<Aead as AeadCore>::CiphertextOverhead as Add<<<Aead as KeySizeUser>::KeySize as Mul<U2>>::Output>>::Output: ArrayLength<u8>
+        Aead::CiphertextOverhead: Add<<Aead::KeySize as Mul<U3>>::Output>,
+        Aead::KeySize: Mul<U3>,
+        <Aead::CiphertextOverhead as Add<<Aead::KeySize as Mul<U3>>::Output>>::Output: ArrayLength<u8>
     {
         type NonceSize = Aead::NonceSize;
 
         type TagSize = Aead::TagSize;
 
-        type CiphertextOverhead = <Aead::CiphertextOverhead as Add<<Aead::KeySize as Mul<U2>>::Output>>::Output;
+        type CiphertextOverhead = <Aead::CiphertextOverhead as Add<<Aead::KeySize as Mul<U3>>::Output>>::Output;
     }
     // TODO: don't see a way to provide impls for both AeadInPlace
-    // and AeadMutInPlace
+    // and AeadMutInPlace, as having both would conflict with the blanket impl
+    // Choose AeadInPlace because all the current rustcrypto/AEADs do not have
+    // a mutable state
     impl <Aead: AeadCore+AeadInPlace+KeySizeUser> AeadInPlace for PaddedAead<Aead>
     where
         Self: AeadCore
