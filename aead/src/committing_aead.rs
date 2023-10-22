@@ -33,6 +33,10 @@ use crate::AeadCore;
 #[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
 pub use padded_aead::PaddedAead;
 
+#[cfg(feature = "committing_ae")]
+#[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
+pub use ctx::CtxAead;
+
 /// Marker trait that signals that an AEAD commits to its key.
 pub trait KeyCommittingAead: AeadCore {}
 /// Marker trait that signals that an AEAD commits to all its inputs.
@@ -164,5 +168,115 @@ mod padded_aead {
         }
     }
     impl<Aead: AeadCore> KeyCommittingAead for PaddedAead<Aead>
+        where Self: AeadCore {}
+}
+
+#[cfg(feature = "committing_ae")]
+#[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
+mod ctx {
+    use crate::{AeadCore, AeadInPlace};
+    use crypto_common::{KeyInit, KeySizeUser};
+    use digest::Digest;
+    use super::{KeyCommittingAead, CommittingAead};
+
+    #[cfg(feature = "committing_ae")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
+    #[derive(Debug, Clone)]
+    /// Implementation of the encryption portion of the
+    /// [CTX scheme](https://eprint.iacr.org/2022/1260.pdf).
+    /// 
+    /// CTX wraps an AEAD and replaces the tag with 
+    /// `H(key || nonce || aad || orig_tag)`, which is shown in the paper to
+    /// commit to all AEAD inputs as long as the hash is collision resistant.
+    /// This provides `hash_output_len/2` bits of committment security.
+    /// 
+    /// Unfortunately there is currently no way to get the expected tag of the
+    /// inner AEAD using the current trait interfaces, so this struct only
+    /// implements the encryption direction. This may still be useful for 
+    /// interfacing with other programs that use the CTX committing AE scheme.
+    pub struct CtxAead<Aead: AeadCore, CrHash: Digest> {
+        inner_aead: Aead,
+        hasher: CrHash
+    }
+    impl <Aead: AeadCore, CrHash: Digest> CtxAead<Aead, CrHash> {
+        /// Extracts the inner Aead object.
+        #[inline]
+        pub fn into_inner(self) -> Aead {
+            self.inner_aead
+        }
+    }
+
+    impl <Aead: AeadCore+KeySizeUser, CrHash: Digest> KeySizeUser for CtxAead<Aead, CrHash> {
+        type KeySize = Aead::KeySize;
+    }
+    impl <Aead: AeadCore+KeyInit, CrHash: Digest> KeyInit for CtxAead<Aead, CrHash> {
+        fn new(key: &crypto_common::Key<Self>) -> Self {
+            CtxAead {
+                inner_aead: Aead::new(key),
+                hasher: Digest::new_with_prefix(key)
+            }
+        }
+    }
+
+    impl <Aead: AeadCore+KeySizeUser, CrHash: Digest> AeadCore for CtxAead<Aead, CrHash>
+    {
+        type NonceSize = Aead::NonceSize;
+
+        type TagSize = CrHash::OutputSize;
+
+        type CiphertextOverhead = Aead::CiphertextOverhead;
+    }
+
+    // TODO: don't see a way to provide impls for both AeadInPlace
+    // and AeadMutInPlace, as having both would conflict with the blanket impl
+    // Choose AeadInPlace because all the current rustcrypto/AEADs do not have
+    // a mutable state
+    impl <Aead: AeadCore+AeadInPlace+KeySizeUser, CrHash: Digest+Clone> AeadInPlace for CtxAead<Aead, CrHash>
+    where
+        Self: AeadCore
+    {
+        fn encrypt_in_place_detached(
+            &self,
+            nonce: &crate::Nonce<Self>,
+            associated_data: &[u8],
+            buffer: &mut [u8],
+        ) -> crate::Result<crate::Tag<Self>> {
+            // Compiler can't see that Self::NonceSize == Aead::NonceSize
+            let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
+
+            let tag_inner = self.inner_aead.encrypt_in_place_detached(nonce_recast, associated_data, buffer)?;
+
+            let mut tag_computer = self.hasher.clone();
+            tag_computer.update(nonce);
+            tag_computer.update(associated_data);
+            tag_computer.update(tag_inner);
+            let final_tag = tag_computer.finalize();
+
+            // Compiler can't see that Self::TagSize == Digest::OutputSize
+            let tag_recast = crate::Tag::<Self>::clone_from_slice(final_tag.as_slice());
+            Ok(tag_recast)
+        }
+
+        /// Unimplemented decryption of the message in-place, which panics if
+        /// called
+        #[allow(unused_variables)]
+        fn decrypt_in_place_detached(
+            &self,
+            nonce: &crate::Nonce<Self>,
+            associated_data: &[u8],
+            buffer: &mut [u8],
+            tag: &crate::Tag<Self>,
+        ) -> crate::Result<()> {
+            // Compiler can't see that Self::NonceSize == Aead::NonceSize
+            let _nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
+            unimplemented!("Cannot get inner AEAD tag using current AEAD interfaces")
+            // Remaning steps: compute expected tag during decryption, repeat
+            // hasher steps analogously to encryption phase, and compare tag
+        }
+    }
+
+    impl<Aead: AeadCore, CrHash: Digest> KeyCommittingAead for CtxAead<Aead, CrHash>
+        where Self: AeadCore {}
+    impl<Aead: AeadCore, CrHash: Digest> CommittingAead for CtxAead<Aead, CrHash>
         where Self: AeadCore {}
 }
