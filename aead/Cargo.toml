@@ -24,7 +24,12 @@ arrayvec = { version = "0.7", optional = true, default-features = false }
 blobby = { version = "0.3", optional = true }
 bytes = { version = "1", optional = true, default-features = false }
 heapless = { version = "0.7", optional = true, default-features = false }
+# Dependencies needed for committing_ae
 subtle = { version = "2.5", optional = true, default-features = false }
+# Keep digest at 0.10.x instead of 0.11.0-pre for now
+# Avoids depending on multiple versions of crypto-common
+digest = { version = "0.10.7", optional = true, features = ["mac"] }
+hmac = { version = "0.12.1", optional = true }
 
 [features]
 default = ["rand_core"]
@@ -34,7 +39,7 @@ dev = ["blobby"]
 getrandom = ["crypto-common/getrandom", "rand_core"]
 rand_core = ["crypto-common/rand_core"]
 stream = []
-committing_ae = ["subtle"]
+committing_ae = ["subtle", "digest", "hmac"]
 
 [package.metadata.docs.rs]
 all-features = true

@@ -10,8 +10,10 @@ dependencies = [
  "blobby",
  "bytes",
  "crypto-common 0.1.6",
+ "digest 0.10.7",
  "generic-array",
  "heapless",
+ "hmac 0.12.1",
  "subtle",
 ]
 
