@@ -124,7 +124,7 @@ mod padded_aead {
             buffer: &mut [u8],
         ) -> crate::Result<crate::Tag<Self>> {
             let offset_amount = Aead::CiphertextOverhead::to_usize()
-                +2*Aead::KeySize::to_usize();
+                +3*Aead::KeySize::to_usize();
             buffer.copy_within(..buffer.len()-offset_amount, offset_amount);
             buffer[..offset_amount].fill(0x00);
 
@@ -156,7 +156,7 @@ mod padded_aead {
             });
 
             let offset_amount = Aead::CiphertextOverhead::to_usize()
-                +2*Aead::KeySize::to_usize();
+                +3*Aead::KeySize::to_usize();
             // Do the loop because the slice ct_eq requires constructing 
             // [0; offset_amount], which requires an allocation
             let mut pad_is_ok = Choice::from(1);
