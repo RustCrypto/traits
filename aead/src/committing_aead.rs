@@ -3,29 +3,38 @@
 //! Marker trait for Committing AEADs along with constructions that give 
 //! key-committing properties to normal AEADs.
 //!
-//! ## About
+//! ## Why Committing AEADs?
 //!
 //! While AEADs provide confidentiality and integrity, many of them do not
-//! provide a committment for their inputs. One consequence is that, for
-//! example, [it is possible to construct an AES-GCM ciphertext that correctly
-//! decrypts under two different keys into two different plaintexts][1].
-//! Moreover, the lack of committment properties has lead to breaks in real
-//! cryptographic protocols, e.g. the password-authenticated key exchange
-//! [OPAQUE][2] and the Shadowsocks proxy, as described in [this paper
-//! introducing partitioning oracle attacks].
+//! provide a commitment for their inputs (which can equivalently be thought
+//! of as collision resistance of an AEAD with respect to its inputs). The
+//! lack of commitment properties has lead to breaks in real cryptographic
+//! protocols, e.g. improper implementations of the password-authenticated
+//! key exchange [OPAQUE][2] and the Shadowsocks proxy, as described in
+//! a paper describing [partitioning oracle attacks][3].
 //! 
+//! Concrete examples of popular AEADs that lack commitment properties:
+//! - AEADs using polynomial-based MACs (e.g. AES-GCM and ChaCha20Poly1305)
+//!   do not commit to their inputs. [1] describes how to construct an 
+//!   AES-GCM ciphertext that decrypts correctly under two different keys to
+//!   two different, semantically meaningful plaintexts.
+//! - AEADs where decryption can be separated into parallel always-successful
+//!   plaintext recovery and tag computation+equality checking steps cannot
+//!   provide commitment when the tag computation function is not preimage
+//!   resistant. [5] provides concrete attacks against EAX, GCM, SIV, CCM,
+//!   and OCB3 that demonstrate that they are not key-commiting.
+//! 
+//! ## Module contents
 //! This module provides the [`KeyCommittingAead`] marker trait to indicate that
 //! an AEAD commits to its key, along with the [`CommittingAead`] marker trait
-//! to incidate that an AEAD commits to all of its inputs. (This can
-//! equivalently be thought of as collision resistance of an AEAD with respect
-//! to its inputs.) When the `committing_ae` feature is enabled, it also
+//! to indicate that an AEAD commits to all of its inputs. When the `committing_ae` feature is enabled, it also
 //! provides constructions that wrap an AEAD and make it committing.
 //!
 //! [1]: https://eprint.iacr.org/2019/016.pdf
 //! [2]: https://eprint.iacr.org/2018/163.pdf
 //! [3]: https://www.usenix.org/system/files/sec21summer_len.pdf
 //! [4]: https://eprint.iacr.org/2020/1456.pdf
-//! 
+//! [5]: https://eprint.iacr.org/2023/526.pdf
 
 use crate::AeadCore;
 
@@ -64,7 +73,7 @@ mod padded_aead {
     /// [padding fix][1] of prepending zeros to the plaintext before encryption 
     /// and verifying their presence upon decryption. Based on the formulas
     /// of [2], we append `3*key_len` zeros to obtain `3/4*key_len` bits of
-    /// key committment security.
+    /// key commitment security.
     /// 
     /// The padding fix paper proves that this construction is key-committing
     /// for AES-GCM, ChaCha20Poly1305, and other AEADs that internally use
@@ -158,7 +167,7 @@ mod padded_aead {
             let offset_amount = Aead::CiphertextOverhead::to_usize()
                 +3*Aead::KeySize::to_usize();
             // Do the loop because the slice ct_eq requires constructing 
-            // [0; offset_amount], which requires an allocation
+            // [0; offset_amount], which requires more memory
             let mut pad_is_ok = Choice::from(1);
             for element in &buffer[..offset_amount] {
                 pad_is_ok = pad_is_ok & element.ct_eq(&0);
@@ -197,9 +206,9 @@ mod ctx {
     /// CTX wraps an AEAD and replaces the tag with 
     /// `H(key || nonce || aad || orig_tag)`, which is shown in the paper to
     /// commit to all AEAD inputs as long as the hash is collision resistant.
-    /// This provides `hash_output_len/2` bits of committment security.
+    /// This provides `hash_output_len/2` bits of commitment security.
     /// 
-    /// Unfortunately there is currently no way to get the expected tag of the
+    /// Unfortunately, there is currently no way to get the expected tag of the
     /// inner AEAD using the current trait interfaces, so this struct only
     /// implements the encryption direction. This may still be useful for 
     /// interfacing with other programs that use the CTX committing AE scheme.
@@ -298,7 +307,7 @@ mod ctx {
     /// `orig_tag || HMAC_key(nonce || aad || orig_tag)`. The AEAD API requires
     /// that we treat the underlying AEAD as a black box, without access to the
     /// expected tag at decryption time, so we have to also send it along with
-    /// the committment to the other inputs to the AEAD. (Ideally, the need to
+    /// the commitment to the other inputs to the AEAD. (Ideally, the need to
     /// send `orig_tag` as well can be removed in a future version of the 
     /// crate.) At decryption time, we verify both `orig_tag` and the hash
     /// commitment.
@@ -307,13 +316,13 @@ mod ctx {
     /// 
     /// HMAC invokes the underlying hash function twice such that the inputs to
     /// the hash functions are computed only by XOR, concatenation, and hashing.
-    /// Thus, if we trust the underlying hash function to serve as a committment
+    /// Thus, if we trust the underlying hash function to serve as a commitment
     /// to its inputs, we can also trust HMAC-hash to commit to its inputs and
-    /// provide `hash_output_len/2` bits of committment security, as with CTX.
+    /// provide `hash_output_len/2` bits of commitment security, as with CTX.
     /// 
     /// If the underlying AEAD provides proper confidentiality and integrity
     /// protections, we can assume that this new construction also provides
-    /// propert confidentiality and integrity, since it has the same ciphertext
+    /// proper confidentiality and integrity, since it has the same ciphertext
     /// and includes the original tag without exposing cryptographic secrets in
     /// a recoverable form. Moreover, HMAC is supposed to be a secure keyed MAC,
     /// so an attacker cannot forge a commitment without knowing the key, even
@@ -328,7 +337,7 @@ mod ctx {
     /// for increased interoperability with other CTX implementations. (In fact,
     /// revealing `orig_tag` would be fatal for the CTX+ construction which
     /// omits `aad` from the `orig_tag` computation by allowing forgery of the
-    /// hash committment via length extension on `aad`.)
+    /// hash commitment via length extension on `aad`.)
     pub struct CtxishHmacAead<Aead: AeadCore, CrHash: Digest+BlockSizeUser> {
         inner_aead: Aead,
         hasher: SimpleHmac<CrHash>
