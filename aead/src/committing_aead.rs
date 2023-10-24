@@ -1,4 +1,4 @@
-//! Committing AEAD support.
+//! Committing AEAD marker traits and generic constructions.
 //!
 //! Marker trait for Committing AEADs along with constructions that give 
 //! key-committing properties to normal AEADs.
@@ -9,20 +9,21 @@
 //! provide a commitment for their inputs (which can equivalently be thought
 //! of as collision resistance of an AEAD with respect to its inputs). The
 //! lack of commitment properties has lead to breaks in real cryptographic
-//! protocols, e.g. improper implementations of the password-authenticated
-//! key exchange [OPAQUE][2] and the Shadowsocks proxy, as described in
-//! a paper describing [partitioning oracle attacks][3].
+//! protocols, e.g. the Shadowsocks proxy ans improper implementations of the
+//! password-authenticated key exchange [OPAQUE][2], as described in the
+//! [partitioning oracle attacks][3] paper.
 //! 
 //! Concrete examples of popular AEADs that lack commitment properties:
-//! - AEADs using polynomial-based MACs (e.g. AES-GCM and ChaCha20Poly1305)
-//!   do not commit to their inputs. [1] describes how to construct an 
-//!   AES-GCM ciphertext that decrypts correctly under two different keys to
-//!   two different, semantically meaningful plaintexts.
+//! - AEADs using polynomial-based MACs (e.g. AES-GCM, AES-GCM-SIV,
+//!   and ChaCha20Poly1305) do not commit to their inputs. [This paper][1] 
+//!   describes how to construct an AES-GCM ciphertext that decrypts correctly 
+//!   under two different keys to two different, semantically meaningful 
+//!   plaintexts.
 //! - AEADs where decryption can be separated into parallel always-successful
 //!   plaintext recovery and tag computation+equality checking steps cannot
 //!   provide commitment when the tag computation function is not preimage
-//!   resistant. [5] provides concrete attacks against EAX, GCM, SIV, CCM,
-//!   and OCB3 that demonstrate that they are not key-commiting.
+//!   resistant. [This paper][5] provides concrete attacks against EAX, GCM,
+//!   SIV, CCM, and OCB3 that demonstrate that they are not key-commiting.
 //! 
 //! ## Module contents
 //! This module provides the [`KeyCommittingAead`] marker trait to indicate that
@@ -72,8 +73,8 @@ mod padded_aead {
     /// A wrapper around a non-committing AEAD that implements the
     /// [padding fix][1] of prepending zeros to the plaintext before encryption 
     /// and verifying their presence upon decryption. Based on the formulas
-    /// of [2], we append `3*key_len` zeros to obtain `3/4*key_len` bits of
-    /// key commitment security.
+    /// of [this paper][2], we append `3*key_len` zeros to obtain `3/4*key_len`
+    /// bits of key commitment security.
     /// 
     /// The padding fix paper proves that this construction is key-committing
     /// for AES-GCM, ChaCha20Poly1305, and other AEADs that internally use
@@ -118,10 +119,7 @@ mod padded_aead {
 
         type CiphertextOverhead = <Aead::CiphertextOverhead as Add<<Aead::KeySize as Mul<U3>>::Output>>::Output;
     }
-    // TODO: don't see a way to provide impls for both AeadInPlace
-    // and AeadMutInPlace, as having both would conflict with the blanket impl
-    // Choose AeadInPlace because all the current rustcrypto/AEADs do not have
-    // a mutable state
+
     impl <Aead: AeadCore+AeadInPlace+KeySizeUser> crate::Aead for PaddedAead<Aead>
     where
         Self: AeadCore
