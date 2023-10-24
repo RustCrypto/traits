@@ -122,59 +122,65 @@ mod padded_aead {
     // and AeadMutInPlace, as having both would conflict with the blanket impl
     // Choose AeadInPlace because all the current rustcrypto/AEADs do not have
     // a mutable state
-    impl <Aead: AeadCore+AeadInPlace+KeySizeUser> AeadInPlace for PaddedAead<Aead>
+    impl <Aead: AeadCore+AeadInPlace+KeySizeUser> crate::Aead for PaddedAead<Aead>
     where
         Self: AeadCore
     {
-        fn encrypt_in_place_detached(
+        fn encrypt<'msg, 'aad>(
             &self,
             nonce: &crate::Nonce<Self>,
-            associated_data: &[u8],
-            buffer: &mut [u8],
-        ) -> crate::Result<crate::Tag<Self>> {
-            let offset_amount = Aead::CiphertextOverhead::to_usize()
-                +3*Aead::KeySize::to_usize();
-            buffer.copy_within(..buffer.len()-offset_amount, offset_amount);
-            buffer[..offset_amount].fill(0x00);
+            plaintext: impl Into<crate::Payload<'msg, 'aad>>,
+        ) -> crate::Result<alloc::vec::Vec<u8>> {
+            let padding_overhead = 3*Aead::KeySize::to_usize();
+            assert_eq!(padding_overhead+Aead::CiphertextOverhead::to_usize(), Self::CiphertextOverhead::to_usize());
+
+            let payload = plaintext.into();
+            let mut padded_msg = alloc::vec![0x00; payload.msg.len()+3*Aead::KeySize::to_usize()];
+            padded_msg[padding_overhead..].copy_from_slice(payload.msg);
 
             // Compiler can't see that Self::NonceSize == Aead::NonceSize
             let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
 
-            let tag_inner = self.inner_aead.encrypt_in_place_detached(nonce_recast, associated_data, buffer)?;
-
-            // Compiler can't see that Self::TagSize == Aead::TagSize
-            let tag_recast = crate::Tag::<Self>::clone_from_slice(tag_inner.as_slice());
-            Ok(tag_recast)
+            let tag_inner = self.inner_aead.encrypt_in_place_detached(nonce_recast, payload.aad, &mut padded_msg)?;
+            // Append the tag to the end
+            padded_msg.extend(tag_inner);
+            Ok(padded_msg)
         }
 
-        fn decrypt_in_place_detached(
+        fn decrypt<'msg, 'aad>(
             &self,
             nonce: &crate::Nonce<Self>,
-            associated_data: &[u8],
-            buffer: &mut [u8],
-            tag: &crate::Tag<Self>,
-        ) -> crate::Result<()> {
-            // Compiler can't see that Self::NonceSize == Aead::NonceSize
-            // Ditto for Self::TagSize == Aead::TagSize
-            let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
-            let tag_recast = crate::Tag::<Aead>::from_slice(tag.as_slice());
+            ciphertext: impl Into<crate::Payload<'msg, 'aad>>,
+        ) -> crate::Result<alloc::vec::Vec<u8>> {
+            let padding_overhead = 3*Aead::KeySize::to_usize();
+            let total_overhead = padding_overhead+Aead::CiphertextOverhead::to_usize();
+            assert_eq!(total_overhead, Self::CiphertextOverhead::to_usize());
 
-            let tag_is_ok = Choice::from(match self.inner_aead.decrypt_in_place_detached(nonce_recast, associated_data, buffer, tag_recast) {
+            let payload = ciphertext.into();
+
+            // Compiler can't see that Self::NonceSize == Aead::NonceSize
+            let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
+
+            let (ctxt, tag) = payload.msg.split_at(payload.msg.len()-Aead::TagSize::to_usize());
+            let tag_recast = crate::Tag::<Aead>::from_slice(tag);
+
+            if ctxt.len() < total_overhead {
+                return Err(crate::Error);
+            }
+
+            let mut ptxt_vec = alloc::vec::Vec::from(ctxt);
+
+            // Avoid timing side channel by not returning early
+            let mut decryption_is_ok = Choice::from(match self.inner_aead.decrypt_in_place_detached(nonce_recast, payload.aad, &mut ptxt_vec, tag_recast) {
                 Ok(_) => 1,
                 Err(_) => 0
             });
-
-            let offset_amount = Aead::CiphertextOverhead::to_usize()
-                +3*Aead::KeySize::to_usize();
-            // Do the loop because the slice ct_eq requires constructing 
-            // [0; offset_amount], which requires more memory
-            let mut pad_is_ok = Choice::from(1);
-            for element in &buffer[..offset_amount] {
-                pad_is_ok = pad_is_ok & element.ct_eq(&0);
+            // Check padding now
+            for byte in ptxt_vec.drain(..padding_overhead) {
+                decryption_is_ok = decryption_is_ok & byte.ct_eq(&0);
             }
-            buffer.copy_within(offset_amount.., 0);
-            if (tag_is_ok & pad_is_ok).into() {
-                Ok(())
+            if decryption_is_ok.into() {
+                Ok(ptxt_vec)
             } else {
                 Err(crate::Error)
             }
