@@ -186,6 +186,69 @@ mod padded_aead {
             }
         }
     }
+    impl <Aead: AeadCore+crate::AeadMutInPlace+KeySizeUser> crate::AeadMut for PaddedAead<Aead>
+    where
+        Self: AeadCore
+    {
+        fn encrypt<'msg, 'aad>(
+            &mut self,
+            nonce: &crate::Nonce<Self>,
+            plaintext: impl Into<crate::Payload<'msg, 'aad>>,
+        ) -> crate::Result<alloc::vec::Vec<u8>> {
+            let padding_overhead = 3*Aead::KeySize::to_usize();
+            assert_eq!(padding_overhead+Aead::CiphertextOverhead::to_usize(), Self::CiphertextOverhead::to_usize());
+
+            let payload = plaintext.into();
+            let mut padded_msg = alloc::vec![0x00; payload.msg.len()+3*Aead::KeySize::to_usize()];
+            padded_msg[padding_overhead..].copy_from_slice(payload.msg);
+
+            // Compiler can't see that Self::NonceSize == Aead::NonceSize
+            let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
+
+            let tag_inner = self.inner_aead.encrypt_in_place_detached(nonce_recast, payload.aad, &mut padded_msg)?;
+            // Append the tag to the end
+            padded_msg.extend(tag_inner);
+            Ok(padded_msg)
+        }
+        fn decrypt<'msg, 'aad>(
+            &mut self,
+            nonce: &crate::Nonce<Self>,
+            ciphertext: impl Into<crate::Payload<'msg, 'aad>>,
+        ) -> crate::Result<alloc::vec::Vec<u8>> {
+            let padding_overhead = 3*Aead::KeySize::to_usize();
+            let total_overhead = padding_overhead+Aead::CiphertextOverhead::to_usize();
+            assert_eq!(total_overhead, Self::CiphertextOverhead::to_usize());
+
+            let payload = ciphertext.into();
+
+            // Compiler can't see that Self::NonceSize == Aead::NonceSize
+            let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
+
+            let (ctxt, tag) = payload.msg.split_at(payload.msg.len()-Aead::TagSize::to_usize());
+            let tag_recast = crate::Tag::<Aead>::from_slice(tag);
+
+            if ctxt.len() < total_overhead {
+                return Err(crate::Error);
+            }
+
+            let mut ptxt_vec = alloc::vec::Vec::from(ctxt);
+
+            // Avoid timing side channel by not returning early
+            let mut decryption_is_ok = Choice::from(match self.inner_aead.decrypt_in_place_detached(nonce_recast, payload.aad, &mut ptxt_vec, tag_recast) {
+                Ok(_) => 1,
+                Err(_) => 0
+            });
+            // Check padding now
+            for byte in ptxt_vec.drain(..padding_overhead) {
+                decryption_is_ok = decryption_is_ok & byte.ct_eq(&0);
+            }
+            if decryption_is_ok.into() {
+                Ok(ptxt_vec)
+            } else {
+                Err(crate::Error)
+            }
+        }
+    }
     impl<Aead: AeadCore> KeyCommittingAead for PaddedAead<Aead>
         where Self: AeadCore {}
 }
