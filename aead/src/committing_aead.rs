@@ -1,6 +1,6 @@
 //! Committing AEAD marker traits and generic constructions.
 //!
-//! Marker trait for Committing AEADs along with constructions that give 
+//! Marker trait for Committing AEADs along with constructions that give
 //! key-committing properties to normal AEADs.
 //!
 //! ## Why Committing AEADs?
@@ -12,19 +12,19 @@
 //! protocols, e.g. the Shadowsocks proxy ans improper implementations of the
 //! password-authenticated key exchange [OPAQUE][2], as described in the
 //! [partitioning oracle attacks][3] paper.
-//! 
+//!
 //! Concrete examples of popular AEADs that lack commitment properties:
 //! - AEADs using polynomial-based MACs (e.g. AES-GCM, AES-GCM-SIV,
-//!   and ChaCha20Poly1305) do not commit to their inputs. [This paper][1] 
-//!   describes how to construct an AES-GCM ciphertext that decrypts correctly 
-//!   under two different keys to two different, semantically meaningful 
+//!   and ChaCha20Poly1305) do not commit to their inputs. [This paper][1]
+//!   describes how to construct an AES-GCM ciphertext that decrypts correctly
+//!   under two different keys to two different, semantically meaningful
 //!   plaintexts.
 //! - AEADs where decryption can be separated into parallel always-successful
 //!   plaintext recovery and tag computation+equality checking steps cannot
 //!   provide commitment when the tag computation function is not preimage
 //!   resistant. [This paper][5] provides concrete attacks against EAX, GCM,
 //!   SIV, CCM, and OCB3 that demonstrate that they are not key-commiting.
-//! 
+//!
 //! ## Module contents
 //! This module provides the [`KeyCommittingAead`] marker trait to indicate that
 //! an AEAD commits to its key, along with the [`CommittingAead`] marker trait
@@ -54,28 +54,28 @@ pub use ctx::CtxishHmacAead;
 /// Marker trait that signals that an AEAD commits to its key.
 pub trait KeyCommittingAead: AeadCore {}
 /// Marker trait that signals that an AEAD commits to all its inputs.
-pub trait CommittingAead: AeadCore+KeyCommittingAead {}
+pub trait CommittingAead: AeadCore + KeyCommittingAead {}
 
 #[cfg(feature = "committing_ae")]
 #[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
 mod padded_aead {
-    use crate::{AeadCore, AeadInPlace};
-    use crypto_common::{KeyInit, KeySizeUser};
-    use core::ops::{Add, Mul};
-    use generic_array::ArrayLength;
-    use generic_array::typenum::{U3, Unsigned};
-    use subtle::{Choice, ConstantTimeEq};
     use super::KeyCommittingAead;
+    use crate::{AeadCore, AeadInPlace};
+    use core::ops::{Add, Mul};
+    use crypto_common::{KeyInit, KeySizeUser};
+    use generic_array::typenum::{Unsigned, U3};
+    use generic_array::ArrayLength;
+    use subtle::{Choice, ConstantTimeEq};
 
     #[cfg(feature = "committing_ae")]
     #[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
     #[derive(Debug, Clone)]
     /// A wrapper around a non-committing AEAD that implements the
-    /// [padding fix][1] of prepending zeros to the plaintext before encryption 
+    /// [padding fix][1] of prepending zeros to the plaintext before encryption
     /// and verifying their presence upon decryption. Based on the formulas
     /// of [this paper][2], we append `3*key_len` zeros to obtain `3/4*key_len`
     /// bits of key commitment security.
-    /// 
+    ///
     /// The padding fix paper proves that this construction is key-committing
     /// for AES-GCM, ChaCha20Poly1305, and other AEADs that internally use
     /// primitives that can be modelled as ideal. However, security is not
@@ -83,13 +83,13 @@ mod padded_aead {
     /// used as a MAC in normal circumstances because HMAC does not require a
     /// collision resistant hash, but an AEAD using HMAC-SHA-1 to provide
     /// integrity cannot be made committing using this padding scheme.
-    /// 
+    ///
     /// [1]: https://eprint.iacr.org/2020/1456.pdf
     /// [2]: https://csrc.nist.gov/csrc/media/Events/2023/third-workshop-on-block-cipher-modes-of-operation/documents/accepted-papers/The%20Landscape%20of%20Committing%20Authenticated%20Encryption.pdf
     pub struct PaddedAead<Aead: AeadCore> {
         inner_aead: Aead,
     }
-    impl <Aead: AeadCore> PaddedAead<Aead> {
+    impl<Aead: AeadCore> PaddedAead<Aead> {
         /// Extracts the inner Aead object.
         #[inline]
         pub fn into_inner(self) -> Aead {
@@ -97,40 +97,45 @@ mod padded_aead {
         }
     }
 
-    impl <Aead: AeadCore+KeySizeUser> KeySizeUser for PaddedAead<Aead> {
+    impl<Aead: AeadCore + KeySizeUser> KeySizeUser for PaddedAead<Aead> {
         type KeySize = Aead::KeySize;
     }
-    impl <Aead: AeadCore+KeyInit> KeyInit for PaddedAead<Aead> {
+    impl<Aead: AeadCore + KeyInit> KeyInit for PaddedAead<Aead> {
         fn new(key: &crypto_common::Key<Self>) -> Self {
             PaddedAead {
                 inner_aead: Aead::new(key),
             }
         }
     }
-    impl <Aead: AeadCore+KeySizeUser> AeadCore for PaddedAead<Aead>
+    impl<Aead: AeadCore + KeySizeUser> AeadCore for PaddedAead<Aead>
     where
         Aead::CiphertextOverhead: Add<<Aead::KeySize as Mul<U3>>::Output>,
         Aead::KeySize: Mul<U3>,
-        <Aead::CiphertextOverhead as Add<<Aead::KeySize as Mul<U3>>::Output>>::Output: ArrayLength<u8>
+        <Aead::CiphertextOverhead as Add<<Aead::KeySize as Mul<U3>>::Output>>::Output:
+            ArrayLength<u8>,
     {
         type NonceSize = Aead::NonceSize;
 
         type TagSize = Aead::TagSize;
 
-        type CiphertextOverhead = <Aead::CiphertextOverhead as Add<<Aead::KeySize as Mul<U3>>::Output>>::Output;
+        type CiphertextOverhead =
+            <Aead::CiphertextOverhead as Add<<Aead::KeySize as Mul<U3>>::Output>>::Output;
     }
 
-    impl <Aead: AeadCore+AeadInPlace+KeySizeUser> crate::Aead for PaddedAead<Aead>
+    impl<Aead: AeadCore + AeadInPlace + KeySizeUser> crate::Aead for PaddedAead<Aead>
     where
-        Self: AeadCore
+        Self: AeadCore,
     {
         fn encrypt<'msg, 'aad>(
             &self,
             nonce: &crate::Nonce<Self>,
             plaintext: impl Into<crate::Payload<'msg, 'aad>>,
         ) -> crate::Result<alloc::vec::Vec<u8>> {
-            let padding_overhead = 3*Aead::KeySize::to_usize();
-            assert_eq!(padding_overhead+Aead::CiphertextOverhead::to_usize(), Self::CiphertextOverhead::to_usize());
+            let padding_overhead = 3 * Aead::KeySize::to_usize();
+            assert_eq!(
+                padding_overhead + Aead::CiphertextOverhead::to_usize(),
+                Self::CiphertextOverhead::to_usize()
+            );
 
             let payload = plaintext.into();
             let mut padded_msg = alloc::vec![0x00; payload.msg.len()+3*Aead::KeySize::to_usize()];
@@ -139,7 +144,11 @@ mod padded_aead {
             // Compiler can't see that Self::NonceSize == Aead::NonceSize
             let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
 
-            let tag_inner = self.inner_aead.encrypt_in_place_detached(nonce_recast, payload.aad, &mut padded_msg)?;
+            let tag_inner = self.inner_aead.encrypt_in_place_detached(
+                nonce_recast,
+                payload.aad,
+                &mut padded_msg,
+            )?;
             // Append the tag to the end
             padded_msg.extend(tag_inner);
             Ok(padded_msg)
@@ -150,8 +159,8 @@ mod padded_aead {
             nonce: &crate::Nonce<Self>,
             ciphertext: impl Into<crate::Payload<'msg, 'aad>>,
         ) -> crate::Result<alloc::vec::Vec<u8>> {
-            let padding_overhead = 3*Aead::KeySize::to_usize();
-            let total_overhead = padding_overhead+Aead::CiphertextOverhead::to_usize();
+            let padding_overhead = 3 * Aead::KeySize::to_usize();
+            let total_overhead = padding_overhead + Aead::CiphertextOverhead::to_usize();
             assert_eq!(total_overhead, Self::CiphertextOverhead::to_usize());
 
             let payload = ciphertext.into();
@@ -159,7 +168,9 @@ mod padded_aead {
             // Compiler can't see that Self::NonceSize == Aead::NonceSize
             let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
 
-            let (ctxt, tag) = payload.msg.split_at(payload.msg.len()-Aead::TagSize::to_usize());
+            let (ctxt, tag) = payload
+                .msg
+                .split_at(payload.msg.len() - Aead::TagSize::to_usize());
             let tag_recast = crate::Tag::<Aead>::from_slice(tag);
 
             if ctxt.len() < total_overhead {
@@ -169,10 +180,17 @@ mod padded_aead {
             let mut ptxt_vec = alloc::vec::Vec::from(ctxt);
 
             // Avoid timing side channel by not returning early
-            let mut decryption_is_ok = Choice::from(match self.inner_aead.decrypt_in_place_detached(nonce_recast, payload.aad, &mut ptxt_vec, tag_recast) {
-                Ok(_) => 1,
-                Err(_) => 0
-            });
+            let mut decryption_is_ok = Choice::from(
+                match self.inner_aead.decrypt_in_place_detached(
+                    nonce_recast,
+                    payload.aad,
+                    &mut ptxt_vec,
+                    tag_recast,
+                ) {
+                    Ok(_) => 1,
+                    Err(_) => 0,
+                },
+            );
             // Check padding now
             for byte in ptxt_vec.drain(..padding_overhead) {
                 decryption_is_ok = decryption_is_ok & byte.ct_eq(&0);
@@ -184,17 +202,20 @@ mod padded_aead {
             }
         }
     }
-    impl <Aead: AeadCore+crate::AeadMutInPlace+KeySizeUser> crate::AeadMut for PaddedAead<Aead>
+    impl<Aead: AeadCore + crate::AeadMutInPlace + KeySizeUser> crate::AeadMut for PaddedAead<Aead>
     where
-        Self: AeadCore
+        Self: AeadCore,
     {
         fn encrypt<'msg, 'aad>(
             &mut self,
             nonce: &crate::Nonce<Self>,
             plaintext: impl Into<crate::Payload<'msg, 'aad>>,
         ) -> crate::Result<alloc::vec::Vec<u8>> {
-            let padding_overhead = 3*Aead::KeySize::to_usize();
-            assert_eq!(padding_overhead+Aead::CiphertextOverhead::to_usize(), Self::CiphertextOverhead::to_usize());
+            let padding_overhead = 3 * Aead::KeySize::to_usize();
+            assert_eq!(
+                padding_overhead + Aead::CiphertextOverhead::to_usize(),
+                Self::CiphertextOverhead::to_usize()
+            );
 
             let payload = plaintext.into();
             let mut padded_msg = alloc::vec![0x00; payload.msg.len()+3*Aead::KeySize::to_usize()];
@@ -203,7 +224,11 @@ mod padded_aead {
             // Compiler can't see that Self::NonceSize == Aead::NonceSize
             let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
 
-            let tag_inner = self.inner_aead.encrypt_in_place_detached(nonce_recast, payload.aad, &mut padded_msg)?;
+            let tag_inner = self.inner_aead.encrypt_in_place_detached(
+                nonce_recast,
+                payload.aad,
+                &mut padded_msg,
+            )?;
             // Append the tag to the end
             padded_msg.extend(tag_inner);
             Ok(padded_msg)
@@ -213,8 +238,8 @@ mod padded_aead {
             nonce: &crate::Nonce<Self>,
             ciphertext: impl Into<crate::Payload<'msg, 'aad>>,
         ) -> crate::Result<alloc::vec::Vec<u8>> {
-            let padding_overhead = 3*Aead::KeySize::to_usize();
-            let total_overhead = padding_overhead+Aead::CiphertextOverhead::to_usize();
+            let padding_overhead = 3 * Aead::KeySize::to_usize();
+            let total_overhead = padding_overhead + Aead::CiphertextOverhead::to_usize();
             assert_eq!(total_overhead, Self::CiphertextOverhead::to_usize());
 
             let payload = ciphertext.into();
@@ -222,7 +247,9 @@ mod padded_aead {
             // Compiler can't see that Self::NonceSize == Aead::NonceSize
             let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
 
-            let (ctxt, tag) = payload.msg.split_at(payload.msg.len()-Aead::TagSize::to_usize());
+            let (ctxt, tag) = payload
+                .msg
+                .split_at(payload.msg.len() - Aead::TagSize::to_usize());
             let tag_recast = crate::Tag::<Aead>::from_slice(tag);
 
             if ctxt.len() < total_overhead {
@@ -232,10 +259,17 @@ mod padded_aead {
             let mut ptxt_vec = alloc::vec::Vec::from(ctxt);
 
             // Avoid timing side channel by not returning early
-            let mut decryption_is_ok = Choice::from(match self.inner_aead.decrypt_in_place_detached(nonce_recast, payload.aad, &mut ptxt_vec, tag_recast) {
-                Ok(_) => 1,
-                Err(_) => 0
-            });
+            let mut decryption_is_ok = Choice::from(
+                match self.inner_aead.decrypt_in_place_detached(
+                    nonce_recast,
+                    payload.aad,
+                    &mut ptxt_vec,
+                    tag_recast,
+                ) {
+                    Ok(_) => 1,
+                    Err(_) => 0,
+                },
+            );
             // Check padding now
             for byte in ptxt_vec.drain(..padding_overhead) {
                 decryption_is_ok = decryption_is_ok & byte.ct_eq(&0);
@@ -247,43 +281,42 @@ mod padded_aead {
             }
         }
     }
-    impl<Aead: AeadCore> KeyCommittingAead for PaddedAead<Aead>
-        where Self: AeadCore {}
+    impl<Aead: AeadCore> KeyCommittingAead for PaddedAead<Aead> where Self: AeadCore {}
 }
 
 #[cfg(feature = "committing_ae")]
 #[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
 mod ctx {
+    use super::{CommittingAead, KeyCommittingAead};
     use crate::{AeadCore, AeadInPlace};
-    use crypto_common::{KeyInit, KeySizeUser, BlockSizeUser};
     use core::ops::Add;
-    use digest::{Digest, Mac, FixedOutput};
-    use hmac::SimpleHmac;
-    use generic_array::ArrayLength;
+    use crypto_common::{BlockSizeUser, KeyInit, KeySizeUser};
+    use digest::{Digest, FixedOutput, Mac};
     use generic_array::typenum::Unsigned;
+    use generic_array::ArrayLength;
+    use hmac::SimpleHmac;
     use subtle::Choice;
-    use super::{KeyCommittingAead, CommittingAead};
 
     #[cfg(feature = "committing_ae")]
     #[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
     #[derive(Debug, Clone)]
     /// Implementation of the encryption portion of the
     /// [CTX scheme](https://eprint.iacr.org/2022/1260.pdf).
-    /// 
-    /// CTX wraps an AEAD and replaces the tag with 
+    ///
+    /// CTX wraps an AEAD and replaces the tag with
     /// `H(key || nonce || aad || orig_tag)`, which is shown in the paper to
     /// commit to all AEAD inputs as long as the hash is collision resistant.
     /// This provides `hash_output_len/2` bits of commitment security.
-    /// 
+    ///
     /// Unfortunately, there is currently no way to get the expected tag of the
     /// inner AEAD using the current trait interfaces, so this struct only
-    /// implements the encryption direction. This may still be useful for 
+    /// implements the encryption direction. This may still be useful for
     /// interfacing with other programs that use the CTX committing AE scheme.
     pub struct CtxAead<Aead: AeadCore, CrHash: Digest> {
         inner_aead: Aead,
-        hasher: CrHash
+        hasher: CrHash,
     }
-    impl <Aead: AeadCore, CrHash: Digest> CtxAead<Aead, CrHash> {
+    impl<Aead: AeadCore, CrHash: Digest> CtxAead<Aead, CrHash> {
         /// Extracts the inner Aead object.
         #[inline]
         pub fn into_inner(self) -> Aead {
@@ -291,20 +324,19 @@ mod ctx {
         }
     }
 
-    impl <Aead: AeadCore+KeySizeUser, CrHash: Digest> KeySizeUser for CtxAead<Aead, CrHash> {
+    impl<Aead: AeadCore + KeySizeUser, CrHash: Digest> KeySizeUser for CtxAead<Aead, CrHash> {
         type KeySize = Aead::KeySize;
     }
-    impl <Aead: AeadCore+KeyInit, CrHash: Digest> KeyInit for CtxAead<Aead, CrHash> {
+    impl<Aead: AeadCore + KeyInit, CrHash: Digest> KeyInit for CtxAead<Aead, CrHash> {
         fn new(key: &crypto_common::Key<Self>) -> Self {
             CtxAead {
                 inner_aead: Aead::new(key),
-                hasher: Digest::new_with_prefix(key)
+                hasher: Digest::new_with_prefix(key),
             }
         }
     }
 
-    impl <Aead: AeadCore+KeySizeUser, CrHash: Digest> AeadCore for CtxAead<Aead, CrHash>
-    {
+    impl<Aead: AeadCore + KeySizeUser, CrHash: Digest> AeadCore for CtxAead<Aead, CrHash> {
         type NonceSize = Aead::NonceSize;
 
         type TagSize = CrHash::OutputSize;
@@ -316,9 +348,10 @@ mod ctx {
     // and AeadMutInPlace, as having both would conflict with the blanket impl
     // Choose AeadInPlace because all the current rustcrypto/AEADs do not have
     // a mutable state
-    impl <Aead: AeadCore+AeadInPlace+KeySizeUser, CrHash: Digest+Clone> AeadInPlace for CtxAead<Aead, CrHash>
+    impl<Aead: AeadCore + AeadInPlace + KeySizeUser, CrHash: Digest + Clone> AeadInPlace
+        for CtxAead<Aead, CrHash>
     where
-        Self: AeadCore
+        Self: AeadCore,
     {
         fn encrypt_in_place_detached(
             &self,
@@ -329,7 +362,9 @@ mod ctx {
             // Compiler can't see that Self::NonceSize == Aead::NonceSize
             let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
 
-            let tag_inner = self.inner_aead.encrypt_in_place_detached(nonce_recast, associated_data, buffer)?;
+            let tag_inner =
+                self.inner_aead
+                    .encrypt_in_place_detached(nonce_recast, associated_data, buffer)?;
 
             let mut tag_computer = self.hasher.clone();
             tag_computer.update(nonce);
@@ -360,33 +395,32 @@ mod ctx {
         }
     }
 
-    impl<Aead: AeadCore, CrHash: Digest> KeyCommittingAead for CtxAead<Aead, CrHash>
-        where Self: AeadCore {}
-    impl<Aead: AeadCore, CrHash: Digest> CommittingAead for CtxAead<Aead, CrHash>
-        where Self: AeadCore {}
+    impl<Aead: AeadCore, CrHash: Digest> KeyCommittingAead for CtxAead<Aead, CrHash> where Self: AeadCore
+    {}
+    impl<Aead: AeadCore, CrHash: Digest> CommittingAead for CtxAead<Aead, CrHash> where Self: AeadCore {}
 
     #[cfg(feature = "committing_ae")]
     #[cfg_attr(docsrs, doc(cfg(feature = "committing_ae")))]
     #[derive(Debug, Clone)]
     /// Implementation of a modified version of the CTX scheme.
-    /// 
+    ///
     /// Instead of returning tag `H(key || nonce || aad || orig_tag)`, we return
     /// `orig_tag || HMAC_key(nonce || aad || orig_tag)`. The AEAD API requires
     /// that we treat the underlying AEAD as a black box, without access to the
     /// expected tag at decryption time, so we have to also send it along with
     /// the commitment to the other inputs to the AEAD. (Ideally, the need to
-    /// send `orig_tag` as well can be removed in a future version of the 
+    /// send `orig_tag` as well can be removed in a future version of the
     /// crate.) At decryption time, we verify both `orig_tag` and the hash
     /// commitment.
-    /// 
+    ///
     /// ## Security analysis for the modified construction
-    /// 
+    ///
     /// HMAC invokes the underlying hash function twice such that the inputs to
     /// the hash functions are computed only by XOR, concatenation, and hashing.
     /// Thus, if we trust the underlying hash function to serve as a commitment
     /// to its inputs, we can also trust HMAC-hash to commit to its inputs and
     /// provide `hash_output_len/2` bits of commitment security, as with CTX.
-    /// 
+    ///
     /// If the underlying AEAD provides proper confidentiality and integrity
     /// protections, we can assume that this new construction also provides
     /// proper confidentiality and integrity, since it has the same ciphertext
@@ -394,7 +428,7 @@ mod ctx {
     /// a recoverable form. Moreover, HMAC is supposed to be a secure keyed MAC,
     /// so an attacker cannot forge a commitment without knowing the key, even
     /// with full knowledge of the other input to the HMAC.
-    /// 
+    ///
     /// We use `HMAC_key(nonce || aad || orig_tag)` instead of the original CTX
     /// construction of `H(key || nonce || aad || orig_tag)` to mitigate length
     /// extension attacks that may become possible when `orig_tag` is sent in
@@ -405,11 +439,11 @@ mod ctx {
     /// revealing `orig_tag` would be fatal for the CTX+ construction which
     /// omits `aad` from the `orig_tag` computation by allowing forgery of the
     /// hash commitment via length extension on `aad`.)
-    pub struct CtxishHmacAead<Aead: AeadCore, CrHash: Digest+BlockSizeUser> {
+    pub struct CtxishHmacAead<Aead: AeadCore, CrHash: Digest + BlockSizeUser> {
         inner_aead: Aead,
-        hasher: SimpleHmac<CrHash>
+        hasher: SimpleHmac<CrHash>,
     }
-    impl <Aead: AeadCore, CrHash: Digest+BlockSizeUser> CtxishHmacAead<Aead, CrHash> {
+    impl<Aead: AeadCore, CrHash: Digest + BlockSizeUser> CtxishHmacAead<Aead, CrHash> {
         /// Extracts the inner Aead object.
         #[inline]
         pub fn into_inner(self) -> Aead {
@@ -417,21 +451,26 @@ mod ctx {
         }
     }
 
-    impl <Aead: AeadCore+KeySizeUser, CrHash: Digest+BlockSizeUser> KeySizeUser for CtxishHmacAead<Aead, CrHash> {
+    impl<Aead: AeadCore + KeySizeUser, CrHash: Digest + BlockSizeUser> KeySizeUser
+        for CtxishHmacAead<Aead, CrHash>
+    {
         type KeySize = Aead::KeySize;
     }
-    impl <Aead: AeadCore+KeyInit, CrHash: Digest+BlockSizeUser> KeyInit for CtxishHmacAead<Aead, CrHash> {
+    impl<Aead: AeadCore + KeyInit, CrHash: Digest + BlockSizeUser> KeyInit
+        for CtxishHmacAead<Aead, CrHash>
+    {
         fn new(key: &crypto_common::Key<Self>) -> Self {
             CtxishHmacAead {
                 inner_aead: Aead::new(key),
-                hasher: <SimpleHmac<_> as KeyInit>::new_from_slice(key).unwrap()
+                hasher: <SimpleHmac<_> as KeyInit>::new_from_slice(key).unwrap(),
             }
         }
     }
-    impl <Aead: AeadCore+KeySizeUser, CrHash: Digest+BlockSizeUser> AeadCore for CtxishHmacAead<Aead, CrHash>
+    impl<Aead: AeadCore + KeySizeUser, CrHash: Digest + BlockSizeUser> AeadCore
+        for CtxishHmacAead<Aead, CrHash>
     where
         Aead::TagSize: Add<CrHash::OutputSize>,
-        <Aead::TagSize as Add<CrHash::OutputSize>>::Output: ArrayLength<u8>
+        <Aead::TagSize as Add<CrHash::OutputSize>>::Output: ArrayLength<u8>,
     {
         type NonceSize = Aead::NonceSize;
 
@@ -443,9 +482,10 @@ mod ctx {
     // and AeadMutInPlace, as having both would conflict with the blanket impl
     // Choose AeadInPlace because all the current rustcrypto/AEADs do not have
     // a mutable state
-    impl <Aead: AeadCore+AeadInPlace+KeySizeUser, CrHash: Digest+BlockSizeUser+Clone> AeadInPlace for CtxishHmacAead<Aead, CrHash>
+    impl<Aead: AeadCore + AeadInPlace + KeySizeUser, CrHash: Digest + BlockSizeUser + Clone>
+        AeadInPlace for CtxishHmacAead<Aead, CrHash>
     where
-        Self: AeadCore
+        Self: AeadCore,
     {
         fn encrypt_in_place_detached(
             &self,
@@ -456,7 +496,9 @@ mod ctx {
             // Compiler can't see that Self::NonceSize == Aead::NonceSize
             let nonce_recast = crate::Nonce::<Aead>::from_slice(nonce.as_slice());
 
-            let tag_inner = self.inner_aead.encrypt_in_place_detached(nonce_recast, associated_data, buffer)?;
+            let tag_inner =
+                self.inner_aead
+                    .encrypt_in_place_detached(nonce_recast, associated_data, buffer)?;
 
             let mut tag_computer = self.hasher.clone();
             tag_computer.update(nonce);
@@ -485,10 +527,17 @@ mod ctx {
 
             // Prevent timing side channels by not returning early on inner AEAD
             // decryption failure
-            let tag_inner_is_ok = Choice::from(match self.inner_aead.decrypt_in_place_detached(nonce_recast, associated_data, buffer, tag_inner) {
-                Ok(_) => 1,
-                Err(_) => 0
-            });
+            let tag_inner_is_ok = Choice::from(
+                match self.inner_aead.decrypt_in_place_detached(
+                    nonce_recast,
+                    associated_data,
+                    buffer,
+                    tag_inner,
+                ) {
+                    Ok(_) => 1,
+                    Err(_) => 0,
+                },
+            );
 
             let mut tag_computer = self.hasher.clone();
             tag_computer.update(nonce);
@@ -504,7 +553,7 @@ mod ctx {
 
             let hmac_tag_is_ok = Choice::from(match tag_computer.verify_slice(expected_hmac_tag) {
                 Ok(_) => 1,
-                Err(_) => 0
+                Err(_) => 0,
             });
 
             if (tag_inner_is_ok & hmac_tag_is_ok).into() {
@@ -514,8 +563,14 @@ mod ctx {
             }
         }
     }
-    impl<Aead: AeadCore, CrHash: Digest+BlockSizeUser> KeyCommittingAead for CtxishHmacAead<Aead, CrHash>
-        where Self: AeadCore {}
-    impl<Aead: AeadCore, CrHash: Digest+BlockSizeUser> CommittingAead for CtxishHmacAead<Aead, CrHash>
-        where Self: AeadCore {}
+    impl<Aead: AeadCore, CrHash: Digest + BlockSizeUser> KeyCommittingAead
+        for CtxishHmacAead<Aead, CrHash>
+    where
+        Self: AeadCore,
+    {
+    }
+    impl<Aead: AeadCore, CrHash: Digest + BlockSizeUser> CommittingAead for CtxishHmacAead<Aead, CrHash> where
+        Self: AeadCore
+    {
+    }
 }
