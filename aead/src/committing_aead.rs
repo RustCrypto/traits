@@ -193,7 +193,7 @@ mod padded_aead {
             );
             // Check padding now
             for byte in ptxt_vec.drain(..padding_overhead) {
-                decryption_is_ok = decryption_is_ok & byte.ct_eq(&0);
+                decryption_is_ok &= byte.ct_eq(&0);
             }
             if decryption_is_ok.into() {
                 Ok(ptxt_vec)
@@ -272,7 +272,7 @@ mod padded_aead {
             );
             // Check padding now
             for byte in ptxt_vec.drain(..padding_overhead) {
-                decryption_is_ok = decryption_is_ok & byte.ct_eq(&0);
+                decryption_is_ok &= byte.ct_eq(&0);
             }
             if decryption_is_ok.into() {
                 Ok(ptxt_vec)
@@ -462,7 +462,8 @@ mod ctx {
         fn new(key: &crypto_common::Key<Self>) -> Self {
             CtxishHmacAead {
                 inner_aead: Aead::new(key),
-                hasher: <SimpleHmac<_> as KeyInit>::new_from_slice(key).unwrap(),
+                hasher: <SimpleHmac<_> as KeyInit>::new_from_slice(key)
+                    .expect("HMAC accepts all key lengths so this always works"),
             }
         }
     }
@@ -508,7 +509,8 @@ mod ctx {
 
             let final_tag_iter = tag_inner.iter().copied().chain(hmac_tag);
 
-            let final_tag = crate::Tag::<Self>::from_exact_iter(final_tag_iter).unwrap();
+            let final_tag = crate::Tag::<Self>::from_exact_iter(final_tag_iter)
+                .expect("Lengths shoud always match");
             Ok(final_tag)
         }
 
@@ -546,7 +548,7 @@ mod ctx {
             // If it doesn't then we'll likely get a mismatch here too
             // Regardless, we require both `Choice`s to be OK
             // So it doesn't matter if we ingest a potentially tainted tag here
-            tag_computer.update(&tag_inner);
+            tag_computer.update(tag_inner);
 
             // Get the HMAC tag
             let expected_hmac_tag = &tag[Aead::TagSize::to_usize()..];
