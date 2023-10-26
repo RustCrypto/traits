@@ -17,7 +17,7 @@ rust-version = "1.56"
 
 [dependencies]
 crypto-common = "0.1.4"
-generic-array = { version = "0.14", default-features = false }
+generic-array = { version = "1.0", default-features = false }
 
 # optional dependencies
 arrayvec = { version = "0.7", optional = true, default-features = false }
