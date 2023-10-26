@@ -15,28 +15,28 @@ extern crate std;
 #[cfg(feature = "rand_core")]
 pub use rand_core;
 
-pub use generic_array;
-pub use generic_array::typenum;
+pub use hybrid_array as array;
+pub use hybrid_array::typenum;
 
 use core::fmt;
-use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+use hybrid_array::{typenum::Unsigned, Array, ArraySize, ByteArray};
 #[cfg(feature = "rand_core")]
 use rand_core::CryptoRngCore;
 
 /// Block on which [`BlockSizeUser`] implementors operate.
-pub type Block<B> = GenericArray<u8, <B as BlockSizeUser>::BlockSize>;
+pub type Block<B> = ByteArray<<B as BlockSizeUser>::BlockSize>;
 
 /// Parallel blocks on which [`ParBlocksSizeUser`] implementors operate.
-pub type ParBlocks<T> = GenericArray<Block<T>, <T as ParBlocksSizeUser>::ParBlocksSize>;
+pub type ParBlocks<T> = Array<Block<T>, <T as ParBlocksSizeUser>::ParBlocksSize>;
 
 /// Output array of [`OutputSizeUser`] implementors.
-pub type Output<T> = GenericArray<u8, <T as OutputSizeUser>::OutputSize>;
+pub type Output<T> = ByteArray<<T as OutputSizeUser>::OutputSize>;
 
 /// Key used by [`KeySizeUser`] implementors.
-pub type Key<B> = GenericArray<u8, <B as KeySizeUser>::KeySize>;
+pub type Key<B> = ByteArray<<B as KeySizeUser>::KeySize>;
 
 /// Initialization vector (nonce) used by [`IvSizeUser`] implementors.
-pub type Iv<B> = GenericArray<u8, <B as IvSizeUser>::IvSize>;
+pub type Iv<B> = ByteArray<<B as IvSizeUser>::IvSize>;
 
 /// Types which process data in blocks.
 pub trait BlockSizeUser {
@@ -59,20 +59,20 @@ impl<T: BlockSizeUser> BlockSizeUser for &mut T {
 }
 
 /// Trait implemented for supported block sizes, i.e. for types from `U1` to `U255`.
-pub trait BlockSizes: ArrayLength<u8> + sealed::BlockSizes + 'static {}
+pub trait BlockSizes: ArraySize + sealed::BlockSizes {}
 
-impl<T: ArrayLength<u8> + sealed::BlockSizes> BlockSizes for T {}
+impl<T: ArraySize + sealed::BlockSizes> BlockSizes for T {}
 
 mod sealed {
-    use generic_array::typenum::{Gr, IsGreater, IsLess, Le, NonZero, Unsigned, U1, U256};
+    use crate::typenum::{Gr, IsGreater, IsLess, Le, NonZero, Unsigned, U0, U256};
 
     pub trait BlockSizes {}
 
     impl<T: Unsigned> BlockSizes for T
     where
-        Self: IsLess<U256> + IsGreater<U1>,
+        Self: IsLess<U256> + IsGreater<U0>,
         Le<Self, U256>: NonZero,
-        Gr<Self, U1>: NonZero,
+        Gr<Self, U0>: NonZero,
     {
     }
 }
@@ -80,13 +80,13 @@ mod sealed {
 /// Types which can process blocks in parallel.
 pub trait ParBlocksSizeUser: BlockSizeUser {
     /// Number of blocks which can be processed in parallel.
-    type ParBlocksSize: ArrayLength<Block<Self>>;
+    type ParBlocksSize: ArraySize;
 }
 
 /// Types which return data with the given size.
 pub trait OutputSizeUser {
     /// Size of the output in bytes.
-    type OutputSize: ArrayLength<u8> + 'static;
+    type OutputSize: ArraySize;
 
     /// Return output size in bytes.
     #[inline(always)]
@@ -100,7 +100,7 @@ pub trait OutputSizeUser {
 /// Generally it's used indirectly via [`KeyInit`] or [`KeyIvInit`].
 pub trait KeySizeUser {
     /// Key size in bytes.
-    type KeySize: ArrayLength<u8> + 'static;
+    type KeySize: ArraySize;
 
     /// Return key size in bytes.
     #[inline(always)]
@@ -114,7 +114,7 @@ pub trait KeySizeUser {
 /// Generally it's used indirectly via [`KeyIvInit`] or [`InnerIvInit`].
 pub trait IvSizeUser {
     /// Initialization vector size in bytes.
-    type IvSize: ArrayLength<u8> + 'static;
+    type IvSize: ArraySize;
 
     /// Return IV size in bytes.
     #[inline(always)]
@@ -151,11 +151,9 @@ pub trait KeyInit: KeySizeUser + Sized {
     /// Create new value from variable size key.
     #[inline]
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
-        if key.len() != Self::KeySize::to_usize() {
-            Err(InvalidLength)
-        } else {
-            Ok(Self::new(Key::<Self>::from_slice(key)))
-        }
+        <&Key<Self>>::try_from(key)
+            .map(Self::new)
+            .map_err(|_| InvalidLength)
     }
 
     /// Generate random key using the provided [`CryptoRngCore`].
@@ -177,16 +175,9 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     /// Create new value from variable length key and nonce.
     #[inline]
     fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidLength> {
-        let key_len = Self::KeySize::USIZE;
-        let iv_len = Self::IvSize::USIZE;
-        if key.len() != key_len || iv.len() != iv_len {
-            Err(InvalidLength)
-        } else {
-            Ok(Self::new(
-                Key::<Self>::from_slice(key),
-                Iv::<Self>::from_slice(iv),
-            ))
-        }
+        let key = <&Key<Self>>::try_from(key).map_err(|_| InvalidLength)?;
+        let iv = <&Iv<Self>>::try_from(iv).map_err(|_| InvalidLength)?;
+        Ok(Self::new(key, iv))
     }
 
     /// Generate random key using the provided [`CryptoRngCore`].
@@ -237,11 +228,8 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     /// Initialize value using `inner` and `iv` slice.
     #[inline]
     fn inner_iv_slice_init(inner: Self::Inner, iv: &[u8]) -> Result<Self, InvalidLength> {
-        if iv.len() != Self::IvSize::to_usize() {
-            Err(InvalidLength)
-        } else {
-            Ok(Self::inner_iv_init(inner, Iv::<Self>::from_slice(iv)))
-        }
+        let iv = <&Iv<Self>>::try_from(iv).map_err(|_| InvalidLength)?;
+        Ok(Self::inner_iv_init(inner, iv))
     }
 
     /// Generate random IV using the provided [`CryptoRngCore`].
