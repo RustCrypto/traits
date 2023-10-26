@@ -59,7 +59,7 @@ impl<T: BlockSizeUser> BlockSizeUser for &mut T {
 }
 
 /// Trait implemented for supported block sizes, i.e. for types from `U1` to `U255`.
-pub trait BlockSizes: ArraySize + sealed::BlockSizes + 'static {}
+pub trait BlockSizes: ArraySize + sealed::BlockSizes {}
 
 impl<T: ArraySize + sealed::BlockSizes> BlockSizes for T {}
 
@@ -86,7 +86,7 @@ pub trait ParBlocksSizeUser: BlockSizeUser {
 /// Types which return data with the given size.
 pub trait OutputSizeUser {
     /// Size of the output in bytes.
-    type OutputSize: ArraySize + 'static;
+    type OutputSize: ArraySize;
 
     /// Return output size in bytes.
     #[inline(always)]
@@ -100,7 +100,7 @@ pub trait OutputSizeUser {
 /// Generally it's used indirectly via [`KeyInit`] or [`KeyIvInit`].
 pub trait KeySizeUser {
     /// Key size in bytes.
-    type KeySize: ArraySize + 'static;
+    type KeySize: ArraySize;
 
     /// Return key size in bytes.
     #[inline(always)]
@@ -114,7 +114,7 @@ pub trait KeySizeUser {
 /// Generally it's used indirectly via [`KeyIvInit`] or [`InnerIvInit`].
 pub trait IvSizeUser {
     /// Initialization vector size in bytes.
-    type IvSize: ArraySize + 'static;
+    type IvSize: ArraySize;
 
     /// Return IV size in bytes.
     #[inline(always)]
