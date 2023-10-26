@@ -64,15 +64,15 @@ pub trait BlockSizes: ArraySize + sealed::BlockSizes {}
 impl<T: ArraySize + sealed::BlockSizes> BlockSizes for T {}
 
 mod sealed {
-    use crate::typenum::{Gr, IsGreater, IsLess, Le, NonZero, Unsigned, U1, U256};
+    use crate::typenum::{Gr, IsGreater, IsLess, Le, NonZero, Unsigned, U0, U256};
 
     pub trait BlockSizes {}
 
     impl<T: Unsigned> BlockSizes for T
     where
-        Self: IsLess<U256> + IsGreater<U1>,
+        Self: IsLess<U256> + IsGreater<U0>,
         Le<Self, U256>: NonZero,
-        Gr<Self, U1>: NonZero,
+        Gr<Self, U0>: NonZero,
     {
     }
 }
