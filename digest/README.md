@@ -16,7 +16,7 @@ See [RustCrypto/hashes][1] for implementations which use this trait.
 
 ## Minimum Supported Rust Version
 
-Rust **1.57** or higher.
+Rust **1.65** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
@@ -56,7 +56,7 @@ let hash = hasher.finalize();
 println!("Result: {:x}", hash);
 ```
 
-In this example `hash` has type [`GenericArray<u8, U64>`][2], which is a generic
+In this example `hash` has type [`Array<u8, U64>`][2], which is a generic
 alternative to `[u8; 64]`.
 
 Alternatively you can use chained approach, which is equivalent to the previous
@@ -147,7 +147,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/digest/badge.svg
 [docs-link]: https://docs.rs/digest/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.57+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.65+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260041-hashes
 [build-image]: https://github.com/RustCrypto/traits/workflows/digest/badge.svg?branch=master&event=push
@@ -157,7 +157,7 @@ dual licensed as above, without any additional terms or conditions.
 
 [0]: https://en.wikipedia.org/wiki/Cryptographic_hash_function
 [1]: https://github.com/RustCrypto/hashes
-[2]: https://docs.rs/generic-array
+[2]: https://docs.rs/hybrid-array
 [3]: https://doc.rust-lang.org/std/io/trait.Read.html
 [4]: https://doc.rust-lang.org/std/io/trait.Write.html
 [5]: https://en.wikipedia.org/wiki/Hash-based_message_authentication_code
