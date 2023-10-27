@@ -196,9 +196,9 @@ impl<D: Update + FixedOutputReset + Reset + Clone + 'static> DynDigest for D {
     }
 
     fn finalize_into(self, buf: &mut [u8]) -> Result<(), InvalidBufferSize> {
-        let buf = <&mut Output<Self>>::try_from(buf).map_err(|_| InvalidBufferSize)?;
-        FixedOutput::finalize_into(self, buf);
-        Ok(())
+        buf.try_into()
+            .map_err(|_| InvalidBufferSize)
+            .map(|buf| FixedOutput::finalize_into(self, buf))
     }
 
     fn finalize_into_reset(&mut self, buf: &mut [u8]) -> Result<(), InvalidBufferSize> {
