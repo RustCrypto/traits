@@ -73,7 +73,7 @@ where
 impl<T, OutSize, O> OutputSizeUser for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize> + 'static,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     type OutputSize = OutSize;
@@ -91,7 +91,7 @@ where
 impl<T, OutSize, O> FixedOutputCore for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize> + 'static,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     #[inline]
