@@ -137,7 +137,6 @@ pub trait DynDigest {
 
     /// Retrieve result and reset hasher instance
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_reset(&mut self) -> Box<[u8]> {
         let mut result = vec![0; self.output_size()];
         self.finalize_into_reset(&mut result).unwrap();
@@ -146,7 +145,6 @@ pub trait DynDigest {
 
     /// Retrieve result and consume boxed hasher instance
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     #[allow(clippy::boxed_local)]
     fn finalize(mut self: Box<Self>) -> Box<[u8]> {
         let mut result = vec![0; self.output_size()];
@@ -172,7 +170,6 @@ pub trait DynDigest {
 
     /// Clone hasher state into a boxed trait object
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn box_clone(&self) -> Box<dyn DynDigest>;
 }
 
@@ -222,7 +219,6 @@ impl<D: Update + FixedOutputReset + Reset + Clone + 'static> DynDigest for D {
 }
 
 #[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 impl Clone for Box<dyn DynDigest> {
     fn clone(&self) -> Self {
         self.box_clone()

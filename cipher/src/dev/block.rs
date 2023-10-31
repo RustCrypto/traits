@@ -4,7 +4,6 @@ pub use blobby;
 
 /// Define block cipher test
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! block_cipher_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
@@ -99,7 +98,6 @@ macro_rules! block_cipher_test {
 
 /// Define block mode encryption test
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! block_mode_enc_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
@@ -158,7 +156,6 @@ macro_rules! block_mode_enc_test {
 
 /// Define block mode decryption test
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! block_mode_dec_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
@@ -217,7 +214,6 @@ macro_rules! block_mode_dec_test {
 
 /// Define `IvState` test
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! iv_state_test {
     ($name:ident, $cipher:ty, encrypt $(,)?) => {
         $crate::iv_state_test!($name, $cipher, encrypt_blocks_mut);
@@ -266,7 +262,6 @@ macro_rules! iv_state_test {
 
 /// Define block encryptor benchmark
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! block_encryptor_bench {
     (Key: $cipher:ty, $block_name:ident, $blocks_name:ident $(,)? ) => {
         $crate::block_encryptor_bench!(
@@ -328,7 +323,6 @@ macro_rules! block_encryptor_bench {
 
 /// Define block decryptor benchmark
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! block_decryptor_bench {
     (Key: $cipher:ty, $block_name:ident, $blocks_name:ident $(,)? ) => {
         $crate::block_decryptor_bench!(

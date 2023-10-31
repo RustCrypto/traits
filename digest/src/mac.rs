@@ -6,14 +6,12 @@ use crypto_common::typenum::Unsigned;
 use subtle::{Choice, ConstantTimeEq};
 
 /// Marker trait for Message Authentication algorithms.
-#[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 pub trait MacMarker {}
 
 /// Convenience wrapper trait covering functionality of Message Authentication algorithms.
 ///
 /// This trait wraps [`Update`], [`FixedOutput`], and [`MacMarker`] traits
 /// and provides additional convenience methods.
-#[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 pub trait Mac: OutputSizeUser + Sized {
     /// Update state using the provided data.
     fn update(&mut self, data: &[u8]);
@@ -195,7 +193,6 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
 ///
 /// It is useful for implementing Message Authentication Codes (MACs).
 #[derive(Clone)]
-#[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 pub struct CtOutput<T: OutputSizeUser> {
     bytes: Output<T>,
 }
@@ -247,7 +244,6 @@ impl<T: OutputSizeUser> Eq for CtOutput<T> {}
 /// Error type for when the [`Output`] of a [`Mac`]
 /// is not equal to the expected value.
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
-#[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 pub struct MacError;
 
 impl fmt::Display for MacError {

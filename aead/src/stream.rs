@@ -131,7 +131,6 @@ where
     /// Encrypt the given plaintext payload, and return the resulting
     /// ciphertext as a vector of bytes.
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn encrypt<'msg, 'aad>(
         &self,
         position: Self::Counter,
@@ -148,7 +147,6 @@ where
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
     /// as a vector of bytes.
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn decrypt<'msg, 'aad>(
         &self,
         position: Self::Counter,
@@ -259,7 +257,6 @@ macro_rules! impl_stream_object {
             #[doc = "the next AEAD message in this STREAM, returning the"]
             #[doc = "result as a [`Vec`]."]
             #[cfg(feature = "alloc")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
             pub fn $next_method<'msg, 'aad>(
                 &mut self,
                 payload: impl Into<Payload<'msg, 'aad>>,
@@ -308,7 +305,6 @@ macro_rules! impl_stream_object {
             #[doc = $obj_desc]
             #[doc = "object in order to prevent further use."]
             #[cfg(feature = "alloc")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
             pub fn $last_method<'msg, 'aad>(
                 self,
                 payload: impl Into<Payload<'msg, 'aad>>,

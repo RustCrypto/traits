@@ -2,7 +2,6 @@
 
 /// Test core functionality of synchronous stream cipher
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! stream_cipher_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
@@ -38,7 +37,6 @@ macro_rules! stream_cipher_test {
 
 /// Test stream synchronous stream cipher seeking capabilities
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! stream_cipher_seek_test {
     ($name:ident, $cipher:ty) => {
         #[test]
@@ -91,7 +89,6 @@ macro_rules! stream_cipher_seek_test {
 
 /// Create stream cipher benchmarks
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! stream_cipher_bench {
     (
         $cipher:ty;
