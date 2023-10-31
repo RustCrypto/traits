@@ -152,7 +152,6 @@ where
 }
 
 #[cfg(feature = "oid")]
-#[cfg_attr(docsrs, doc(cfg(feature = "oid")))]
 impl<T, OutSize, O> AssociatedOid for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore,

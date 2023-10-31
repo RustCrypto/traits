@@ -29,7 +29,6 @@ where
 impl<T> HashMarker for CoreWrapper<T> where T: BufferKindUser + HashMarker {}
 
 #[cfg(feature = "mac")]
-#[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 impl<T> MacMarker for CoreWrapper<T> where T: BufferKindUser + MacMarker {}
 
 // this blanket impl is needed for HMAC
@@ -185,7 +184,6 @@ where
 }
 
 #[cfg(feature = "oid")]
-#[cfg_attr(docsrs, doc(cfg(feature = "oid")))]
 impl<T> AssociatedOid for CoreWrapper<T>
 where
     T: BufferKindUser + AssociatedOid,
@@ -194,7 +192,6 @@ where
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<T> std::io::Write for CoreWrapper<T>
 where
     T: BufferKindUser + UpdateCore,

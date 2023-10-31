@@ -14,7 +14,7 @@
 //! [RustCrypto/AEADs]: https://github.com/RustCrypto/AEADs
 
 #![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg"
@@ -29,34 +29,27 @@ extern crate alloc;
 extern crate std;
 
 #[cfg(feature = "dev")]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
 #[cfg(feature = "stream")]
-#[cfg_attr(docsrs, doc(cfg(feature = "stream")))]
 pub mod stream;
 
 pub use crypto_common::{Key, KeyInit, KeySizeUser};
 pub use generic_array::{self, typenum::consts};
 
 #[cfg(feature = "arrayvec")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arrayvec")))]
 pub use arrayvec;
 
 #[cfg(feature = "bytes")]
-#[cfg_attr(docsrs, doc(cfg(feature = "bytes")))]
 pub use bytes;
 
 #[cfg(feature = "getrandom")]
-#[cfg_attr(docsrs, doc(cfg(feature = "getrandom")))]
 pub use crypto_common::rand_core::OsRng;
 
 #[cfg(feature = "heapless")]
-#[cfg_attr(docsrs, doc(cfg(feature = "heapless")))]
 pub use heapless;
 
 #[cfg(feature = "rand_core")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
 pub use crypto_common::rand_core;
 
 use core::fmt;
@@ -147,7 +140,6 @@ pub trait AeadCore {
     ///
     /// [NIST SP 800-38D]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
     #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     fn generate_nonce(mut rng: impl CryptoRng + RngCore) -> Nonce<Self>
     where
         Nonce<Self>: Default,
@@ -163,7 +155,6 @@ pub trait AeadCore {
 /// This trait is intended for use with stateless AEAD algorithms. The
 /// [`AeadMut`] trait provides a stateful interface.
 #[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub trait Aead: AeadCore {
     /// Encrypt the given plaintext payload, and return the resulting
     /// ciphertext as a vector of bytes.
@@ -220,7 +211,6 @@ pub trait Aead: AeadCore {
 
 /// Stateful Authenticated Encryption with Associated Data algorithm.
 #[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub trait AeadMut: AeadCore {
     /// Encrypt the given plaintext slice, and return the resulting ciphertext
     /// as a vector of bytes.
@@ -480,7 +470,6 @@ impl<Alg: AeadInPlace> AeadMutInPlace for Alg {
 /// If you don't care about AAD, you can pass a `&[u8]` as the payload to
 /// `encrypt`/`decrypt` and it will automatically be coerced to this type.
 #[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub struct Payload<'msg, 'aad> {
     /// Message to be encrypted/decrypted
     pub msg: &'msg [u8],

@@ -48,7 +48,6 @@ where
 impl<T> HashMarker for RtVariableCoreWrapper<T> where T: VariableOutputCore + HashMarker {}
 
 #[cfg(feature = "mac")]
-#[cfg_attr(docsrs, doc(cfg(feature = "mac")))]
 impl<T> MacMarker for RtVariableCoreWrapper<T> where T: VariableOutputCore + MacMarker {}
 
 impl<T> Reset for RtVariableCoreWrapper<T>
@@ -120,7 +119,6 @@ where
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<T> std::io::Write for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore,

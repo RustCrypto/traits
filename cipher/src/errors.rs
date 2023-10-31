@@ -18,7 +18,6 @@ impl fmt::Display for StreamCipherError {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl std::error::Error for StreamCipherError {}
 
 /// The error type returned when a cipher position can not be represented
@@ -39,5 +38,4 @@ impl From<OverflowError> for StreamCipherError {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl std::error::Error for OverflowError {}

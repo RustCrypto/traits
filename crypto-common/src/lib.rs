@@ -1,7 +1,7 @@
 //! Common cryptographic traits.
 
 #![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg"
@@ -158,7 +158,6 @@ pub trait KeyInit: KeySizeUser + Sized {
 
     /// Generate random key using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
     fn generate_key(mut rng: impl CryptoRngCore) -> Key<Self> {
         let mut key = Key::<Self>::default();
@@ -182,7 +181,6 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
 
     /// Generate random key using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
     fn generate_key(mut rng: impl CryptoRngCore) -> Key<Self> {
         let mut key = Key::<Self>::default();
@@ -192,7 +190,6 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
 
     /// Generate random IV using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
     fn generate_iv(mut rng: impl CryptoRngCore) -> Iv<Self> {
         let mut iv = Iv::<Self>::default();
@@ -202,7 +199,6 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
 
     /// Generate random key and nonce using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
     fn generate_key_iv(mut rng: impl CryptoRngCore) -> (Key<Self>, Iv<Self>) {
         (Self::generate_key(&mut rng), Self::generate_iv(&mut rng))
@@ -234,7 +230,6 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
 
     /// Generate random IV using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
     fn generate_iv(mut rng: impl CryptoRngCore) -> Iv<Self> {
         let mut iv = Iv::<Self>::default();
