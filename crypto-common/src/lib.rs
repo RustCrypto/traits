@@ -20,8 +20,11 @@ pub use hybrid_array::typenum;
 
 use core::fmt;
 use hybrid_array::{typenum::Unsigned, Array, ArraySize, ByteArray};
+
 #[cfg(feature = "rand_core")]
 use rand_core::CryptoRngCore;
+#[cfg(feature = "getrandom")]
+use rand_core::OsRng;
 
 /// Block on which [`BlockSizeUser`] implementors operate.
 pub type Block<B> = ByteArray<<B as BlockSizeUser>::BlockSize>;
@@ -156,10 +159,17 @@ pub trait KeyInit: KeySizeUser + Sized {
             .map_err(|_| InvalidLength)
     }
 
+    /// Generate random key using the operating system's secure RNG.
+    #[cfg(feature = "getrandom")]
+    #[inline]
+    fn generate_key() -> Key<Self> {
+        Self::generate_key_with_rng(&mut OsRng)
+    }
+
     /// Generate random key using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[inline]
-    fn generate_key(mut rng: impl CryptoRngCore) -> Key<Self> {
+    fn generate_key_with_rng(rng: &mut impl CryptoRngCore) -> Key<Self> {
         let mut key = Key::<Self>::default();
         rng.fill_bytes(&mut key);
         key
@@ -179,29 +189,53 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
         Ok(Self::new(key, iv))
     }
 
+    /// Generate random key using the operating system's secure RNG.
+    #[cfg(feature = "getrandom")]
+    #[inline]
+    fn generate_key() -> Key<Self> {
+        Self::generate_key_with_rng(&mut OsRng)
+    }
+
     /// Generate random key using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[inline]
-    fn generate_key(mut rng: impl CryptoRngCore) -> Key<Self> {
+    fn generate_key_with_rng(rng: &mut impl CryptoRngCore) -> Key<Self> {
         let mut key = Key::<Self>::default();
         rng.fill_bytes(&mut key);
         key
     }
 
+    /// Generate random IV using the operating system's secure RNG.
+    #[cfg(feature = "getrandom")]
+    #[inline]
+    fn generate_iv() -> Iv<Self> {
+        Self::generate_iv_with_rng(&mut OsRng)
+    }
+
     /// Generate random IV using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[inline]
-    fn generate_iv(mut rng: impl CryptoRngCore) -> Iv<Self> {
+    fn generate_iv_with_rng(rng: &mut impl CryptoRngCore) -> Iv<Self> {
         let mut iv = Iv::<Self>::default();
         rng.fill_bytes(&mut iv);
         iv
     }
 
-    /// Generate random key and nonce using the provided [`CryptoRngCore`].
+    /// Generate random key and IV using the operating system's secure RNG.
+    #[cfg(feature = "getrandom")]
+    #[inline]
+    fn generate_key_iv() -> (Key<Self>, Iv<Self>) {
+        Self::generate_key_iv_with_rng(&mut OsRng)
+    }
+
+    /// Generate random key and IV using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[inline]
-    fn generate_key_iv(mut rng: impl CryptoRngCore) -> (Key<Self>, Iv<Self>) {
-        (Self::generate_key(&mut rng), Self::generate_iv(&mut rng))
+    fn generate_key_iv_with_rng(rng: &mut impl CryptoRngCore) -> (Key<Self>, Iv<Self>) {
+        (
+            Self::generate_key_with_rng(rng),
+            Self::generate_iv_with_rng(rng),
+        )
     }
 }
 
@@ -228,10 +262,17 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
         Ok(Self::inner_iv_init(inner, iv))
     }
 
+    /// Generate random IV using the operating system's secure RNG.
+    #[cfg(feature = "getrandom")]
+    #[inline]
+    fn generate_iv() -> Iv<Self> {
+        Self::generate_iv_with_rng(&mut OsRng)
+    }
+
     /// Generate random IV using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[inline]
-    fn generate_iv(mut rng: impl CryptoRngCore) -> Iv<Self> {
+    fn generate_iv_with_rng(rng: &mut impl CryptoRngCore) -> Iv<Self> {
         let mut iv = Iv::<Self>::default();
         rng.fill_bytes(&mut iv);
         iv
