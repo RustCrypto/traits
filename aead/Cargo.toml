@@ -23,7 +23,7 @@ generic-array = { version = "0.14", default-features = false }
 arrayvec = { version = "0.7", optional = true, default-features = false }
 blobby = { version = "0.3", optional = true }
 bytes = { version = "1", optional = true, default-features = false }
-heapless = { version = "0.7", optional = true, default-features = false }
+heapless = { version = "0.8", optional = true, default-features = false }
 
 [features]
 default = ["rand_core"]
