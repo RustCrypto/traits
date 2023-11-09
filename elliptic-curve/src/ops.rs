@@ -4,6 +4,7 @@ pub use core::ops::{Add, AddAssign, Mul, Neg, Shr, ShrAssign, Sub, SubAssign};
 
 use crypto_bigint::Integer;
 use group::Group;
+use subtle::{Choice, ConditionallySelectable, CtOption};
 
 /// Perform an inversion on a field element (i.e. base field element or scalar)
 pub trait Invert {
@@ -23,6 +24,77 @@ pub trait Invert {
         // Fall back on constant-time implementation by default.
         self.invert()
     }
+}
+
+/// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
+/// at an amortized cost that should be practically as efficient as a single inversion.
+pub trait InvertBatch: Invert + Sized {
+    /// The output type of batch inversion.
+    /// Since inversion is performed in-place, the outputted value doesn't contain inverses of field elements.
+    /// Instead, it should be set to `Choice` when inversion may fail or `()` if it always succeeds.
+    type Output;
+
+    /// Invert a batch of field elements in-place.
+    fn invert_batch_generic<const N: usize>(field_elements: &mut [Self; N]) -> <Self as InvertBatch>::Output;
+
+    /// Invert a batch of field elements in-place.
+    #[cfg(feature = "alloc")]
+    fn invert_batch(field_elements: &mut alloc::vec::Vec<Self>) -> <Self as InvertBatch>::Output;
+}
+
+// TODO: safe to assume here that invert performs inversion and not negation (i.e. that we're in multiplicative notation and `Mul` is the write operator)?
+// If not, should we take it as another generic?
+impl<T: Invert<Output = CtOption<Self>> + Mul<Self, Output = Self> + Default + ConditionallySelectable> InvertBatch for T {
+    type Output = Choice;
+
+    fn invert_batch_generic<const N: usize>(field_elements: &mut [Self; N]) -> <Self as InvertBatch>::Output {
+        let mut field_elements_multiples = [field_elements[0]; N];
+        let mut field_elements_multiples_inverses = [field_elements[0]; N];
+
+        invert_helper(field_elements, &mut field_elements_multiples, &mut field_elements_multiples_inverses)
+    }
+
+    #[cfg(feature = "alloc")]
+    fn invert_batch(field_elements: &mut alloc::vec::Vec<Self>) -> <Self as InvertBatch>::Output {
+        let mut field_elements_multiples = field_elements.clone();
+        let mut field_elements_multiples_inverses = field_elements.clone();
+
+        invert_helper(field_elements.as_mut(), field_elements_multiples.as_mut(), field_elements_multiples_inverses.as_mut())
+    }
+}
+
+/// An in-place implementation of "Montgomery's trick".
+///
+/// Which is a trick for computing many modular inverses at once
+/// by reducing the problem of computing `n` inverses to computing a single inversion,
+/// plus some storage and `O(n)` extra multiplications.
+///
+/// See: https://iacr.org/archive/pkc2004/29470042/29470042.pdf section 2.2.
+fn invert_helper<T: Invert<Output = CtOption<T>> + Mul<T, Output = T> + Default + ConditionallySelectable>(field_elements: &mut [T], field_elements_multiples: &mut [T], field_elements_multiples_inverses: &mut [T]) -> Choice {
+    let batch_size = field_elements.len();
+    if batch_size == 0 || batch_size != field_elements_multiples.len() || batch_size != field_elements_multiples_inverses.len() {
+        return Choice::from(0);
+    }
+
+    field_elements_multiples[0] = field_elements[0];
+    for i in 1..batch_size {
+        // $ a_n = a_{n-1}*x_n $
+        field_elements_multiples[i] = field_elements_multiples[i-1] * field_elements[i];
+    }
+
+    field_elements_multiples[batch_size - 1].invert().map(|multiple_of_inverses_of_all_field_elements| {
+        field_elements_multiples_inverses[batch_size - 1] = multiple_of_inverses_of_all_field_elements;
+        for i in (1..batch_size).rev() {
+            // $ a_{n-1} = {a_n}^{-1}*x_n $
+            field_elements_multiples_inverses[i-1] = field_elements_multiples_inverses[i] * field_elements[i];
+        }
+
+        field_elements[0] = field_elements_multiples_inverses[0];
+        for i in 1..batch_size {
+            // $ {x_n}^{-1} = a_{n}^{-1}*a_{n-1} $
+            field_elements[i] = field_elements_multiples_inverses[i] * field_elements_multiples[i-1];
+        }
+    }).is_some()
 }
 
 /// Linear combination.
