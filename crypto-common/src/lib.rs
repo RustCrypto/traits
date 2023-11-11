@@ -23,8 +23,6 @@ use hybrid_array::{typenum::Unsigned, Array, ArraySize, ByteArray};
 
 #[cfg(feature = "rand_core")]
 use rand_core::CryptoRngCore;
-#[cfg(feature = "getrandom")]
-use rand_core::OsRng;
 
 /// Block on which [`BlockSizeUser`] implementors operate.
 pub type Block<B> = ByteArray<<B as BlockSizeUser>::BlockSize>;
@@ -162,23 +160,16 @@ pub trait KeyInit: KeySizeUser + Sized {
     /// Generate random key using the operating system's secure RNG.
     #[cfg(feature = "getrandom")]
     #[inline]
-    fn generate_key() -> Key<Self> {
-        Self::generate_key_with_rng(&mut OsRng)
+    fn generate_key() -> Result<Key<Self>, getrandom::Error> {
+        let mut key = Key::<Self>::default();
+        getrandom::getrandom(&mut key)?;
+        Ok(key)
     }
 
     /// Generate random key using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[inline]
-    fn generate_key_with_rng(rng: &mut impl CryptoRngCore) -> Key<Self> {
-        Self::try_generate_key_with_rng(rng).expect("RNG failure")
-    }
-
-    /// Generate random key using the provided [`CryptoRngCore`], returning an error on RNG failure.
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn try_generate_key_with_rng(
-        rng: &mut impl CryptoRngCore,
-    ) -> Result<Key<Self>, rand_core::Error> {
+    fn generate_key_with_rng(rng: &mut impl CryptoRngCore) -> Result<Key<Self>, rand_core::Error> {
         let mut key = Key::<Self>::default();
         rng.try_fill_bytes(&mut key)?;
         Ok(key)
@@ -201,23 +192,16 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     /// Generate random key using the operating system's secure RNG.
     #[cfg(feature = "getrandom")]
     #[inline]
-    fn generate_key() -> Key<Self> {
-        Self::generate_key_with_rng(&mut OsRng)
+    fn generate_key() -> Result<Key<Self>, getrandom::Error> {
+        let mut key = Key::<Self>::default();
+        getrandom::getrandom(&mut key)?;
+        Ok(key)
     }
 
     /// Generate random key using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[inline]
-    fn generate_key_with_rng(rng: &mut impl CryptoRngCore) -> Key<Self> {
-        Self::try_generate_key_with_rng(rng).expect("RNG failure")
-    }
-
-    /// Generate random key using the provided [`CryptoRngCore`], returning an error on RNG failure.
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn try_generate_key_with_rng(
-        rng: &mut impl CryptoRngCore,
-    ) -> Result<Key<Self>, rand_core::Error> {
+    fn generate_key_with_rng(rng: &mut impl CryptoRngCore) -> Result<Key<Self>, rand_core::Error> {
         let mut key = Key::<Self>::default();
         rng.try_fill_bytes(&mut key)?;
         Ok(key)
@@ -226,23 +210,16 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     /// Generate random IV using the operating system's secure RNG.
     #[cfg(feature = "getrandom")]
     #[inline]
-    fn generate_iv() -> Iv<Self> {
-        Self::generate_iv_with_rng(&mut OsRng)
+    fn generate_iv() -> Result<Iv<Self>, getrandom::Error> {
+        let mut iv = Iv::<Self>::default();
+        getrandom::getrandom(&mut iv)?;
+        Ok(iv)
     }
 
     /// Generate random IV using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[inline]
-    fn generate_iv_with_rng(rng: &mut impl CryptoRngCore) -> Iv<Self> {
-        Self::try_generate_iv_with_rng(rng).expect("RNG failure")
-    }
-
-    /// Generate random IV using the provided [`CryptoRngCore`], returning an error on RNG failure.
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn try_generate_iv_with_rng(
-        rng: &mut impl CryptoRngCore,
-    ) -> Result<Iv<Self>, rand_core::Error> {
+    fn generate_iv_with_rng(rng: &mut impl CryptoRngCore) -> Result<Iv<Self>, rand_core::Error> {
         let mut iv = Iv::<Self>::default();
         rng.try_fill_bytes(&mut iv)?;
         Ok(iv)
@@ -251,26 +228,20 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     /// Generate random key and IV using the operating system's secure RNG.
     #[cfg(feature = "getrandom")]
     #[inline]
-    fn generate_key_iv() -> (Key<Self>, Iv<Self>) {
-        Self::generate_key_iv_with_rng(&mut OsRng)
+    fn generate_key_iv() -> Result<(Key<Self>, Iv<Self>), getrandom::Error> {
+        let key = Self::generate_key()?;
+        let iv = Self::generate_iv()?;
+        Ok((key, iv))
     }
 
     /// Generate random key and IV using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[inline]
-    fn generate_key_iv_with_rng(rng: &mut impl CryptoRngCore) -> (Key<Self>, Iv<Self>) {
-        Self::try_generate_key_iv_with_rng(rng).expect("RNG failure")
-    }
-
-    /// Generate random key and IV using the provided [`CryptoRngCore`], returning an error on RNG
-    /// failure.
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn try_generate_key_iv_with_rng(
+    fn generate_key_iv_with_rng(
         rng: &mut impl CryptoRngCore,
     ) -> Result<(Key<Self>, Iv<Self>), rand_core::Error> {
-        let key = Self::try_generate_key_with_rng(rng)?;
-        let iv = Self::try_generate_iv_with_rng(rng)?;
+        let key = Self::generate_key_with_rng(rng)?;
+        let iv = Self::generate_iv_with_rng(rng)?;
         Ok((key, iv))
     }
 }
@@ -301,23 +272,16 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     /// Generate random IV using the operating system's secure RNG.
     #[cfg(feature = "getrandom")]
     #[inline]
-    fn generate_iv() -> Iv<Self> {
-        Self::generate_iv_with_rng(&mut OsRng)
+    fn generate_iv() -> Result<Iv<Self>, getrandom::Error> {
+        let mut iv = Iv::<Self>::default();
+        getrandom::getrandom(&mut iv)?;
+        Ok(iv)
     }
 
     /// Generate random IV using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
     #[inline]
-    fn generate_iv_with_rng(rng: &mut impl CryptoRngCore) -> Iv<Self> {
-        Self::try_generate_iv_with_rng(rng).expect("RNG failure")
-    }
-
-    /// Generate random IV using the provided [`CryptoRngCore`], returning an error on RNG failure.
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn try_generate_iv_with_rng(
-        rng: &mut impl CryptoRngCore,
-    ) -> Result<Iv<Self>, rand_core::Error> {
+    fn generate_iv_with_rng(rng: &mut impl CryptoRngCore) -> Result<Iv<Self>, rand_core::Error> {
         let mut iv = Iv::<Self>::default();
         rng.try_fill_bytes(&mut iv)?;
         Ok(iv)
