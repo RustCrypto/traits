@@ -184,7 +184,7 @@ where
     }
 
     /// Deserialize secret key encoded in the SEC1 ASN.1 DER `ECPrivateKey` format.
-    #[cfg(all(feature = "sec1"))]
+    #[cfg(feature = "sec1")]
     pub fn from_sec1_der(der_bytes: &[u8]) -> Result<Self>
     where
         C: Curve + ValidatePublicKey,
@@ -344,7 +344,7 @@ where
     }
 }
 
-#[cfg(all(feature = "sec1"))]
+#[cfg(feature = "sec1")]
 impl<C> TryFrom<sec1::EcPrivateKey<'_>> for SecretKey<C>
 where
     C: Curve + ValidatePublicKey,
