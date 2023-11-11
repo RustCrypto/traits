@@ -28,3 +28,7 @@ std = ["alloc"]
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+# TODO(tarcieri): remove when these crates are added to toplevel `members`
+[workspace]
+members = [".", "async"]

@@ -34,8 +34,6 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           targets: ${{ matrix.target }}
-      # Isolate this crate from workspace which is otherwise MSRV 1.56 due to 2021 edition crates
-      - run: rm ../Cargo.toml
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
 
   minimal-versions:
@@ -56,8 +54,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      # Isolate this crate from workspace which is otherwise MSRV 1.56 due to 2021 edition crates
-      - run: rm ../Cargo.toml
       - run: cargo check --all-features
       - run: cargo test --no-default-features --release
       - run: cargo test --release
