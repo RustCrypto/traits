@@ -39,10 +39,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: RustCrypto/actions/cargo-cache@master
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: nightly
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: cargo update -Z minimal-versions
+      - uses: dtolnay/rust-toolchain@stable
       - uses: RustCrypto/actions/cargo-hack-install@master
       - run: rm ../../Cargo.toml
-      - run: cargo update -Z minimal-versions
       - run: cargo hack test --release --feature-powerset
