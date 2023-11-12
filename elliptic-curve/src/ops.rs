@@ -37,13 +37,13 @@ pub trait InvertBatch: Invert + Sized {
     fn invert_batch<B: FromIterator<Self>>(field_elements: &[Self]) -> CtOption<B>;
 }
 
-impl<
-        T: Invert<Output = CtOption<Self>>
-            + Mul<Self, Output = Self>
-            + Copy
-            + Default
-            + ConditionallySelectable,
-    > InvertBatch for T
+impl<T> InvertBatch for T
+where
+    T: Invert<Output = CtOption<Self>>
+        + Mul<Self, Output = Self>
+        + Copy
+        + Default
+        + ConditionallySelectable,
 {
     fn invert_batch_generic<const N: usize>(field_elements: &[Self; N]) -> CtOption<[Self; N]> {
         let mut field_elements_multiples = [field_elements[0]; N];
