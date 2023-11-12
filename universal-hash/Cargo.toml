@@ -1,6 +1,6 @@
 [package]
 name = "universal-hash"
-version = "0.5.1"
+version = "0.6.0-pre"
 description = "Traits which describe the functionality of universal hash functions (UHFs)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -13,7 +13,7 @@ keywords = ["crypto", "mac"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = "0.1.6"
+crypto-common = "=0.2.0-pre"
 subtle = { version = "2.4", default-features = false }
 
 [features]

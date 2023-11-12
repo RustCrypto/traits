@@ -30,14 +30,16 @@
 extern crate std;
 
 pub use crypto_common::{
-    self, generic_array,
+    self, array,
     typenum::{self, consts},
     Block, Key, KeyInit, ParBlocks, Reset,
 };
 
 use core::slice;
-use crypto_common::{BlockSizeUser, ParBlocksSizeUser};
-use generic_array::{ArrayLength, GenericArray};
+use crypto_common::{
+    array::{Array, ArraySize},
+    BlockSizeUser, BlockSizes, ParBlocksSizeUser,
+};
 use subtle::ConstantTimeEq;
 use typenum::Unsigned;
 
@@ -79,15 +81,15 @@ pub trait UniversalHash: BlockSizeUser + Sized {
     /// Update hash function state with the provided block.
     #[inline]
     fn update(&mut self, blocks: &[Block<Self>]) {
-        struct Ctx<'a, BS: ArrayLength<u8>> {
+        struct Ctx<'a, BS: BlockSizes> {
             blocks: &'a [Block<Self>],
         }
 
-        impl<'a, BS: ArrayLength<u8>> BlockSizeUser for Ctx<'a, BS> {
+        impl<'a, BS: BlockSizes> BlockSizeUser for Ctx<'a, BS> {
             type BlockSize = BS;
         }
 
-        impl<'a, BS: ArrayLength<u8>> UhfClosure for Ctx<'a, BS> {
+        impl<'a, BS: BlockSizes> UhfClosure for Ctx<'a, BS> {
             #[inline(always)]
             fn call<B: UhfBackend<BlockSize = BS>>(self, backend: &mut B) {
                 let pb = B::ParBlocksSize::USIZE;
@@ -123,7 +125,7 @@ pub trait UniversalHash: BlockSizeUser + Sized {
         self.update(blocks);
 
         if !tail.is_empty() {
-            let mut padded_block = GenericArray::default();
+            let mut padded_block = Array::default();
             padded_block[..tail.len()].copy_from_slice(tail);
             self.update(slice::from_ref(&padded_block));
         }
@@ -177,10 +179,10 @@ impl std::error::Error for Error {}
 /// Split message into slice of blocks and leftover tail.
 // TODO: replace with `slice::as_chunks` on migration to const generics
 #[inline(always)]
-fn to_blocks<T, N: ArrayLength<T>>(data: &[T]) -> (&[GenericArray<T, N>], &[T]) {
+fn to_blocks<T, N: ArraySize>(data: &[T]) -> (&[Array<T, N>], &[T]) {
     let nb = data.len() / N::USIZE;
     let (left, right) = data.split_at(nb * N::USIZE);
-    let p = left.as_ptr() as *const GenericArray<T, N>;
+    let p = left.as_ptr() as *const Array<T, N>;
     // SAFETY: we guarantee that `blocks` does not point outside of `data`
     // and `p` is valid for reads
     #[allow(unsafe_code)]

@@ -9,12 +9,12 @@ members = [
     "elliptic-curve",
     "kem",
     "password-hash",
+    "universal-hash",
 ]
 # TODO: re-add to `members` when MSRV has been bumped to 1.60+
 exclude = [
     "signature",
     "signature/async",
-    "universal-hash",
 ]
 
 [patch.crates-io]
