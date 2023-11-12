@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "aead",
     "cipher",
     "crypto",
     "crypto-common",
@@ -11,7 +12,6 @@ members = [
 ]
 # TODO: re-add to `members` when MSRV has been bumped to 1.60+
 exclude = [
-    "aead",
     "signature",
     "signature/async",
     "universal-hash",
