@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "signature/**"
+      - "signature-derive/**"
       - "Cargo.*"
   push:
     branches: master
@@ -78,7 +79,7 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
       - run: cargo test --release
-        working-directory: signature/derive
+        working-directory: signature-derive
 
   doc:
     runs-on: ubuntu-latest

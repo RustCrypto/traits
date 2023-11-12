@@ -5,7 +5,7 @@ version       = "0.4.0-pre"
 authors       = ["RustCrypto Developers"]
 license       = "Apache-2.0 OR MIT"
 documentation = "https://docs.rs/async-signature"
-repository    = "https://github.com/RustCrypto/traits/tree/master/signature/async"
+repository    = "https://github.com/RustCrypto/traits/tree/master/async-signature"
 readme        = "README.md"
 keywords      = ["crypto", "ecdsa", "ed25519", "signature", "signing"]
 categories    = ["cryptography", "no-std"]
@@ -14,7 +14,7 @@ rust-version  = "1.60"
 
 [dependencies]
 async-trait = "0.1.9"
-signature = { version = "=2.2.0-pre", path = ".." }
+signature = ">= 2.0, <2.3"
 
 [features]
 digest = ["signature/digest"]
