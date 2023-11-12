@@ -50,7 +50,7 @@ impl<
         let mut field_elements_multiples_inverses = [field_elements[0]; N];
         let mut field_elements_inverses = [field_elements[0]; N];
 
-        let inversion_succeeded = invert_helper(
+        let inversion_succeeded = invert_batch_internal(
             field_elements,
             &mut field_elements_multiples,
             &mut field_elements_multiples_inverses,
@@ -73,7 +73,7 @@ impl<
             .map(|i| field_elements[i])
             .collect();
 
-        let inversion_succeeded = invert_helper(
+        let inversion_succeeded = invert_batch_internal(
             field_elements,
             field_elements_multiples.as_mut(),
             field_elements_multiples_inverses.as_mut(),
@@ -93,7 +93,7 @@ impl<
 /// to computing a single inversion, plus some storage and `O(n)` extra multiplications.
 ///
 /// See: https://iacr.org/archive/pkc2004/29470042/29470042.pdf section 2.2.
-fn invert_helper<
+fn invert_batch_internal<
     T: Invert<Output = CtOption<T>> + Mul<T, Output = T> + Default + ConditionallySelectable,
 >(
     field_elements: &[T],
