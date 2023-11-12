@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "aead",
+    "async-signature",
     "cipher",
     "crypto",
     "crypto-common",
@@ -10,7 +11,7 @@ members = [
     "kem",
     "password-hash",
     "signature",
-    "signature/async",
+    "signature-derive",
     "universal-hash",
 ]
 

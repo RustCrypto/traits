@@ -3,6 +3,7 @@ name: async-signature
 on:
   pull_request:
     paths:
+      - "async-signature/**"
       - "signature/**"
       - "Cargo.*"
   push:
@@ -10,7 +11,7 @@ on:
 
 defaults:
   run:
-    working-directory: signature/async
+    working-directory: async-signature
 
 env:
   CARGO_INCREMENTAL: 0
@@ -43,5 +44,5 @@ jobs:
       - run: cargo update -Z minimal-versions
       - uses: dtolnay/rust-toolchain@stable
       - uses: RustCrypto/actions/cargo-hack-install@master
-      - run: rm ../../Cargo.toml
+      - run: rm ../Cargo.toml
       - run: cargo hack test --release --feature-powerset
