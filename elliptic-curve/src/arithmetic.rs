@@ -84,3 +84,16 @@ pub trait PrimeCurveArithmetic:
     /// Prime order elliptic curve group.
     type CurveGroup: group::prime::PrimeCurve<Affine = <Self as CurveArithmetic>::AffinePoint>;
 }
+
+pub trait ToAffineBatch: CurveArithmetic {
+    /// Converts a batch of points in their projective representation into the affine ones.
+    fn batch_to_affine_generic<const N: usize>(
+        points: [Self::ProjectivePoint; N],
+    ) -> [Self::AffinePoint; N];
+
+    /// Converts a batch of points in their projective representation into the affine ones.
+    #[cfg(feature = "alloc")]
+    fn batch_to_affine<B: FromIterator<Self::AffinePoint>>(
+        points: alloc::vec::Vec<Self::ProjectivePoint>,
+    ) -> B;
+}
