@@ -11,7 +11,7 @@ members = [
     "kem",
     "password-hash",
     "signature",
-    "signature-derive",
+    "signature_derive",
     "universal-hash",
 ]
 
