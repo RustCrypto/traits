@@ -87,13 +87,13 @@ pub trait PrimeCurveArithmetic:
 
 pub trait ToAffineBatch: CurveArithmetic {
     /// Converts a batch of points in their projective representation into the affine ones.
-    fn batch_to_affine_generic<const N: usize>(
+    fn to_affine_batch_generic<const N: usize>(
         points: [Self::ProjectivePoint; N],
     ) -> [Self::AffinePoint; N];
 
     /// Converts a batch of points in their projective representation into the affine ones.
     #[cfg(feature = "alloc")]
-    fn batch_to_affine<B: FromIterator<Self::AffinePoint>>(
+    fn to_affine_batch<B: FromIterator<Self::AffinePoint>>(
         points: alloc::vec::Vec<Self::ProjectivePoint>,
     ) -> B;
 }
