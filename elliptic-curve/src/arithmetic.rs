@@ -93,7 +93,5 @@ pub trait ToAffineBatch: CurveArithmetic {
 
     /// Converts a batch of points in their projective representation into the affine ones.
     #[cfg(feature = "alloc")]
-    fn to_affine_batch<B: FromIterator<Self::AffinePoint>>(
-        points: alloc::vec::Vec<Self::ProjectivePoint>,
-    ) -> B;
+    fn to_affine_batch<B: FromIterator<Self::AffinePoint>>(points: &[Self::ProjectivePoint]) -> B;
 }
