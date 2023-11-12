@@ -90,11 +90,15 @@ pub trait PrimeCurveArithmetic:
 /// Internally, implementors should rely upon `InvertBatch`.
 pub trait ToAffineBatch: CurveArithmetic {
     /// Converts a batch of points in their projective representation into the affine ones.
-    fn to_affine_batch_generic<const N: usize>(
+    /// /// This variation takes a const-generic array and thus does not require `alloc`.
+    fn to_affine_batch_array<const N: usize>(
         points: &[Self::ProjectivePoint; N],
     ) -> [Self::AffinePoint; N];
 
     /// Converts a batch of points in their projective representation into the affine ones.
+    /// However, this also requires to make dynamic allocations and as such requires `alloc`.
     #[cfg(feature = "alloc")]
-    fn to_affine_batch<B: FromIterator<Self::AffinePoint>>(points: &[Self::ProjectivePoint]) -> B;
+    fn to_affine_batch_slice<B: FromIterator<Self::AffinePoint>>(
+        points: &[Self::ProjectivePoint],
+    ) -> B;
 }
