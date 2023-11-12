@@ -19,7 +19,7 @@ use async_trait::async_trait;
 ///
 /// This trait is an async equivalent of the [`signature::Signer`] trait.
 #[async_trait(?Send)]
-pub trait AsyncSigner<S> {
+pub trait AsyncSigner<S: 'static> {
     /// Attempt to sign the given message, returning a digital signature on
     /// success, or an error if something went wrong.
     ///
