@@ -34,10 +34,10 @@ pub trait InvertBatch: Invert + Sized {
 
     /// Invert a batch of field elements in-place.
     #[cfg(feature = "alloc")]
-    fn invert_batch(field_elements: &mut alloc::vec::Vec<Self>) -> Choice;
+    fn invert_batch(field_elements: &mut [Self]) -> Choice;
 }
 
-impl<T: Invert<Output = CtOption<Self>> + Mul<Self, Output = Self> + Default + ConditionallySelectable> InvertBatch for T {
+impl<T: Invert<Output = CtOption<Self>> + Mul<Self, Output = Self> + Copy + Default + ConditionallySelectable> InvertBatch for T {
     fn invert_batch_generic<const N: usize>(field_elements: &mut [Self; N]) -> Choice {
         let mut field_elements_multiples = [field_elements[0]; N];
         let mut field_elements_multiples_inverses = [field_elements[0]; N];
@@ -46,9 +46,9 @@ impl<T: Invert<Output = CtOption<Self>> + Mul<Self, Output = Self> + Default + C
     }
 
     #[cfg(feature = "alloc")]
-    fn invert_batch(field_elements: &mut alloc::vec::Vec<Self>) -> Choice {
-        let mut field_elements_multiples = field_elements.clone();
-        let mut field_elements_multiples_inverses = field_elements.clone();
+    fn invert_batch(field_elements: &mut [Self]) -> Choice {
+        let mut field_elements_multiples: alloc::vec::Vec<Self> = (0..field_elements.len()).map(|i| field_elements[i]).collect();
+        let mut field_elements_multiples_inverses: alloc::vec::Vec<Self> = (0..field_elements.len()).map(|i| field_elements[i]).collect();
 
         invert_helper(field_elements.as_mut(), field_elements_multiples.as_mut(), field_elements_multiples_inverses.as_mut())
     }
