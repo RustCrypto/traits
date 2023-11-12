@@ -37,7 +37,6 @@ pub trait InvertBatch: Invert + Sized {
     fn invert_batch(field_elements: &mut alloc::vec::Vec<Self>) -> Choice;
 }
 
-// TODO: safe to assume here that invert performs inversion and not negation (i.e. that we're in multiplicative notation and `Mul` is the write operator)?
 // If not, should we take it as another generic?
 impl<T: Invert<Output = CtOption<Self>> + Mul<Self, Output = Self> + Default + ConditionallySelectable> InvertBatch for T {
     fn invert_batch_generic<const N: usize>(field_elements: &mut [Self; N]) -> Choice {
