@@ -28,63 +28,55 @@ pub trait Invert {
 
 /// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
 /// at an amortized cost that should be practically as efficient as a single inversion.
-pub trait InvertBatch: Invert + Sized {
-    /// Invert a batch of field elements.
-    fn invert_batch_generic<const N: usize>(field_elements: &[Self; N]) -> CtOption<[Self; N]>;
+/// This variation takes a const-generic array and thus does not require `alloc`.
+pub fn invert_batch_array<const N: usize, T>(field_elements: &[T; N]) -> CtOption<[T; N]>
+where
+    T: Invert<Output = CtOption<T>> + Mul<T, Output = T> + Copy + Default + ConditionallySelectable,
+{
+    let mut field_elements_multiples = [field_elements[0]; N];
+    let mut field_elements_multiples_inverses = [field_elements[0]; N];
+    let mut field_elements_inverses = [field_elements[0]; N];
 
-    /// Invert a batch of field elements.
-    #[cfg(feature = "alloc")]
-    fn invert_batch<B: FromIterator<Self>>(field_elements: &[Self]) -> CtOption<B>;
+    let inversion_succeeded = invert_batch_internal(
+        field_elements,
+        &mut field_elements_multiples,
+        &mut field_elements_multiples_inverses,
+        &mut field_elements_inverses,
+    );
+
+    CtOption::new(field_elements_inverses, inversion_succeeded)
 }
 
-impl<
-        T: Invert<Output = CtOption<Self>>
-            + Mul<Self, Output = Self>
-            + Copy
-            + Default
-            + ConditionallySelectable,
-    > InvertBatch for T
+/// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
+/// at an amortized cost that should be practically as efficient as a single inversion.
+/// This variation takes a (possibly dynamically allocated) sequence and returns `FromIterator<T>`, which allows it to work with any container (e.g. `Vec<_>`).
+/// However, this also requires to make dynamic allocations and as such requires `alloc`.
+#[cfg(feature = "alloc")]
+pub fn invert_batch_slice<B: FromIterator<T>, T>(field_elements: &[T]) -> CtOption<B>
+where
+    T: Invert<Output = CtOption<T>> + Mul<T, Output = T> + Copy + Default + ConditionallySelectable,
 {
-    fn invert_batch_generic<const N: usize>(field_elements: &[Self; N]) -> CtOption<[Self; N]> {
-        let mut field_elements_multiples = [field_elements[0]; N];
-        let mut field_elements_multiples_inverses = [field_elements[0]; N];
-        let mut field_elements_inverses = [field_elements[0]; N];
+    let mut field_elements_multiples: alloc::vec::Vec<T> = (0..field_elements.len())
+        .map(|i| field_elements[i])
+        .collect();
+    let mut field_elements_multiples_inverses: alloc::vec::Vec<T> = (0..field_elements.len())
+        .map(|i| field_elements[i])
+        .collect();
+    let mut field_elements_inverses: alloc::vec::Vec<T> = (0..field_elements.len())
+        .map(|i| field_elements[i])
+        .collect();
 
-        let inversion_succeeded = invert_batch_internal(
-            field_elements,
-            &mut field_elements_multiples,
-            &mut field_elements_multiples_inverses,
-            &mut field_elements_inverses,
-        );
+    let inversion_succeeded = invert_batch_internal(
+        field_elements,
+        field_elements_multiples.as_mut(),
+        field_elements_multiples_inverses.as_mut(),
+        field_elements_inverses.as_mut(),
+    );
 
-        CtOption::new(field_elements_inverses, inversion_succeeded)
-    }
-
-    #[cfg(feature = "alloc")]
-    fn invert_batch<B: FromIterator<Self>>(field_elements: &[Self]) -> CtOption<B> {
-        let mut field_elements_multiples: alloc::vec::Vec<Self> = (0..field_elements.len())
-            .map(|i| field_elements[i])
-            .collect();
-        let mut field_elements_multiples_inverses: alloc::vec::Vec<Self> = (0..field_elements
-            .len())
-            .map(|i| field_elements[i])
-            .collect();
-        let mut field_elements_inverses: alloc::vec::Vec<Self> = (0..field_elements.len())
-            .map(|i| field_elements[i])
-            .collect();
-
-        let inversion_succeeded = invert_batch_internal(
-            field_elements,
-            field_elements_multiples.as_mut(),
-            field_elements_multiples_inverses.as_mut(),
-            field_elements_inverses.as_mut(),
-        );
-
-        CtOption::new(
-            field_elements_inverses.into_iter().collect(),
-            inversion_succeeded,
-        )
-    }
+    CtOption::new(
+        field_elements_inverses.into_iter().collect(),
+        inversion_succeeded,
+    )
 }
 
 /// Implements "Montgomery's trick", a trick for computing many modular inverses at once.
