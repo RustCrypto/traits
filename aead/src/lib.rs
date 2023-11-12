@@ -1,20 +1,6 @@
-//! [Authenticated Encryption with Associated Data] (AEAD) traits
-//!
-//! This crate provides an abstract interface for AEAD ciphers, which guarantee
-//! both confidentiality and integrity, even from a powerful attacker who is
-//! able to execute [chosen-ciphertext attacks]. The resulting security property,
-//! [ciphertext indistinguishability], is considered a basic requirement for
-//! modern cryptographic implementations.
-//!
-//! See [RustCrypto/AEADs] for cipher implementations which use this trait.
-//!
-//! [Authenticated Encryption with Associated Data]: https://en.wikipedia.org/wiki/Authenticated_encryption
-//! [chosen-ciphertext attacks]: https://en.wikipedia.org/wiki/Chosen-ciphertext_attack
-//! [ciphertext indistinguishability]: https://en.wikipedia.org/wiki/Ciphertext_indistinguishability
-//! [RustCrypto/AEADs]: https://github.com/RustCrypto/AEADs
-
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![doc = include_str!("../README.md")]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg"
