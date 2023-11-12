@@ -3,6 +3,8 @@ use crypto_common::{typenum::Unsigned, Output, OutputSizeUser};
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
+#[cfg(feature = "const-oid")]
+use const_oid::DynAssociatedOid;
 
 /// Marker trait for cryptographic hash functions.
 pub trait HashMarker {}
@@ -224,3 +226,10 @@ impl Clone for Box<dyn DynDigest> {
         self.box_clone()
     }
 }
+
+/// Convenience wrapper trait around [DynDigest] and [DynAssociatedOid].
+#[cfg(feature = "const-oid")]
+pub trait DynDigestWithOid: DynDigest + DynAssociatedOid {}
+
+#[cfg(feature = "const-oid")]
+impl<T: DynDigest + DynAssociatedOid> DynDigestWithOid for T {}
