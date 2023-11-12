@@ -1,29 +1,11 @@
-//! Traits for [Universal Hash Functions].
-//!
-//! # About universal hashes
-//!
-//! Universal hash functions provide a "universal family" of possible
-//! hash functions where a given member of a family is selected by a key.
-//!
-//! They are well suited to the purpose of "one time authenticators" for a
-//! sequence of bytestring inputs, as their construction has a number of
-//! desirable properties such as pairwise independence as well as amenability
-//! to efficient implementations, particularly when implemented using SIMD
-//! instructions.
-//!
-//! When combined with a cipher, such as in Galois/Counter Mode (GCM) or the
-//! Salsa20 family AEAD constructions, they can provide the core functionality
-//! for a Message Authentication Code (MAC).
-//!
-//! [Universal Hash Functions]: https://en.wikipedia.org/wiki/Universal_hashing
-
 #![no_std]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![doc = include_str!("../README.md")]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg"
 )]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
-#![deny(unsafe_code)]
+#![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
 #[cfg(feature = "std")]
@@ -36,10 +18,7 @@ pub use crypto_common::{
 };
 
 use core::slice;
-use crypto_common::{
-    array::{Array, ArraySize},
-    BlockSizeUser, BlockSizes, ParBlocksSizeUser,
-};
+use crypto_common::{array::Array, BlockSizeUser, BlockSizes, ParBlocksSizeUser};
 use subtle::ConstantTimeEq;
 use typenum::Unsigned;
 
@@ -94,7 +73,7 @@ pub trait UniversalHash: BlockSizeUser + Sized {
             fn call<B: UhfBackend<BlockSize = BS>>(self, backend: &mut B) {
                 let pb = B::ParBlocksSize::USIZE;
                 if pb > 1 {
-                    let (par_blocks, tail) = to_blocks(self.blocks);
+                    let (par_blocks, tail) = array::slice_as_chunks(self.blocks);
                     for par_block in par_blocks {
                         backend.proc_par_blocks(par_block);
                     }
@@ -120,7 +99,7 @@ pub trait UniversalHash: BlockSizeUser + Sized {
     /// Message Authentication Codes (MACs) based on universal hashing.
     #[inline]
     fn update_padded(&mut self, data: &[u8]) {
-        let (blocks, tail) = to_blocks(data);
+        let (blocks, tail) = array::slice_as_chunks(data);
 
         self.update(blocks);
 
@@ -134,7 +113,7 @@ pub trait UniversalHash: BlockSizeUser + Sized {
     /// Retrieve result and consume hasher instance.
     fn finalize(self) -> Block<Self>;
 
-    /// Obtain the [`Output`] of a [`UniversalHash`] computation and reset it back
+    /// Obtain the output of a [`UniversalHash`] computation and reset it back
     /// to its initial state.
     #[inline]
     fn finalize_reset(&mut self) -> Block<Self>
@@ -175,17 +154,3 @@ impl core::fmt::Display for Error {
 
 #[cfg(feature = "std")]
 impl std::error::Error for Error {}
-
-/// Split message into slice of blocks and leftover tail.
-// TODO: replace with `slice::as_chunks` on migration to const generics
-#[inline(always)]
-fn to_blocks<T, N: ArraySize>(data: &[T]) -> (&[Array<T, N>], &[T]) {
-    let nb = data.len() / N::USIZE;
-    let (left, right) = data.split_at(nb * N::USIZE);
-    let p = left.as_ptr() as *const Array<T, N>;
-    // SAFETY: we guarantee that `blocks` does not point outside of `data`
-    // and `p` is valid for reads
-    #[allow(unsafe_code)]
-    let blocks = unsafe { slice::from_raw_parts(p, nb) };
-    (blocks, right)
-}
