@@ -27,13 +27,10 @@ pub use crypto_common::{
 
 #[cfg(feature = "arrayvec")]
 pub use arrayvec;
-
 #[cfg(feature = "bytes")]
 pub use bytes;
-
 #[cfg(feature = "getrandom")]
 pub use crypto_common::rand_core::OsRng;
-
 #[cfg(feature = "heapless")]
 pub use heapless;
 
@@ -45,10 +42,10 @@ use crypto_common::array::{typenum::Unsigned, ArraySize, ByteArray};
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
-
 #[cfg(feature = "bytes")]
 use bytes::BytesMut;
-
+#[cfg(feature = "getrandom")]
+use crypto_common::getrandom;
 #[cfg(feature = "rand_core")]
 use rand_core::CryptoRngCore;
 
@@ -127,6 +124,21 @@ pub trait AeadCore {
     /// See the [`stream`] module for a ready-made implementation of the latter.
     ///
     /// [NIST SP 800-38D]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
+    #[cfg(feature = "getrandom")]
+    fn generate_nonce() -> core::result::Result<Nonce<Self>, getrandom::Error>
+    where
+        Nonce<Self>: Default,
+    {
+        let mut nonce = Nonce::<Self>::default();
+        getrandom::getrandom(&mut nonce)?;
+        Ok(nonce)
+    }
+
+    /// Generate a random nonce for this AEAD algorithm using the specified
+    /// [`CryptoRngCore`].
+    ///
+    /// See [`AeadCore::generate_nonce`] documentation for requirements for
+    /// random nonces.
     #[cfg(feature = "rand_core")]
     fn generate_nonce_with_rng(
         rng: &mut impl CryptoRngCore,
