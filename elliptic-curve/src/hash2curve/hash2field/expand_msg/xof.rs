@@ -71,12 +71,7 @@ mod test {
     use hex_literal::hex;
     use sha3::Shake128;
 
-    fn assert_message<HashT>(
-        msg: &[u8],
-        domain: &Domain<'_, U32>,
-        len_in_bytes: u16,
-        bytes: &[u8],
-    ) {
+    fn assert_message(msg: &[u8], domain: &Domain<'_, U32>, len_in_bytes: u16, bytes: &[u8]) {
         let msg_len = msg.len();
         assert_eq!(msg, &bytes[..msg_len]);
 
@@ -102,12 +97,13 @@ mod test {
     }
 
     impl TestVector {
+        #[allow(clippy::panic_in_result_fn)]
         fn assert<HashT, L>(&self, dst: &'static [u8], domain: &Domain<'_, U32>) -> Result<()>
         where
             HashT: Default + ExtendableOutput + Update,
             L: ArrayLength<u8>,
         {
-            assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
+            assert_message(self.msg, domain, L::to_u16(), self.msg_prime);
 
             let mut expander =
                 ExpandMsgXof::<HashT>::expand_message(&[self.msg], &[dst], L::to_usize())?;

@@ -199,6 +199,7 @@ mod test {
     }
 
     impl TestVector {
+        #[allow(clippy::panic_in_result_fn)]
         fn assert<HashT, L: ArrayLength<u8>>(
             &self,
             dst: &'static [u8],

@@ -565,6 +565,7 @@ fn decode_base64url_fe<C: Curve>(s: &str) -> Result<FieldBytes<C>> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used, clippy::panic)]
     use super::*;
 
     #[cfg(feature = "dev")]
@@ -656,7 +657,7 @@ mod tests {
         let point = jwk.to_encoded_point::<MockCurve>().unwrap();
         let (x, y) = match point.coordinates() {
             Coordinates::Uncompressed { x, y } => (x, y),
-            other => panic!("unexpected coordinates: {:?}", other),
+            other => panic!("unexpected coordinates: {other:?}"),
         };
 
         assert_eq!(&decode_base64url_fe::<MockCurve>(&jwk.x).unwrap(), x);
