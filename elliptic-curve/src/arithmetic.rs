@@ -85,6 +85,9 @@ pub trait PrimeCurveArithmetic:
     type CurveGroup: group::prime::PrimeCurve<Affine = <Self as CurveArithmetic>::AffinePoint>;
 }
 
+/// Perform a batched conversion to affine representation on a sequence of projective points
+/// at an amortized cost that should be practically as efficient as a single conversion.
+/// Internally, implementors should rely upon `InvertBatch`.
 pub trait ToAffineBatch: CurveArithmetic {
     /// Converts a batch of points in their projective representation into the affine ones.
     fn to_affine_batch_generic<const N: usize>(
