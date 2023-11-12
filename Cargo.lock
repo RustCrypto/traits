@@ -1178,7 +1178,7 @@ dependencies = [
 
 [[package]]
 name = "signature_derive"
-version = "2.0.1"
+version = "2.1.0"
 dependencies = [
  "proc-macro2",
  "quote",

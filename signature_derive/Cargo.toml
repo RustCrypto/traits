@@ -1,11 +1,11 @@
 [package]
 name          = "signature_derive"
-version       = "2.0.1"
+version       = "2.1.0"
 authors       = ["RustCrypto Developers"]
 license       = "Apache-2.0 OR MIT"
 description   = "Custom derive support for the 'signature' crate"
 documentation = "https://docs.rs/signature"
-repository    = "https://github.com/RustCrypto/traits/tree/master/signature-derive"
+repository    = "https://github.com/RustCrypto/traits/tree/master/signature_derive"
 readme        = "README.md"
 edition       = "2021"
 rust-version  = "1.60"
