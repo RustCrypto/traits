@@ -42,10 +42,11 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features rand_core
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features stream
 
-  minimal-versions:
-    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
-    with:
-        working-directory: ${{ github.workflow }}
+  # TODO(tarcieri): re-enable after next `crypto-common` release
+  #  minimal-versions:
+  #    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+  #    with:
+  #        working-directory: ${{ github.workflow }}
 
   test:
     runs-on: ubuntu-latest
