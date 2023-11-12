@@ -187,6 +187,7 @@ impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
 
         self.core.set_block_pos(block_pos);
         let new_pos = if byte_pos != 0 {
+            // See comment in `try_apply_keystream_inout` for use of `write_keystream_block`
             self.core.write_keystream_block(&mut self.buffer);
             byte_pos.into()
         } else {
