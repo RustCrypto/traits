@@ -1161,7 +1161,7 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "2.2.0-pre"
+version = "2.2.0"
 dependencies = [
  "digest 0.10.7",
  "hex-literal",
