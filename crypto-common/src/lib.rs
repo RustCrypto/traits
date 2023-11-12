@@ -21,6 +21,9 @@ pub use hybrid_array::typenum;
 use core::fmt;
 use hybrid_array::{typenum::Unsigned, Array, ArraySize, ByteArray};
 
+#[cfg(any(feature = "getrandom", feature = "rand_core"))]
+use core::num::NonZeroU32;
+
 #[cfg(feature = "rand_core")]
 use rand_core::CryptoRngCore;
 
@@ -162,7 +165,7 @@ pub trait KeyInit: KeySizeUser + Sized {
     #[inline]
     fn generate_key() -> Result<Key<Self>, RngError> {
         let mut key = Key::<Self>::default();
-        getrandom::getrandom(&mut key).map_err(|_| RngError)?;
+        getrandom::getrandom(&mut key).map_err(getrandom::Error::code)?;
         Ok(key)
     }
 
@@ -171,7 +174,7 @@ pub trait KeyInit: KeySizeUser + Sized {
     #[inline]
     fn generate_key_with_rng(rng: &mut impl CryptoRngCore) -> Result<Key<Self>, RngError> {
         let mut key = Key::<Self>::default();
-        rng.try_fill_bytes(&mut key).map_err(|_| RngError)?;
+        rng.try_fill_bytes(&mut key)?;
         Ok(key)
     }
 }
@@ -194,7 +197,7 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     #[inline]
     fn generate_key() -> Result<Key<Self>, RngError> {
         let mut key = Key::<Self>::default();
-        getrandom::getrandom(&mut key).map_err(|_| RngError)?;
+        getrandom::getrandom(&mut key).map_err(getrandom::Error::code)?;
         Ok(key)
     }
 
@@ -203,7 +206,7 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     #[inline]
     fn generate_key_with_rng(rng: &mut impl CryptoRngCore) -> Result<Key<Self>, RngError> {
         let mut key = Key::<Self>::default();
-        rng.try_fill_bytes(&mut key).map_err(|_| RngError)?;
+        rng.try_fill_bytes(&mut key)?;
         Ok(key)
     }
 
@@ -212,7 +215,7 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     #[inline]
     fn generate_iv() -> Result<Iv<Self>, RngError> {
         let mut iv = Iv::<Self>::default();
-        getrandom::getrandom(&mut iv).map_err(|_| RngError)?;
+        getrandom::getrandom(&mut iv).map_err(getrandom::Error::code)?;
         Ok(iv)
     }
 
@@ -221,7 +224,7 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     #[inline]
     fn generate_iv_with_rng(rng: &mut impl CryptoRngCore) -> Result<Iv<Self>, RngError> {
         let mut iv = Iv::<Self>::default();
-        rng.try_fill_bytes(&mut iv).map_err(|_| RngError)?;
+        rng.try_fill_bytes(&mut iv)?;
         Ok(iv)
     }
 
@@ -274,7 +277,7 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     #[inline]
     fn generate_iv() -> Result<Iv<Self>, RngError> {
         let mut iv = Iv::<Self>::default();
-        getrandom::getrandom(&mut iv).map_err(|_| RngError)?;
+        getrandom::getrandom(&mut iv).map_err(getrandom::Error::code)?;
         Ok(iv)
     }
 
@@ -283,7 +286,7 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     #[inline]
     fn generate_iv_with_rng(rng: &mut impl CryptoRngCore) -> Result<Iv<Self>, RngError> {
         let mut iv = Iv::<Self>::default();
-        rng.try_fill_bytes(&mut iv).map_err(|_| RngError)?;
+        rng.try_fill_bytes(&mut iv)?;
         Ok(iv)
     }
 }
@@ -371,14 +374,33 @@ impl std::error::Error for InvalidLength {}
 
 /// The error type returned when a random number generator fails.
 #[cfg(any(feature = "getrandom", feature = "rand_core"))]
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub struct RngError;
+#[derive(Copy, Clone, Default, Eq, PartialEq, Debug)]
+pub struct RngError(Option<NonZeroU32>);
+
+impl From<NonZeroU32> for RngError {
+    fn from(code: NonZeroU32) -> Self {
+        Self(Some(code))
+    }
+}
+
+#[cfg(feature = "rand_core")]
+impl From<rand_core::Error> for RngError {
+    fn from(err: rand_core::Error) -> RngError {
+        RngError(err.code())
+    }
+}
 
 #[cfg(any(feature = "getrandom", feature = "rand_core"))]
 impl fmt::Display for RngError {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        f.write_str("RNG failure")
+        f.write_str("RNG failure")?;
+
+        if let Some(code) = self.0 {
+            write!(f, " (code: {})", code)?;
+        }
+
+        Ok(())
     }
 }
 
