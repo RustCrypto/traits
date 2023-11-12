@@ -20,6 +20,7 @@ rand_core = { version = "0.6.4", optional = true }
 getrandom = { version = "0.2", optional = true }
 
 [features]
+getrandom = ["dep:getrandom", "rand_core?/getrandom"]
 std = []
 
 [package.metadata.docs.rs]
