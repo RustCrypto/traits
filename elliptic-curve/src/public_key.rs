@@ -231,7 +231,8 @@ where
     /// Initialize [`PublicKey`] from an [`EncodedPoint`]
     fn from_encoded_point(encoded_point: &EncodedPoint<C>) -> CtOption<Self> {
         AffinePoint::<C>::from_encoded_point(encoded_point).and_then(|point| {
-            let is_identity = Choice::from(encoded_point.is_identity() as u8);
+            // Defeating the point of `subtle`, but the use case is specifically a public key
+            let is_identity = Choice::from(u8::from(encoded_point.is_identity()));
             CtOption::new(PublicKey { point }, !is_identity)
         })
     }
