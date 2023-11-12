@@ -56,7 +56,7 @@ checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
 
 [[package]]
 name = "async-signature"
-version = "0.4.0-pre"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "signature 2.1.0",
