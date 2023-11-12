@@ -29,25 +29,18 @@ pub trait Invert {
 /// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
 /// at an amortized cost that should be practically as efficient as a single inversion.
 pub trait InvertBatch: Invert + Sized {
-    /// The output type of batch inversion.
-    /// Since inversion is performed in-place, the outputted value doesn't contain inverses of field elements.
-    /// Instead, it should be set to `Choice` when inversion may fail or `()` if it always succeeds.
-    type Output;
-
     /// Invert a batch of field elements in-place.
-    fn invert_batch_generic<const N: usize>(field_elements: &mut [Self; N]) -> <Self as InvertBatch>::Output;
+    fn invert_batch_generic<const N: usize>(field_elements: &mut [Self; N]) -> Choice;
 
     /// Invert a batch of field elements in-place.
     #[cfg(feature = "alloc")]
-    fn invert_batch(field_elements: &mut alloc::vec::Vec<Self>) -> <Self as InvertBatch>::Output;
+    fn invert_batch(field_elements: &mut alloc::vec::Vec<Self>) -> Choice;
 }
 
 // TODO: safe to assume here that invert performs inversion and not negation (i.e. that we're in multiplicative notation and `Mul` is the write operator)?
 // If not, should we take it as another generic?
 impl<T: Invert<Output = CtOption<Self>> + Mul<Self, Output = Self> + Default + ConditionallySelectable> InvertBatch for T {
-    type Output = Choice;
-
-    fn invert_batch_generic<const N: usize>(field_elements: &mut [Self; N]) -> <Self as InvertBatch>::Output {
+    fn invert_batch_generic<const N: usize>(field_elements: &mut [Self; N]) -> Choice {
         let mut field_elements_multiples = [field_elements[0]; N];
         let mut field_elements_multiples_inverses = [field_elements[0]; N];
 
@@ -55,7 +48,7 @@ impl<T: Invert<Output = CtOption<Self>> + Mul<Self, Output = Self> + Default + C
     }
 
     #[cfg(feature = "alloc")]
-    fn invert_batch(field_elements: &mut alloc::vec::Vec<Self>) -> <Self as InvertBatch>::Output {
+    fn invert_batch(field_elements: &mut alloc::vec::Vec<Self>) -> Choice {
         let mut field_elements_multiples = field_elements.clone();
         let mut field_elements_multiples_inverses = field_elements.clone();
 
