@@ -34,8 +34,10 @@ pub mod dev;
 #[cfg(feature = "stream")]
 pub mod stream;
 
-pub use crypto_common::{Key, KeyInit, KeySizeUser};
-pub use generic_array::{self, typenum::consts};
+pub use crypto_common::{
+    array::{self, typenum::consts},
+    Key, KeyInit, KeySizeUser,
+};
 
 #[cfg(feature = "arrayvec")]
 pub use arrayvec;
@@ -53,7 +55,7 @@ pub use heapless;
 pub use crypto_common::rand_core;
 
 use core::fmt;
-use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+use crypto_common::array::{typenum::Unsigned, ArraySize, ByteArray};
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
@@ -62,7 +64,7 @@ use alloc::vec::Vec;
 use bytes::BytesMut;
 
 #[cfg(feature = "rand_core")]
-use rand_core::{CryptoRng, RngCore};
+use rand_core::CryptoRngCore;
 
 /// Error type.
 ///
@@ -84,10 +86,10 @@ impl fmt::Display for Error {
 impl std::error::Error for Error {}
 
 /// Nonce: single-use value for ensuring ciphertexts are unique
-pub type Nonce<A> = GenericArray<u8, <A as AeadCore>::NonceSize>;
+pub type Nonce<A> = ByteArray<<A as AeadCore>::NonceSize>;
 
 /// Tag: authentication code which ensures ciphertexts are authentic
-pub type Tag<A> = GenericArray<u8, <A as AeadCore>::TagSize>;
+pub type Tag<A> = ByteArray<<A as AeadCore>::TagSize>;
 
 /// Authenticated Encryption with Associated Data (AEAD) algorithm core trait.
 ///
@@ -95,14 +97,14 @@ pub type Tag<A> = GenericArray<u8, <A as AeadCore>::TagSize>;
 /// `Aead*` traits.
 pub trait AeadCore {
     /// The length of a nonce.
-    type NonceSize: ArrayLength<u8>;
+    type NonceSize: ArraySize;
 
     /// The maximum length of the tag.
-    type TagSize: ArrayLength<u8>;
+    type TagSize: ArraySize;
 
     /// The upper bound amount of additional space required to support a
     /// ciphertext vs. a plaintext.
-    type CiphertextOverhead: ArrayLength<u8> + Unsigned;
+    type CiphertextOverhead: ArraySize + Unsigned;
 
     /// Generate a random nonce for this AEAD algorithm.
     ///
@@ -140,13 +142,15 @@ pub trait AeadCore {
     ///
     /// [NIST SP 800-38D]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
     #[cfg(feature = "rand_core")]
-    fn generate_nonce(mut rng: impl CryptoRng + RngCore) -> Nonce<Self>
+    fn generate_nonce_with_rng(
+        rng: &mut impl CryptoRngCore,
+    ) -> core::result::Result<Nonce<Self>, rand_core::Error>
     where
         Nonce<Self>: Default,
     {
         let mut nonce = Nonce::<Self>::default();
-        rng.fill_bytes(&mut nonce);
-        nonce
+        rng.try_fill_bytes(&mut nonce)?;
+        Ok(nonce)
     }
 }
 
@@ -248,7 +252,7 @@ macro_rules! impl_decrypt_in_place {
 
         let tag_pos = $buffer.len() - Self::TagSize::to_usize();
         let (msg, tag) = $buffer.as_mut().split_at_mut(tag_pos);
-        $aead.decrypt_in_place_detached($nonce, $aad, msg, Tag::<Self>::from_slice(tag))?;
+        $aead.decrypt_in_place_detached($nonce, $aad, msg, Tag::<Self>::ref_from_slice(tag))?;
         $buffer.truncate(tag_pos);
         Ok(())
     }};
