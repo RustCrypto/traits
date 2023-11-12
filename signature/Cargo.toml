@@ -1,7 +1,7 @@
 [package]
 name          = "signature"
 description   = "Traits for cryptographic signature algorithms (e.g. ECDSA, Ed25519)"
-version       = "2.1.0"
+version       = "2.2.0-pre"
 authors       = ["RustCrypto Developers"]
 license       = "Apache-2.0 OR MIT"
 documentation = "https://docs.rs/signature"
@@ -10,7 +10,7 @@ readme        = "README.md"
 keywords      = ["crypto", "ecdsa", "ed25519", "signature", "signing"]
 categories    = ["cryptography", "no-std"]
 edition       = "2021"
-rust-version  = "1.56"
+rust-version  = "1.60"
 
 [dependencies]
 derive = { package = "signature_derive", version = "2", optional = true, path = "derive" }
@@ -23,12 +23,8 @@ sha2 = { version = "0.10", default-features = false }
 
 [features]
 alloc = []
-std = ["alloc"]
+std = ["alloc", "rand_core?/std"]
 
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
-
-# TODO(tarcieri): remove when these crates are added to toplevel `members`
-[workspace]
-members = [".", "async"]
