@@ -503,7 +503,7 @@ dependencies = [
  "ff 0.13.0",
  "generic-array",
  "group 0.13.0",
- "hex-literal 0.4.1",
+ "hex-literal",
  "hkdf 0.12.3",
  "pem-rfc7468 0.7.0",
  "pkcs8 0.10.2",
@@ -647,12 +647,6 @@ dependencies = [
  "spin",
  "stable_deref_trait",
 ]
-
-[[package]]
-name = "hex-literal"
-version = "0.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ebdb29d2ea9ed0083cd8cece49bbd968021bd99b0849edb4a9a7ee0fdf6a4e0"
 
 [[package]]
 name = "hex-literal"
@@ -1170,7 +1164,7 @@ name = "signature"
 version = "2.2.0-pre"
 dependencies = [
  "digest 0.10.7",
- "hex-literal 0.3.4",
+ "hex-literal",
  "rand_core 0.6.4",
  "sha2 0.10.8",
  "signature_derive",
