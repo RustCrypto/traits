@@ -100,5 +100,5 @@ pub trait Normalize: group::Curve {
     /// allowing it to work with any container.
     /// However, this also requires to make dynamic allocations and as such requires `alloc`.
     #[cfg(feature = "alloc")]
-    fn batch_normalize<B: FromIterator<Self::AffineRepr>>(points: &[Self]) -> B;
+    fn batch_normalize_slice<B: FromIterator<Self::AffineRepr>>(points: &[Self]) -> B;
 }
