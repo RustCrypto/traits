@@ -28,7 +28,7 @@ pub trait Invert {
     /// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
     /// at an amortized cost that should be practically as efficient as a single inversion.
     /// This variation takes a const-generic array and thus does not require `alloc`.
-    fn invert_batch_array<const N: usize>(field_elements: &[Self; N]) -> CtOption<[Self; N]>
+    fn batch_invert_array<const N: usize>(field_elements: &[Self; N]) -> CtOption<[Self; N]>
     where
         Self: Invert<Output = CtOption<Self>>
             + Mul<Self, Output = Self>
@@ -55,7 +55,7 @@ pub trait Invert {
     /// This variation takes a (possibly dynamically allocated) sequence and returns `FromIterator<T>`, which allows it to work with any container (e.g. `Vec<_>`).
     /// However, this also requires to make dynamic allocations and as such requires `alloc`.
     #[cfg(feature = "alloc")]
-    fn invert_batch_slice<B: FromIterator<Self>>(field_elements: &[Self]) -> CtOption<B>
+    fn batch_invert<B: FromIterator<Self>>(field_elements: &[Self]) -> CtOption<B>
     where
         Self: Invert<Output = CtOption<Self>>
             + Mul<Self, Output = Self>

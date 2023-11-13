@@ -85,20 +85,22 @@ pub trait PrimeCurveArithmetic:
     type CurveGroup: group::prime::PrimeCurve<Affine = <Self as CurveArithmetic>::AffinePoint>;
 }
 
-/// Perform a batched conversion to affine representation on a sequence of projective points
-/// at an amortized cost that should be practically as efficient as a single conversion.
-/// Internally, implementors should rely upon `InvertBatch`.
-pub trait ToAffineBatch: CurveArithmetic {
-    /// Converts a batch of points in their projective representation into the affine ones.
-    /// /// This variation takes a const-generic array and thus does not require `alloc`.
-    fn to_affine_batch_array<const N: usize>(
+/// Normalize point(s) in projective representation by converting them to their affine ones.
+pub trait Normalize: CurveArithmetic {
+    /// Perform a batched conversion to affine representation on a sequence of projective points
+    /// at an amortized cost that should be practically as efficient as a single conversion.
+    /// Internally, implementors should rely upon `InvertBatch`.
+    /// This variation takes a const-generic array and thus does not require `alloc`.
+    fn batch_normalize_array<const N: usize>(
         points: &[Self::ProjectivePoint; N],
     ) -> [Self::AffinePoint; N];
 
-    /// Converts a batch of points in their projective representation into the affine ones.
+    /// Perform a batched conversion to affine representation on a sequence of projective points
+    /// at an amortized cost that should be practically as efficient as a single conversion.
+    /// Internally, implementors should rely upon `InvertBatch`.
+    /// This variation takes a (possibly dynamically allocated) slice and returns `FromIterator<Self::AffinePoint>`
+    /// allowing it to work with any container.
     /// However, this also requires to make dynamic allocations and as such requires `alloc`.
     #[cfg(feature = "alloc")]
-    fn to_affine_batch_slice<B: FromIterator<Self::AffinePoint>>(
-        points: &[Self::ProjectivePoint],
-    ) -> B;
+    fn batch_normalize<B: FromIterator<Self::AffinePoint>>(points: &[Self::ProjectivePoint]) -> B;
 }
