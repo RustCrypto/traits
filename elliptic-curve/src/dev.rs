@@ -335,7 +335,6 @@ impl Invert for Scalar {
 impl Reduce<U256> for Scalar {
     type Bytes = FieldBytes;
 
-    #[allow(clippy::integer_arithmetic)]
     fn reduce(w: U256) -> Self {
         let (r, underflow) = w.sbb(&MockCurve::ORDER, Limb::ZERO);
         let underflow = Choice::from((underflow.0 >> (Limb::BITS - 1)) as u8);

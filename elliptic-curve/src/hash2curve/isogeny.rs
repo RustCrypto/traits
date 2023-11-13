@@ -26,7 +26,6 @@ pub trait Isogeny: Field + AddAssign + Mul<Output = Self> {
     const COEFFICIENTS: IsogenyCoefficients<Self>;
 
     /// Map from the isogeny points to the main curve
-    #[allow(clippy::integer_arithmetic)]
     fn isogeny(x: Self, y: Self) -> (Self, Self) {
         let mut xs = GenericArray::<Self, Self::Degree>::default();
         xs[0] = Self::ONE;

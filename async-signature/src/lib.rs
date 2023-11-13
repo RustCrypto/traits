@@ -18,12 +18,8 @@ use async_trait::async_trait;
 /// (e.g. client for a Cloud KMS or HSM), returning a digital signature.
 ///
 /// This trait is an async equivalent of the [`signature::Signer`] trait.
-#[async_trait]
-pub trait AsyncSigner<S>
-where
-    Self: Send + Sync,
-    S: Send + 'static,
-{
+#[async_trait(?Send)]
+pub trait AsyncSigner<S: 'static> {
     /// Attempt to sign the given message, returning a digital signature on
     /// success, or an error if something went wrong.
     ///
@@ -32,11 +28,11 @@ where
     async fn sign_async(&self, msg: &[u8]) -> Result<S, Error>;
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 impl<S, T> AsyncSigner<S> for T
 where
-    S: Send + 'static,
-    T: signature::Signer<S> + Send + Sync,
+    S: 'static,
+    T: signature::Signer<S>,
 {
     async fn sign_async(&self, msg: &[u8]) -> Result<S, Error> {
         self.try_sign(msg)
@@ -47,11 +43,10 @@ where
 ///
 /// This trait is an async equivalent of the [`signature::DigestSigner`] trait.
 #[cfg(feature = "digest")]
-#[async_trait]
+#[async_trait(?Send)]
 pub trait AsyncDigestSigner<D, S>
 where
-    Self: Send + Sync,
-    D: Digest + Send + 'static,
+    D: Digest + 'static,
     S: 'static,
 {
     /// Attempt to sign the given prehashed message [`Digest`], returning a
@@ -60,12 +55,12 @@ where
 }
 
 #[cfg(feature = "digest")]
-#[async_trait]
+#[async_trait(?Send)]
 impl<D, S, T> AsyncDigestSigner<D, S> for T
 where
-    D: Digest + Send + 'static,
-    S: Send + 'static,
-    T: signature::DigestSigner<D, S> + Send + Sync,
+    D: Digest + 'static,
+    S: 'static,
+    T: signature::DigestSigner<D, S>,
 {
     async fn sign_digest_async(&self, digest: D) -> Result<S, Error> {
         self.try_sign_digest(digest)

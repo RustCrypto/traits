@@ -1,6 +1,6 @@
 use crate::{ParBlocks, ParBlocksSizeUser, StreamCipherError};
 use crypto_common::{
-    array::{Array, ArraySize},
+    array::{slice_as_chunks_mut, Array},
     typenum::Unsigned,
     Block, BlockSizeUser, BlockSizes,
 };
@@ -190,27 +190,6 @@ macro_rules! impl_counter {
 
 impl_counter! { u32 u64 u128 }
 
-/// Partition buffer into 2 parts: buffer of arrays and tail.
-///
-/// In case if `N` is less or equal to 1, buffer of arrays has length
-/// of zero and tail is equal to `self`.
-#[inline]
-fn into_chunks<T, N: ArraySize>(buf: &mut [T]) -> (&mut [Array<T, N>], &mut [T]) {
-    use core::slice;
-    if N::USIZE <= 1 {
-        return (&mut [], buf);
-    }
-    let chunks_len = buf.len() / N::USIZE;
-    let tail_pos = N::USIZE * chunks_len;
-    let tail_len = buf.len() - tail_pos;
-    unsafe {
-        let ptr = buf.as_mut_ptr();
-        let chunks = slice::from_raw_parts_mut(ptr as *mut Array<T, N>, chunks_len);
-        let tail = slice::from_raw_parts_mut(ptr.add(tail_pos), tail_len);
-        (chunks, tail)
-    }
-}
-
 struct WriteBlockCtx<'a, BS: BlockSizes> {
     block: &'a mut Block<Self>,
 }
@@ -234,7 +213,7 @@ impl<'a, BS: BlockSizes> StreamClosure for WriteBlocksCtx<'a, BS> {
     #[inline(always)]
     fn call<B: StreamBackend<BlockSize = BS>>(self, backend: &mut B) {
         if B::ParBlocksSize::USIZE > 1 {
-            let (chunks, tail) = into_chunks::<_, B::ParBlocksSize>(self.blocks);
+            let (chunks, tail) = slice_as_chunks_mut(self.blocks);
             for chunk in chunks {
                 backend.gen_par_ks_blocks(chunk);
             }

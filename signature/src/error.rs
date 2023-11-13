@@ -93,6 +93,19 @@ impl From<Box<dyn std::error::Error + Send + Sync + 'static>> for Error {
     }
 }
 
+#[cfg(feature = "rand_core")]
+impl From<rand_core::Error> for Error {
+    #[cfg(not(feature = "std"))]
+    fn from(_source: rand_core::Error) -> Error {
+        Error::new()
+    }
+
+    #[cfg(feature = "std")]
+    fn from(source: rand_core::Error) -> Error {
+        Error::from_source(source)
+    }
+}
+
 #[cfg(feature = "std")]
 impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {

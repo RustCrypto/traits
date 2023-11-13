@@ -59,6 +59,8 @@ pub use block_buffer;
 pub use const_oid;
 pub use crypto_common;
 
+#[cfg(feature = "const-oid")]
+pub use crate::digest::DynDigestWithOid;
 pub use crate::digest::{Digest, DynDigest, HashMarker};
 pub use crypto_common::{array, typenum, typenum::consts, Output, OutputSizeUser, Reset};
 #[cfg(feature = "mac")]
