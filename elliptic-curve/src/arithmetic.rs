@@ -86,21 +86,22 @@ pub trait PrimeCurveArithmetic:
 }
 
 /// Normalize point(s) in projective representation by converting them to their affine ones.
-pub trait Normalize: CurveArithmetic {
-    /// Perform a batched conversion to affine representation on a sequence of projective points
-    /// at an amortized cost that should be practically as efficient as a single conversion.
-    /// Internally, implementors should rely upon `InvertBatch`.
-    /// This variation takes a const-generic array and thus does not require `alloc`.
-    fn batch_normalize_array<const N: usize>(
-        points: &[Self::ProjectivePoint; N],
-    ) -> [Self::AffinePoint; N];
+pub trait Normalize<AffinePoint>: Sized {
+    /// Converts the point to its affine representation.
+    fn to_affine(&self) -> AffinePoint;
 
     /// Perform a batched conversion to affine representation on a sequence of projective points
     /// at an amortized cost that should be practically as efficient as a single conversion.
     /// Internally, implementors should rely upon `InvertBatch`.
-    /// This variation takes a (possibly dynamically allocated) slice and returns `FromIterator<Self::AffinePoint>`
+    /// This variation takes a const-generic array and thus does not require `alloc`.
+    fn batch_normalize_array<const N: usize>(points: &[Self; N]) -> [AffinePoint; N];
+
+    /// Perform a batched conversion to affine representation on a sequence of projective points
+    /// at an amortized cost that should be practically as efficient as a single conversion.
+    /// Internally, implementors should rely upon `InvertBatch`.
+    /// This variation takes a (possibly dynamically allocated) slice and returns `FromIterator<AffinePoint>`
     /// allowing it to work with any container.
     /// However, this also requires to make dynamic allocations and as such requires `alloc`.
     #[cfg(feature = "alloc")]
-    fn batch_normalize<B: FromIterator<Self::AffinePoint>>(points: &[Self::ProjectivePoint]) -> B;
+    fn batch_normalize<B: FromIterator<AffinePoint>>(points: &[Self]) -> B;
 }
