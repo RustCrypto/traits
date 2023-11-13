@@ -86,18 +86,12 @@ pub trait PrimeCurveArithmetic:
 }
 
 /// Normalize point(s) in projective representation by converting them to their affine ones.
-pub trait Normalize: Sized {
-    /// Elliptic curve point in affine coordinates.
-    type AffinePoint;
-
-    /// Converts the point to its affine representation.
-    fn to_affine(&self) -> Self::AffinePoint;
-
+pub trait Normalize: group::Curve {
     /// Perform a batched conversion to affine representation on a sequence of projective points
     /// at an amortized cost that should be practically as efficient as a single conversion.
     /// Internally, implementors should rely upon `InvertBatch`.
     /// This variation takes a const-generic array and thus does not require `alloc`.
-    fn batch_normalize_array<const N: usize>(points: &[Self; N]) -> [Self::AffinePoint; N];
+    fn batch_normalize_array<const N: usize>(points: &[Self; N]) -> [Self::AffineRepr; N];
 
     /// Perform a batched conversion to affine representation on a sequence of projective points
     /// at an amortized cost that should be practically as efficient as a single conversion.
@@ -106,5 +100,5 @@ pub trait Normalize: Sized {
     /// allowing it to work with any container.
     /// However, this also requires to make dynamic allocations and as such requires `alloc`.
     #[cfg(feature = "alloc")]
-    fn batch_normalize<B: FromIterator<Self::AffinePoint>>(points: &[Self]) -> B;
+    fn batch_normalize<B: FromIterator<Self::AffineRepr>>(points: &[Self]) -> B;
 }
