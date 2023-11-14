@@ -55,7 +55,7 @@ pub trait Invert {
     /// This variation takes a (possibly dynamically allocated) sequence and returns `FromIterator<T>`, which allows it to work with any container (e.g. `Vec<_>`).
     /// However, this also requires to make dynamic allocations and as such requires `alloc`.
     #[cfg(feature = "alloc")]
-    fn batch_invert_vec(field_elements: alloc::vec::Vec<Self>) -> CtOption<alloc::vec::Vec<Self>>
+    fn batch_invert_to_vec(field_elements: &[Self]) -> CtOption<alloc::vec::Vec<Self>>
     where
         Self: Invert<Output = CtOption<Self>>
             + Mul<Self, Output = Self>
