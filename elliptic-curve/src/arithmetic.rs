@@ -10,6 +10,9 @@ use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::DefaultIsZeroes;
 
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
+
 /// Elliptic curve with an arithmetic implementation.
 pub trait CurveArithmetic: Curve {
     /// Elliptic curve point in affine coordinates.
@@ -100,7 +103,7 @@ pub trait Normalize: group::Curve {
     /// allowing it to work with any container.
     /// However, this also requires to make dynamic allocations and as such requires `alloc`.
     #[cfg(feature = "alloc")]
-    fn batch_normalize_to_vec(points: &[Self]) -> alloc::vec::Vec<Self::AffineRepr>
+    fn batch_normalize_to_vec(points: &[Self]) -> Vec<Self::AffineRepr>
     where
         Self::AffineRepr: Copy + Default,
     {

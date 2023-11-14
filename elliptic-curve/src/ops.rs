@@ -6,6 +6,9 @@ use crypto_bigint::Integer;
 use group::Group;
 use subtle::{Choice, ConditionallySelectable, CtOption};
 
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
+
 /// Perform an inversion on a field element (i.e. base field element or scalar)
 pub trait Invert {
     /// Field element type
@@ -36,9 +39,9 @@ pub trait Invert {
             + Default
             + ConditionallySelectable,
     {
-        let mut field_elements_multiples = [field_elements[0]; N];
-        let mut field_elements_multiples_inverses = [field_elements[0]; N];
-        let mut field_elements_inverses = [field_elements[0]; N];
+        let mut field_elements_multiples = [Self::default(); N];
+        let mut field_elements_multiples_inverses = [Self::default(); N];
+        let mut field_elements_inverses = [Self::default(); N];
 
         let inversion_succeeded = invert_batch_internal(
             field_elements,
@@ -55,7 +58,7 @@ pub trait Invert {
     /// This variation takes a (possibly dynamically allocated) sequence and returns `FromIterator<T>`, which allows it to work with any container (e.g. `Vec<_>`).
     /// However, this also requires to make dynamic allocations and as such requires `alloc`.
     #[cfg(feature = "alloc")]
-    fn batch_invert_to_vec(field_elements: &[Self]) -> CtOption<alloc::vec::Vec<Self>>
+    fn batch_invert_to_vec(field_elements: &[Self]) -> CtOption<Vec<Self>>
     where
         Self: Invert<Output = CtOption<Self>>
             + Mul<Self, Output = Self>
@@ -63,16 +66,10 @@ pub trait Invert {
             + Default
             + ConditionallySelectable,
     {
-        let mut field_elements_multiples: alloc::vec::Vec<Self> = (0..field_elements.len())
-            .map(|i| field_elements[i])
-            .collect();
-        let mut field_elements_multiples_inverses: alloc::vec::Vec<Self> = (0..field_elements
-            .len())
-            .map(|i| field_elements[i])
-            .collect();
-        let mut field_elements_inverses: alloc::vec::Vec<Self> = (0..field_elements.len())
-            .map(|i| field_elements[i])
-            .collect();
+        let mut field_elements_multiples: Vec<Self> = vec![Self::default(); field_elements.len()];
+        let mut field_elements_multiples_inverses: Vec<Self> =
+            vec![Self::default(); field_elements.len()];
+        let mut field_elements_inverses: Vec<Self> = vec![Self::default(); field_elements.len()];
 
         let inversion_succeeded = invert_batch_internal(
             field_elements,
