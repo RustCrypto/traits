@@ -75,7 +75,7 @@ pub trait Invert {
             .collect();
 
         let inversion_succeeded = invert_batch_internal(
-            &field_elements,
+            field_elements,
             field_elements_multiples.as_mut(),
             field_elements_multiples_inverses.as_mut(),
             field_elements_inverses.as_mut(),
