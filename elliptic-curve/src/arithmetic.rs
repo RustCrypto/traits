@@ -10,9 +10,6 @@ use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::DefaultIsZeroes;
 
-#[cfg(feature = "alloc")]
-use alloc::vec::Vec;
-
 /// Elliptic curve with an arithmetic implementation.
 pub trait CurveArithmetic: Curve {
     /// Elliptic curve point in affine coordinates.
@@ -89,26 +86,11 @@ pub trait PrimeCurveArithmetic:
 }
 
 /// Normalize point(s) in projective representation by converting them to their affine ones.
-pub trait Normalize: group::Curve {
-    /// Perform a batched conversion to affine representation on a sequence of projective points
-    /// at an amortized cost that should be practically as efficient as a single conversion.
-    /// Internally, implementors should rely upon `InvertBatch`.
-    /// This variation takes a const-generic array and thus does not require `alloc`.
-    fn batch_normalize_array<const N: usize>(points: &[Self; N]) -> [Self::AffineRepr; N];
+pub trait Normalize<Points>: group::Curve {
+    type Output: AsRef<Self::AffineRepr>;
 
     /// Perform a batched conversion to affine representation on a sequence of projective points
     /// at an amortized cost that should be practically as efficient as a single conversion.
     /// Internally, implementors should rely upon `InvertBatch`.
-    /// This variation takes a (possibly dynamically allocated) slice and returns `FromIterator<Self::AffinePoint>`
-    /// allowing it to work with any container.
-    /// However, this also requires to make dynamic allocations and as such requires `alloc`.
-    #[cfg(feature = "alloc")]
-    fn batch_normalize_to_vec(points: &[Self]) -> Vec<Self::AffineRepr>
-    where
-        Self::AffineRepr: Copy + Default,
-    {
-        let mut ret = vec![Self::AffineRepr::default(); points.len()];
-        Self::batch_normalize(points, &mut ret);
-        ret
-    }
+    fn batch_normalize<const N: usize>(points: &Points) -> <Self as Normalize<Points>>::Output;
 }

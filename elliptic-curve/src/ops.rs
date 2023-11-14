@@ -27,18 +27,28 @@ pub trait Invert {
         // Fall back on constant-time implementation by default.
         self.invert()
     }
+}
 
-    /// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
-    /// at an amortized cost that should be practically as efficient as a single inversion.
-    /// This variation takes a const-generic array and thus does not require `alloc`.
-    fn batch_invert_array<const N: usize>(field_elements: &[Self; N]) -> CtOption<[Self; N]>
-    where
-        Self: Invert<Output = CtOption<Self>>
-            + Mul<Self, Output = Self>
-            + Copy
-            + Default
-            + ConditionallySelectable,
-    {
+/// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
+/// at an amortized cost that should be practically as efficient as a single inversion.
+pub trait BatchInvert<FieldElements>: Invert {
+    type Output;
+
+    /// Invert a batch of field elements.
+    fn batch_invert(field_elements: FieldElements) -> <Self as BatchInvert<FieldElements>>::Output;
+}
+
+impl<const N: usize, T> BatchInvert<&[T; N]> for T
+where
+    T: Invert<Output = CtOption<Self>>
+        + Mul<Self, Output = Self>
+        + Copy
+        + Default
+        + ConditionallySelectable,
+{
+    type Output = CtOption<[Self; N]>;
+
+    fn batch_invert(field_elements: &[Self; N]) -> <Self as BatchInvert<&[T; N]>>::Output {
         let mut field_elements_multiples = [Self::default(); N];
         let mut field_elements_multiples_inverses = [Self::default(); N];
         let mut field_elements_inverses = [Self::default(); N];
@@ -52,20 +62,20 @@ pub trait Invert {
 
         CtOption::new(field_elements_inverses, inversion_succeeded)
     }
+}
 
-    /// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
-    /// at an amortized cost that should be practically as efficient as a single inversion.
-    /// This variation takes a (possibly dynamically allocated) sequence and returns `FromIterator<T>`, which allows it to work with any container (e.g. `Vec<_>`).
-    /// However, this also requires to make dynamic allocations and as such requires `alloc`.
-    #[cfg(feature = "alloc")]
-    fn batch_invert_to_vec(field_elements: &[Self]) -> CtOption<Vec<Self>>
-    where
-        Self: Invert<Output = CtOption<Self>>
-            + Mul<Self, Output = Self>
-            + Copy
-            + Default
-            + ConditionallySelectable,
-    {
+#[cfg(feature = "alloc")]
+impl<T> BatchInvert<&[T]> for T
+where
+    T: Invert<Output = CtOption<Self>>
+        + Mul<Self, Output = Self>
+        + Copy
+        + Default
+        + ConditionallySelectable,
+{
+    type Output = CtOption<Vec<Self>>;
+
+    fn batch_invert(field_elements: &[Self]) -> <Self as BatchInvert<&[T]>>::Output {
         let mut field_elements_multiples: Vec<Self> = vec![Self::default(); field_elements.len()];
         let mut field_elements_multiples_inverses: Vec<Self> =
             vec![Self::default(); field_elements.len()];
