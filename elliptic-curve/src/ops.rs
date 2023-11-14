@@ -32,6 +32,7 @@ pub trait Invert {
 /// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
 /// at an amortized cost that should be practically as efficient as a single inversion.
 pub trait BatchInvert<FieldElements>: Invert {
+    /// The output of batch inversion. A container of field elements.
     type Output;
 
     /// Invert a batch of field elements.
@@ -73,7 +74,6 @@ where
         + Default
         + ConditionallySelectable,
 {
-    /// The output of batch inversion. A container of field elements.
     type Output = CtOption<Vec<Self>>;
 
     fn batch_invert(field_elements: &[Self]) -> <Self as BatchInvert<&[T]>>::Output {
