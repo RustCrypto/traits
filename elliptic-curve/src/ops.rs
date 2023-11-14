@@ -73,6 +73,7 @@ where
         + Default
         + ConditionallySelectable,
 {
+    /// The output of batch inversion. A container of field elements.
     type Output = CtOption<Vec<Self>>;
 
     fn batch_invert(field_elements: &[Self]) -> <Self as BatchInvert<&[T]>>::Output {
