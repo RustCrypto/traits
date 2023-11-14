@@ -88,10 +88,10 @@ pub trait PrimeCurveArithmetic:
 /// Normalize point(s) in projective representation by converting them to their affine ones.
 pub trait BatchNormalize<Points>: group::Curve {
     /// The output of the batch normalization; a container of affine points.
-    type Output;
+    type Output: AsRef<Self::AffineRepr>;
 
     /// Perform a batched conversion to affine representation on a sequence of projective points
     /// at an amortized cost that should be practically as efficient as a single conversion.
     /// Internally, implementors should rely upon `InvertBatch`.
-    fn batch_normalize(points: Points) -> <Self as Normalize<Points>>::Output;
+    fn batch_normalize(points: Points) -> <Self as BatchNormalize<Points>>::Output;
 }
