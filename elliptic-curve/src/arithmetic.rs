@@ -100,5 +100,12 @@ pub trait Normalize: group::Curve {
     /// allowing it to work with any container.
     /// However, this also requires to make dynamic allocations and as such requires `alloc`.
     #[cfg(feature = "alloc")]
-    fn batch_normalize_vec(points: alloc::vec::Vec<Self>) -> alloc::vec::Vec<Self::AffineRepr>;
+    fn batch_normalize_to_vec(points: &[Self]) -> alloc::vec::Vec<Self::AffineRepr>
+    where
+        Self::AffineRepr: Copy + Default,
+    {
+        let mut ret = vec![Self::AffineRepr::default(); points.len()];
+        Self::batch_normalize(points, &mut ret);
+        ret
+    }
 }
