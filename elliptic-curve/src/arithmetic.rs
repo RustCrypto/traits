@@ -86,7 +86,7 @@ pub trait PrimeCurveArithmetic:
 }
 
 /// Normalize point(s) in projective representation by converting them to their affine ones.
-pub trait Normalize<Points>: group::Curve {
+pub trait BatchNormalize<Points>: group::Curve {
     /// The output of the batch normalization; a container of affine points.
     type Output;
 
