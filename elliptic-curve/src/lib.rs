@@ -127,8 +127,8 @@ pub use zeroize;
 #[cfg(feature = "arithmetic")]
 pub use {
     crate::{
-        arithmetic::{BatchNormalize, CurveArithmetic, PrimeCurveArithmetic},
-        point::{AffinePoint, ProjectivePoint},
+        arithmetic::{CurveArithmetic, PrimeCurveArithmetic},
+        point::{AffinePoint, BatchNormalize, ProjectivePoint},
         public_key::PublicKey,
         scalar::{NonZeroScalar, Scalar},
     },
