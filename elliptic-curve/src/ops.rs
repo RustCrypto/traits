@@ -167,7 +167,7 @@ pub trait LinearCombination: Group {
 // TODO(tarcieri): replace the current `LinearCombination` with this in the next release
 pub trait LinearCombinationExt<PointsAndScalars>: group::Curve
 where
-    PointsAndScalars: AsRef<[(Self, Self::Scalar)]>,
+    PointsAndScalars: AsRef<[(Self, Self::Scalar)]> + ?Sized,
 {
     /// Calculates `x1 * k1 + ... + xn * kn`.
     fn lincomb_ext(points_and_scalars: &PointsAndScalars) -> Self {
