@@ -31,15 +31,17 @@ pub trait Invert {
 
 /// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
 /// at an amortized cost that should be practically as efficient as a single inversion.
-pub trait BatchInvert<FieldElements>: Invert {
+pub trait BatchInvert<FieldElements: ?Sized>: Invert + Sized {
     /// The output of batch inversion. A container of field elements.
-    type Output;
+    type Output: AsRef<[Self]>;
 
     /// Invert a batch of field elements.
-    fn batch_invert(field_elements: FieldElements) -> <Self as BatchInvert<FieldElements>>::Output;
+    fn batch_invert(
+        field_elements: &FieldElements,
+    ) -> CtOption<<Self as BatchInvert<FieldElements>>::Output>;
 }
 
-impl<const N: usize, T> BatchInvert<&[T; N]> for T
+impl<const N: usize, T> BatchInvert<[T; N]> for T
 where
     T: Invert<Output = CtOption<Self>>
         + Mul<Self, Output = Self>
@@ -47,9 +49,9 @@ where
         + Default
         + ConditionallySelectable,
 {
-    type Output = CtOption<[Self; N]>;
+    type Output = [Self; N];
 
-    fn batch_invert(field_elements: &[Self; N]) -> <Self as BatchInvert<&[T; N]>>::Output {
+    fn batch_invert(field_elements: &[Self; N]) -> CtOption<[Self; N]> {
         let mut field_elements_multiples = [Self::default(); N];
         let mut field_elements_multiples_inverses = [Self::default(); N];
         let mut field_elements_inverses = [Self::default(); N];
@@ -66,7 +68,7 @@ where
 }
 
 #[cfg(feature = "alloc")]
-impl<T> BatchInvert<&[T]> for T
+impl<T> BatchInvert<[T]> for T
 where
     T: Invert<Output = CtOption<Self>>
         + Mul<Self, Output = Self>
@@ -74,9 +76,9 @@ where
         + Default
         + ConditionallySelectable,
 {
-    type Output = CtOption<Vec<Self>>;
+    type Output = Vec<Self>;
 
-    fn batch_invert(field_elements: &[Self]) -> <Self as BatchInvert<&[T]>>::Output {
+    fn batch_invert(field_elements: &[Self]) -> CtOption<Vec<Self>> {
         let mut field_elements_multiples: Vec<Self> = vec![Self::default(); field_elements.len()];
         let mut field_elements_multiples_inverses: Vec<Self> =
             vec![Self::default(); field_elements.len()];
