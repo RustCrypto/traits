@@ -160,6 +160,34 @@ pub trait LinearCombination: Group {
     }
 }
 
+/// Linear combination (extended version).
+///
+/// This trait enables providing an optimized implementation of
+/// linear combinations (e.g. Shamir's Trick).
+// TODO(tarcieri): replace the current `LinearCombination` with this in the next release
+pub trait LinearCombinationExt<PointsAndScalars>: group::Curve
+where
+    PointsAndScalars: AsRef<[(Self, Self::Scalar)]>,
+{
+    /// Calculates `x1 * k1 + ... + xn * kn`.
+    fn lincomb_ext(points_and_scalars: &PointsAndScalars) -> Self {
+        points_and_scalars
+            .as_ref()
+            .iter()
+            .copied()
+            .map(|(point, scalar)| point * scalar)
+            .sum()
+    }
+}
+
+/// Blanket impl of the legacy [`LinearCombination`] trait for types which impl the new
+/// [`LinearCombinationExt`] trait for 2-element arrays.
+impl<P: LinearCombinationExt<[(P, Self::Scalar); 2]>> LinearCombination for P {
+    fn lincomb(x: &Self, k: &Self::Scalar, y: &Self, l: &Self::Scalar) -> Self {
+        Self::lincomb_ext(&[(*x, *k), (*y, *l)])
+    }
+}
+
 /// Multiplication by the generator.
 ///
 /// May use optimizations (e.g. precomputed tables) when available.
