@@ -5,7 +5,12 @@
 )]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![forbid(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms, unused_qualifications)]
+#![warn(
+    missing_docs,
+    rust_2018_idioms,
+    unused_qualifications,
+    missing_debug_implementations
+)]
 
 pub use signature::{self, Error};
 

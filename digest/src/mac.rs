@@ -241,6 +241,12 @@ impl<T: OutputSizeUser> PartialEq for CtOutput<T> {
 
 impl<T: OutputSizeUser> Eq for CtOutput<T> {}
 
+impl<T: OutputSizeUser> fmt::Debug for CtOutput<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("CtOutput { ... }")
+    }
+}
+
 /// Error type for when the [`Output`] of a [`Mac`]
 /// is not equal to the expected value.
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]

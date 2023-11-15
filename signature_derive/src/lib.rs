@@ -6,6 +6,7 @@
     rust_2018_idioms,
     trivial_casts,
     unused_import_braces,
+    missing_debug_implementations,
     unused_qualifications
 )]
 

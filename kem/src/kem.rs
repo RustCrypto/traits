@@ -2,7 +2,7 @@
 
 use crate::errors::Error;
 
-use core::fmt::Debug;
+use core::fmt;
 
 use generic_array::{ArrayLength, GenericArray};
 use rand_core::{CryptoRng, RngCore};
@@ -10,7 +10,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Trait impl'd by concrete types that represent an encapsulated key. This is intended to be, in
 /// essence, a bag of bytes.
-pub trait EncappedKey: AsRef<[u8]> + Debug + Sized {
+pub trait EncappedKey: AsRef<[u8]> + fmt::Debug + Sized {
     /// The size, in bytes, of an encapsulated key.
     type EncappedKeySize: ArrayLength<u8>;
 
@@ -37,6 +37,12 @@ pub trait EncappedKey: AsRef<[u8]> + Debug + Sized {
 
 /// The shared secret that results from key exchange.
 pub struct SharedSecret<EK: EncappedKey>(GenericArray<u8, EK::SharedSecretSize>);
+
+impl<EK: EncappedKey> fmt::Debug for SharedSecret<EK> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("SharedSecret { ... }")
+    }
+}
 
 // Zero the secret on drop
 impl<EK: EncappedKey> Drop for SharedSecret<EK> {
