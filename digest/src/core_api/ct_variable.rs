@@ -162,6 +162,17 @@ where
     const OID: ObjectIdentifier = O::OID;
 }
 
+impl<T, OutSize, O> fmt::Debug for CtVariableCoreWrapper<T, OutSize, O>
+where
+    T: VariableOutputCore + AlgorithmName,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
+    LeEq<OutSize, T::OutputSize>: NonZero,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        Self::write_alg_name(f)
+    }
+}
+
 /// Implement dummy type with hidden docs which is used to "carry" hasher
 /// OID for [`CtVariableCoreWrapper`].
 #[macro_export]
