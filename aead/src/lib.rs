@@ -6,7 +6,12 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg"
 )]
 #![forbid(unsafe_code)]
-#![warn(clippy::unwrap_used, missing_docs, rust_2018_idioms)]
+#![warn(
+    clippy::unwrap_used,
+    missing_docs,
+    rust_2018_idioms,
+    missing_debug_implementations
+)]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -472,6 +477,7 @@ impl<Alg: AeadInPlace> AeadMutInPlace for Alg {
 /// If you don't care about AAD, you can pass a `&[u8]` as the payload to
 /// `encrypt`/`decrypt` and it will automatically be coerced to this type.
 #[cfg(feature = "alloc")]
+#[derive(Debug)]
 pub struct Payload<'msg, 'aad> {
     /// Message to be encrypted/decrypted
     pub msg: &'msg [u8],
