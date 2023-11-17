@@ -21,7 +21,7 @@ crypto-bigint = { version = "0.5", default-features = false, features = ["rand_c
 generic-array = { version = "0.14.6", default-features = false, features = ["zeroize"] }
 rand_core = { version = "0.6.4", default-features = false }
 subtle = { version = "2", default-features = false }
-zeroize = { version = "1.5", default-features = false }
+zeroize = { version = "1.7", default-features = false }
 
 # optional dependencies
 base64ct = { version = "1", optional = true, default-features = false, features = ["alloc"] }
