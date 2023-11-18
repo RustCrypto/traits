@@ -21,10 +21,19 @@ pub use hybrid_array as array;
 pub use hybrid_array::typenum;
 
 use core::fmt;
-use hybrid_array::{typenum::Unsigned, Array, ArraySize, ByteArray};
+use hybrid_array::{
+    typenum::{Diff, Sum, Unsigned},
+    Array, ArraySize, ByteArray,
+};
 
 #[cfg(feature = "rand_core")]
 use rand_core::CryptoRngCore;
+
+mod serializable_state;
+pub use serializable_state::{
+    AddSerializedStateSize, DeserializeStateError, SerializableState, SerializedState,
+    SubSerializedStateSize,
+};
 
 /// Block on which [`BlockSizeUser`] implementors operate.
 pub type Block<B> = ByteArray<<B as BlockSizeUser>::BlockSize>;
@@ -40,6 +49,12 @@ pub type Key<B> = ByteArray<<B as KeySizeUser>::KeySize>;
 
 /// Initialization vector (nonce) used by [`IvSizeUser`] implementors.
 pub type Iv<B> = ByteArray<<B as IvSizeUser>::IvSize>;
+
+/// Alias for `AddBlockSize<A, B> = Sum<T, B::BlockSize>`
+pub type AddBlockSize<T, B> = Sum<T, <B as BlockSizeUser>::BlockSize>;
+
+/// Alias for `SubBlockSize<A, B> = Diff<T, B::BlockSize>`
+pub type SubBlockSize<T, B> = Diff<T, <B as BlockSizeUser>::BlockSize>;
 
 /// Types which process data in blocks.
 pub trait BlockSizeUser {
