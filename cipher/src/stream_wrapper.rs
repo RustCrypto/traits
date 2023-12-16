@@ -219,7 +219,7 @@ impl<T: IvSizeUser + StreamCipherCore> IvSizeUser for StreamCipherCoreWrapper<T>
 impl<T: KeyIvInit + StreamCipherCore> KeyIvInit for StreamCipherCoreWrapper<T> {
     #[inline]
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self {
-        let mut buffer = Default::default();
+        let mut buffer = Block::<T>::default();
         buffer[0] = T::BlockSize::U8;
         Self {
             core: T::new(key, iv),
@@ -231,7 +231,7 @@ impl<T: KeyIvInit + StreamCipherCore> KeyIvInit for StreamCipherCoreWrapper<T> {
 impl<T: KeyInit + StreamCipherCore> KeyInit for StreamCipherCoreWrapper<T> {
     #[inline]
     fn new(key: &Key<Self>) -> Self {
-        let mut buffer = Default::default();
+        let mut buffer = Block::<T>::default();
         buffer[0] = T::BlockSize::U8;
         Self {
             core: T::new(key),
