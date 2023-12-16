@@ -232,7 +232,7 @@ impl<T: KeyInit + StreamCipherCore> KeyInit for StreamCipherCoreWrapper<T> {
     #[inline]
     fn new(key: &Key<Self>) -> Self {
         let mut buffer = Default::default();
-        buffer[0] = T::BlockSize::U8
+        buffer[0] = T::BlockSize::U8;
         Self {
             core: T::new(key),
             buffer,
