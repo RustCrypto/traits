@@ -9,7 +9,6 @@ mod variable;
 mod xof;
 
 pub use fixed::*;
-pub use mac::*;
 pub use variable::*;
 pub use xof::*;
 
