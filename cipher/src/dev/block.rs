@@ -1,7 +1,5 @@
 //! Development-related functionality
 
-pub use blobby;
-
 /// Define block cipher test
 #[macro_export]
 macro_rules! block_cipher_test {
