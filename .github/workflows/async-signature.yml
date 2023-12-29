@@ -23,7 +23,8 @@ jobs:
     strategy:
       matrix:
         rust:
-          - beta
+          - 1.75.0 # MSRV
+          - stable
     steps:
       - uses: actions/checkout@v4
       - uses: RustCrypto/actions/cargo-cache@master
