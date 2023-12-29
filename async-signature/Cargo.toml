@@ -10,14 +10,14 @@ readme        = "README.md"
 keywords      = ["crypto", "ecdsa", "ed25519", "signature", "signing"]
 categories    = ["cryptography", "no-std"]
 edition       = "2021"
-rust-version  = "1.60"
+rust-version  = "1.75"
 
 [dependencies]
-async-trait = "0.1.9"
 signature = ">= 2.0, <2.3"
 
 [features]
 digest = ["signature/digest"]
+rand_core = ["signature/rand_core"]
 
 [package.metadata.docs.rs]
 all-features = true
