@@ -25,7 +25,7 @@ use signature::rand_core::CryptoRngCore;
 ///
 /// This trait is an async equivalent of the [`signature::Signer`] trait.
 #[allow(async_fn_in_trait)]
-pub trait AsyncSigner<S: 'static> {
+pub trait AsyncSigner<S> {
     /// Attempt to sign the given message, returning a digital signature on
     /// success, or an error if something went wrong.
     ///
@@ -36,7 +36,6 @@ pub trait AsyncSigner<S: 'static> {
 
 impl<S, T> AsyncSigner<S> for T
 where
-    S: 'static,
     T: signature::Signer<S>,
 {
     async fn sign_async(&self, msg: &[u8]) -> Result<S, Error> {
@@ -51,8 +50,7 @@ where
 #[allow(async_fn_in_trait)]
 pub trait AsyncDigestSigner<D, S>
 where
-    D: Digest + 'static,
-    S: 'static,
+    D: Digest,
 {
     /// Attempt to sign the given prehashed message [`Digest`], returning a
     /// digital signature on success, or an error if something went wrong.
@@ -62,8 +60,7 @@ where
 #[cfg(feature = "digest")]
 impl<D, S, T> AsyncDigestSigner<D, S> for T
 where
-    D: Digest + 'static,
-    S: 'static,
+    D: Digest,
     T: signature::DigestSigner<D, S>,
 {
     async fn sign_digest_async(&self, digest: D) -> Result<S, Error> {
@@ -97,7 +94,6 @@ pub trait AsyncRandomizedSigner<S> {
 #[cfg(feature = "rand_core")]
 impl<S, T> AsyncRandomizedSigner<S> for T
 where
-    S: 'static,
     T: signature::RandomizedSigner<S>,
 {
     async fn try_sign_with_rng_async(
