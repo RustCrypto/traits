@@ -43,7 +43,7 @@ pub use heapless;
 pub use crypto_common::rand_core;
 
 use core::fmt;
-use crypto_common::array::{typenum::Unsigned, ArraySize, ByteArray};
+use crypto_common::array::{typenum::Unsigned, Array, ArraySize};
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
@@ -74,10 +74,10 @@ impl fmt::Display for Error {
 impl std::error::Error for Error {}
 
 /// Nonce: single-use value for ensuring ciphertexts are unique
-pub type Nonce<A> = ByteArray<<A as AeadCore>::NonceSize>;
+pub type Nonce<A> = Array<u8, <A as AeadCore>::NonceSize>;
 
 /// Tag: authentication code which ensures ciphertexts are authentic
-pub type Tag<A> = ByteArray<<A as AeadCore>::TagSize>;
+pub type Tag<A> = Array<u8, <A as AeadCore>::TagSize>;
 
 /// Authenticated Encryption with Associated Data (AEAD) algorithm core trait.
 ///

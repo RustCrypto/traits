@@ -36,14 +36,14 @@ use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, KeyInit, Result};
 use core::ops::{AddAssign, Sub};
 use crypto_common::array::{
     typenum::{Unsigned, U4, U5},
-    ArraySize, ByteArray,
+    Array, ArraySize,
 };
 
 #[cfg(feature = "alloc")]
 use {crate::Payload, alloc::vec::Vec};
 
 /// Nonce as used by a given AEAD construction and STREAM primitive.
-pub type Nonce<A, S> = ByteArray<NonceSize<A, S>>;
+pub type Nonce<A, S> = Array<u8, NonceSize<A, S>>;
 
 /// Size of a nonce as used by a STREAM construction, sans the overhead of
 /// the STREAM protocol itself.
@@ -433,7 +433,7 @@ where
     /// Compute the full AEAD nonce including the STREAM counter and last
     /// block flag.
     fn aead_nonce(&self, position: u32, last_block: bool) -> crate::Nonce<A> {
-        let mut result = ByteArray::default();
+        let mut result = Array::default();
 
         // TODO(tarcieri): use `generic_array::sequence::Concat` (or const generics)
         let (prefix, tail) = result.split_at_mut(NonceSize::<A, Self>::to_usize());
@@ -527,7 +527,7 @@ where
             return Err(Error);
         }
 
-        let mut result = ByteArray::default();
+        let mut result = Array::default();
 
         // TODO(tarcieri): use `generic_array::sequence::Concat` (or const generics)
         let (prefix, tail) = result.split_at_mut(NonceSize::<A, Self>::to_usize());

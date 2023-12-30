@@ -23,7 +23,7 @@ pub use hybrid_array::typenum;
 use core::fmt;
 use hybrid_array::{
     typenum::{Diff, Sum, Unsigned},
-    Array, ArraySize, ByteArray,
+    Array, ArraySize,
 };
 
 #[cfg(feature = "rand_core")]
@@ -36,19 +36,19 @@ pub use serializable_state::{
 };
 
 /// Block on which [`BlockSizeUser`] implementors operate.
-pub type Block<B> = ByteArray<<B as BlockSizeUser>::BlockSize>;
+pub type Block<B> = Array<u8, <B as BlockSizeUser>::BlockSize>;
 
 /// Parallel blocks on which [`ParBlocksSizeUser`] implementors operate.
 pub type ParBlocks<T> = Array<Block<T>, <T as ParBlocksSizeUser>::ParBlocksSize>;
 
 /// Output array of [`OutputSizeUser`] implementors.
-pub type Output<T> = ByteArray<<T as OutputSizeUser>::OutputSize>;
+pub type Output<T> = Array<u8, <T as OutputSizeUser>::OutputSize>;
 
 /// Key used by [`KeySizeUser`] implementors.
-pub type Key<B> = ByteArray<<B as KeySizeUser>::KeySize>;
+pub type Key<B> = Array<u8, <B as KeySizeUser>::KeySize>;
 
 /// Initialization vector (nonce) used by [`IvSizeUser`] implementors.
-pub type Iv<B> = ByteArray<<B as IvSizeUser>::IvSize>;
+pub type Iv<B> = Array<u8, <B as IvSizeUser>::IvSize>;
 
 /// Alias for `AddBlockSize<A, B> = Sum<T, B::BlockSize>`
 pub type AddBlockSize<T, B> = Sum<T, <B as BlockSizeUser>::BlockSize>;

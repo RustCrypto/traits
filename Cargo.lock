@@ -127,7 +127,7 @@ dependencies = [
 [[package]]
 name = "block-buffer"
 version = "0.11.0-pre"
-source = "git+https://github.com/RustCrypto/utils.git#cc772039c62a0a2f4761b28df796d8b2dbda12e6"
+source = "git+https://github.com/RustCrypto/utils.git#314938fe8e16d55979e70d777f90a475abcfb7f4"
 dependencies = [
  "crypto-common 0.2.0-pre",
 ]
@@ -144,7 +144,7 @@ dependencies = [
 [[package]]
 name = "block-padding"
 version = "0.4.0-pre"
-source = "git+https://github.com/RustCrypto/utils.git#cc772039c62a0a2f4761b28df796d8b2dbda12e6"
+source = "git+https://github.com/RustCrypto/utils.git#314938fe8e16d55979e70d777f90a475abcfb7f4"
 dependencies = [
  "hybrid-array",
 ]
@@ -680,8 +680,9 @@ dependencies = [
 
 [[package]]
 name = "hybrid-array"
-version = "0.2.0-pre.5"
-source = "git+https://github.com/RustCrypto/utils.git#cc772039c62a0a2f4761b28df796d8b2dbda12e6"
+version = "0.2.0-pre.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f148d5add3c53ebf18452f556b0437d3d5c4540f34eb7b80c5ad4b54632c4e2"
 dependencies = [
  "typenum",
 ]
@@ -699,7 +700,7 @@ dependencies = [
 [[package]]
 name = "inout"
 version = "0.2.0-pre"
-source = "git+https://github.com/RustCrypto/utils.git#cc772039c62a0a2f4761b28df796d8b2dbda12e6"
+source = "git+https://github.com/RustCrypto/utils.git#314938fe8e16d55979e70d777f90a475abcfb7f4"
 dependencies = [
  "block-padding 0.4.0-pre",
  "hybrid-array",

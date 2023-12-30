@@ -11,7 +11,7 @@ use core::{
 };
 use crypto_common::SubSerializedStateSize;
 use crypto_common::{
-    array::{ArraySize, ByteArray},
+    array::{Array, ArraySize},
     typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U256},
     AddBlockSize, DeserializeStateError, SerializableState, SerializedState, SubBlockSize,
 };
@@ -161,10 +161,10 @@ where
     fn serialize(&self) -> SerializedState<Self> {
         let serialized_core = self.core.serialize();
         let serialized_pos =
-            ByteArray::<U1>::clone_from_slice(&[self.buffer.get_pos().try_into().unwrap()]);
+            Array::<u8, U1>::clone_from_slice(&[self.buffer.get_pos().try_into().unwrap()]);
         let serialized_data = self.buffer.clone().pad_with_zeros();
         let serialized_output_size =
-            ByteArray::<U1>::clone_from_slice(&[self.output_size.try_into().unwrap()]);
+            Array::<u8, U1>::clone_from_slice(&[self.output_size.try_into().unwrap()]);
 
         serialized_core
             .concat(serialized_pos)
