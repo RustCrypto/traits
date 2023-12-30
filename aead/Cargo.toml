@@ -16,7 +16,7 @@ categories = ["cryptography", "no-std"]
 rust-version = "1.65"
 
 [dependencies]
-crypto-common = "=0.2.0-pre"
+crypto-common = "=0.2.0-pre.1"
 
 # optional dependencies
 arrayvec = { version = "0.7", optional = true, default-features = false }
