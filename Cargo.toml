@@ -18,5 +18,4 @@ members = [
 [patch.crates-io]
 block-buffer = { git = "https://github.com/RustCrypto/utils.git" }
 crypto-common = { path = "crypto-common" }
-hybrid-array = { git = "https://github.com/RustCrypto/utils.git" }
 inout = { git = "https://github.com/RustCrypto/utils.git" }

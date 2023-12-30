@@ -13,7 +13,7 @@ use core::{
     ops::{Add, Sub},
 };
 use crypto_common::{
-    array::{Array, ArraySize, ByteArray},
+    array::{Array, ArraySize},
     typenum::{IsLess, IsLessOrEqual, Le, LeEq, NonZero, Sum, U1, U256},
     Block, BlockSizeUser, DeserializeStateError, OutputSizeUser, SerializableState,
     SerializedState, SubSerializedStateSize,
@@ -212,7 +212,7 @@ where
 
     fn serialize(&self) -> SerializedState<Self> {
         let serialized_inner = self.inner.serialize();
-        let serialized_outsize = ByteArray::<U1>::clone_from_slice(&[OutSize::U8]);
+        let serialized_outsize = Array::<u8, U1>::clone_from_slice(&[OutSize::U8]);
 
         serialized_inner.concat(serialized_outsize)
     }

@@ -1,12 +1,12 @@
 use crate::array::{
     self,
     typenum::{Diff, Prod, Sum, Unsigned, U1, U16, U2, U4, U8},
-    ArraySize, ByteArray,
+    Array, ArraySize,
 };
 use core::{convert::TryInto, default::Default, fmt};
 
 /// Serialized internal state.
-pub type SerializedState<T> = ByteArray<<T as SerializableState>::SerializedStateSize>;
+pub type SerializedState<T> = Array<u8, <T as SerializableState>::SerializedStateSize>;
 
 /// Alias for `AddSerializedStateSize<T, S> = Sum<T, S::SerializedStateSize>`
 pub type AddSerializedStateSize<T, S> = Sum<T, <S as SerializableState>::SerializedStateSize>;
