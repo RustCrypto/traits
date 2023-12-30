@@ -19,7 +19,7 @@ dependencies = [
  "arrayvec",
  "blobby",
  "bytes",
- "crypto-common 0.2.0-pre",
+ "crypto-common 0.2.0-pre.1",
  "heapless",
 ]
 
@@ -129,7 +129,7 @@ name = "block-buffer"
 version = "0.11.0-pre"
 source = "git+https://github.com/RustCrypto/utils.git#314938fe8e16d55979e70d777f90a475abcfb7f4"
 dependencies = [
- "crypto-common 0.2.0-pre",
+ "crypto-common 0.2.0-pre.1",
 ]
 
 [[package]]
@@ -217,7 +217,7 @@ name = "cipher"
 version = "0.5.0-pre"
 dependencies = [
  "blobby",
- "crypto-common 0.2.0-pre",
+ "crypto-common 0.2.0-pre.1",
  "inout 0.2.0-pre",
  "zeroize",
 ]
@@ -306,7 +306,7 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.2.0-pre"
+version = "0.2.0-pre.1"
 dependencies = [
  "getrandom",
  "hybrid-array",
@@ -401,7 +401,7 @@ dependencies = [
  "blobby",
  "block-buffer 0.11.0-pre",
  "const-oid 0.9.6",
- "crypto-common 0.2.0-pre",
+ "crypto-common 0.2.0-pre.1",
  "subtle",
 ]
 
@@ -1188,7 +1188,7 @@ dependencies = [
 name = "universal-hash"
 version = "0.6.0-pre"
 dependencies = [
- "crypto-common 0.2.0-pre",
+ "crypto-common 0.2.0-pre.1",
  "subtle",
 ]
 
