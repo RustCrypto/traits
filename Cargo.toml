@@ -14,8 +14,3 @@ members = [
     "signature_derive",
     "universal-hash",
 ]
-
-[patch.crates-io]
-block-buffer = { git = "https://github.com/RustCrypto/utils.git" }
-crypto-common = { path = "crypto-common" }
-inout = { git = "https://github.com/RustCrypto/utils.git" }

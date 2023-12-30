@@ -16,7 +16,7 @@ categories = ["cryptography", "no-std"]
 crypto-common = "=0.2.0-pre.1"
 
 # optional dependencies
-block-buffer = { version = "=0.11.0-pre", optional = true }
+block-buffer = { version = "=0.11.0-pre.1", optional = true }
 subtle = { version = "2.4", default-features = false, optional = true }
 blobby = { version = "0.3", optional = true }
 const-oid = { version = "0.9", optional = true }
