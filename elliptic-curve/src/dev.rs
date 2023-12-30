@@ -6,7 +6,7 @@
 use crate::{
     bigint::{Limb, U256},
     error::{Error, Result},
-    generic_array::typenum::U32,
+    hybrid_array::typenum::U32,
     ops::{Invert, LinearCombination, MulByGenerator, Reduce, ShrAssign},
     pkcs8,
     point::AffineCoordinates,

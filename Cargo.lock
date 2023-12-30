@@ -389,7 +389,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fffa369a668c8af7dbf8b5e56c9f744fbd399949ed171606040001947de40b1c"
 dependencies = [
  "const-oid 0.9.6",
- "pem-rfc7468 0.7.0",
+ "zeroize",
+]
+
+[[package]]
+name = "der"
+version = "0.8.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b489fd2221710c1dd46637d66b984161fb66134f81437a8489800306bcc2ecea"
+dependencies = [
+ "const-oid 0.10.0-pre.2",
+ "pem-rfc7468 1.0.0-pre.0",
  "zeroize",
 ]
 
@@ -418,6 +428,18 @@ name = "digest"
 version = "0.11.0-pre.3"
 dependencies = [
  "blobby",
+ "block-buffer 0.11.0-pre.3",
+ "const-oid 0.10.0-pre.2",
+ "crypto-common 0.2.0-pre.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "subtle",
+]
+
+[[package]]
+name = "digest"
+version = "0.11.0-pre.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eb3be3c52e023de5662dc05a32f747d09a1d6024fdd1f64b0850e373269efb43"
+dependencies = [
  "block-buffer 0.11.0-pre.3",
  "const-oid 0.10.0-pre.2",
  "crypto-common 0.2.0-pre.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -481,23 +503,41 @@ dependencies = [
 [[package]]
 name = "elliptic-curve"
 version = "0.13.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5e6043086bf7973472e0c7dff2142ea0b680d30e18d9cc40f267efbf222bd47"
+dependencies = [
+ "base16ct 0.2.0",
+ "crypto-bigint 0.5.5",
+ "ff 0.13.0",
+ "generic-array",
+ "group 0.13.0",
+ "pkcs8 0.10.2",
+ "rand_core 0.6.4",
+ "sec1 0.7.3",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
+name = "elliptic-curve"
+version = "0.14.0-pre"
 dependencies = [
  "base16ct 0.2.0",
  "base64ct",
  "crypto-bigint 0.5.5",
- "digest 0.10.7",
+ "digest 0.11.0-pre.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "ff 0.13.0",
- "generic-array",
  "group 0.13.0",
  "hex-literal",
- "hkdf 0.12.4",
- "pem-rfc7468 0.7.0",
- "pkcs8 0.10.2",
+ "hkdf 0.13.0-pre.0",
+ "hybrid-array",
+ "pem-rfc7468 1.0.0-pre.0",
+ "pkcs8 0.11.0-pre.0",
  "rand_core 0.6.4",
- "sec1 0.7.3",
+ "sec1 0.8.0-pre.0",
  "serde_json",
  "serdect",
- "sha2 0.10.8",
+ "sha2 0.11.0-pre.0",
  "sha3",
  "subtle",
  "tap",
@@ -657,6 +697,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "hkdf"
+version = "0.13.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f3bed625061d9ed27cd87356cb46c3c8269a585be23d56c6f179c722bbea471"
+dependencies = [
+ "hmac 0.13.0-pre.0",
+]
+
+[[package]]
 name = "hmac"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -673,6 +722,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
 dependencies = [
  "digest 0.10.7",
+]
+
+[[package]]
+name = "hmac"
+version = "0.13.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e22cb0183a745c3444af57c24aa1293e1f3e538717acce39a9d3b271c999b24f"
+dependencies = [
+ "digest 0.11.0-pre.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -704,6 +762,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "27fbaf242418fe980caf09ed348d5a6aeabe71fc1bd8bebad641f4591ae0a46d"
 dependencies = [
  "typenum",
+ "zeroize",
 ]
 
 [[package]]
@@ -828,9 +887,9 @@ dependencies = [
 
 [[package]]
 name = "pem-rfc7468"
-version = "0.7.0"
+version = "1.0.0-pre.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88b39c9bfcfc231068454382784bb460aae594343fb030d46e9f50a645418412"
+checksum = "76a65e1c27d1680f8805b3f8c9949f08d6aa5d6cbd088c9896e64a53821dc27d"
 dependencies = [
  "base64ct",
 ]
@@ -855,6 +914,16 @@ checksum = "f950b2377845cebe5cf8b5165cb3cc1a5e0fa5cfa3e1f7f55707d8fd82e0a7b7"
 dependencies = [
  "der 0.7.8",
  "spki 0.7.3",
+]
+
+[[package]]
+name = "pkcs8"
+version = "0.11.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "935c09e0aecb0cb8f8907b57438b19a068cb74a25189b06724f061170b2465ff"
+dependencies = [
+ "der 0.8.0-pre.0",
+ "spki 0.8.0-pre.0",
 ]
 
 [[package]]
@@ -1016,6 +1085,20 @@ dependencies = [
  "der 0.7.8",
  "generic-array",
  "pkcs8 0.10.2",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
+name = "sec1"
+version = "0.8.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ccf9d914303f6606a4fa47933f65b92ce13991573a3c61118a458ec5b5ca6cb"
+dependencies = [
+ "base16ct 0.2.0",
+ "der 0.8.0-pre.0",
+ "hybrid-array",
+ "pkcs8 0.11.0-pre.0",
  "serdect",
  "subtle",
  "zeroize",
@@ -1063,9 +1146,9 @@ dependencies = [
 
 [[package]]
 name = "serdect"
-version = "0.2.0"
+version = "0.3.0-pre.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a84f14a19e9a014bb9f4512488d9829a68e04ecabffb0f9904cd1ace94598177"
+checksum = "791ef964bfaba6be28a5c3f0c56836e17cb711ac009ca1074b9c735a3ebf240a"
 dependencies = [
  "base16ct 0.2.0",
  "serde",
@@ -1096,12 +1179,23 @@ dependencies = [
 ]
 
 [[package]]
-name = "sha3"
-version = "0.10.8"
+name = "sha2"
+version = "0.11.0-pre.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75872d278a8f37ef87fa0ddbda7802605cb18344497949862c0d4dcb291eba60"
+checksum = "de0628cd6fd8219612c2d71ad52ab8c2014a18cbdbedbde17de04d400df65997"
 dependencies = [
- "digest 0.10.7",
+ "cfg-if",
+ "cpufeatures",
+ "digest 0.11.0-pre.3 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "sha3"
+version = "0.11.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab80aa0f8ab215182f50d06bf13ed44929975b0f57ec4f2ddf97f01a4f6a41ab"
+dependencies = [
+ "digest 0.11.0-pre.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "keccak",
 ]
 
@@ -1162,6 +1256,16 @@ checksum = "d91ed6c858b01f942cd56b37a94b3e0a1798290327d1236e4d9cf4eaca44d29d"
 dependencies = [
  "base64ct",
  "der 0.7.8",
+]
+
+[[package]]
+name = "spki"
+version = "0.8.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb2b56670f5ef52934c97efad30bf42585de0c33ec3e2a886e38b80d2db67243"
+dependencies = [
+ "base64ct",
+ "der 0.8.0-pre.0",
 ]
 
 [[package]]

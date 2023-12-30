@@ -13,7 +13,7 @@ use core::{
     ops::{Add, AddAssign, Neg, ShrAssign, Sub, SubAssign},
     str,
 };
-use generic_array::{typenum::Unsigned, GenericArray};
+use hybrid_array::Array;
 use rand_core::CryptoRngCore;
 use subtle::{
     Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
@@ -83,11 +83,8 @@ where
 
     /// Decode [`ScalarPrimitive`] from a big endian byte slice.
     pub fn from_slice(slice: &[u8]) -> Result<Self> {
-        if slice.len() == C::FieldBytesSize::USIZE {
-            Option::from(Self::from_bytes(GenericArray::from_slice(slice))).ok_or(Error)
-        } else {
-            Err(Error)
-        }
+        let bytes = Array::try_from(slice).map_err(|_| Error)?;
+        Option::from(Self::from_bytes(&bytes)).ok_or(Error)
     }
 
     /// Borrow the inner `C::Uint`.

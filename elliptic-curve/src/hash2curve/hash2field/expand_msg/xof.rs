@@ -3,7 +3,7 @@
 use super::{Domain, ExpandMsg, Expander};
 use crate::{Error, Result};
 use digest::{ExtendableOutput, Update, XofReader};
-use generic_array::typenum::U32;
+use hybrid_array::typenum::U32;
 
 /// Placeholder type for implementing `expand_message_xof` based on an extendable output function
 ///
@@ -64,11 +64,11 @@ where
 mod test {
     use super::*;
     use core::mem;
-    use generic_array::{
-        typenum::{U128, U32},
-        ArrayLength, GenericArray,
-    };
     use hex_literal::hex;
+    use hybrid_array::{
+        typenum::{U128, U32},
+        Array, ArraySize,
+    };
     use sha3::Shake128;
 
     fn assert_message(msg: &[u8], domain: &Domain<'_, U32>, len_in_bytes: u16, bytes: &[u8]) {
@@ -101,14 +101,14 @@ mod test {
         fn assert<HashT, L>(&self, dst: &'static [u8], domain: &Domain<'_, U32>) -> Result<()>
         where
             HashT: Default + ExtendableOutput + Update,
-            L: ArrayLength<u8>,
+            L: ArraySize,
         {
             assert_message(self.msg, domain, L::to_u16(), self.msg_prime);
 
             let mut expander =
                 ExpandMsgXof::<HashT>::expand_message(&[self.msg], &[dst], L::to_usize())?;
 
-            let mut uniform_bytes = GenericArray::<u8, L>::default();
+            let mut uniform_bytes = Array::<u8, L>::default();
             expander.fill_bytes(&mut uniform_bytes);
 
             assert_eq!(uniform_bytes.as_slice(), self.uniform_bytes);

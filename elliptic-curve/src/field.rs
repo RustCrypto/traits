@@ -4,13 +4,13 @@ use crate::{
     bigint::{ArrayEncoding, ByteArray, Integer},
     Curve,
 };
-use generic_array::{typenum::Unsigned, GenericArray};
+use hybrid_array::{typenum::Unsigned, Array};
 
 /// Size of serialized field elements of this elliptic curve.
 pub type FieldBytesSize<C> = <C as Curve>::FieldBytesSize;
 
 /// Byte representation of a base/scalar field element of a given curve.
-pub type FieldBytes<C> = GenericArray<u8, FieldBytesSize<C>>;
+pub type FieldBytes<C> = Array<u8, FieldBytesSize<C>>;
 
 /// Trait for decoding/encoding `Curve::Uint` from/to [`FieldBytes`] using
 /// curve-specific rules.
