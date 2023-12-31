@@ -19,7 +19,7 @@ dependencies = [
  "arrayvec",
  "blobby",
  "bytes",
- "crypto-common 0.2.0-pre.2",
+ "crypto-common 0.2.0-pre.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "heapless",
 ]
 
@@ -126,10 +126,11 @@ dependencies = [
 
 [[package]]
 name = "block-buffer"
-version = "0.11.0-pre.1"
-source = "git+https://github.com/RustCrypto/utils.git?branch=crypto-common/v0.2.0-pre.2#1bf05ff2cf2019684be6c1478fb56d5efb21f5e1"
+version = "0.11.0-pre.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a601d94c4c47c51a046b82b883fe236e5750c0da327dd1427c8b4416296418a"
 dependencies = [
- "crypto-common 0.2.0-pre.2",
+ "crypto-common 0.2.0-pre.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -143,8 +144,9 @@ dependencies = [
 
 [[package]]
 name = "block-padding"
-version = "0.4.0-pre.1"
-source = "git+https://github.com/RustCrypto/utils.git?branch=crypto-common/v0.2.0-pre.2#1bf05ff2cf2019684be6c1478fb56d5efb21f5e1"
+version = "0.4.0-pre.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3ca9ee1904d68460570331f2a93a099ee16b234cfc44ce1908717c5f2c8d3c6"
 dependencies = [
  "hybrid-array",
 ]
@@ -217,8 +219,8 @@ name = "cipher"
 version = "0.5.0-pre"
 dependencies = [
  "blobby",
- "crypto-common 0.2.0-pre.2",
- "inout 0.2.0-pre.1",
+ "crypto-common 0.2.0-pre.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "inout 0.2.0-pre.2",
  "zeroize",
 ]
 
@@ -314,6 +316,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "crypto-common"
+version = "0.2.0-pre.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "102f7900795d54e3b8566857762a2977c267ab5952e4117283017ee1d5c9ae88"
+dependencies = [
+ "getrandom",
+ "hybrid-array",
+ "rand_core 0.6.4",
+]
+
+[[package]]
 name = "crypto-mac"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -399,9 +412,9 @@ name = "digest"
 version = "0.11.0-pre"
 dependencies = [
  "blobby",
- "block-buffer 0.11.0-pre.1",
+ "block-buffer 0.11.0-pre.2",
  "const-oid 0.9.6",
- "crypto-common 0.2.0-pre.2",
+ "crypto-common 0.2.0-pre.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
 ]
 
@@ -699,10 +712,11 @@ dependencies = [
 
 [[package]]
 name = "inout"
-version = "0.2.0-pre.1"
-source = "git+https://github.com/RustCrypto/utils.git?branch=crypto-common/v0.2.0-pre.2#1bf05ff2cf2019684be6c1478fb56d5efb21f5e1"
+version = "0.2.0-pre.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25049cbfd794227f26a7d3c7f2cfc2a9737a229993799bfca1138242964886ee"
 dependencies = [
- "block-padding 0.4.0-pre.1",
+ "block-padding 0.4.0-pre.2",
  "hybrid-array",
 ]
 
@@ -1188,7 +1202,7 @@ dependencies = [
 name = "universal-hash"
 version = "0.6.0-pre"
 dependencies = [
- "crypto-common 0.2.0-pre.2",
+ "crypto-common 0.2.0-pre.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
 ]
 
