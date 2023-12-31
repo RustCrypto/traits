@@ -13,8 +13,8 @@ keywords = ["crypto", "block-cipher", "stream-cipher", "trait"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = "=0.2.0-pre.2"
-inout = "=0.2.0-pre.2"
+crypto-common = "=0.2.0-pre.3"
+inout = "=0.2.0-pre.3"
 
 # optional dependencies
 blobby = { version = "0.3", optional = true }
