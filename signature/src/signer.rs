@@ -124,7 +124,8 @@ pub trait RandomizedDigestSigner<D: Digest, S> {
 pub trait RandomizedSignerMut<S> {
     /// Sign the given message, update the state, and return a digital signature.
     fn sign_with_rng(&mut self, rng: &mut impl CryptoRngCore, msg: &[u8]) -> S {
-        self.try_sign_with_rng(rng, msg).expect("signature operation failed")
+        self.try_sign_with_rng(rng, msg)
+            .expect("signature operation failed")
     }
 
     /// Attempt to sign the given message, updating the state, and returning a
