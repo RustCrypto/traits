@@ -124,7 +124,7 @@ pub trait RandomizedDigestSigner<D: Digest, S> {
 pub trait RandomizedSignerMut<S> {
     /// Sign the given message, update the state, and return a digital signature.
     fn sign_with_rng(&mut self, rng: &mut impl CryptoRngCore, msg: &[u8]) -> S {
-        self.try_sign(msg).expect("signature operation failed")
+        self.try_sign_with_rng(rng, msg).expect("signature operation failed")
     }
 
     /// Attempt to sign the given message, updating the state, and returning a
@@ -132,13 +132,13 @@ pub trait RandomizedSignerMut<S> {
     ///
     /// Signing can fail, e.g., if the number of time periods allowed by the
     /// current key is exceeded.
-    fn try_sign_with_rng(&mut self, msg: &[u8]) -> Result<S, Error>;
+    fn try_sign_with_rng(&mut self, rng: &mut impl CryptoRngCore, msg: &[u8]) -> Result<S, Error>;
 }
 
 /// Blanket impl of [`RandomizedSignerMut`] for all [`RandomizedSigner`] types.
 #[cfg(feature = "rand_core")]
 impl<S, T: RandomizedSigner<S>> RandomizedSignerMut<S> for T {
-    fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error> {
-        T::try_sign_with_rng(self, msg)
+    fn try_sign_with_rng(&mut self, rng: &mut impl CryptoRngCore, msg: &[u8]) -> Result<S, Error> {
+        T::try_sign_with_rng(self, rng, msg)
     }
 }
