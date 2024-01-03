@@ -116,3 +116,29 @@ pub trait RandomizedDigestSigner<D: Digest, S> {
     fn try_sign_digest_with_rng(&self, rng: &mut impl CryptoRngCore, digest: D)
         -> Result<S, Error>;
 }
+
+/// Sign the provided message bytestring using `&mut Self` (e.g. an evolving
+/// cryptographic key such as a stateful hash-based signature), and a per-signature
+/// randomizer, returning a digital signature.
+#[cfg(feature = "rand_core")]
+pub trait RandomizedSignerMut<S> {
+    /// Sign the given message, update the state, and return a digital signature.
+    fn sign_with_rng(&mut self, rng: &mut impl CryptoRngCore, msg: &[u8]) -> S {
+        self.try_sign(msg).expect("signature operation failed")
+    }
+
+    /// Attempt to sign the given message, updating the state, and returning a
+    /// digital signature on success, or an error if something went wrong.
+    ///
+    /// Signing can fail, e.g., if the number of time periods allowed by the
+    /// current key is exceeded.
+    fn try_sign_with_rng(&mut self, msg: &[u8]) -> Result<S, Error>;
+}
+
+/// Blanket impl of [`RandomizedSignerMut`] for all [`RandomizedSigner`] types.
+#[cfg(feature = "rand_core")]
+impl<S, T: RandomizedSigner<S>> RandomizedSignerMut<S> for T {
+    fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error> {
+        T::try_sign_with_rng(self, msg)
+    }
+}
