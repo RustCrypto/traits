@@ -34,7 +34,7 @@ pem-rfc7468 = { version = "0.7", optional = true, features = ["alloc"] }
 pkcs8 = { version = "0.10.2", optional = true, default-features = false }
 sec1 = { version = "0.7.1", optional = true, features = ["subtle", "zeroize"] }
 serdect = { version = "0.2", optional = true, default-features = false, features = ["alloc"] }
-serde_json = { version = "1.0.47", optional = true, default-features = false, features = ["alloc"] }
+serde_json = { version = "1.0.111", optional = true, default-features = false, features = ["alloc"] }
 tap = { version = "1.0.1", optional = true, default-features = false } # hack for minimal-versions support for `bits`
 
 [dev-dependencies]
