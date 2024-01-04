@@ -157,7 +157,7 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
             // but after XORing keystream block with `tail`, we immediately
             // overwrite the first byte with a correct value.
             self.core.write_keystream_block(&mut self.buffer);
-            tail.xor_in2out(&self.buffer[..data_len]);
+            tail.xor_in2out(&self.buffer[..tail.len()]);
             tail.len()
         };
 
@@ -219,9 +219,11 @@ impl<T: IvSizeUser + StreamCipherCore> IvSizeUser for StreamCipherCoreWrapper<T>
 impl<T: KeyIvInit + StreamCipherCore> KeyIvInit for StreamCipherCoreWrapper<T> {
     #[inline]
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self {
+        let mut buffer = Block::<T>::default();
+        buffer[0] = T::BlockSize::U8;
         Self {
             core: T::new(key, iv),
-            buffer: Default::default(),
+            buffer,
         }
     }
 }
@@ -229,9 +231,11 @@ impl<T: KeyIvInit + StreamCipherCore> KeyIvInit for StreamCipherCoreWrapper<T> {
 impl<T: KeyInit + StreamCipherCore> KeyInit for StreamCipherCoreWrapper<T> {
     #[inline]
     fn new(key: &Key<Self>) -> Self {
+        let mut buffer = Block::<T>::default();
+        buffer[0] = T::BlockSize::U8;
         Self {
             core: T::new(key),
-            buffer: Default::default(),
+            buffer,
         }
     }
 }
