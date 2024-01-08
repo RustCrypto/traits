@@ -20,7 +20,7 @@ aead = { version = "0.5", optional = true }
 cipher = { version = "0.4", optional = true }
 digest = { version = "0.10", optional = true, features = ["mac"] }
 elliptic-curve = { version = "0.13", optional = true, path = "../elliptic-curve" }
-password-hash = { version = "0.5", optional = true, path = "../password-hash" }
+password-hash = { version = "0.5", optional = true }
 signature = { version = "2", optional = true, default-features = false }
 universal-hash = { version = "0.5", optional = true }
 
