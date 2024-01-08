@@ -39,7 +39,6 @@ macro_rules! new_test {
 
 /// Define hash function serialization test
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! hash_serialization_test {
     ($name:ident, $hasher:ty, $expected_serialized_state:expr) => {
         #[test]
@@ -73,7 +72,6 @@ macro_rules! hash_serialization_test {
 
 /// Define hash function serialization test
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! hash_rt_outsize_serialization_test {
     ($name:ident, $hasher:ty, $expected_serialized_state:expr) => {
         #[test]
