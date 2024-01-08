@@ -260,7 +260,7 @@ dependencies = [
  "crypto-common 0.1.6",
  "digest 0.10.7",
  "elliptic-curve 0.13.8",
- "password-hash",
+ "password-hash 0.5.0",
  "signature 2.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "universal-hash 0.5.1",
 ]
@@ -800,6 +800,17 @@ dependencies = [
 [[package]]
 name = "password-hash"
 version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "346f04948ba92c43e8469c1ee6736c7563d71012b17d40745260fe106aac2166"
+dependencies = [
+ "base64ct",
+ "rand_core 0.6.4",
+ "subtle",
+]
+
+[[package]]
+name = "password-hash"
+version = "0.6.0-pre"
 dependencies = [
  "base64ct",
  "rand_core 0.6.4",
