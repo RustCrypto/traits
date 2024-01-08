@@ -34,16 +34,16 @@
 
 use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, KeyInit, Result};
 use core::ops::{AddAssign, Sub};
-use generic_array::{
+use crypto_common::array::{
     typenum::{Unsigned, U4, U5},
-    ArrayLength, GenericArray,
+    Array, ArraySize,
 };
 
 #[cfg(feature = "alloc")]
 use {crate::Payload, alloc::vec::Vec};
 
 /// Nonce as used by a given AEAD construction and STREAM primitive.
-pub type Nonce<A, S> = GenericArray<u8, NonceSize<A, S>>;
+pub type Nonce<A, S> = Array<u8, NonceSize<A, S>>;
 
 /// Size of a nonce as used by a STREAM construction, sans the overhead of
 /// the STREAM protocol itself.
@@ -71,7 +71,7 @@ pub trait NewStream<A>: StreamPrimitive<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<Self::NonceOverhead>,
-    NonceSize<A, Self>: ArrayLength<u8>,
+    NonceSize<A, Self>: ArraySize,
 {
     /// Create a new STREAM with the given key and nonce.
     fn new(key: &Key<A>, nonce: &Nonce<A, Self>) -> Self
@@ -96,10 +96,10 @@ pub trait StreamPrimitive<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<Self::NonceOverhead>,
-    NonceSize<A, Self>: ArrayLength<u8>,
+    NonceSize<A, Self>: ArraySize,
 {
     /// Number of bytes this STREAM primitive requires from the nonce.
-    type NonceOverhead: ArrayLength<u8>;
+    type NonceOverhead: ArraySize;
 
     /// Type used as the STREAM counter.
     type Counter: AddAssign + Copy + Default + Eq;
@@ -131,7 +131,6 @@ where
     /// Encrypt the given plaintext payload, and return the resulting
     /// ciphertext as a vector of bytes.
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn encrypt<'msg, 'aad>(
         &self,
         position: Self::Counter,
@@ -148,7 +147,6 @@ where
     /// Decrypt the given ciphertext slice, and return the resulting plaintext
     /// as a vector of bytes.
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn decrypt<'msg, 'aad>(
         &self,
         position: Self::Counter,
@@ -201,12 +199,13 @@ macro_rules! impl_stream_object {
         #[doc = "[Online Authenticated-Encryption and its Nonce-Reuse Misuse-Resistance][1]."]
         #[doc = ""]
         #[doc = "[1]: https://eprint.iacr.org/2015/189.pdf"]
+        #[derive(Debug)]
         pub struct $name<A, S>
         where
             A: AeadInPlace,
             S: StreamPrimitive<A>,
             A::NonceSize: Sub<<S as StreamPrimitive<A>>::NonceOverhead>,
-            NonceSize<A, S>: ArrayLength<u8>,
+            NonceSize<A, S>: ArraySize,
         {
             /// Underlying STREAM primitive.
             stream: S,
@@ -220,7 +219,7 @@ macro_rules! impl_stream_object {
             A: AeadInPlace,
             S: StreamPrimitive<A>,
             A::NonceSize: Sub<<S as StreamPrimitive<A>>::NonceOverhead>,
-            NonceSize<A, S>: ArrayLength<u8>,
+            NonceSize<A, S>: ArraySize,
         {
             #[doc = "Create a"]
             #[doc = $obj_desc]
@@ -259,7 +258,6 @@ macro_rules! impl_stream_object {
             #[doc = "the next AEAD message in this STREAM, returning the"]
             #[doc = "result as a [`Vec`]."]
             #[cfg(feature = "alloc")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
             pub fn $next_method<'msg, 'aad>(
                 &mut self,
                 payload: impl Into<Payload<'msg, 'aad>>,
@@ -308,7 +306,6 @@ macro_rules! impl_stream_object {
             #[doc = $obj_desc]
             #[doc = "object in order to prevent further use."]
             #[cfg(feature = "alloc")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
             pub fn $last_method<'msg, 'aad>(
                 self,
                 payload: impl Into<Payload<'msg, 'aad>>,
@@ -365,11 +362,12 @@ impl_stream_object!(
 /// the last 5-bytes of the AEAD nonce.
 ///
 /// [1]: https://eprint.iacr.org/2015/189.pdf
+#[derive(Debug)]
 pub struct StreamBE32<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U5>,
-    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArraySize,
 {
     /// Underlying AEAD cipher
     aead: A,
@@ -382,7 +380,7 @@ impl<A> NewStream<A> for StreamBE32<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U5>,
-    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArraySize,
 {
     fn from_aead(aead: A, nonce: &Nonce<A, Self>) -> Self {
         Self {
@@ -396,7 +394,7 @@ impl<A> StreamPrimitive<A> for StreamBE32<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U5>,
-    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArraySize,
 {
     type NonceOverhead = U5;
     type Counter = u32;
@@ -430,12 +428,12 @@ impl<A> StreamBE32<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U5>,
-    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArraySize,
 {
     /// Compute the full AEAD nonce including the STREAM counter and last
     /// block flag.
     fn aead_nonce(&self, position: u32, last_block: bool) -> crate::Nonce<A> {
-        let mut result = GenericArray::default();
+        let mut result = Array::default();
 
         // TODO(tarcieri): use `generic_array::sequence::Concat` (or const generics)
         let (prefix, tail) = result.split_at_mut(NonceSize::<A, Self>::to_usize());
@@ -454,11 +452,12 @@ where
 /// when interpreted as a 32-bit integer.
 ///
 /// The 31-bit + 1-bit value is stored as the last 4 bytes of the AEAD nonce.
+#[derive(Debug)]
 pub struct StreamLE31<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U4>,
-    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArraySize,
 {
     /// Underlying AEAD cipher
     aead: A,
@@ -471,7 +470,7 @@ impl<A> NewStream<A> for StreamLE31<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U4>,
-    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArraySize,
 {
     fn from_aead(aead: A, nonce: &Nonce<A, Self>) -> Self {
         Self {
@@ -485,7 +484,7 @@ impl<A> StreamPrimitive<A> for StreamLE31<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U4>,
-    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArraySize,
 {
     type NonceOverhead = U4;
     type Counter = u32;
@@ -519,7 +518,7 @@ impl<A> StreamLE31<A>
 where
     A: AeadInPlace,
     A::NonceSize: Sub<U4>,
-    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArrayLength<u8>,
+    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArraySize,
 {
     /// Compute the full AEAD nonce including the STREAM counter and last
     /// block flag.
@@ -528,7 +527,7 @@ where
             return Err(Error);
         }
 
-        let mut result = GenericArray::default();
+        let mut result = Array::default();
 
         // TODO(tarcieri): use `generic_array::sequence::Concat` (or const generics)
         let (prefix, tail) = result.split_at_mut(NonceSize::<A, Self>::to_usize());

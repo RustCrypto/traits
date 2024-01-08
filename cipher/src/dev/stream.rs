@@ -2,12 +2,11 @@
 
 /// Test core functionality of synchronous stream cipher
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! stream_cipher_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
-            use cipher::generic_array::GenericArray;
+            use cipher::array::Array;
             use cipher::{blobby::Blob4Iterator, KeyIvInit, StreamCipher};
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
@@ -38,12 +37,11 @@ macro_rules! stream_cipher_test {
 
 /// Test stream synchronous stream cipher seeking capabilities
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! stream_cipher_seek_test {
     ($name:ident, $cipher:ty) => {
         #[test]
         fn $name() {
-            use cipher::generic_array::GenericArray;
+            use cipher::array::Array;
             use cipher::{KeyIvInit, StreamCipher, StreamCipherSeek};
 
             fn get_cipher() -> $cipher {
@@ -91,7 +89,6 @@ macro_rules! stream_cipher_seek_test {
 
 /// Create stream cipher benchmarks
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! stream_cipher_bench {
     (
         $cipher:ty;

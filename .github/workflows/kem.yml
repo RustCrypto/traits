@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.61.0 # Next MSRV candidate
+          - 1.66.0 # MSRV
           - stable
         target:
           - thumbv7em-none-eabi
@@ -36,26 +36,12 @@ jobs:
           targets: ${{ matrix.target }}
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
 
-  # TODO: use the reusable workflow after this crate will be part of the
-  # toot workspace
-  # minimal-versions:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: RustCrypto/actions/cargo-cache@master
-  #     - uses: dtolnay/rust-toolchain@master
-  #       with:
-  #         toolchain: nightly
-  #     - uses: RustCrypto/actions/cargo-hack-install@master
-  #     - run: cargo update -Z minimal-versions
-  #     - run: cargo hack test --release --feature-powerset
-
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         rust:
-          - 1.61.0 # Next MSRV candidate
+          - 1.66.0 # MSRV
           - stable
     steps:
       - uses: actions/checkout@v4
@@ -67,15 +53,3 @@ jobs:
       - run: cargo test --no-default-features --release
       - run: cargo test --release
       - run: cargo test --all-features --release
-
-  # build-only test of MSRV
-  # TODO: remove on MSRV bump higher than MSRV of `cc`
-  test-msrv:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: RustCrypto/actions/cargo-cache@master
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: 1.60.0
-      - run: cargo check --all-features

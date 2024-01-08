@@ -6,13 +6,17 @@
 //! [3]: https://en.wikipedia.org/wiki/Stream_cipher
 
 #![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg"
 )]
-#![warn(missing_docs, rust_2018_idioms)]
-#![allow(clippy::needless_lifetimes)]
+#![warn(
+    missing_docs,
+    rust_2018_idioms,
+    unused_lifetimes,
+    missing_debug_implementations
+)]
 
 pub use crypto_common;
 pub use inout;
@@ -24,15 +28,12 @@ extern crate alloc;
 extern crate std;
 
 #[cfg(feature = "rand_core")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
 pub use crypto_common::rand_core;
 
 #[cfg(feature = "block-padding")]
-#[cfg_attr(docsrs, doc(cfg(feature = "block-padding")))]
 pub use inout::block_padding;
 
 #[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 pub use zeroize;
 
 #[cfg(feature = "dev")]
@@ -48,7 +49,7 @@ mod stream_wrapper;
 
 pub use crate::{block::*, errors::*, stream::*, stream_core::*, stream_wrapper::*};
 pub use crypto_common::{
-    generic_array,
+    array,
     typenum::{self, consts},
     AlgorithmName, Block, InnerIvInit, InvalidLength, Iv, IvSizeUser, Key, KeyInit, KeyIvInit,
     KeySizeUser, ParBlocks, ParBlocksSizeUser,

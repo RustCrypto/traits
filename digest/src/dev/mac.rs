@@ -1,7 +1,6 @@
 /// Define MAC test
 #[macro_export]
 #[cfg(feature = "mac")]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "dev", feature = "mac"))))]
 macro_rules! new_mac_test {
     ($name:ident, $test_name:expr, $mac:ty $(,)?) => {
         digest::new_mac_test!($name, $test_name, $mac, "");
@@ -76,7 +75,6 @@ macro_rules! new_mac_test {
 /// Define resettable MAC test
 #[macro_export]
 #[cfg(feature = "mac")]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "dev", feature = "mac"))))]
 macro_rules! new_resettable_mac_test {
     ($name:ident, $test_name:expr, $mac:ty $(,)?) => {
         digest::new_resettable_mac_test!($name, $test_name, $mac, "");

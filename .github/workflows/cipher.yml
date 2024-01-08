@@ -3,6 +3,7 @@ name: cipher
 on:
   pull_request:
     paths:
+      - ".github/workflows/cipher.yml"
       - "cipher/**"
       - "Cargo.*"
   push:
@@ -22,7 +23,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.56.0 # MSRV
+          - 1.65.0 # MSRV
           - stable
         target:
           - thumbv7em-none-eabi
@@ -39,17 +40,16 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --features block-padding
 
   # TODO: use the reusable workflow after this crate will be part of the
-  # toot workspace
+  # root workspace
   minimal-versions:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: RustCrypto/actions/cargo-cache@master
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: nightly
+      - uses: dtolnay/rust-toolchain@nightly
       - uses: RustCrypto/actions/cargo-hack-install@master
       - run: cargo update -Z minimal-versions
+      - uses: dtolnay/rust-toolchain@stable
       - run: cargo hack test --release --feature-powerset
 
   test:
@@ -57,7 +57,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.56.0 # MSRV
+          - 1.65.0 # MSRV
           - stable
     steps:
       - uses: actions/checkout@v4

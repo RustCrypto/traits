@@ -23,13 +23,13 @@
 //! by hash implementation crates.
 
 #![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![forbid(unsafe_code)]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg"
 )]
-#![warn(missing_docs, rust_2018_idioms)]
+#![warn(missing_docs, rust_2018_idioms, missing_debug_implementations)]
 
 #[cfg(feature = "alloc")]
 #[macro_use]
@@ -39,33 +39,30 @@ extern crate alloc;
 extern crate std;
 
 #[cfg(feature = "rand_core")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
 pub use crypto_common::rand_core;
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
 
 #[cfg(feature = "dev")]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
 #[cfg(feature = "core-api")]
-#[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub mod core_api;
 mod digest;
 #[cfg(feature = "mac")]
 mod mac;
 
 #[cfg(feature = "core-api")]
-#[cfg_attr(docsrs, doc(cfg(feature = "core-api")))]
 pub use block_buffer;
 #[cfg(feature = "oid")]
-#[cfg_attr(docsrs, doc(cfg(feature = "oid")))]
 pub use const_oid;
 pub use crypto_common;
 
+#[cfg(feature = "const-oid")]
+pub use crate::digest::DynDigestWithOid;
 pub use crate::digest::{Digest, DynDigest, HashMarker};
-pub use crypto_common::{generic_array, typenum, typenum::consts, Output, OutputSizeUser, Reset};
+pub use crypto_common::{array, typenum, typenum::consts, Output, OutputSizeUser, Reset};
 #[cfg(feature = "mac")]
 pub use crypto_common::{InnerInit, InvalidLength, Key, KeyInit};
 #[cfg(feature = "mac")]
@@ -130,7 +127,6 @@ pub trait XofReader {
     /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
     /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn read_boxed(&mut self, n: usize) -> Box<[u8]> {
         let mut buf = vec![0u8; n].into_boxed_slice();
         self.read(&mut buf);
@@ -167,7 +163,6 @@ pub trait ExtendableOutput: Sized + Update {
     /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
     /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_boxed(self, output_size: usize) -> Box<[u8]> {
         let mut buf = vec![0u8; output_size].into_boxed_slice();
         self.finalize_xof().read(&mut buf);
@@ -191,7 +186,6 @@ pub trait ExtendableOutputReset: ExtendableOutput + Reset {
     /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
     /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_boxed_reset(&mut self, output_size: usize) -> Box<[u8]> {
         let mut buf = vec![0u8; output_size].into_boxed_slice();
         self.finalize_xof_reset().read(&mut buf);
@@ -240,7 +234,6 @@ pub trait VariableOutput: Sized + Update {
     /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
     /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_boxed(self) -> Box<[u8]> {
         let n = self.output_size();
         let mut buf = vec![0u8; n].into_boxed_slice();
@@ -263,7 +256,6 @@ pub trait VariableOutputReset: VariableOutput + Reset {
     /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
     /// they have size of 2 and 3 words respectively.
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_boxed_reset(&mut self) -> Box<[u8]> {
         let n = self.output_size();
         let mut buf = vec![0u8; n].into_boxed_slice();
@@ -284,7 +276,6 @@ impl fmt::Display for InvalidOutputSize {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl std::error::Error for InvalidOutputSize {}
 
 /// Buffer length is not equal to hash output size.

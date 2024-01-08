@@ -1,42 +1,60 @@
 //! Common cryptographic traits.
 
 #![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg"
 )]
 #![forbid(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms)]
+#![warn(missing_docs, rust_2018_idioms, missing_debug_implementations)]
 
 #[cfg(feature = "std")]
 extern crate std;
 
+#[cfg(feature = "getrandom")]
+pub use getrandom;
 #[cfg(feature = "rand_core")]
 pub use rand_core;
 
-pub use generic_array;
-pub use generic_array::typenum;
+pub use hybrid_array as array;
+pub use hybrid_array::typenum;
 
 use core::fmt;
-use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+use hybrid_array::{
+    typenum::{Diff, Sum, Unsigned},
+    Array, ArraySize,
+};
+
 #[cfg(feature = "rand_core")]
 use rand_core::CryptoRngCore;
 
+mod serializable_state;
+pub use serializable_state::{
+    AddSerializedStateSize, DeserializeStateError, SerializableState, SerializedState,
+    SubSerializedStateSize,
+};
+
 /// Block on which [`BlockSizeUser`] implementors operate.
-pub type Block<B> = GenericArray<u8, <B as BlockSizeUser>::BlockSize>;
+pub type Block<B> = Array<u8, <B as BlockSizeUser>::BlockSize>;
 
 /// Parallel blocks on which [`ParBlocksSizeUser`] implementors operate.
-pub type ParBlocks<T> = GenericArray<Block<T>, <T as ParBlocksSizeUser>::ParBlocksSize>;
+pub type ParBlocks<T> = Array<Block<T>, <T as ParBlocksSizeUser>::ParBlocksSize>;
 
 /// Output array of [`OutputSizeUser`] implementors.
-pub type Output<T> = GenericArray<u8, <T as OutputSizeUser>::OutputSize>;
+pub type Output<T> = Array<u8, <T as OutputSizeUser>::OutputSize>;
 
 /// Key used by [`KeySizeUser`] implementors.
-pub type Key<B> = GenericArray<u8, <B as KeySizeUser>::KeySize>;
+pub type Key<B> = Array<u8, <B as KeySizeUser>::KeySize>;
 
 /// Initialization vector (nonce) used by [`IvSizeUser`] implementors.
-pub type Iv<B> = GenericArray<u8, <B as IvSizeUser>::IvSize>;
+pub type Iv<B> = Array<u8, <B as IvSizeUser>::IvSize>;
+
+/// Alias for `AddBlockSize<A, B> = Sum<T, B::BlockSize>`
+pub type AddBlockSize<T, B> = Sum<T, <B as BlockSizeUser>::BlockSize>;
+
+/// Alias for `SubBlockSize<A, B> = Diff<T, B::BlockSize>`
+pub type SubBlockSize<T, B> = Diff<T, <B as BlockSizeUser>::BlockSize>;
 
 /// Types which process data in blocks.
 pub trait BlockSizeUser {
@@ -59,20 +77,20 @@ impl<T: BlockSizeUser> BlockSizeUser for &mut T {
 }
 
 /// Trait implemented for supported block sizes, i.e. for types from `U1` to `U255`.
-pub trait BlockSizes: ArrayLength<u8> + sealed::BlockSizes + 'static {}
+pub trait BlockSizes: ArraySize + sealed::BlockSizes {}
 
-impl<T: ArrayLength<u8> + sealed::BlockSizes> BlockSizes for T {}
+impl<T: ArraySize + sealed::BlockSizes> BlockSizes for T {}
 
 mod sealed {
-    use generic_array::typenum::{Gr, IsGreater, IsLess, Le, NonZero, Unsigned, U1, U256};
+    use crate::typenum::{Gr, IsGreater, IsLess, Le, NonZero, Unsigned, U0, U256};
 
     pub trait BlockSizes {}
 
     impl<T: Unsigned> BlockSizes for T
     where
-        Self: IsLess<U256> + IsGreater<U1>,
+        Self: IsLess<U256> + IsGreater<U0>,
         Le<Self, U256>: NonZero,
-        Gr<Self, U1>: NonZero,
+        Gr<Self, U0>: NonZero,
     {
     }
 }
@@ -80,13 +98,13 @@ mod sealed {
 /// Types which can process blocks in parallel.
 pub trait ParBlocksSizeUser: BlockSizeUser {
     /// Number of blocks which can be processed in parallel.
-    type ParBlocksSize: ArrayLength<Block<Self>>;
+    type ParBlocksSize: ArraySize;
 }
 
 /// Types which return data with the given size.
 pub trait OutputSizeUser {
     /// Size of the output in bytes.
-    type OutputSize: ArrayLength<u8> + 'static;
+    type OutputSize: ArraySize;
 
     /// Return output size in bytes.
     #[inline(always)]
@@ -100,7 +118,7 @@ pub trait OutputSizeUser {
 /// Generally it's used indirectly via [`KeyInit`] or [`KeyIvInit`].
 pub trait KeySizeUser {
     /// Key size in bytes.
-    type KeySize: ArrayLength<u8> + 'static;
+    type KeySize: ArraySize;
 
     /// Return key size in bytes.
     #[inline(always)]
@@ -114,7 +132,7 @@ pub trait KeySizeUser {
 /// Generally it's used indirectly via [`KeyIvInit`] or [`InnerIvInit`].
 pub trait IvSizeUser {
     /// Initialization vector size in bytes.
-    type IvSize: ArrayLength<u8> + 'static;
+    type IvSize: ArraySize;
 
     /// Return IV size in bytes.
     #[inline(always)]
@@ -151,21 +169,27 @@ pub trait KeyInit: KeySizeUser + Sized {
     /// Create new value from variable size key.
     #[inline]
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
-        if key.len() != Self::KeySize::to_usize() {
-            Err(InvalidLength)
-        } else {
-            Ok(Self::new(Key::<Self>::from_slice(key)))
-        }
+        <&Key<Self>>::try_from(key)
+            .map(Self::new)
+            .map_err(|_| InvalidLength)
+    }
+
+    /// Generate random key using the operating system's secure RNG.
+    #[cfg(feature = "getrandom")]
+    #[inline]
+    fn generate_key() -> Result<Key<Self>, getrandom::Error> {
+        let mut key = Key::<Self>::default();
+        getrandom::getrandom(&mut key)?;
+        Ok(key)
     }
 
     /// Generate random key using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
-    fn generate_key(mut rng: impl CryptoRngCore) -> Key<Self> {
+    fn generate_key_with_rng(rng: &mut impl CryptoRngCore) -> Result<Key<Self>, rand_core::Error> {
         let mut key = Key::<Self>::default();
-        rng.fill_bytes(&mut key);
-        key
+        rng.try_fill_bytes(&mut key)?;
+        Ok(key)
     }
 }
 
@@ -177,44 +201,65 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     /// Create new value from variable length key and nonce.
     #[inline]
     fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidLength> {
-        let key_len = Self::KeySize::USIZE;
-        let iv_len = Self::IvSize::USIZE;
-        if key.len() != key_len || iv.len() != iv_len {
-            Err(InvalidLength)
-        } else {
-            Ok(Self::new(
-                Key::<Self>::from_slice(key),
-                Iv::<Self>::from_slice(iv),
-            ))
-        }
+        let key = <&Key<Self>>::try_from(key).map_err(|_| InvalidLength)?;
+        let iv = <&Iv<Self>>::try_from(iv).map_err(|_| InvalidLength)?;
+        Ok(Self::new(key, iv))
+    }
+
+    /// Generate random key using the operating system's secure RNG.
+    #[cfg(feature = "getrandom")]
+    #[inline]
+    fn generate_key() -> Result<Key<Self>, getrandom::Error> {
+        let mut key = Key::<Self>::default();
+        getrandom::getrandom(&mut key)?;
+        Ok(key)
     }
 
     /// Generate random key using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
-    fn generate_key(mut rng: impl CryptoRngCore) -> Key<Self> {
+    fn generate_key_with_rng(rng: &mut impl CryptoRngCore) -> Result<Key<Self>, rand_core::Error> {
         let mut key = Key::<Self>::default();
-        rng.fill_bytes(&mut key);
-        key
+        rng.try_fill_bytes(&mut key)?;
+        Ok(key)
+    }
+
+    /// Generate random IV using the operating system's secure RNG.
+    #[cfg(feature = "getrandom")]
+    #[inline]
+    fn generate_iv() -> Result<Iv<Self>, getrandom::Error> {
+        let mut iv = Iv::<Self>::default();
+        getrandom::getrandom(&mut iv)?;
+        Ok(iv)
     }
 
     /// Generate random IV using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
-    fn generate_iv(mut rng: impl CryptoRngCore) -> Iv<Self> {
+    fn generate_iv_with_rng(rng: &mut impl CryptoRngCore) -> Result<Iv<Self>, rand_core::Error> {
         let mut iv = Iv::<Self>::default();
-        rng.fill_bytes(&mut iv);
-        iv
+        rng.try_fill_bytes(&mut iv)?;
+        Ok(iv)
     }
 
-    /// Generate random key and nonce using the provided [`CryptoRngCore`].
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    /// Generate random key and IV using the operating system's secure RNG.
+    #[cfg(feature = "getrandom")]
     #[inline]
-    fn generate_key_iv(mut rng: impl CryptoRngCore) -> (Key<Self>, Iv<Self>) {
-        (Self::generate_key(&mut rng), Self::generate_iv(&mut rng))
+    fn generate_key_iv() -> Result<(Key<Self>, Iv<Self>), getrandom::Error> {
+        let key = Self::generate_key()?;
+        let iv = Self::generate_iv()?;
+        Ok((key, iv))
+    }
+
+    /// Generate random key and IV using the provided [`CryptoRngCore`].
+    #[cfg(feature = "rand_core")]
+    #[inline]
+    fn generate_key_iv_with_rng(
+        rng: &mut impl CryptoRngCore,
+    ) -> Result<(Key<Self>, Iv<Self>), rand_core::Error> {
+        let key = Self::generate_key_with_rng(rng)?;
+        let iv = Self::generate_iv_with_rng(rng)?;
+        Ok((key, iv))
     }
 }
 
@@ -237,21 +282,26 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     /// Initialize value using `inner` and `iv` slice.
     #[inline]
     fn inner_iv_slice_init(inner: Self::Inner, iv: &[u8]) -> Result<Self, InvalidLength> {
-        if iv.len() != Self::IvSize::to_usize() {
-            Err(InvalidLength)
-        } else {
-            Ok(Self::inner_iv_init(inner, Iv::<Self>::from_slice(iv)))
-        }
+        let iv = <&Iv<Self>>::try_from(iv).map_err(|_| InvalidLength)?;
+        Ok(Self::inner_iv_init(inner, iv))
+    }
+
+    /// Generate random IV using the operating system's secure RNG.
+    #[cfg(feature = "getrandom")]
+    #[inline]
+    fn generate_iv() -> Result<Iv<Self>, getrandom::Error> {
+        let mut iv = Iv::<Self>::default();
+        getrandom::getrandom(&mut iv)?;
+        Ok(iv)
     }
 
     /// Generate random IV using the provided [`CryptoRngCore`].
     #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
     #[inline]
-    fn generate_iv(mut rng: impl CryptoRngCore) -> Iv<Self> {
+    fn generate_iv_with_rng(rng: &mut impl CryptoRngCore) -> Result<Iv<Self>, rand_core::Error> {
         let mut iv = Iv::<Self>::default();
-        rng.fill_bytes(&mut iv);
-        iv
+        rng.try_fill_bytes(&mut iv)?;
+        Ok(iv)
     }
 }
 

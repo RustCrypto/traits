@@ -93,7 +93,7 @@ where
     }
 }
 
-#[cfg(all(feature = "arithmetic"))]
+#[cfg(feature = "arithmetic")]
 impl<C> ValidatePublicKey for C
 where
     C: CurveArithmetic,

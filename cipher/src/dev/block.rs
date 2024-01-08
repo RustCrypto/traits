@@ -1,23 +1,20 @@
 //! Development-related functionality
 
-pub use blobby;
-
 /// Define block cipher test
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! block_cipher_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
             use cipher::{
-                blobby::Blob3Iterator, generic_array::GenericArray, typenum::Unsigned,
-                BlockDecryptMut, BlockEncryptMut, BlockSizeUser, KeyInit,
+                array::Array, blobby::Blob3Iterator, typenum::Unsigned, BlockDecryptMut,
+                BlockEncryptMut, BlockSizeUser, KeyInit,
             };
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
                 let mut state = <$cipher as KeyInit>::new_from_slice(key).unwrap();
 
-                let mut block = GenericArray::clone_from_slice(pt);
+                let mut block = Array::clone_from_slice(pt);
                 state.encrypt_block_mut(&mut block);
                 if ct != block.as_slice() {
                     return false;
@@ -99,14 +96,13 @@ macro_rules! block_cipher_test {
 
 /// Define block mode encryption test
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! block_mode_enc_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
             use cipher::{
-                blobby::Blob4Iterator, generic_array::GenericArray, inout::InOutBuf,
-                typenum::Unsigned, BlockEncryptMut, BlockSizeUser, KeyIvInit,
+                array::Array, blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
+                BlockEncryptMut, BlockSizeUser, KeyIvInit,
             };
 
             fn run_test(key: &[u8], iv: &[u8], pt: &[u8], ct: &[u8]) -> bool {
@@ -158,14 +154,13 @@ macro_rules! block_mode_enc_test {
 
 /// Define block mode decryption test
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! block_mode_dec_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
             use cipher::{
-                blobby::Blob4Iterator, generic_array::GenericArray, inout::InOutBuf,
-                typenum::Unsigned, BlockDecryptMut, BlockSizeUser, KeyIvInit,
+                array::Array, blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
+                BlockDecryptMut, BlockSizeUser, KeyIvInit,
             };
 
             fn run_test(key: &[u8], iv: &[u8], pt: &[u8], ct: &[u8]) -> bool {
@@ -217,7 +212,6 @@ macro_rules! block_mode_dec_test {
 
 /// Define `IvState` test
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! iv_state_test {
     ($name:ident, $cipher:ty, encrypt $(,)?) => {
         $crate::iv_state_test!($name, $cipher, encrypt_blocks_mut);
@@ -266,7 +260,6 @@ macro_rules! iv_state_test {
 
 /// Define block encryptor benchmark
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! block_encryptor_bench {
     (Key: $cipher:ty, $block_name:ident, $blocks_name:ident $(,)? ) => {
         $crate::block_encryptor_bench!(
@@ -328,7 +321,6 @@ macro_rules! block_encryptor_bench {
 
 /// Define block decryptor benchmark
 #[macro_export]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 macro_rules! block_decryptor_bench {
     (Key: $cipher:ty, $block_name:ident, $blocks_name:ident $(,)? ) => {
         $crate::block_decryptor_bench!(

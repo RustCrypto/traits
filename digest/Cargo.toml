@@ -1,25 +1,25 @@
 [package]
 name = "digest"
 description = "Traits for cryptographic hash functions and message authentication codes"
-version = "0.11.0-pre"
+version = "0.11.0-pre.3"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 edition = "2021"
-rust-version = "1.57"
+rust-version = "1.71"
 documentation = "https://docs.rs/digest"
 repository = "https://github.com/RustCrypto/traits"
 keywords = ["digest", "crypto", "hash"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = "0.2.0-pre"
+crypto-common = "=0.2.0-pre.3"
 
 # optional dependencies
-block-buffer = { version = "0.11.0-pre", optional = true }
+block-buffer = { version = "=0.11.0-pre.3", optional = true }
 subtle = { version = "2.4", default-features = false, optional = true }
 blobby = { version = "0.3", optional = true }
-const-oid = { version = "0.9", optional = true }
+const-oid = { version = "=0.10.0-pre.2", optional = true }
 
 [features]
 default = ["core-api"]

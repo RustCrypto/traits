@@ -5,7 +5,7 @@ Traits which describe the functionality of password hashing algorithms,
 as well as a `no_std`-friendly implementation of the PHC string format
 (a well-defined subset of the Modular Crypt Format a.k.a. MCF)
 """
-version = "0.5.0"
+version = "0.6.0-pre"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"

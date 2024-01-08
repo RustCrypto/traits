@@ -14,7 +14,6 @@
     clippy::cast_sign_loss,
     clippy::checked_conversions,
     clippy::implicit_saturating_sub,
-    clippy::integer_arithmetic,
     clippy::mod_module_files,
     clippy::panic,
     clippy::panic_in_result_fn,
@@ -129,7 +128,7 @@ pub use zeroize;
 pub use {
     crate::{
         arithmetic::{CurveArithmetic, PrimeCurveArithmetic},
-        point::{AffinePoint, ProjectivePoint},
+        point::{AffinePoint, BatchNormalize, ProjectivePoint},
         public_key::PublicKey,
         scalar::{NonZeroScalar, Scalar},
     },

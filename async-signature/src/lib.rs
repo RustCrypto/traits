@@ -5,25 +5,27 @@
 )]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![forbid(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms, unused_qualifications)]
+#![warn(
+    missing_docs,
+    rust_2018_idioms,
+    unused_qualifications,
+    missing_debug_implementations
+)]
 
 pub use signature::{self, Error};
 
 #[cfg(feature = "digest")]
 pub use signature::digest::{self, Digest};
 
-use async_trait::async_trait;
+#[cfg(feature = "rand_core")]
+use signature::rand_core::CryptoRngCore;
 
 /// Asynchronously sign the provided message bytestring using `Self`
 /// (e.g. client for a Cloud KMS or HSM), returning a digital signature.
 ///
 /// This trait is an async equivalent of the [`signature::Signer`] trait.
-#[async_trait]
-pub trait AsyncSigner<S>
-where
-    Self: Send + Sync,
-    S: Send + 'static,
-{
+#[allow(async_fn_in_trait)]
+pub trait AsyncSigner<S> {
     /// Attempt to sign the given message, returning a digital signature on
     /// success, or an error if something went wrong.
     ///
@@ -32,11 +34,9 @@ where
     async fn sign_async(&self, msg: &[u8]) -> Result<S, Error>;
 }
 
-#[async_trait]
 impl<S, T> AsyncSigner<S> for T
 where
-    S: Send + 'static,
-    T: signature::Signer<S> + Send + Sync,
+    T: signature::Signer<S>,
 {
     async fn sign_async(&self, msg: &[u8]) -> Result<S, Error> {
         self.try_sign(msg)
@@ -47,12 +47,10 @@ where
 ///
 /// This trait is an async equivalent of the [`signature::DigestSigner`] trait.
 #[cfg(feature = "digest")]
-#[async_trait]
+#[allow(async_fn_in_trait)]
 pub trait AsyncDigestSigner<D, S>
 where
-    Self: Send + Sync,
-    D: Digest + Send + 'static,
-    S: 'static,
+    D: Digest,
 {
     /// Attempt to sign the given prehashed message [`Digest`], returning a
     /// digital signature on success, or an error if something went wrong.
@@ -60,14 +58,49 @@ where
 }
 
 #[cfg(feature = "digest")]
-#[async_trait]
 impl<D, S, T> AsyncDigestSigner<D, S> for T
 where
-    D: Digest + Send + 'static,
-    S: Send + 'static,
-    T: signature::DigestSigner<D, S> + Send + Sync,
+    D: Digest,
+    T: signature::DigestSigner<D, S>,
 {
     async fn sign_digest_async(&self, digest: D) -> Result<S, Error> {
         self.try_sign_digest(digest)
+    }
+}
+
+/// Sign the given message using the provided external randomness source.
+#[cfg(feature = "rand_core")]
+#[allow(async_fn_in_trait)]
+pub trait AsyncRandomizedSigner<S> {
+    /// Sign the given message and return a digital signature
+    async fn sign_with_rng_async(&self, rng: &mut impl CryptoRngCore, msg: &[u8]) -> S {
+        self.try_sign_with_rng_async(rng, msg)
+            .await
+            .expect("signature operation failed")
+    }
+
+    /// Attempt to sign the given message, returning a digital signature on
+    /// success, or an error if something went wrong.
+    ///
+    /// The main intended use case for signing errors is when communicating
+    /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
+    async fn try_sign_with_rng_async(
+        &self,
+        rng: &mut impl CryptoRngCore,
+        msg: &[u8],
+    ) -> Result<S, Error>;
+}
+
+#[cfg(feature = "rand_core")]
+impl<S, T> AsyncRandomizedSigner<S> for T
+where
+    T: signature::RandomizedSigner<S>,
+{
+    async fn try_sign_with_rng_async(
+        &self,
+        rng: &mut impl CryptoRngCore,
+        msg: &[u8],
+    ) -> Result<S, Error> {
+        self.try_sign_with_rng(rng, msg)
     }
 }

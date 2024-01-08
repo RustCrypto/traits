@@ -1,26 +1,17 @@
-//! [Authenticated Encryption with Associated Data] (AEAD) traits
-//!
-//! This crate provides an abstract interface for AEAD ciphers, which guarantee
-//! both confidentiality and integrity, even from a powerful attacker who is
-//! able to execute [chosen-ciphertext attacks]. The resulting security property,
-//! [ciphertext indistinguishability], is considered a basic requirement for
-//! modern cryptographic implementations.
-//!
-//! See [RustCrypto/AEADs] for cipher implementations which use this trait.
-//!
-//! [Authenticated Encryption with Associated Data]: https://en.wikipedia.org/wiki/Authenticated_encryption
-//! [chosen-ciphertext attacks]: https://en.wikipedia.org/wiki/Chosen-ciphertext_attack
-//! [ciphertext indistinguishability]: https://en.wikipedia.org/wiki/Ciphertext_indistinguishability
-//! [RustCrypto/AEADs]: https://github.com/RustCrypto/AEADs
-
 #![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![doc = include_str!("../README.md")]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg"
 )]
 #![forbid(unsafe_code)]
-#![warn(clippy::unwrap_used, missing_docs, rust_2018_idioms)]
+#![warn(
+    clippy::unwrap_used,
+    missing_docs,
+    rust_2018_idioms,
+    missing_debug_implementations
+)]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -29,47 +20,39 @@ extern crate alloc;
 extern crate std;
 
 #[cfg(feature = "dev")]
-#[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
 pub mod dev;
 
 #[cfg(feature = "stream")]
-#[cfg_attr(docsrs, doc(cfg(feature = "stream")))]
 pub mod stream;
 
-pub use crypto_common::{Key, KeyInit, KeySizeUser};
-pub use generic_array::{self, typenum::consts};
+pub use crypto_common::{
+    array::{self, typenum::consts},
+    Key, KeyInit, KeySizeUser,
+};
 
 #[cfg(feature = "arrayvec")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arrayvec")))]
 pub use arrayvec;
-
 #[cfg(feature = "bytes")]
-#[cfg_attr(docsrs, doc(cfg(feature = "bytes")))]
 pub use bytes;
-
 #[cfg(feature = "getrandom")]
-#[cfg_attr(docsrs, doc(cfg(feature = "getrandom")))]
 pub use crypto_common::rand_core::OsRng;
-
 #[cfg(feature = "heapless")]
-#[cfg_attr(docsrs, doc(cfg(feature = "heapless")))]
 pub use heapless;
 
 #[cfg(feature = "rand_core")]
-#[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
 pub use crypto_common::rand_core;
 
 use core::fmt;
-use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+use crypto_common::array::{typenum::Unsigned, Array, ArraySize};
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
-
 #[cfg(feature = "bytes")]
 use bytes::BytesMut;
-
+#[cfg(feature = "getrandom")]
+use crypto_common::getrandom;
 #[cfg(feature = "rand_core")]
-use rand_core::{CryptoRng, RngCore};
+use rand_core::CryptoRngCore;
 
 /// Error type.
 ///
@@ -91,10 +74,10 @@ impl fmt::Display for Error {
 impl std::error::Error for Error {}
 
 /// Nonce: single-use value for ensuring ciphertexts are unique
-pub type Nonce<A> = GenericArray<u8, <A as AeadCore>::NonceSize>;
+pub type Nonce<A> = Array<u8, <A as AeadCore>::NonceSize>;
 
 /// Tag: authentication code which ensures ciphertexts are authentic
-pub type Tag<A> = GenericArray<u8, <A as AeadCore>::TagSize>;
+pub type Tag<A> = Array<u8, <A as AeadCore>::TagSize>;
 
 /// Authenticated Encryption with Associated Data (AEAD) algorithm core trait.
 ///
@@ -102,14 +85,14 @@ pub type Tag<A> = GenericArray<u8, <A as AeadCore>::TagSize>;
 /// `Aead*` traits.
 pub trait AeadCore {
     /// The length of a nonce.
-    type NonceSize: ArrayLength<u8>;
+    type NonceSize: ArraySize;
 
-    /// The maximum length of the nonce.
-    type TagSize: ArrayLength<u8>;
+    /// The maximum length of the tag.
+    type TagSize: ArraySize;
 
     /// The upper bound amount of additional space required to support a
     /// ciphertext vs. a plaintext.
-    type CiphertextOverhead: ArrayLength<u8> + Unsigned;
+    type CiphertextOverhead: ArraySize + Unsigned;
 
     /// Generate a random nonce for this AEAD algorithm.
     ///
@@ -146,15 +129,31 @@ pub trait AeadCore {
     /// See the [`stream`] module for a ready-made implementation of the latter.
     ///
     /// [NIST SP 800-38D]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
-    fn generate_nonce(mut rng: impl CryptoRng + RngCore) -> Nonce<Self>
+    #[cfg(feature = "getrandom")]
+    fn generate_nonce() -> core::result::Result<Nonce<Self>, getrandom::Error>
     where
         Nonce<Self>: Default,
     {
         let mut nonce = Nonce::<Self>::default();
-        rng.fill_bytes(&mut nonce);
-        nonce
+        getrandom::getrandom(&mut nonce)?;
+        Ok(nonce)
+    }
+
+    /// Generate a random nonce for this AEAD algorithm using the specified
+    /// [`CryptoRngCore`].
+    ///
+    /// See [`AeadCore::generate_nonce`] documentation for requirements for
+    /// random nonces.
+    #[cfg(feature = "rand_core")]
+    fn generate_nonce_with_rng(
+        rng: &mut impl CryptoRngCore,
+    ) -> core::result::Result<Nonce<Self>, rand_core::Error>
+    where
+        Nonce<Self>: Default,
+    {
+        let mut nonce = Nonce::<Self>::default();
+        rng.try_fill_bytes(&mut nonce)?;
+        Ok(nonce)
     }
 }
 
@@ -163,7 +162,6 @@ pub trait AeadCore {
 /// This trait is intended for use with stateless AEAD algorithms. The
 /// [`AeadMut`] trait provides a stateful interface.
 #[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub trait Aead: AeadCore {
     /// Encrypt the given plaintext payload, and return the resulting
     /// ciphertext as a vector of bytes.
@@ -220,7 +218,6 @@ pub trait Aead: AeadCore {
 
 /// Stateful Authenticated Encryption with Associated Data algorithm.
 #[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub trait AeadMut: AeadCore {
     /// Encrypt the given plaintext slice, and return the resulting ciphertext
     /// as a vector of bytes.
@@ -258,7 +255,7 @@ macro_rules! impl_decrypt_in_place {
 
         let tag_pos = $buffer.len() - Self::TagSize::to_usize();
         let (msg, tag) = $buffer.as_mut().split_at_mut(tag_pos);
-        $aead.decrypt_in_place_detached($nonce, $aad, msg, Tag::<Self>::from_slice(tag))?;
+        $aead.decrypt_in_place_detached($nonce, $aad, msg, Tag::<Self>::ref_from_slice(tag))?;
         $buffer.truncate(tag_pos);
         Ok(())
     }};
@@ -480,7 +477,7 @@ impl<Alg: AeadInPlace> AeadMutInPlace for Alg {
 /// If you don't care about AAD, you can pass a `&[u8]` as the payload to
 /// `encrypt`/`decrypt` and it will automatically be coerced to this type.
 #[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+#[derive(Debug)]
 pub struct Payload<'msg, 'aad> {
     /// Message to be encrypted/decrypted
     pub msg: &'msg [u8],

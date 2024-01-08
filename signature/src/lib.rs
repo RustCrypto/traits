@@ -12,6 +12,7 @@
     missing_docs,
     rust_2018_idioms,
     unused_lifetimes,
+    missing_debug_implementations,
     unused_qualifications
 )]
 

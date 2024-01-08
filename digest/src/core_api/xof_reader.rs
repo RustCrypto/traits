@@ -37,7 +37,6 @@ where
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<T> std::io::Read for XofReaderCoreWrapper<T>
 where
     T: XofReaderCore,

@@ -1,8 +1,8 @@
 use crate::{ParBlocks, ParBlocksSizeUser, StreamCipherError};
 use crypto_common::{
-    generic_array::{ArrayLength, GenericArray},
+    array::{slice_as_chunks_mut, Array},
     typenum::Unsigned,
-    Block, BlockSizeUser,
+    Block, BlockSizeUser, BlockSizes,
 };
 use inout::{InOut, InOutBuf};
 
@@ -190,51 +190,30 @@ macro_rules! impl_counter {
 
 impl_counter! { u32 u64 u128 }
 
-/// Partition buffer into 2 parts: buffer of arrays and tail.
-///
-/// In case if `N` is less or equal to 1, buffer of arrays has length
-/// of zero and tail is equal to `self`.
-#[inline]
-fn into_chunks<T, N: ArrayLength<T>>(buf: &mut [T]) -> (&mut [GenericArray<T, N>], &mut [T]) {
-    use core::slice;
-    if N::USIZE <= 1 {
-        return (&mut [], buf);
-    }
-    let chunks_len = buf.len() / N::USIZE;
-    let tail_pos = N::USIZE * chunks_len;
-    let tail_len = buf.len() - tail_pos;
-    unsafe {
-        let ptr = buf.as_mut_ptr();
-        let chunks = slice::from_raw_parts_mut(ptr as *mut GenericArray<T, N>, chunks_len);
-        let tail = slice::from_raw_parts_mut(ptr.add(tail_pos), tail_len);
-        (chunks, tail)
-    }
-}
-
-struct WriteBlockCtx<'a, BS: ArrayLength<u8>> {
+struct WriteBlockCtx<'a, BS: BlockSizes> {
     block: &'a mut Block<Self>,
 }
-impl<'a, BS: ArrayLength<u8>> BlockSizeUser for WriteBlockCtx<'a, BS> {
+impl<'a, BS: BlockSizes> BlockSizeUser for WriteBlockCtx<'a, BS> {
     type BlockSize = BS;
 }
-impl<'a, BS: ArrayLength<u8>> StreamClosure for WriteBlockCtx<'a, BS> {
+impl<'a, BS: BlockSizes> StreamClosure for WriteBlockCtx<'a, BS> {
     #[inline(always)]
     fn call<B: StreamBackend<BlockSize = BS>>(self, backend: &mut B) {
         backend.gen_ks_block(self.block);
     }
 }
 
-struct WriteBlocksCtx<'a, BS: ArrayLength<u8>> {
+struct WriteBlocksCtx<'a, BS: BlockSizes> {
     blocks: &'a mut [Block<Self>],
 }
-impl<'a, BS: ArrayLength<u8>> BlockSizeUser for WriteBlocksCtx<'a, BS> {
+impl<'a, BS: BlockSizes> BlockSizeUser for WriteBlocksCtx<'a, BS> {
     type BlockSize = BS;
 }
-impl<'a, BS: ArrayLength<u8>> StreamClosure for WriteBlocksCtx<'a, BS> {
+impl<'a, BS: BlockSizes> StreamClosure for WriteBlocksCtx<'a, BS> {
     #[inline(always)]
     fn call<B: StreamBackend<BlockSize = BS>>(self, backend: &mut B) {
         if B::ParBlocksSize::USIZE > 1 {
-            let (chunks, tail) = into_chunks::<_, B::ParBlocksSize>(self.blocks);
+            let (chunks, tail) = slice_as_chunks_mut(self.blocks);
             for chunk in chunks {
                 backend.gen_par_ks_blocks(chunk);
             }
@@ -247,15 +226,15 @@ impl<'a, BS: ArrayLength<u8>> StreamClosure for WriteBlocksCtx<'a, BS> {
     }
 }
 
-struct ApplyBlockCtx<'inp, 'out, BS: ArrayLength<u8>> {
+struct ApplyBlockCtx<'inp, 'out, BS: BlockSizes> {
     block: InOut<'inp, 'out, Block<Self>>,
 }
 
-impl<'inp, 'out, BS: ArrayLength<u8>> BlockSizeUser for ApplyBlockCtx<'inp, 'out, BS> {
+impl<'inp, 'out, BS: BlockSizes> BlockSizeUser for ApplyBlockCtx<'inp, 'out, BS> {
     type BlockSize = BS;
 }
 
-impl<'inp, 'out, BS: ArrayLength<u8>> StreamClosure for ApplyBlockCtx<'inp, 'out, BS> {
+impl<'inp, 'out, BS: BlockSizes> StreamClosure for ApplyBlockCtx<'inp, 'out, BS> {
     #[inline(always)]
     fn call<B: StreamBackend<BlockSize = BS>>(mut self, backend: &mut B) {
         let mut t = Default::default();
@@ -264,15 +243,15 @@ impl<'inp, 'out, BS: ArrayLength<u8>> StreamClosure for ApplyBlockCtx<'inp, 'out
     }
 }
 
-struct ApplyBlocksCtx<'inp, 'out, BS: ArrayLength<u8>> {
+struct ApplyBlocksCtx<'inp, 'out, BS: BlockSizes> {
     blocks: InOutBuf<'inp, 'out, Block<Self>>,
 }
 
-impl<'inp, 'out, BS: ArrayLength<u8>> BlockSizeUser for ApplyBlocksCtx<'inp, 'out, BS> {
+impl<'inp, 'out, BS: BlockSizes> BlockSizeUser for ApplyBlocksCtx<'inp, 'out, BS> {
     type BlockSize = BS;
 }
 
-impl<'inp, 'out, BS: ArrayLength<u8>> StreamClosure for ApplyBlocksCtx<'inp, 'out, BS> {
+impl<'inp, 'out, BS: BlockSizes> StreamClosure for ApplyBlocksCtx<'inp, 'out, BS> {
     #[inline(always)]
     #[allow(clippy::needless_range_loop)]
     fn call<B: StreamBackend<BlockSize = BS>>(self, backend: &mut B) {
@@ -284,7 +263,7 @@ impl<'inp, 'out, BS: ArrayLength<u8>> StreamClosure for ApplyBlocksCtx<'inp, 'ou
                 chunk.xor_in2out(&tmp);
             }
             let n = tail.len();
-            let mut buf = GenericArray::<_, B::ParBlocksSize>::default();
+            let mut buf = Array::<_, B::ParBlocksSize>::default();
             let ks = &mut buf[..n];
             backend.gen_tail_blocks(ks);
             for i in 0..n {

@@ -2,17 +2,15 @@
 resolver = "2"
 members = [
     "aead",
+    "async-signature",
     "cipher",
+    "crypto",
     "crypto-common",
     "digest",
+    "elliptic-curve",
     "kem",
     "password-hash",
     "signature",
-    "signature/async",
+    "signature_derive",
     "universal-hash",
-]
-# re-add when all crates are MSRV 1.60+
-exclude = [
-    "crypto",
-    "elliptic-curve"
 ]
