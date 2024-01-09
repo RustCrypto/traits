@@ -13,7 +13,7 @@ readme = "README.md"
 categories = ["cryptography", "no-std"]
 keywords = ["crypto", "ecc", "elliptic", "weierstrass"]
 edition = "2021"
-rust-version = "1.71"
+rust-version = "1.73"
 
 [dependencies]
 base16ct = "0.2"
