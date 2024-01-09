@@ -7,6 +7,7 @@ mod nonzero;
 mod primitive;
 
 pub use self::primitive::ScalarPrimitive;
+
 #[cfg(feature = "arithmetic")]
 pub use self::{blinded::BlindedScalar, nonzero::NonZeroScalar};
 
