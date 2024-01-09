@@ -2,7 +2,7 @@
 
 #![cfg(all(feature = "derive", feature = "digest"))]
 
-use digest::{generic_array::GenericArray, Digest, OutputSizeUser};
+use digest::{array::Array, Digest, OutputSizeUser};
 use hex_literal::hex;
 use sha2::Sha256;
 use signature::{
@@ -17,7 +17,7 @@ const INPUT_STRING: &[u8] = b"abc";
 const INPUT_STRING_DIGEST: [u8; 32] =
     hex!("ba7816bf 8f01cfea 414140de 5dae2223 b00361a3 96177a9c b410ff61 f20015ad");
 
-type Repr = GenericArray<u8, <Sha256 as OutputSizeUser>::OutputSize>;
+type Repr = Array<u8, <Sha256 as OutputSizeUser>::OutputSize>;
 
 /// Dummy signature which just contains a digest output
 #[derive(Clone, Debug)]
@@ -35,7 +35,7 @@ impl TryFrom<&[u8]> for DummySignature {
     type Error = Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self, Error> {
-        Ok(DummySignature(GenericArray::clone_from_slice(bytes)))
+        Ok(DummySignature(Array::clone_from_slice(bytes)))
     }
 }
 
