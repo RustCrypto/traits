@@ -1,6 +1,7 @@
 //! Generic scalar type with primitive functionality.
 
 use crate::{
+    array::Array,
     bigint::{prelude::*, Limb, NonZero},
     scalar::FromUintUnchecked,
     scalar::IsHigh,
@@ -13,7 +14,6 @@ use core::{
     ops::{Add, AddAssign, Neg, ShrAssign, Sub, SubAssign},
     str,
 };
-use hybrid_array::Array;
 use rand_core::CryptoRngCore;
 use subtle::{
     Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
@@ -357,7 +357,7 @@ where
     C: Curve,
 {
     fn is_high(&self) -> Choice {
-        let n_2 = C::ORDER >> 1;
+        let n_2 = C::ORDER >> 1u32;
         self.inner.ct_gt(&n_2)
     }
 }

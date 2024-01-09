@@ -4,9 +4,9 @@
 //! the traits in this crate.
 
 use crate::{
+    array::typenum::U32,
     bigint::{Limb, U256},
     error::{Error, Result},
-    hybrid_array::typenum::U32,
     ops::{Invert, LinearCombination, MulByGenerator, Reduce, ShrAssign},
     pkcs8,
     point::AffineCoordinates,

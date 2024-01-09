@@ -119,7 +119,8 @@ pub use crate::{
     secret_key::SecretKey,
 };
 pub use crypto_bigint as bigint;
-pub use hybrid_array::{self, typenum::consts};
+pub use hybrid_array as array;
+pub use hybrid_array::typenum::consts;
 pub use rand_core;
 pub use subtle;
 pub use zeroize;
@@ -178,7 +179,7 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
     type Uint: bigint::ArrayEncoding
         + bigint::AddMod<Output = Self::Uint>
         + bigint::Encoding
-        + bigint::Integer
+        + bigint::FixedInteger
         + bigint::NegMod<Output = Self::Uint>
         + bigint::Random
         + bigint::RandomMod
