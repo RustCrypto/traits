@@ -119,7 +119,7 @@ pub use crate::{
     secret_key::SecretKey,
 };
 pub use crypto_bigint as bigint;
-pub use generic_array::{self, typenum::consts};
+pub use hybrid_array::{self, typenum::consts};
 pub use rand_core;
 pub use subtle;
 pub use zeroize;
@@ -149,7 +149,7 @@ use core::{
     fmt::Debug,
     ops::{Add, ShrAssign},
 };
-use generic_array::ArrayLength;
+use hybrid_array::ArraySize;
 
 /// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic
 /// curve public key cryptography (`id-ecPublicKey`).
@@ -172,7 +172,7 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
     ///
     /// This is typically the same as `Self::Uint::ByteSize` but for curves
     /// with an unusual field modulus (e.g. P-224, P-521) it may be different.
-    type FieldBytesSize: ArrayLength<u8> + Add + Eq;
+    type FieldBytesSize: ArraySize + Add + Eq;
 
     /// Integer type used to represent field elements of this elliptic curve.
     type Uint: bigint::ArrayEncoding

@@ -4,7 +4,7 @@
 
 use core::ops::{AddAssign, Mul};
 use ff::Field;
-use generic_array::{typenum::Unsigned, ArrayLength, GenericArray};
+use hybrid_array::{typenum::Unsigned, Array, ArraySize};
 
 /// The coefficients for mapping from one isogenous curve to another
 pub struct IsogenyCoefficients<F: Field + AddAssign + Mul<Output = F>> {
@@ -21,13 +21,13 @@ pub struct IsogenyCoefficients<F: Field + AddAssign + Mul<Output = F>> {
 /// The [`Isogeny`] methods to map to another curve.
 pub trait Isogeny: Field + AddAssign + Mul<Output = Self> {
     /// The maximum number of coefficients
-    type Degree: ArrayLength<Self>;
+    type Degree: ArraySize;
     /// The isogeny coefficients
     const COEFFICIENTS: IsogenyCoefficients<Self>;
 
     /// Map from the isogeny points to the main curve
     fn isogeny(x: Self, y: Self) -> (Self, Self) {
-        let mut xs = GenericArray::<Self, Self::Degree>::default();
+        let mut xs = Array::<Self, Self::Degree>::default();
         xs[0] = Self::ONE;
         xs[1] = x;
         xs[2] = x.square();

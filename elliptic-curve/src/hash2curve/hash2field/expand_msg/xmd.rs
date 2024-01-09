@@ -5,11 +5,11 @@ use core::marker::PhantomData;
 use super::{Domain, ExpandMsg, Expander};
 use crate::{Error, Result};
 use digest::{
-    core_api::BlockSizeUser,
-    generic_array::{
+    array::{
         typenum::{IsLess, IsLessOrEqual, Unsigned, U256},
-        GenericArray,
+        Array,
     },
+    core_api::BlockSizeUser,
     FixedOutput, HashMarker,
 };
 
@@ -56,7 +56,7 @@ where
 
         let domain = Domain::xmd::<HashT>(dsts)?;
         let mut b_0 = HashT::default();
-        b_0.update(&GenericArray::<u8, HashT::BlockSize>::default());
+        b_0.update(&Array::<u8, HashT::BlockSize>::default());
 
         for msg in msgs {
             b_0.update(msg);
@@ -93,8 +93,8 @@ where
     HashT::OutputSize: IsLess<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
 {
-    b_0: GenericArray<u8, HashT::OutputSize>,
-    b_vals: GenericArray<u8, HashT::OutputSize>,
+    b_0: Array<u8, HashT::OutputSize>,
+    b_vals: Array<u8, HashT::OutputSize>,
     domain: Domain<'a, HashT::OutputSize>,
     index: u8,
     offset: usize,
@@ -112,7 +112,7 @@ where
             self.index += 1;
             self.offset = 0;
             // b_0 XOR b_(idx - 1)
-            let mut tmp = GenericArray::<u8, HashT::OutputSize>::default();
+            let mut tmp = Array::<u8, HashT::OutputSize>::default();
             self.b_0
                 .iter()
                 .zip(&self.b_vals[..])
@@ -152,11 +152,11 @@ where
 mod test {
     use super::*;
     use core::mem;
-    use generic_array::{
-        typenum::{U128, U32},
-        ArrayLength,
-    };
     use hex_literal::hex;
+    use hybrid_array::{
+        typenum::{U128, U32},
+        ArraySize,
+    };
     use sha2::Sha256;
 
     fn assert_message<HashT>(
@@ -170,7 +170,7 @@ mod test {
     {
         let block = HashT::BlockSize::to_usize();
         assert_eq!(
-            GenericArray::<u8, HashT::BlockSize>::default().as_slice(),
+            Array::<u8, HashT::BlockSize>::default().as_slice(),
             &bytes[..block]
         );
 
@@ -200,7 +200,7 @@ mod test {
 
     impl TestVector {
         #[allow(clippy::panic_in_result_fn)]
-        fn assert<HashT, L: ArrayLength<u8>>(
+        fn assert<HashT, L: ArraySize>(
             &self,
             dst: &'static [u8],
             domain: &Domain<'_, HashT::OutputSize>,
@@ -215,7 +215,7 @@ mod test {
             let mut expander =
                 ExpandMsgXmd::<HashT>::expand_message(&[self.msg], &dst, L::to_usize())?;
 
-            let mut uniform_bytes = GenericArray::<u8, L>::default();
+            let mut uniform_bytes = Array::<u8, L>::default();
             expander.fill_bytes(&mut uniform_bytes);
 
             assert_eq!(uniform_bytes.as_slice(), self.uniform_bytes);

@@ -10,7 +10,7 @@ mod pkcs8;
 
 use crate::{Curve, Error, FieldBytes, Result, ScalarPrimitive};
 use core::fmt::{self, Debug};
-use generic_array::typenum::Unsigned;
+use hybrid_array::typenum::Unsigned;
 use subtle::{Choice, ConstantTimeEq};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
@@ -154,13 +154,13 @@ where
 
     /// Deserialize secret key from an encoded secret scalar passed as a byte slice.
     ///
-    /// The slice is expected to be a minimum of 24-bytes (192-byts) and at most `C::FieldBytesSize`
-    /// bytes in length.
+    /// The slice is expected to be a minimum of 24-bytes (192-bytes) and at most
+    /// `C::FieldBytesSize` bytes in length.
     ///
     /// Byte slices shorter than the field size are handled by zero padding the input.
     pub fn from_slice(slice: &[u8]) -> Result<Self> {
         if slice.len() == C::FieldBytesSize::USIZE {
-            Self::from_bytes(FieldBytes::<C>::from_slice(slice))
+            Self::from_bytes(FieldBytes::<C>::ref_from_slice(slice))
         } else if (Self::MIN_SIZE..C::FieldBytesSize::USIZE).contains(&slice.len()) {
             let mut bytes = Zeroizing::new(FieldBytes::<C>::default());
             let offset = C::FieldBytesSize::USIZE.saturating_sub(slice.len());

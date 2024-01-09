@@ -5,14 +5,14 @@
 pub use sec1::point::{Coordinates, ModulusSize, Tag};
 
 use crate::{Curve, FieldBytesSize, Result, SecretKey};
-use generic_array::GenericArray;
+use hybrid_array::Array;
 use subtle::CtOption;
 
 #[cfg(feature = "arithmetic")]
 use crate::{AffinePoint, CurveArithmetic, Error};
 
 /// Encoded elliptic curve point with point compression.
-pub type CompressedPoint<C> = GenericArray<u8, CompressedPointSize<C>>;
+pub type CompressedPoint<C> = Array<u8, CompressedPointSize<C>>;
 
 /// Size of a compressed elliptic curve point.
 pub type CompressedPointSize<C> = <FieldBytesSize<C> as ModulusSize>::CompressedPointSize;
@@ -21,7 +21,7 @@ pub type CompressedPointSize<C> = <FieldBytesSize<C> as ModulusSize>::Compressed
 pub type EncodedPoint<C> = sec1::point::EncodedPoint<FieldBytesSize<C>>;
 
 /// Encoded elliptic curve point *without* point compression.
-pub type UncompressedPoint<C> = GenericArray<u8, UncompressedPointSize<C>>;
+pub type UncompressedPoint<C> = Array<u8, UncompressedPointSize<C>>;
 
 /// Size of an uncompressed elliptic curve point.
 pub type UncompressedPointSize<C> = <FieldBytesSize<C> as ModulusSize>::UncompressedPointSize;

@@ -5,8 +5,8 @@ pub(super) mod xof;
 
 use crate::{Error, Result};
 use digest::{Digest, ExtendableOutput, Update, XofReader};
-use generic_array::typenum::{IsLess, U256};
-use generic_array::{ArrayLength, GenericArray};
+use hybrid_array::typenum::{IsLess, U256};
+use hybrid_array::{Array, ArraySize};
 
 /// Salt when the DST is too long
 const OVERSIZE_DST_SALT: &[u8] = b"H2C-OVERSIZE-DST-";
@@ -45,17 +45,17 @@ pub trait Expander {
 /// [dst]: https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-5.4.3
 pub(crate) enum Domain<'a, L>
 where
-    L: ArrayLength<u8> + IsLess<U256>,
+    L: ArraySize + IsLess<U256>,
 {
     /// > 255
-    Hashed(GenericArray<u8, L>),
+    Hashed(Array<u8, L>),
     /// <= 255
     Array(&'a [&'a [u8]]),
 }
 
 impl<'a, L> Domain<'a, L>
 where
-    L: ArrayLength<u8> + IsLess<U256>,
+    L: ArraySize + IsLess<U256>,
 {
     pub fn xof<X>(dsts: &'a [&'a [u8]]) -> Result<Self>
     where
@@ -64,7 +64,7 @@ where
         if dsts.is_empty() {
             Err(Error)
         } else if dsts.iter().map(|dst| dst.len()).sum::<usize>() > MAX_DST_LEN {
-            let mut data = GenericArray::<u8, L>::default();
+            let mut data = Array::<u8, L>::default();
             let mut hash = X::default();
             hash.update(OVERSIZE_DST_SALT);
 
