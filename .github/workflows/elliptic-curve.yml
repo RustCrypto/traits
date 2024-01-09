@@ -58,6 +58,8 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,digest,ecdh,hazmat,hash2curve,jwk,pem,pkcs8,sec1,serde,voprf
 
   minimal-versions:
+    # Temporarily disabled until elliptic-curve 0.13.0-pre.0 is published
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
