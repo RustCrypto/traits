@@ -30,8 +30,9 @@ dependencies = [
 
 [[package]]
 name = "hybrid-array"
-version = "0.2.0-pre.8"
-source = "git+https://github.com/RustCrypto/utils.git?branch=hybrid-array/v0.2.0-pre.8#eac3be7a9c959152b37d6c51e1aaf2f44e9c2c40"
+version = "0.2.0-rc.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8c5517ac29f08e88170b9647d85cc5f21c2596de177b4867232e20b214b8da1"
 dependencies = [
  "typenum",
 ]

@@ -1,7 +1,7 @@
 [package]
 name = "crypto-common"
 description = "Common cryptographic traits"
-version = "0.2.0-pre.3"
+version = "0.2.0-pre.4"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -13,7 +13,7 @@ keywords = ["crypto", "traits"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-hybrid-array = "=0.2.0-pre.8"
+hybrid-array = "0.2.0-rc.0"
 
 # optional dependencies
 rand_core = { version = "0.6.4", optional = true }
