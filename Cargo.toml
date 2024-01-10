@@ -5,13 +5,13 @@ members = [
     "async-signature",
     "cipher",
     "crypto",
-#    "crypto-common",
+    "crypto-common",
     "digest",
-    "elliptic-curve",
+#    "elliptic-curve",
     "kem",
     "password-hash",
-    "signature",
+#    "signature",
     "signature_derive",
     "universal-hash",
 ]
-exclude = ["crypto-common"]
+exclude = ["elliptic-curve", "signature"]
