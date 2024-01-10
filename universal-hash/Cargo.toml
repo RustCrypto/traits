@@ -13,7 +13,7 @@ keywords = ["crypto", "mac"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = "=0.2.0-pre.3"
+crypto-common = "=0.2.0-pre.4"
 subtle = { version = "2.4", default-features = false }
 
 [features]

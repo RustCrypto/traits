@@ -255,7 +255,7 @@ macro_rules! impl_decrypt_in_place {
 
         let tag_pos = $buffer.len() - Self::TagSize::to_usize();
         let (msg, tag) = $buffer.as_mut().split_at_mut(tag_pos);
-        $aead.decrypt_in_place_detached($nonce, $aad, msg, Tag::<Self>::ref_from_slice(tag))?;
+        $aead.decrypt_in_place_detached($nonce, $aad, msg, Tag::<Self>::from_slice(tag))?;
         $buffer.truncate(tag_pos);
         Ok(())
     }};
