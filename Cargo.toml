@@ -5,7 +5,7 @@ members = [
     "async-signature",
     "cipher",
     "crypto",
-    "crypto-common",
+#    "crypto-common",
     "digest",
     "elliptic-curve",
     "kem",
@@ -14,3 +14,4 @@ members = [
     "signature_derive",
     "universal-hash",
 ]
+exclude = ["crypto-common"]
