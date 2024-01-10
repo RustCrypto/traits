@@ -1,7 +1,7 @@
 [package]
 name          = "signature"
 description   = "Traits for cryptographic signature algorithms (e.g. ECDSA, Ed25519)"
-version       = "2.3.0-pre.0"
+version       = "2.3.0-pre.1"
 authors       = ["RustCrypto Developers"]
 license       = "Apache-2.0 OR MIT"
 documentation = "https://docs.rs/signature"
@@ -14,12 +14,12 @@ rust-version  = "1.71"
 
 [dependencies]
 derive = { package = "signature_derive", version = "2", optional = true, path = "../signature_derive" }
-digest = { version = "=0.11.0-pre.3", optional = true, default-features = false }
+digest = { version = "=0.11.0-pre.4", optional = true, default-features = false }
 rand_core = { version = "0.6.4", optional = true, default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.4"
-sha2 = { version = "=0.11.0-pre.0", default-features = false }
+sha2 = { version = "=0.11.0-pre.1", default-features = false }
 
 [features]
 alloc = []

@@ -160,7 +160,7 @@ where
     /// Byte slices shorter than the field size are handled by zero padding the input.
     pub fn from_slice(slice: &[u8]) -> Result<Self> {
         if slice.len() == C::FieldBytesSize::USIZE {
-            Self::from_bytes(FieldBytes::<C>::ref_from_slice(slice))
+            Self::from_bytes(FieldBytes::<C>::from_slice(slice))
         } else if (Self::MIN_SIZE..C::FieldBytesSize::USIZE).contains(&slice.len()) {
             let mut bytes = Zeroizing::new(FieldBytes::<C>::default());
             let offset = C::FieldBytesSize::USIZE.saturating_sub(slice.len());
