@@ -1,6 +1,6 @@
 [package]
 name = "elliptic-curve"
-version = "0.14.0-pre.1"
+version = "0.14.0-pre.2"
 description = """
 General purpose Elliptic Curve Cryptography (ECC) support, including types
 and traits for representing various elliptic curve forms, scalars, points,
@@ -17,7 +17,7 @@ rust-version = "1.73"
 
 [dependencies]
 base16ct = "0.2"
-crypto-bigint = { version = "=0.6.0-pre.9", default-features = false, features = ["rand_core", "hybrid-array", "zeroize"] }
+crypto-bigint = { version = "=0.6.0-pre.10", default-features = false, features = ["rand_core", "hybrid-array", "zeroize"] }
 hybrid-array = { version = "0.2.0-rc.0", default-features = false, features = ["zeroize"] }
 rand_core = { version = "0.6.4", default-features = false }
 subtle = { version = "2", default-features = false }
