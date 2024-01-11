@@ -35,7 +35,8 @@ impl<T: VariableOutputCore> RtVariableCoreWrapper<T> {
             buffer,
             output_size,
         } = self;
-        if out.len() > Self::MAX_OUTPUT_SIZE || u8::try_from(out.len()).unwrap() != *output_size {
+        let size_u8 = u8::try_from(out.len()).map_err(|_| InvalidBufferSize)?;
+        if out.len() > Self::MAX_OUTPUT_SIZE || size_u8 != *output_size {
             return Err(InvalidBufferSize);
         }
         let mut full_res = Default::default();
