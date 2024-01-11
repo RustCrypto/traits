@@ -41,6 +41,9 @@ extern crate std;
 #[cfg(feature = "rand_core")]
 pub use crypto_common::rand_core;
 
+#[cfg(feature = "zeroize")]
+pub use zeroize;
+
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
 
