@@ -20,6 +20,7 @@ block-buffer = { version = "=0.11.0-pre.4", optional = true }
 subtle = { version = "2.4", default-features = false, optional = true }
 blobby = { version = "0.3", optional = true }
 const-oid = { version = "=0.10.0-pre.2", optional = true }
+zeroize = { version = "1.4", optional = true, default-features = false }
 
 [features]
 default = ["core-api"]
@@ -27,6 +28,7 @@ core-api = ["block-buffer"] # Enable Core API traits
 mac = ["subtle"] # Enable MAC traits
 rand_core = ["crypto-common/rand_core"] # Enable random key generation methods
 oid = ["const-oid"]
+zeroize = ["dep:zeroize", "block-buffer?/zeroize"]
 alloc = []
 std = ["alloc", "crypto-common/std"]
 dev = ["blobby"]

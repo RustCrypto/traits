@@ -167,6 +167,15 @@ where
     const OID: ObjectIdentifier = O::OID;
 }
 
+#[cfg(feature = "zeroize")]
+impl<T, OutSize, O> zeroize::ZeroizeOnDrop for CtVariableCoreWrapper<T, OutSize, O>
+where
+    T: VariableOutputCore + zeroize::ZeroizeOnDrop,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
+    LeEq<OutSize, T::OutputSize>: NonZero,
+{
+}
+
 impl<T, OutSize, O> fmt::Debug for CtVariableCoreWrapper<T, OutSize, O>
 where
     T: VariableOutputCore + AlgorithmName,

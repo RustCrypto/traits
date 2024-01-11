@@ -126,6 +126,27 @@ where
     }
 }
 
+impl<T> Drop for RtVariableCoreWrapper<T>
+where
+    T: VariableOutputCore + UpdateCore,
+{
+    #[inline]
+    fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
+        {
+            use zeroize::Zeroize;
+            self.buffer.zeroize();
+            self.output_size.zeroize();
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl<T> zeroize::ZeroizeOnDrop for RtVariableCoreWrapper<T> where
+    T: VariableOutputCore + UpdateCore + zeroize::ZeroizeOnDrop
+{
+}
+
 impl<T> fmt::Debug for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + UpdateCore + AlgorithmName,

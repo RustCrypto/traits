@@ -137,6 +137,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0edadbde8e0243b49d434f9a23ec0590af201f400a34d7d51049284e4a77c568"
 dependencies = [
  "crypto-common 0.2.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "zeroize",
 ]
 
 [[package]]
@@ -451,6 +452,7 @@ dependencies = [
  "const-oid 0.10.0-pre.2",
  "crypto-common 0.2.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
+ "zeroize",
 ]
 
 [[package]]
@@ -613,9 +615,9 @@ dependencies = [
 
 [[package]]
 name = "getrandom"
-version = "0.2.11"
+version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe9006bed769170c11f845cf00c7c1e9092aeb3f268e007c3e760ac68008070f"
+checksum = "190092ea657667030ac6a35e305e62fc4dd69fd98ac98631e5d3a2b1575a12b5"
 dependencies = [
  "cfg-if",
  "libc",
@@ -845,9 +847,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.151"
+version = "0.2.152"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "302d7ab3130588088d277783b1e2d2e10c9e9e4a16dd9050e6ec93fb3e7048f4"
+checksum = "13e3bf6590cbc649f4d1a3eefc9d5d6eb746f5200ffb04e5e142700b8faa56e7"
 
 [[package]]
 name = "num-traits"

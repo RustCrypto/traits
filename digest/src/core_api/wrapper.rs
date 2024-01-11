@@ -1,6 +1,6 @@
 use super::{
-    AlgorithmName, Buffer, BufferKindUser, ExtendableOutputCore, FixedOutputCore, OutputSizeUser,
-    Reset, UpdateCore, XofReaderCoreWrapper,
+    AlgorithmName, BufferKindUser, ExtendableOutputCore, FixedOutputCore, OutputSizeUser, Reset,
+    UpdateCore, XofReaderCoreWrapper,
 };
 use crate::{
     ExtendableOutput, ExtendableOutputReset, FixedOutput, FixedOutputReset, HashMarker, Update,
@@ -57,13 +57,6 @@ where
     pub fn from_core(core: T) -> Self {
         let buffer = Default::default();
         Self { core, buffer }
-    }
-
-    /// Decompose wrapper into inner parts.
-    #[inline]
-    pub fn decompose(self) -> (T, Buffer<T>) {
-        let Self { core, buffer } = self;
-        (core, buffer)
     }
 }
 
@@ -166,11 +159,11 @@ where
     type Reader = XofReaderCoreWrapper<T::ReaderCore>;
 
     #[inline]
-    fn finalize_xof(self) -> Self::Reader {
-        let (mut core, mut buffer) = self.decompose();
-        let core = core.finalize_xof_core(&mut buffer);
-        let buffer = Default::default();
-        Self::Reader { core, buffer }
+    fn finalize_xof(mut self) -> Self::Reader {
+        Self::Reader {
+            core: self.core.finalize_xof_core(&mut self.buffer),
+            buffer: Default::default(),
+        }
     }
 }
 
@@ -191,6 +184,24 @@ where
         }
     }
 }
+
+impl<T> Drop for CoreWrapper<T>
+where
+    T: BufferKindUser,
+{
+    #[inline]
+    fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
+        {
+            use zeroize::Zeroize;
+            self.buffer.zeroize();
+            self.output_size.zeroize();
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl<T> zeroize::ZeroizeOnDrop for CoreWrapper<T> where T: BufferKindUser + zeroize::ZeroizeOnDrop {}
 
 #[cfg(feature = "oid")]
 impl<T> AssociatedOid for CoreWrapper<T>
