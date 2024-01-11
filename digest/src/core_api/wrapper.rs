@@ -185,23 +185,19 @@ where
     }
 }
 
-impl<T> Drop for CoreWrapper<T>
-where
-    T: BufferKindUser,
-{
+impl<T: BufferKindUser> Drop for CoreWrapper<T> {
     #[inline]
     fn drop(&mut self) {
         #[cfg(feature = "zeroize")]
         {
             use zeroize::Zeroize;
             self.buffer.zeroize();
-            self.output_size.zeroize();
         }
     }
 }
 
 #[cfg(feature = "zeroize")]
-impl<T> zeroize::ZeroizeOnDrop for CoreWrapper<T> where T: BufferKindUser + zeroize::ZeroizeOnDrop {}
+impl<T: BufferKindUser + zeroize::ZeroizeOnDrop> zeroize::ZeroizeOnDrop for CoreWrapper<T> {}
 
 #[cfg(feature = "oid")]
 impl<T> AssociatedOid for CoreWrapper<T>
