@@ -1,6 +1,6 @@
 use super::{
-    AlgorithmName, Buffer, BufferKindUser, ExtendableOutputCore, FixedOutputCore, OutputSizeUser,
-    Reset, UpdateCore, XofReaderCoreWrapper,
+    AlgorithmName, BufferKindUser, ExtendableOutputCore, FixedOutputCore, OutputSizeUser, Reset,
+    UpdateCore, XofReaderCoreWrapper,
 };
 use crate::{
     ExtendableOutput, ExtendableOutputReset, FixedOutput, FixedOutputReset, HashMarker, Update,
@@ -27,57 +27,35 @@ use const_oid::{AssociatedOid, ObjectIdentifier};
 ///
 /// It handles data buffering and implements the slice-based traits.
 #[derive(Clone, Default)]
-pub struct CoreWrapper<T>
-where
-    T: BufferKindUser,
-{
+pub struct CoreWrapper<T: BufferKindUser> {
     core: T,
     buffer: BlockBuffer<T::BlockSize, T::BufferKind>,
 }
 
-impl<T> HashMarker for CoreWrapper<T> where T: BufferKindUser + HashMarker {}
+impl<T: BufferKindUser + HashMarker> HashMarker for CoreWrapper<T> {}
 
 #[cfg(feature = "mac")]
-impl<T> MacMarker for CoreWrapper<T> where T: BufferKindUser + MacMarker {}
+impl<T: BufferKindUser + MacMarker> MacMarker for CoreWrapper<T> {}
 
 // this blanket impl is needed for HMAC
-impl<T> BlockSizeUser for CoreWrapper<T>
-where
-    T: BufferKindUser + HashMarker,
-{
+impl<T: BufferKindUser + HashMarker> BlockSizeUser for CoreWrapper<T> {
     type BlockSize = T::BlockSize;
 }
 
-impl<T> CoreWrapper<T>
-where
-    T: BufferKindUser,
-{
+impl<T: BufferKindUser> CoreWrapper<T> {
     /// Create new wrapper from `core`.
     #[inline]
     pub fn from_core(core: T) -> Self {
         let buffer = Default::default();
         Self { core, buffer }
     }
-
-    /// Decompose wrapper into inner parts.
-    #[inline]
-    pub fn decompose(self) -> (T, Buffer<T>) {
-        let Self { core, buffer } = self;
-        (core, buffer)
-    }
 }
 
-impl<T> KeySizeUser for CoreWrapper<T>
-where
-    T: BufferKindUser + KeySizeUser,
-{
+impl<T: BufferKindUser + KeySizeUser> KeySizeUser for CoreWrapper<T> {
     type KeySize = T::KeySize;
 }
 
-impl<T> KeyInit for CoreWrapper<T>
-where
-    T: BufferKindUser + KeyInit,
-{
+impl<T: BufferKindUser + KeyInit> KeyInit for CoreWrapper<T> {
     #[inline]
     fn new(key: &Key<Self>) -> Self {
         Self {
@@ -95,10 +73,7 @@ where
     }
 }
 
-impl<T> fmt::Debug for CoreWrapper<T>
-where
-    T: BufferKindUser + AlgorithmName,
-{
+impl<T: BufferKindUser + AlgorithmName> fmt::Debug for CoreWrapper<T> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         T::write_alg_name(f)?;
@@ -106,10 +81,7 @@ where
     }
 }
 
-impl<T> Reset for CoreWrapper<T>
-where
-    T: BufferKindUser + Reset,
-{
+impl<T: BufferKindUser + Reset> Reset for CoreWrapper<T> {
     #[inline]
     fn reset(&mut self) {
         self.core.reset();
@@ -117,10 +89,7 @@ where
     }
 }
 
-impl<T> Update for CoreWrapper<T>
-where
-    T: BufferKindUser + UpdateCore,
-{
+impl<T: BufferKindUser + UpdateCore> Update for CoreWrapper<T> {
     #[inline]
     fn update(&mut self, input: &[u8]) {
         let Self { core, buffer } = self;
@@ -128,17 +97,11 @@ where
     }
 }
 
-impl<T> OutputSizeUser for CoreWrapper<T>
-where
-    T: BufferKindUser + OutputSizeUser,
-{
+impl<T: BufferKindUser + OutputSizeUser> OutputSizeUser for CoreWrapper<T> {
     type OutputSize = T::OutputSize;
 }
 
-impl<T> FixedOutput for CoreWrapper<T>
-where
-    T: FixedOutputCore,
-{
+impl<T: FixedOutputCore> FixedOutput for CoreWrapper<T> {
     #[inline]
     fn finalize_into(mut self, out: &mut Output<Self>) {
         let Self { core, buffer } = &mut self;
@@ -146,10 +109,7 @@ where
     }
 }
 
-impl<T> FixedOutputReset for CoreWrapper<T>
-where
-    T: FixedOutputCore + Reset,
-{
+impl<T: FixedOutputCore + Reset> FixedOutputReset for CoreWrapper<T> {
     #[inline]
     fn finalize_into_reset(&mut self, out: &mut Output<Self>) {
         let Self { core, buffer } = self;
@@ -159,25 +119,19 @@ where
     }
 }
 
-impl<T> ExtendableOutput for CoreWrapper<T>
-where
-    T: ExtendableOutputCore,
-{
+impl<T: ExtendableOutputCore> ExtendableOutput for CoreWrapper<T> {
     type Reader = XofReaderCoreWrapper<T::ReaderCore>;
 
     #[inline]
-    fn finalize_xof(self) -> Self::Reader {
-        let (mut core, mut buffer) = self.decompose();
-        let core = core.finalize_xof_core(&mut buffer);
-        let buffer = Default::default();
-        Self::Reader { core, buffer }
+    fn finalize_xof(mut self) -> Self::Reader {
+        Self::Reader {
+            core: self.core.finalize_xof_core(&mut self.buffer),
+            buffer: Default::default(),
+        }
     }
 }
 
-impl<T> ExtendableOutputReset for CoreWrapper<T>
-where
-    T: ExtendableOutputCore + Reset,
-{
+impl<T: ExtendableOutputCore + Reset> ExtendableOutputReset for CoreWrapper<T> {
     #[inline]
     fn finalize_xof_reset(&mut self) -> Self::Reader {
         let Self { core, buffer } = self;
@@ -192,11 +146,22 @@ where
     }
 }
 
+impl<T: BufferKindUser> Drop for CoreWrapper<T> {
+    #[inline]
+    fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
+        {
+            use zeroize::Zeroize;
+            self.buffer.zeroize();
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl<T: BufferKindUser + zeroize::ZeroizeOnDrop> zeroize::ZeroizeOnDrop for CoreWrapper<T> {}
+
 #[cfg(feature = "oid")]
-impl<T> AssociatedOid for CoreWrapper<T>
-where
-    T: BufferKindUser + AssociatedOid,
-{
+impl<T: BufferKindUser + AssociatedOid> AssociatedOid for CoreWrapper<T> {
     const OID: ObjectIdentifier = T::OID;
 }
 
@@ -243,10 +208,7 @@ where
 }
 
 #[cfg(feature = "std")]
-impl<T> std::io::Write for CoreWrapper<T>
-where
-    T: BufferKindUser + UpdateCore,
-{
+impl<T: BufferKindUser + UpdateCore> std::io::Write for CoreWrapper<T> {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         Update::update(self, buf);
@@ -271,11 +233,8 @@ mod sealed {
     pub trait Sealed {}
 }
 
-impl<T> sealed::Sealed for CoreWrapper<T> where T: BufferKindUser {}
+impl<T: BufferKindUser> sealed::Sealed for CoreWrapper<T> {}
 
-impl<T> CoreProxy for CoreWrapper<T>
-where
-    T: BufferKindUser,
-{
+impl<T: BufferKindUser> CoreProxy for CoreWrapper<T> {
     type Core = T;
 }

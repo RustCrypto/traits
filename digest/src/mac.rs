@@ -206,8 +206,8 @@ impl<T: OutputSizeUser> CtOutput<T> {
 
     /// Get the inner [`Output`] array this type wraps.
     #[inline(always)]
-    pub fn into_bytes(self) -> Output<T> {
-        self.bytes
+    pub fn as_bytes(&self) -> &Output<T> {
+        &self.bytes
     }
 }
 
@@ -246,6 +246,20 @@ impl<T: OutputSizeUser> fmt::Debug for CtOutput<T> {
         f.write_str("CtOutput { ... }")
     }
 }
+
+impl<T: OutputSizeUser> Drop for CtOutput<T> {
+    #[inline]
+    fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
+        {
+            use zeroize::Zeroize;
+            self.bytes.zeroize()
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl<T: OutputSizeUser> zeroize::ZeroizeOnDrop for CtOutput<T> {}
 
 /// Error type for when the [`Output`] of a [`Mac`]
 /// is not equal to the expected value.

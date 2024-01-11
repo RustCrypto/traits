@@ -1,4 +1,4 @@
-use super::{AlgorithmName, BlockSizeUser, TruncSide, UpdateCore, VariableOutputCore};
+use super::{AlgorithmName, BlockSizeUser, TruncSide, VariableOutputCore};
 #[cfg(feature = "mac")]
 use crate::MacMarker;
 use crate::{HashMarker, InvalidBufferSize};
@@ -15,23 +15,19 @@ use crypto_common::{
     typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U256},
     AddBlockSize, DeserializeStateError, SerializableState, SerializedState, SubBlockSize,
 };
+#[cfg(feature = "zeroize")]
+use zeroize::ZeroizeOnDrop;
 
 /// Wrapper around [`VariableOutputCore`] which selects output size
 /// at run time.
 #[derive(Clone)]
-pub struct RtVariableCoreWrapper<T>
-where
-    T: VariableOutputCore,
-{
+pub struct RtVariableCoreWrapper<T: VariableOutputCore> {
     core: T,
     buffer: BlockBuffer<T::BlockSize, T::BufferKind>,
-    output_size: usize,
+    output_size: u8,
 }
 
-impl<T> RtVariableCoreWrapper<T>
-where
-    T: VariableOutputCore,
-{
+impl<T: VariableOutputCore> RtVariableCoreWrapper<T> {
     #[inline]
     fn finalize_dirty(&mut self, out: &mut [u8]) -> Result<(), InvalidBufferSize> {
         let Self {
@@ -39,7 +35,8 @@ where
             buffer,
             output_size,
         } = self;
-        if out.len() != *output_size || out.len() > Self::MAX_OUTPUT_SIZE {
+        let size_u8 = u8::try_from(out.len()).map_err(|_| InvalidBufferSize)?;
+        if out.len() > Self::MAX_OUTPUT_SIZE || size_u8 != *output_size {
             return Err(InvalidBufferSize);
         }
         let mut full_res = Default::default();
@@ -54,24 +51,16 @@ where
     }
 }
 
-impl<T> HashMarker for RtVariableCoreWrapper<T> where T: VariableOutputCore + HashMarker {}
+impl<T: VariableOutputCore + HashMarker> HashMarker for RtVariableCoreWrapper<T> {}
 
 #[cfg(feature = "mac")]
-impl<T> MacMarker for RtVariableCoreWrapper<T> where T: VariableOutputCore + MacMarker {}
+impl<T: VariableOutputCore + MacMarker> MacMarker for RtVariableCoreWrapper<T> {}
 
-impl<T> BlockSizeUser for RtVariableCoreWrapper<T>
-where
-    T: VariableOutputCore,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
-{
+impl<T: VariableOutputCore> BlockSizeUser for RtVariableCoreWrapper<T> {
     type BlockSize = T::BlockSize;
 }
 
-impl<T> Reset for RtVariableCoreWrapper<T>
-where
-    T: VariableOutputCore + UpdateCore + Reset,
-{
+impl<T: VariableOutputCore + Reset> Reset for RtVariableCoreWrapper<T> {
     #[inline]
     fn reset(&mut self) {
         self.buffer.reset();
@@ -79,10 +68,7 @@ where
     }
 }
 
-impl<T> Update for RtVariableCoreWrapper<T>
-where
-    T: VariableOutputCore + UpdateCore,
-{
+impl<T: VariableOutputCore> Update for RtVariableCoreWrapper<T> {
     #[inline]
     fn update(&mut self, input: &[u8]) {
         let Self { core, buffer, .. } = self;
@@ -90,34 +76,33 @@ where
     }
 }
 
-impl<T> VariableOutput for RtVariableCoreWrapper<T>
-where
-    T: VariableOutputCore + UpdateCore,
-{
+impl<T: VariableOutputCore> VariableOutput for RtVariableCoreWrapper<T> {
     const MAX_OUTPUT_SIZE: usize = T::OutputSize::USIZE;
 
+    #[inline]
     fn new(output_size: usize) -> Result<Self, InvalidOutputSize> {
+        let output_size = u8::try_from(output_size).map_err(|_| InvalidOutputSize)?;
         let buffer = Default::default();
-        T::new(output_size).map(|core| Self {
+        T::new(output_size.into()).map(|core| Self {
             core,
             buffer,
             output_size,
         })
     }
 
+    #[inline]
     fn output_size(&self) -> usize {
-        self.output_size
+        self.output_size.into()
     }
 
+    #[inline]
     fn finalize_variable(mut self, out: &mut [u8]) -> Result<(), InvalidBufferSize> {
         self.finalize_dirty(out)
     }
 }
 
-impl<T> VariableOutputReset for RtVariableCoreWrapper<T>
-where
-    T: VariableOutputCore + UpdateCore + Reset,
-{
+impl<T: VariableOutputCore + Reset> VariableOutputReset for RtVariableCoreWrapper<T> {
+    #[inline]
     fn finalize_variable_reset(&mut self, out: &mut [u8]) -> Result<(), InvalidBufferSize> {
         self.finalize_dirty(out)?;
         self.core.reset();
@@ -126,10 +111,22 @@ where
     }
 }
 
-impl<T> fmt::Debug for RtVariableCoreWrapper<T>
-where
-    T: VariableOutputCore + UpdateCore + AlgorithmName,
-{
+impl<T: VariableOutputCore> Drop for RtVariableCoreWrapper<T> {
+    #[inline]
+    fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
+        {
+            use zeroize::Zeroize;
+            self.buffer.zeroize();
+            self.output_size.zeroize();
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl<T: VariableOutputCore + ZeroizeOnDrop> ZeroizeOnDrop for RtVariableCoreWrapper<T> {}
+
+impl<T: VariableOutputCore + AlgorithmName> fmt::Debug for RtVariableCoreWrapper<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         T::write_alg_name(f)?;
         f.write_str(" { .. }")
@@ -141,7 +138,7 @@ type RtVariableCoreWrapperSerializedStateSize<T> =
 
 impl<T> SerializableState for RtVariableCoreWrapper<T>
 where
-    T: VariableOutputCore + UpdateCore + SerializableState,
+    T: VariableOutputCore + SerializableState,
     T::BlockSize: IsLess<U256>,
     Le<T::BlockSize, U256>: NonZero,
     T::SerializedStateSize: Add<U1>,
@@ -163,8 +160,7 @@ where
         let serialized_pos =
             Array::<u8, U1>::clone_from_slice(&[self.buffer.get_pos().try_into().unwrap()]);
         let serialized_data = self.buffer.clone().pad_with_zeros();
-        let serialized_output_size =
-            Array::<u8, U1>::clone_from_slice(&[self.output_size.try_into().unwrap()]);
+        let serialized_output_size = Array::<u8, U1>::clone_from_slice(&[self.output_size]);
 
         serialized_core
             .concat(serialized_pos)
@@ -185,16 +181,13 @@ where
             core: T::deserialize(serialized_core)?,
             buffer: BlockBuffer::try_new(&serialized_data[..serialized_pos[0].into()])
                 .map_err(|_| DeserializeStateError)?,
-            output_size: serialized_output_size[0].into(),
+            output_size: serialized_output_size[0],
         })
     }
 }
 
 #[cfg(feature = "std")]
-impl<T> std::io::Write for RtVariableCoreWrapper<T>
-where
-    T: VariableOutputCore + UpdateCore,
-{
+impl<T: VariableOutputCore> std::io::Write for RtVariableCoreWrapper<T> {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         Update::update(self, buf);

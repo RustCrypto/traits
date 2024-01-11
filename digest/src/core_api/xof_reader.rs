@@ -47,3 +47,17 @@ where
         Ok(buf.len())
     }
 }
+
+impl<T: XofReaderCore> Drop for XofReaderCoreWrapper<T> {
+    #[inline]
+    fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
+        {
+            use zeroize::Zeroize;
+            self.buffer.zeroize();
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl<T: XofReaderCore + zeroize::ZeroizeOnDrop> zeroize::ZeroizeOnDrop for XofReaderCoreWrapper<T> {}
