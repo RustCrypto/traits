@@ -446,18 +446,6 @@ dependencies = [
 [[package]]
 name = "digest"
 version = "0.11.0-pre.4"
-dependencies = [
- "blobby",
- "block-buffer 0.11.0-pre.4",
- "const-oid 0.10.0-pre.2",
- "crypto-common 0.2.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "subtle",
- "zeroize",
-]
-
-[[package]]
-name = "digest"
-version = "0.11.0-pre.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b429fb535b92bad18c86f1d7ee7584a175c2810800c7ac5b75b9408b13981979"
 dependencies = [
@@ -465,6 +453,18 @@ dependencies = [
  "const-oid 0.10.0-pre.2",
  "crypto-common 0.2.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
+]
+
+[[package]]
+name = "digest"
+version = "0.11.0-pre.5"
+dependencies = [
+ "blobby",
+ "block-buffer 0.11.0-pre.4",
+ "const-oid 0.10.0-pre.2",
+ "crypto-common 0.2.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "subtle",
+ "zeroize",
 ]
 
 [[package]]
@@ -546,7 +546,7 @@ dependencies = [
  "base16ct 0.2.0",
  "base64ct",
  "crypto-bigint 0.6.0-pre.10",
- "digest 0.11.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.11.0-pre.4",
  "ff 0.13.0",
  "group 0.13.0",
  "hex-literal",
@@ -751,7 +751,7 @@ version = "0.13.0-pre.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ad9bdb2c4daa57033321e5e64c7a8cab02086ee130f8702f72b5c164893026a"
 dependencies = [
- "digest 0.11.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.11.0-pre.4",
 ]
 
 [[package]]
@@ -1216,7 +1216,7 @@ checksum = "9daa731ca112bb569b34b41775363a461422813d8ed1ea6dba352eb58ec4e684"
 dependencies = [
  "cfg-if",
  "cpufeatures",
- "digest 0.11.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.11.0-pre.4",
 ]
 
 [[package]]
@@ -1225,7 +1225,7 @@ version = "0.11.0-pre.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23f5da8ebbbfc6bd857bb4d209bb42109772703b118ea137d57352c2a95b3322"
 dependencies = [
- "digest 0.11.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.11.0-pre.4",
  "keccak",
 ]
 
@@ -1253,7 +1253,7 @@ dependencies = [
 name = "signature"
 version = "2.3.0-pre.1"
 dependencies = [
- "digest 0.11.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.11.0-pre.4",
  "hex-literal",
  "rand_core 0.6.4",
  "sha2 0.11.0-pre.1",
