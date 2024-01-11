@@ -204,10 +204,16 @@ impl<T: OutputSizeUser> CtOutput<T> {
         Self { bytes }
     }
 
-    /// Get the inner [`Output`] array this type wraps.
+    /// Get reference to the inner [`Output`] array this type wraps.
     #[inline(always)]
     pub fn as_bytes(&self) -> &Output<T> {
         &self.bytes
+    }
+
+    /// Get the inner [`Output`] array this type wraps.
+    #[inline(always)]
+    pub fn into_bytes(&self) -> Output<T> {
+        self.bytes.clone()
     }
 }
 
