@@ -187,10 +187,7 @@ where
 }
 
 #[cfg(feature = "std")]
-impl<T> std::io::Write for RtVariableCoreWrapper<T>
-where
-    T: VariableOutputCore + UpdateCore,
-{
+impl<T: VariableOutputCore> std::io::Write for RtVariableCoreWrapper<T> {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         Update::update(self, buf);
