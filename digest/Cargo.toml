@@ -20,7 +20,7 @@ block-buffer = { version = "=0.11.0-pre.4", optional = true }
 subtle = { version = "2.4", default-features = false, optional = true }
 blobby = { version = "0.3", optional = true }
 const-oid = { version = "=0.10.0-pre.2", optional = true }
-zeroize = { version = "1.4", optional = true, default-features = false }
+zeroize = { version = "1.7", optional = true, default-features = false }
 
 [features]
 default = ["core-api"]
