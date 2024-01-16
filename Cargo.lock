@@ -310,9 +310,9 @@ dependencies = [
 
 [[package]]
 name = "crypto-bigint"
-version = "0.6.0-pre.10"
+version = "0.6.0-pre.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12979c1e0771d68f02c2fb93fb0ad54e597f82d608fb569db792d99ebd0bb3c5"
+checksum = "066d29f71af86716a9d917b2655e06326b25e1323bb598a583d5aaa38da20f1d"
 dependencies = [
  "hybrid-array",
  "num-traits",
@@ -545,7 +545,7 @@ version = "0.14.0-pre.2"
 dependencies = [
  "base16ct 0.2.0",
  "base64ct",
- "crypto-bigint 0.6.0-pre.10",
+ "crypto-bigint 0.6.0-pre.11",
  "digest 0.11.0-pre.4",
  "ff 0.13.0",
  "group 0.13.0",
