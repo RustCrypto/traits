@@ -445,18 +445,6 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.11.0-pre.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b429fb535b92bad18c86f1d7ee7584a175c2810800c7ac5b75b9408b13981979"
-dependencies = [
- "block-buffer 0.11.0-pre.4",
- "const-oid 0.10.0-pre.2",
- "crypto-common 0.2.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "subtle",
-]
-
-[[package]]
-name = "digest"
 version = "0.11.0-pre.7"
 dependencies = [
  "blobby",
@@ -465,6 +453,18 @@ dependencies = [
  "crypto-common 0.2.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
  "zeroize",
+]
+
+[[package]]
+name = "digest"
+version = "0.11.0-pre.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "957713a19ffdda287c63772e607f848512f67ba948f17d8e42cb8d50fd98a786"
+dependencies = [
+ "block-buffer 0.11.0-pre.4",
+ "const-oid 0.10.0-pre.2",
+ "crypto-common 0.2.0-pre.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "subtle",
 ]
 
 [[package]]
@@ -541,16 +541,16 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.14.0-pre.2"
+version = "0.14.0-pre.3"
 dependencies = [
  "base16ct 0.2.0",
  "base64ct",
  "crypto-bigint 0.6.0-pre.12",
- "digest 0.11.0-pre.4",
+ "digest 0.11.0-pre.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "ff 0.13.0",
  "group 0.13.0",
  "hex-literal",
- "hkdf 0.13.0-pre.1",
+ "hkdf 0.13.0-pre.2",
  "hybrid-array",
  "pem-rfc7468 1.0.0-pre.0",
  "pkcs8 0.11.0-pre.0",
@@ -558,7 +558,7 @@ dependencies = [
  "sec1 0.8.0-pre.1",
  "serde_json",
  "serdect",
- "sha2 0.11.0-pre.1",
+ "sha2 0.11.0-pre.2",
  "sha3",
  "subtle",
  "tap",
@@ -719,11 +719,11 @@ dependencies = [
 
 [[package]]
 name = "hkdf"
-version = "0.13.0-pre.1"
+version = "0.13.0-pre.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8030479f3be0f2d183d7fcb5a8bb3c08c31ba40c49a1af5780544272ab8494fb"
+checksum = "c524b31a8b37d9561e29293b5931461f0bb72a75101f3916e1480525113da8e9"
 dependencies = [
- "hmac 0.13.0-pre.1",
+ "hmac 0.13.0-pre.2",
 ]
 
 [[package]]
@@ -747,11 +747,11 @@ dependencies = [
 
 [[package]]
 name = "hmac"
-version = "0.13.0-pre.1"
+version = "0.13.0-pre.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ad9bdb2c4daa57033321e5e64c7a8cab02086ee130f8702f72b5c164893026a"
+checksum = "1fac01891f12d968a2737928c9af2532abdc750e56a890fdbcafdfff17017678"
 dependencies = [
- "digest 0.11.0-pre.4",
+ "digest 0.11.0-pre.7 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -823,9 +823,9 @@ dependencies = [
 
 [[package]]
 name = "keccak"
-version = "0.1.4"
+version = "0.2.0-pre.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f6d5ed8676d904364de097082f4e7d240b571b67989ced0240f08b7f966f940"
+checksum = "a7cdd4f0dc5807b9a2b25dd48a3f58e862606fe7bd47f41ecde36e97422d7e90"
 dependencies = [
  "cpufeatures",
 ]
@@ -1210,22 +1210,22 @@ dependencies = [
 
 [[package]]
 name = "sha2"
-version = "0.11.0-pre.1"
+version = "0.11.0-pre.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9daa731ca112bb569b34b41775363a461422813d8ed1ea6dba352eb58ec4e684"
+checksum = "e18b939d4051b69874cbdb8f55de6a14ae44b357ccb94bdbd0a2122f8f875a46"
 dependencies = [
  "cfg-if",
  "cpufeatures",
- "digest 0.11.0-pre.4",
+ "digest 0.11.0-pre.7 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "sha3"
-version = "0.11.0-pre.1"
+version = "0.11.0-pre.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23f5da8ebbbfc6bd857bb4d209bb42109772703b118ea137d57352c2a95b3322"
+checksum = "9cecb44e361133b3304a1b3e325a1d8c999339fec8c19762b55e1509a17d6806"
 dependencies = [
- "digest 0.11.0-pre.4",
+ "digest 0.11.0-pre.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "keccak",
 ]
 
@@ -1251,12 +1251,12 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "2.3.0-pre.1"
+version = "2.3.0-pre.2"
 dependencies = [
- "digest 0.11.0-pre.4",
+ "digest 0.11.0-pre.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex-literal",
  "rand_core 0.6.4",
- "sha2 0.11.0-pre.1",
+ "sha2 0.11.0-pre.2",
  "signature_derive",
 ]
 
