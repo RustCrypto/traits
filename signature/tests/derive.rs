@@ -72,7 +72,7 @@ impl PrehashVerifier<DummySignature> for DummyVerifier {
 #[test]
 fn derived_signer_impl() {
     let sig: DummySignature = DummySigner::default().sign(INPUT_STRING);
-    assert_eq!(sig.to_bytes().as_slice(), INPUT_STRING_DIGEST.as_ref())
+    assert_eq!(sig.to_bytes().as_slice(), INPUT_STRING_DIGEST)
 }
 
 #[test]
