@@ -14,3 +14,6 @@ members = [
     "signature_derive",
     "universal-hash",
 ]
+
+[patch.crates-io]
+signature = { path = "./signature" }
