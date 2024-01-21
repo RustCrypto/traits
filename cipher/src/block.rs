@@ -78,7 +78,7 @@ pub trait BlockClosure: BlockSizeUser {
 }
 
 /// Encrypt-only functionality for block ciphers.
-pub trait BlockEncrypt: BlockSizeUser + Sized {
+pub trait BlockCipherEncrypt: BlockSizeUser + Sized {
     /// Encrypt data using backend provided to the rank-2 closure.
     fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = Self::BlockSize>);
 
@@ -189,7 +189,7 @@ pub trait BlockEncrypt: BlockSizeUser + Sized {
 }
 
 /// Decrypt-only functionality for block ciphers.
-pub trait BlockDecrypt: BlockSizeUser {
+pub trait BlockCipherDecrypt: BlockSizeUser {
     /// Decrypt data using backend provided to the rank-2 closure.
     fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = Self::BlockSize>);
 
@@ -315,7 +315,7 @@ pub trait BlockDecrypt: BlockSizeUser {
 /// The main use case for this trait is blocks modes, but it also can be used
 /// for hardware cryptographic engines which require `&mut self` access to an
 /// underlying hardware peripheral.
-pub trait BlockEncryptMut: BlockSizeUser + Sized {
+pub trait BlockModeEncrypt: BlockSizeUser + Sized {
     /// Encrypt data using backend provided to the rank-2 closure.
     fn encrypt_with_backend_mut(&mut self, f: impl BlockClosure<BlockSize = Self::BlockSize>);
 
@@ -430,7 +430,7 @@ pub trait BlockEncryptMut: BlockSizeUser + Sized {
 /// The main use case for this trait is blocks modes, but it also can be used
 /// for hardware cryptographic engines which require `&mut self` access to an
 /// underlying hardware peripheral.
-pub trait BlockDecryptMut: BlockSizeUser + Sized {
+pub trait BlockModeDecrypt: BlockSizeUser + Sized {
     /// Decrypt data using backend provided to the rank-2 closure.
     fn decrypt_with_backend_mut(&mut self, f: impl BlockClosure<BlockSize = Self::BlockSize>);
 
@@ -551,27 +551,15 @@ pub trait BlockDecryptMut: BlockSizeUser + Sized {
     }
 }
 
-impl<Alg: BlockEncrypt> BlockEncryptMut for Alg {
-    fn encrypt_with_backend_mut(&mut self, f: impl BlockClosure<BlockSize = Self::BlockSize>) {
-        self.encrypt_with_backend(f);
-    }
-}
-
-impl<Alg: BlockDecrypt> BlockDecryptMut for Alg {
-    fn decrypt_with_backend_mut(&mut self, f: impl BlockClosure<BlockSize = Self::BlockSize>) {
-        self.decrypt_with_backend(f);
-    }
-}
-
 impl<Alg: BlockCipher> BlockCipher for &Alg {}
 
-impl<Alg: BlockEncrypt> BlockEncrypt for &Alg {
+impl<Alg: BlockCipherEncrypt> BlockCipherEncrypt for &Alg {
     fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = Self::BlockSize>) {
         Alg::encrypt_with_backend(self, f);
     }
 }
 
-impl<Alg: BlockDecrypt> BlockDecrypt for &Alg {
+impl<Alg: BlockCipherDecrypt> BlockCipherDecrypt for &Alg {
     fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = Self::BlockSize>) {
         Alg::decrypt_with_backend(self, f);
     }
@@ -638,7 +626,7 @@ macro_rules! impl_simple_block_encdec {
             type BlockSize = $block_size;
         }
 
-        impl<$($N$(:$b0$(+$b)*)?),*> $crate::BlockEncrypt for $cipher<$($N),*> {
+        impl<$($N$(:$b0$(+$b)*)?),*> $crate:BlockEncryptt for $cipher<$($N),*> {
             fn encrypt_with_backend(&self, f: impl $crate::BlockClosure<BlockSize = $block_size>) {
                 struct EncBack<'a, $($N$(:$b0$(+$b)*)?),* >(&'a $cipher<$($N),*>);
 
@@ -665,7 +653,7 @@ macro_rules! impl_simple_block_encdec {
             }
         }
 
-        impl<$($N$(:$b0$(+$b)*)?),*> $crate::BlockDecrypt for $cipher<$($N),*> {
+        impl<$($N$(:$b0$(+$b)*)?),*> $crate:BlockDecryptt for $cipher<$($N),*> {
             fn decrypt_with_backend(&self, f: impl $crate::BlockClosure<BlockSize = $block_size>) {
                 struct DecBack<'a, $($N$(:$b0$(+$b)*)?),* >(&'a $cipher<$($N),*>);
 
