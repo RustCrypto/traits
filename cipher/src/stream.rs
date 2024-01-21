@@ -16,12 +16,12 @@ pub trait AsyncStreamCipher: Sized {
         Self: BlockModeEncrypt,
     {
         let (blocks, mut tail) = data.into_chunks();
-        self.encrypt_blocks_inout_mut(blocks);
+        self.encrypt_blocks_inout(blocks);
         let n = tail.len();
         if n != 0 {
             let mut block = Block::<Self>::default();
             block[..n].copy_from_slice(tail.get_in());
-            self.encrypt_block_mut(&mut block);
+            self.encrypt_block(&mut block);
             tail.get_out().copy_from_slice(&block[..n]);
         }
     }
@@ -32,12 +32,12 @@ pub trait AsyncStreamCipher: Sized {
         Self: BlockModeDecrypt,
     {
         let (blocks, mut tail) = data.into_chunks();
-        self.decrypt_blocks_inout_mut(blocks);
+        self.decrypt_blocks_inout(blocks);
         let n = tail.len();
         if n != 0 {
             let mut block = Block::<Self>::default();
             block[..n].copy_from_slice(tail.get_in());
-            self.decrypt_block_mut(&mut block);
+            self.decrypt_block(&mut block);
             tail.get_out().copy_from_slice(&block[..n]);
         }
     }
