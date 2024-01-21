@@ -158,6 +158,9 @@ where
     /// `C::FieldBytesSize` bytes in length.
     ///
     /// Byte slices shorter than the field size are handled by zero padding the input.
+    ///
+    /// NOTE: this function is variable-time with respect to the input length. To avoid a timing
+    /// sidechannel, always ensure that the input has been pre-padded to `C::FieldBytesSize`.
     pub fn from_slice(slice: &[u8]) -> Result<Self> {
         if slice.len() == C::FieldBytesSize::USIZE {
             Self::from_bytes(FieldBytes::<C>::from_slice(slice))
