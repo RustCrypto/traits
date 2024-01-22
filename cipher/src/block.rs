@@ -626,7 +626,7 @@ macro_rules! impl_simple_block_encdec {
             type BlockSize = $block_size;
         }
 
-        impl<$($N$(:$b0$(+$b)*)?),*> $crate:BlockEncryptt for $cipher<$($N),*> {
+        impl<$($N$(:$b0$(+$b)*)?),*> $crate::BlockCipherEncrypt for $cipher<$($N),*> {
             fn encrypt_with_backend(&self, f: impl $crate::BlockClosure<BlockSize = $block_size>) {
                 struct EncBack<'a, $($N$(:$b0$(+$b)*)?),* >(&'a $cipher<$($N),*>);
 
@@ -653,7 +653,7 @@ macro_rules! impl_simple_block_encdec {
             }
         }
 
-        impl<$($N$(:$b0$(+$b)*)?),*> $crate:BlockDecryptt for $cipher<$($N),*> {
+        impl<$($N$(:$b0$(+$b)*)?),*> $crate::BlockCipherDecrypt for $cipher<$($N),*> {
             fn decrypt_with_backend(&self, f: impl $crate::BlockClosure<BlockSize = $block_size>) {
                 struct DecBack<'a, $($N$(:$b0$(+$b)*)?),* >(&'a $cipher<$($N),*>);
 

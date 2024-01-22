@@ -7,20 +7,20 @@ macro_rules! block_cipher_test {
         #[test]
         fn $name() {
             use cipher::{
-                array::Array, blobby::Blob3Iterator, typenum::Unsigned, BlockDecryptMut,
-                BlockEncryptMut, BlockSizeUser, KeyInit,
+                array::Array, blobby::Blob3Iterator, typenum::Unsigned, BlockCipherDecrypt,
+                BlockCipherEncrypt, BlockSizeUser, KeyInit,
             };
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
                 let mut state = <$cipher as KeyInit>::new_from_slice(key).unwrap();
 
                 let mut block = Array::clone_from_slice(pt);
-                state.encrypt_block_mut(&mut block);
+                state.encrypt_block(&mut block);
                 if ct != block.as_slice() {
                     return false;
                 }
 
-                state.decrypt_block_mut(&mut block);
+                state.decrypt_block(&mut block);
                 if pt != block.as_slice() {
                     return false;
                 }
@@ -43,9 +43,9 @@ macro_rules! block_cipher_test {
 
                 // check that `encrypt_blocks` and `encrypt_block`
                 // result in the same ciphertext
-                state.encrypt_blocks_mut(&mut blocks1);
+                state.encrypt_blocks(&mut blocks1);
                 for b in blocks2.iter_mut() {
-                    state.encrypt_block_mut(b);
+                    state.encrypt_block(b);
                 }
                 if blocks1 != blocks2 {
                     return false;
@@ -53,9 +53,9 @@ macro_rules! block_cipher_test {
 
                 // check that `encrypt_blocks` and `encrypt_block`
                 // result in the same plaintext
-                state.decrypt_blocks_mut(&mut blocks1);
+                state.decrypt_blocks(&mut blocks1);
                 for b in blocks2.iter_mut() {
-                    state.decrypt_block_mut(b);
+                    state.decrypt_block(b);
                 }
                 if blocks1 != blocks2 {
                     return false;
@@ -102,7 +102,7 @@ macro_rules! block_mode_enc_test {
         fn $name() {
             use cipher::{
                 array::Array, blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
-                BlockEncryptMut, BlockSizeUser, KeyIvInit,
+                BlockCipherEncrypt, BlockSizeUser, KeyIvInit,
             };
 
             fn run_test(key: &[u8], iv: &[u8], pt: &[u8], ct: &[u8]) -> bool {
@@ -160,7 +160,7 @@ macro_rules! block_mode_dec_test {
         fn $name() {
             use cipher::{
                 array::Array, blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
-                BlockDecryptMut, BlockSizeUser, KeyIvInit,
+                BlockCipherDecrypt, BlockSizeUser, KeyIvInit,
             };
 
             fn run_test(key: &[u8], iv: &[u8], pt: &[u8], ct: &[u8]) -> bool {
@@ -214,10 +214,10 @@ macro_rules! block_mode_dec_test {
 #[macro_export]
 macro_rules! iv_state_test {
     ($name:ident, $cipher:ty, encrypt $(,)?) => {
-        $crate::iv_state_test!($name, $cipher, encrypt_blocks_mut);
+        $crate::iv_state_test!($name, $cipher, encrypt_blocks);
     };
     ($name:ident, $cipher:ty, decrypt $(,)?) => {
-        $crate::iv_state_test!($name, $cipher, decrypt_blocks_mut);
+        $crate::iv_state_test!($name, $cipher, decrypt_blocks);
     };
     ($name:ident, $cipher:ty, apply_ks $(,)?) => {
         $crate::iv_state_test!($name, $cipher, apply_keystream_blocks);
@@ -289,14 +289,14 @@ macro_rules! block_encryptor_bench {
     ($init:block, $cipher:ty, $block_name:ident, $blocks_name:ident $(,)? ) => {
         #[bench]
         pub fn $block_name(bh: &mut test::Bencher) {
-            use cipher::BlockEncryptMut;
+            use cipher::BlockCipherEncrypt;
 
             let mut cipher = $init;
             let mut blocks = vec![Default::default(); 1024];
 
             bh.iter(|| {
                 for block in blocks.iter_mut() {
-                    cipher.encrypt_block_mut(block);
+                    cipher.encrypt_block(block);
                 }
                 test::black_box(&blocks);
             });
@@ -305,13 +305,13 @@ macro_rules! block_encryptor_bench {
 
         #[bench]
         pub fn $blocks_name(bh: &mut test::Bencher) {
-            use cipher::BlockEncryptMut;
+            use cipher::BlockCipherEncrypt;
 
             let mut cipher = $init;
             let mut blocks = vec![Default::default(); 1024];
 
             bh.iter(|| {
-                cipher.encrypt_blocks_mut(&mut blocks);
+                cipher.encrypt_blocks(&mut blocks);
                 test::black_box(&blocks);
             });
             bh.bytes = (blocks.len() * blocks[0].len()) as u64;
@@ -350,14 +350,14 @@ macro_rules! block_decryptor_bench {
     ($init:block, $cipher:ty, $block_name:ident, $blocks_name:ident $(,)? ) => {
         #[bench]
         pub fn $block_name(bh: &mut test::Bencher) {
-            use cipher::BlockDecryptMut;
+            use cipher::BlockCipherDecrypt;
 
             let mut cipher = $init;
             let mut blocks = vec![Default::default(); 1024];
 
             bh.iter(|| {
                 for block in blocks.iter_mut() {
-                    cipher.decrypt_block_mut(block);
+                    cipher.decrypt_block(block);
                 }
                 test::black_box(&blocks);
             });
@@ -366,13 +366,13 @@ macro_rules! block_decryptor_bench {
 
         #[bench]
         pub fn $blocks_name(bh: &mut test::Bencher) {
-            use cipher::BlockDecryptMut;
+            use cipher::BlockCipherDecrypt;
 
             let mut cipher = $init;
             let mut blocks = vec![Default::default(); 1024];
 
             bh.iter(|| {
-                cipher.decrypt_blocks_mut(&mut blocks);
+                cipher.decrypt_blocks(&mut blocks);
                 test::black_box(&blocks);
             });
             bh.bytes = (blocks.len() * blocks[0].len()) as u64;
