@@ -32,7 +32,7 @@ pub enum Error {
         /// Expected output size in relation to `provided`.
         ///
         /// - [`Ordering::Less`]: Minimum size.
-        /// - [`Ordering::Equal`]: Expecrted size.
+        /// - [`Ordering::Equal`]: Expected size.
         /// - [`Ordering::Greater`]: Maximum size.
         expected: usize,
     },
