@@ -12,6 +12,9 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+/// Hazardous materials.
+pub mod hazmat;
+
 #[cfg(feature = "getrandom")]
 pub use getrandom;
 #[cfg(feature = "rand_core")]
@@ -28,12 +31,6 @@ use hybrid_array::{
 
 #[cfg(feature = "rand_core")]
 use rand_core::CryptoRngCore;
-
-mod serializable_state;
-pub use serializable_state::{
-    AddSerializedStateSize, DeserializeStateError, SerializableState, SerializedState,
-    SubSerializedStateSize,
-};
 
 /// Block on which [`BlockSizeUser`] implementors operate.
 pub type Block<B> = Array<u8, <B as BlockSizeUser>::BlockSize>;

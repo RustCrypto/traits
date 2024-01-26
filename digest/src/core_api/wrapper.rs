@@ -13,9 +13,9 @@ use core::{
 };
 use crypto_common::{
     array::{Array, ArraySize},
+    hazmat::{DeserializeStateError, SerializableState, SerializedState, SubSerializedStateSize},
     typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U256},
-    BlockSizeUser, DeserializeStateError, InvalidLength, Key, KeyInit, KeySizeUser, Output,
-    SerializableState, SerializedState, SubSerializedStateSize,
+    BlockSizeUser, InvalidLength, Key, KeyInit, KeySizeUser, Output,
 };
 
 #[cfg(feature = "mac")]
