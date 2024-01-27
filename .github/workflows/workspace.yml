@@ -5,13 +5,11 @@ on:
     paths-ignore:
       - '**/README.md'
       - '**/CHANGELOG.md'
-      - .github/**
   push:
     branches: master
     paths-ignore:
       - '**/README.md'
       - '**/CHANGELOG.md'
-      - .github/**
 
 env:
   CARGO_INCREMENTAL: 0
@@ -29,6 +27,15 @@ jobs:
           toolchain: 1.75.0
           components: clippy
       - run: cargo clippy --all --all-features --tests -- -D warnings
+
+  doc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - run: cargo doc --all-features
 
   rustfmt:
     runs-on: ubuntu-latest
