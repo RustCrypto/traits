@@ -9,11 +9,11 @@ use core::{
     fmt,
     ops::{Add, Sub},
 };
-use crypto_common::SubSerializedStateSize;
 use crypto_common::{
     array::{Array, ArraySize},
+    hazmat::{DeserializeStateError, SerializableState, SerializedState, SubSerializedStateSize},
     typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U256},
-    AddBlockSize, DeserializeStateError, SerializableState, SerializedState, SubBlockSize,
+    AddBlockSize, SubBlockSize,
 };
 #[cfg(feature = "zeroize")]
 use zeroize::ZeroizeOnDrop;

@@ -14,9 +14,9 @@ use core::{
 };
 use crypto_common::{
     array::{Array, ArraySize},
+    hazmat::{DeserializeStateError, SerializableState, SerializedState, SubSerializedStateSize},
     typenum::{IsLess, IsLessOrEqual, Le, LeEq, NonZero, Sum, U1, U256},
-    Block, BlockSizeUser, DeserializeStateError, OutputSizeUser, SerializableState,
-    SerializedState, SubSerializedStateSize,
+    Block, BlockSizeUser, OutputSizeUser,
 };
 
 /// Dummy type used with [`CtVariableCoreWrapper`] in cases when
