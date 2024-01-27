@@ -80,12 +80,3 @@ jobs:
           toolchain: ${{ matrix.rust }}
       - run: cargo test --release
         working-directory: signature_derive
-
-  doc:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: stable
-      - run: cargo doc --all-features
