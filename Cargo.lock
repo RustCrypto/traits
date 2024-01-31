@@ -755,9 +755,9 @@ dependencies = [
 
 [[package]]
 name = "hybrid-array"
-version = "0.2.0-rc.3"
+version = "0.2.0-rc.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8856b3db5eb76328f03589feb25c7a3166bfa0ae3b38b1408d546b097fa7947"
+checksum = "18e63b66aee2df5599ba69b17a48113dfc68d2e143ea387ef836509e433bbd7e"
 dependencies = [
  "typenum",
  "zeroize",

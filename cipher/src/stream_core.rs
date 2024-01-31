@@ -1,9 +1,5 @@
 use crate::{ParBlocks, ParBlocksSizeUser, StreamCipherError};
-use crypto_common::{
-    array::{slice_as_chunks_mut, Array},
-    typenum::Unsigned,
-    Block, BlockSizeUser, BlockSizes,
-};
+use crypto_common::{array::Array, typenum::Unsigned, Block, BlockSizeUser, BlockSizes};
 use inout::{InOut, InOutBuf};
 
 /// Trait implemented by stream cipher backends.
@@ -213,7 +209,7 @@ impl<'a, BS: BlockSizes> StreamClosure for WriteBlocksCtx<'a, BS> {
     #[inline(always)]
     fn call<B: StreamBackend<BlockSize = BS>>(self, backend: &mut B) {
         if B::ParBlocksSize::USIZE > 1 {
-            let (chunks, tail) = slice_as_chunks_mut(self.blocks);
+            let (chunks, tail) = Array::slice_as_chunks_mut(self.blocks);
             for chunk in chunks {
                 backend.gen_par_ks_blocks(chunk);
             }

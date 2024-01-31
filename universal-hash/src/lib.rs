@@ -73,7 +73,7 @@ pub trait UniversalHash: BlockSizeUser + Sized {
             fn call<B: UhfBackend<BlockSize = BS>>(self, backend: &mut B) {
                 let pb = B::ParBlocksSize::USIZE;
                 if pb > 1 {
-                    let (par_blocks, tail) = array::slice_as_chunks(self.blocks);
+                    let (par_blocks, tail) = Array::slice_as_chunks(self.blocks);
                     for par_block in par_blocks {
                         backend.proc_par_blocks(par_block);
                     }
@@ -99,7 +99,7 @@ pub trait UniversalHash: BlockSizeUser + Sized {
     /// Message Authentication Codes (MACs) based on universal hashing.
     #[inline]
     fn update_padded(&mut self, data: &[u8]) {
-        let (blocks, tail) = array::slice_as_chunks(data);
+        let (blocks, tail) = Array::slice_as_chunks(data);
 
         self.update(blocks);
 
