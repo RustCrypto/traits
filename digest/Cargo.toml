@@ -13,10 +13,10 @@ keywords = ["digest", "crypto", "hash"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = "=0.2.0-pre.4"
+crypto-common = "=0.2.0-pre.5"
 
 # optional dependencies
-block-buffer = { version = "=0.11.0-pre.4", optional = true }
+block-buffer = { version = "=0.11.0-pre.5", optional = true }
 subtle = { version = "2.4", default-features = false, optional = true }
 blobby = { version = "0.3", optional = true }
 const-oid = { version = "=0.10.0-pre.2", optional = true }

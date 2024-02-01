@@ -16,7 +16,6 @@ members = [
 ]
 
 [patch.crates-io]
-crypto-common = { path = "./crypto-common" }
 digest = { path = "./digest" }
 signature = { path = "./signature" }
 sha2 = { git = "https://github.com/RustCrypto/hashes.git" }

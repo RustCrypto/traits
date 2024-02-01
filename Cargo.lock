@@ -19,7 +19,7 @@ dependencies = [
  "arrayvec",
  "blobby",
  "bytes",
- "crypto-common 0.2.0-pre.4",
+ "crypto-common 0.2.0-pre.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "heapless",
 ]
 
@@ -132,11 +132,11 @@ dependencies = [
 
 [[package]]
 name = "block-buffer"
-version = "0.11.0-pre.4"
+version = "0.11.0-pre.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0edadbde8e0243b49d434f9a23ec0590af201f400a34d7d51049284e4a77c568"
+checksum = "3ded684142010808eb980d9974ef794da2bcf97d13396143b1515e9f0fb4a10e"
 dependencies = [
- "crypto-common 0.2.0-pre.4",
+ "crypto-common 0.2.0-pre.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "zeroize",
 ]
 
@@ -226,7 +226,7 @@ name = "cipher"
 version = "0.5.0-pre.2"
 dependencies = [
  "blobby",
- "crypto-common 0.2.0-pre.4",
+ "crypto-common 0.2.0-pre.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "inout 0.2.0-pre.4",
  "zeroize",
 ]
@@ -334,7 +334,18 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.2.0-pre.4"
+version = "0.2.0-pre.5"
+dependencies = [
+ "getrandom",
+ "hybrid-array",
+ "rand_core 0.6.4",
+]
+
+[[package]]
+name = "crypto-common"
+version = "0.2.0-pre.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7aa2ec04f5120b830272a481e8d9d8ba4dda140d2cda59b0f1110d5eb93c38e"
 dependencies = [
  "getrandom",
  "hybrid-array",
@@ -437,9 +448,9 @@ name = "digest"
 version = "0.11.0-pre.7"
 dependencies = [
  "blobby",
- "block-buffer 0.11.0-pre.4",
+ "block-buffer 0.11.0-pre.5",
  "const-oid 0.10.0-pre.2",
- "crypto-common 0.2.0-pre.4",
+ "crypto-common 0.2.0-pre.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
  "zeroize",
 ]
@@ -1328,7 +1339,7 @@ dependencies = [
 name = "universal-hash"
 version = "0.6.0-pre"
 dependencies = [
- "crypto-common 0.2.0-pre.4",
+ "crypto-common 0.2.0-pre.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
 ]
 
