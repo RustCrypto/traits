@@ -14,12 +14,12 @@ rust-version  = "1.72"
 
 [dependencies]
 derive = { package = "signature_derive", version = "2", optional = true, path = "../signature_derive" }
-digest = { version = "=0.11.0-pre.7", optional = true, default-features = false }
+digest = { version = "=0.11.0-pre.8", optional = true, default-features = false }
 rand_core = { version = "0.6.4", optional = true, default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.4"
-sha2 = { version = "=0.11.0-pre.2", default-features = false }
+sha2 = { version = "=0.11.0-pre.3", default-features = false }
 
 [features]
 alloc = []
