@@ -36,6 +36,7 @@ jobs:
       - run: cargo test --all-features --release
 
   minimal-versions:
+    if: false # Temporarily disabled until signature v2.3.0 is published
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
