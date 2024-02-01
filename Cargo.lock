@@ -56,9 +56,9 @@ checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
 
 [[package]]
 name = "async-signature"
-version = "0.6.0-pre.0"
+version = "0.6.0-pre.1"
 dependencies = [
- "signature 2.3.0-pre.2",
+ "signature 2.3.0-pre.3",
 ]
 
 [[package]]
@@ -1250,7 +1250,7 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "2.3.0-pre.2"
+version = "2.3.0-pre.3"
 dependencies = [
  "digest 0.11.0-pre.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex-literal",
