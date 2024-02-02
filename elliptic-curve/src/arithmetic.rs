@@ -44,7 +44,8 @@ pub trait CurveArithmetic: Curve {
         + DefaultIsZeroes
         + From<Self::AffinePoint>
         + Into<Self::AffinePoint>
-        + LinearCombination
+        + LinearCombination<[(Self::ProjectivePoint, Self::Scalar)]>
+        + LinearCombination<[(Self::ProjectivePoint, Self::Scalar); 2]>
         + MulByGenerator
         + group::Curve<AffineRepr = Self::AffinePoint>
         + group::Group<Scalar = Self::Scalar>;

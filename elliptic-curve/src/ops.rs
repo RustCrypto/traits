@@ -149,42 +149,22 @@ fn invert_batch_internal<
 
 /// Linear combination.
 ///
-/// This trait enables crates to provide an optimized implementation of
-/// linear combinations (e.g. Shamir's Trick), or otherwise provides a default
-/// non-optimized implementation.
-// TODO(tarcieri): replace this with a trait from the `group` crate? (see zkcrypto/group#25)
-pub trait LinearCombination: Group {
-    /// Calculates `x * k + y * l`.
-    fn lincomb(x: &Self, k: &Self::Scalar, y: &Self, l: &Self::Scalar) -> Self {
-        (*x * k) + (*y * l)
-    }
-}
-
-/// Linear combination (extended version).
+/// This trait enables optimized implementations of linear combinations (e.g. Shamir's Trick).
 ///
-/// This trait enables providing an optimized implementation of
-/// linear combinations (e.g. Shamir's Trick).
-// TODO(tarcieri): replace the current `LinearCombination` with this in the next release
-pub trait LinearCombinationExt<PointsAndScalars>: group::Curve
+/// It's generic around `PointsAndScalars` to allow overlapping impls. For example, const generic
+/// impls can use the input size to determine the size needed to store temporary variables.
+pub trait LinearCombination<PointsAndScalars>: group::Curve
 where
     PointsAndScalars: AsRef<[(Self, Self::Scalar)]> + ?Sized,
 {
     /// Calculates `x1 * k1 + ... + xn * kn`.
-    fn lincomb_ext(points_and_scalars: &PointsAndScalars) -> Self {
+    fn lincomb(points_and_scalars: &PointsAndScalars) -> Self {
         points_and_scalars
             .as_ref()
             .iter()
             .copied()
             .map(|(point, scalar)| point * scalar)
             .sum()
-    }
-}
-
-/// Blanket impl of the legacy [`LinearCombination`] trait for types which impl the new
-/// [`LinearCombinationExt`] trait for 2-element arrays.
-impl<P: LinearCombinationExt<[(P, Self::Scalar); 2]>> LinearCombination for P {
-    fn lincomb(x: &Self, k: &Self::Scalar, y: &Self, l: &Self::Scalar) -> Self {
-        Self::lincomb_ext(&[(*x, *k), (*y, *l)])
     }
 }
 
