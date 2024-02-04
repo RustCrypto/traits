@@ -1,9 +1,11 @@
 use crate::{
-    errors::StreamCipherError, Block, OverflowError, SeekNum, StreamCipher, StreamCipherCore,
+    errors::StreamCipherError, OverflowError, SeekNum, StreamCipher, StreamCipherCore,
     StreamCipherSeek, StreamCipherSeekCore,
 };
 use core::fmt;
-use crypto_common::{typenum::Unsigned, Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser};
+use crypto_common::{
+    typenum::Unsigned, Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser, ParBlocks,
+};
 use inout::InOutBuf;
 #[cfg(feature = "zeroize")]
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -14,7 +16,9 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 pub struct StreamCipherCoreWrapper<T: StreamCipherCore> {
     core: T,
     // First byte is used as position
-    buffer: Block<T>,
+    // First block is used as a small buffer, the rest is to be used by
+    // ApplyBlocksCtx
+    buffer: ParBlocks<T>,
 }
 
 impl<T: StreamCipherCore + Default> Default for StreamCipherCoreWrapper<T> {
@@ -53,15 +57,15 @@ impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
 
     /// Return reference to the core type.
     pub fn from_core(core: T) -> Self {
-        let mut buffer: Block<T> = Default::default();
-        buffer[0] = T::BlockSize::U8;
+        let mut buffer: ParBlocks<T> = Default::default();
+        buffer[0][0] = T::BlockSize::U8;
         Self { core, buffer }
     }
 
     /// Return current cursor position.
     #[inline]
     fn get_pos(&self) -> u8 {
-        let pos = self.buffer[0];
+        let pos = self.buffer[0][0];
         if pos == 0 || pos > T::BlockSize::U8 {
             debug_assert!(false);
             // SAFETY: `pos` never breaks the invariant
@@ -83,7 +87,7 @@ impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
         // Block size is always smaller than 256 because of the `BlockSizes` bound,
         // so if the safety condition is satisfied, the `as` cast does not truncate
         // any non-zero bits.
-        self.buffer[0] = pos as u8;
+        self.buffer[0][0] = pos as u8;
     }
 
     /// Return number of remaining bytes in the internal buffer.
@@ -130,7 +134,7 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
 
         if rem != 0 {
             if data_len <= rem {
-                data.xor_in2out(&self.buffer[pos..][..data_len]);
+                data.xor_in2out(&self.buffer[0][pos..][..data_len]);
                 // SAFETY: we have checked that `data_len` is less or equal to length
                 // of remaining keystream data, thus `pos + data_len` can not be bigger
                 // than block size. Since `pos` is never zero, `pos + data_len` can not
@@ -143,11 +147,23 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
             }
             let (mut left, right) = data.split_at(rem);
             data = right;
-            left.xor_in2out(&self.buffer[pos..]);
+            left.xor_in2out(&self.buffer[0][pos..]);
         }
 
         let (blocks, mut tail) = data.into_chunks();
-        self.core.apply_keystream_blocks_inout(blocks);
+
+        let (chunks, mut tail_blocks) = blocks.into_chunks::<T::ParBlocksSize>();
+
+        for mut chunk in chunks {
+            self.core.write_keystream_blocks(&mut self.buffer);
+            chunk.xor_in2out(&self.buffer);
+        }
+        let n = tail_blocks.len();
+        self.core
+            .write_keystream_blocks(&mut self.buffer[..tail_blocks.len()]);
+        for i in 0..n {
+            tail_blocks.get(i).xor_in2out(&self.buffer[i]);
+        }
 
         let new_pos = if tail.is_empty() {
             T::BlockSize::USIZE
@@ -156,8 +172,8 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
             // the first byte of `self.buffer`. It may break the safety invariant,
             // but after XORing keystream block with `tail`, we immediately
             // overwrite the first byte with a correct value.
-            self.core.write_keystream_block(&mut self.buffer);
-            tail.xor_in2out(&self.buffer[..tail.len()]);
+            self.core.write_keystream_block(&mut self.buffer[0]);
+            tail.xor_in2out(&self.buffer[0][..tail.len()]);
             tail.len()
         };
 
@@ -188,7 +204,7 @@ impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
         self.core.set_block_pos(block_pos);
         let new_pos = if byte_pos != 0 {
             // See comment in `try_apply_keystream_inout` for use of `write_keystream_block`
-            self.core.write_keystream_block(&mut self.buffer);
+            self.core.write_keystream_block(&mut self.buffer[0]);
             byte_pos.into()
         } else {
             T::BlockSize::USIZE
@@ -219,8 +235,8 @@ impl<T: IvSizeUser + StreamCipherCore> IvSizeUser for StreamCipherCoreWrapper<T>
 impl<T: KeyIvInit + StreamCipherCore> KeyIvInit for StreamCipherCoreWrapper<T> {
     #[inline]
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self {
-        let mut buffer = Block::<T>::default();
-        buffer[0] = T::BlockSize::U8;
+        let mut buffer = ParBlocks::<T>::default();
+        buffer[0][0] = T::BlockSize::U8;
         Self {
             core: T::new(key, iv),
             buffer,
@@ -231,8 +247,8 @@ impl<T: KeyIvInit + StreamCipherCore> KeyIvInit for StreamCipherCoreWrapper<T> {
 impl<T: KeyInit + StreamCipherCore> KeyInit for StreamCipherCoreWrapper<T> {
     #[inline]
     fn new(key: &Key<Self>) -> Self {
-        let mut buffer = Block::<T>::default();
-        buffer[0] = T::BlockSize::U8;
+        let mut buffer = ParBlocks::<T>::default();
+        buffer[0][0] = T::BlockSize::U8;
         Self {
             core: T::new(key),
             buffer,

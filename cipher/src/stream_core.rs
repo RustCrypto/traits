@@ -38,7 +38,7 @@ pub trait StreamClosure: BlockSizeUser {
 }
 
 /// Block-level synchronous stream ciphers.
-pub trait StreamCipherCore: BlockSizeUser + Sized {
+pub trait StreamCipherCore: BlockSizeUser + ParBlocksSizeUser + Sized {
     /// Return number of remaining blocks before cipher wraps around.
     ///
     /// Returns `None` if number of remaining blocks can not be computed
