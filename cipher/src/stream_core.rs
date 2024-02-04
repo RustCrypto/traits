@@ -2,6 +2,9 @@ use crate::{ParBlocks, ParBlocksSizeUser, StreamCipherError};
 use crypto_common::{array::Array, typenum::Unsigned, Block, BlockSizeUser, BlockSizes};
 use inout::{InOut, InOutBuf};
 
+#[cfg(feature = "zeroize")]
+use zeroize::Zeroize;
+
 /// Trait implemented by stream cipher backends.
 pub trait StreamBackend: ParBlocksSizeUser {
     /// Generate keystream block.
@@ -125,6 +128,10 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
         let t = InOutBuf::from_mut(&mut block);
         self.apply_keystream_blocks_inout(t);
         buf.get_out().copy_from_slice(&block[..n]);
+
+        #[cfg(feature = "zeroize")]
+        block.zeroize();
+
         Ok(())
     }
 
@@ -236,6 +243,8 @@ impl<'inp, 'out, BS: BlockSizes> StreamClosure for ApplyBlockCtx<'inp, 'out, BS>
         let mut t = Default::default();
         backend.gen_ks_block(&mut t);
         self.block.xor_in2out(&t);
+        #[cfg(feature = "zeroize")]
+        t.zeroize()
     }
 }
 
@@ -253,24 +262,27 @@ impl<'inp, 'out, BS: BlockSizes> StreamClosure for ApplyBlocksCtx<'inp, 'out, BS
     fn call<B: StreamBackend<BlockSize = BS>>(self, backend: &mut B) {
         if B::ParBlocksSize::USIZE > 1 {
             let (chunks, mut tail) = self.blocks.into_chunks::<B::ParBlocksSize>();
+            let mut buf = Array::<_, B::ParBlocksSize>::default();
             for mut chunk in chunks {
-                let mut tmp = Default::default();
-                backend.gen_par_ks_blocks(&mut tmp);
-                chunk.xor_in2out(&tmp);
+                backend.gen_par_ks_blocks(&mut buf);
+                chunk.xor_in2out(&buf);
             }
             let n = tail.len();
-            let mut buf = Array::<_, B::ParBlocksSize>::default();
             let ks = &mut buf[..n];
             backend.gen_tail_blocks(ks);
             for i in 0..n {
                 tail.get(i).xor_in2out(&ks[i]);
             }
+            #[cfg(feature = "zeroize")]
+            buf.zeroize()
         } else {
+            let mut buf = Default::default();
             for mut block in self.blocks {
-                let mut t = Default::default();
-                backend.gen_ks_block(&mut t);
-                block.xor_in2out(&t);
+                backend.gen_ks_block(&mut buf);
+                block.xor_in2out(&buf);
             }
+            #[cfg(feature = "zeroize")]
+            buf.zeroize()
         }
     }
 }

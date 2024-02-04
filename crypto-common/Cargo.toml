@@ -22,6 +22,7 @@ getrandom = { version = "0.2", optional = true }
 [features]
 getrandom = ["dep:getrandom", "rand_core?/getrandom"]
 std = ["getrandom?/std", "rand_core?/std"]
+zeroize = ["hybrid-array/zeroize"]
 
 [package.metadata.docs.rs]
 all-features = true
