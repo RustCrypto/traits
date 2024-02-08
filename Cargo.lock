@@ -899,7 +899,7 @@ dependencies = [
 
 [[package]]
 name = "password-hash"
-version = "0.6.0-pre"
+version = "0.6.0-pre.0"
 dependencies = [
  "base64ct",
  "rand_core 0.6.4",
