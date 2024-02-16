@@ -14,7 +14,6 @@ rust-version = "1.66"
 
 [dependencies]
 rand_core = "0.6"
-generic-array = "0.14"
 zeroize = { version = "1.7", default-features = false }
 
 [dev-dependencies]
@@ -34,3 +33,6 @@ std = []
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+[lib]
+doctest = false
