@@ -1,39 +1,20 @@
 //! KEM Traits
 
-use crate::errors::Error;
+use rand_core::CryptoRngCore;
 
-use core::fmt;
+pub trait Encapsulate<EK, SS> {
+    type Error;
 
-use generic_array::{ArrayLength, GenericArray};
-use rand_core::{CryptoRng, RngCore};
-use zeroize::{Zeroize, ZeroizeOnDrop};
-
-/// Trait impl'd by concrete types that represent an encapsulated key. This is intended to be, in
-/// essence, a bag of bytes.
-pub trait EncappedKey: AsRef<[u8]> + fmt::Debug + Sized {
-    /// The size, in bytes, of an encapsulated key.
-    type EncappedKeySize: ArrayLength<u8>;
-
-    /// The size, in bytes, of the shared secret that this KEM produces.
-    type SharedSecretSize: ArrayLength<u8>;
-
-    /// Represents the identity key of an encapsulator. This is used in authenticated
-    /// decapsulation.
-    type SenderPublicKey;
-
-    /// The public key of a decapsulator. This is used in encapsulation.
-    type RecipientPublicKey;
-
-    /// Parses an encapsulated key from its byte representation.
-    fn from_bytes(bytes: &GenericArray<u8, Self::EncappedKeySize>) -> Result<Self, Error>;
-
-    /// Borrows a byte slice representing the serialized form of this encapsulated key.
-    fn as_bytes(&self) -> &GenericArray<u8, Self::EncappedKeySize> {
-        // EncappedKey is already AsRef<[u8]>, so we don't need to do any work. This will panic iff
-        // the underlying bytestring is not precisely NEnc bytes long.
-        self.as_ref().into()
-    }
+    fn encapsulate(&self, rng: impl CryptoRngCore) -> Result<(EK, SS), Self::Error>;
 }
+
+pub trait Decapsulate<EK, SS> {
+    type Error;
+
+    fn decapsulate(&self, encapped_key: &EK) -> Result<SS, Self::Error>;
+}
+
+/*
 
 /// The shared secret that results from key exchange.
 pub struct SharedSecret<EK: EncappedKey>(GenericArray<u8, EK::SharedSecretSize>);
@@ -98,3 +79,5 @@ pub trait AuthDecapsulator<EK: EncappedKey> {
         sender_pubkey: &EK::SenderPublicKey,
     ) -> Result<SharedSecret<EK>, Error>;
 }
+
+*/
