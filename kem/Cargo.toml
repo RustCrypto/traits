@@ -26,10 +26,6 @@ pqcrypto-traits = "0.3"
 rand = { version = "0.8" }
 x3dh-ke = "0.1"
 
-[features]
-default = []
-std = []
-
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
