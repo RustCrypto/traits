@@ -88,7 +88,7 @@ impl Decapsulate<EphemeralKey, SharedSecret> for DecapContext {
         let sender_pubkey = &self.1;
 
         // Now decapsulate
-        Ok(x3dh_b(sender_pubkey, spk, &ek, ik, opk))
+        Ok(x3dh_b(sender_pubkey, spk, ek, ik, opk))
     }
 }
 

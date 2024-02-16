@@ -29,7 +29,7 @@ impl Decapsulate<EncappedKey, SharedSecret> for PrivateKey {
     type Error = HpkeError;
 
     fn decapsulate(&self, encapped_key: &EncappedKey) -> Result<SharedSecret, HpkeError> {
-        <X25519HkdfSha256 as KemTrait>::decap(&self.0, None, &encapped_key)
+        <X25519HkdfSha256 as KemTrait>::decap(&self.0, None, encapped_key)
     }
 }
 
