@@ -9,11 +9,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, unused_qualifications, missing_debug_implementations)]
 
-#[cfg(feature = "std")]
-extern crate std;
-
-mod errors;
 mod kem;
 
-pub use crate::{errors::*, kem::*};
+pub use crate::kem::*;
 pub use generic_array;

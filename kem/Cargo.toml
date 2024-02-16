@@ -1,16 +1,16 @@
 [package]
-name          = "kem"
-description   = "Traits for key encapsulation mechanisms"
-version       = "0.3.0-pre"
-authors       = ["RustCrypto Developers"]
-license       = "Apache-2.0 OR MIT"
+name = "kem"
+description = "Traits for key encapsulation mechanisms"
+version = "0.3.0-pre"
+authors = ["RustCrypto Developers"]
+license = "Apache-2.0 OR MIT"
 documentation = "https://docs.rs/kem"
-repository    = "https://github.com/RustCrypto/traits/tree/master/kem"
-readme        = "README.md"
-edition       = "2021"
-keywords      = ["crypto"]
-categories    = ["cryptography", "no-std"]
-rust-version  = "1.66"
+repository = "https://github.com/RustCrypto/traits/tree/master/kem"
+readme = "README.md"
+edition = "2021"
+keywords = ["crypto"]
+categories = ["cryptography", "no-std"]
+rust-version = "1.66"
 
 [dependencies]
 rand_core = "0.6"
@@ -19,10 +19,12 @@ zeroize = { version = "1.7", default-features = false }
 
 [dev-dependencies]
 hpke = "0.10"
-p256 = { version = "0.9", features = [ "ecdsa" ] }
-pqcrypto = { version = "0.15", default-features = false, features = [ "pqcrypto-saber" ] }
+p256 = { version = "0.9", features = ["ecdsa"] }
+pqcrypto = { version = "0.15", default-features = false, features = [
+    "pqcrypto-saber",
+] }
 pqcrypto-traits = "0.3"
-rand = { version = "0.8", features = [ "getrandom" ] }
+rand = { version = "0.8" }
 x3dh-ke = "0.1"
 
 [features]
