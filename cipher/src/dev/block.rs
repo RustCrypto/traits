@@ -102,7 +102,7 @@ macro_rules! block_mode_enc_test {
         fn $name() {
             use cipher::{
                 array::Array, blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
-                BlockCipherEncrypt, BlockSizeUser, KeyIvInit,
+                BlockCipherEncrypt, BlockModeEncrypt, BlockSizeUser, KeyIvInit,
             };
 
             fn run_test(key: &[u8], iv: &[u8], pt: &[u8], ct: &[u8]) -> bool {
@@ -115,7 +115,7 @@ macro_rules! block_mode_enc_test {
                 let (blocks, tail) = buf.reborrow().into_chunks();
                 assert_eq!(tail.len(), 0);
                 for block in blocks {
-                    state.encrypt_block_inout_mut(block);
+                    state.encrypt_block_inout(block);
                 }
                 if buf.get_out() != ct {
                     return false;
@@ -125,7 +125,7 @@ macro_rules! block_mode_enc_test {
                 let mut state = <$cipher as KeyIvInit>::new_from_slices(key, iv).unwrap();
                 buf.get_out().iter_mut().for_each(|b| *b = 0);
                 let (blocks, _) = buf.reborrow().into_chunks();
-                state.encrypt_blocks_inout_mut(blocks);
+                state.encrypt_blocks_inout(blocks);
                 if buf.get_out() != ct {
                     return false;
                 }
@@ -160,7 +160,7 @@ macro_rules! block_mode_dec_test {
         fn $name() {
             use cipher::{
                 array::Array, blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
-                BlockCipherDecrypt, BlockSizeUser, KeyIvInit,
+                BlockCipherDecrypt, BlockModeDecrypt, BlockSizeUser, KeyIvInit,
             };
 
             fn run_test(key: &[u8], iv: &[u8], pt: &[u8], ct: &[u8]) -> bool {
@@ -173,7 +173,7 @@ macro_rules! block_mode_dec_test {
                 let (blocks, tail) = buf.reborrow().into_chunks();
                 assert_eq!(tail.len(), 0);
                 for block in blocks {
-                    state.decrypt_block_inout_mut(block);
+                    state.decrypt_block_inout(block);
                 }
                 if buf.get_out() != pt {
                     return false;
@@ -183,7 +183,7 @@ macro_rules! block_mode_dec_test {
                 let mut state = <$cipher as KeyIvInit>::new_from_slices(key, iv).unwrap();
                 buf.get_out().iter_mut().for_each(|b| *b = 0);
                 let (blocks, _) = buf.reborrow().into_chunks();
-                state.decrypt_blocks_inout_mut(blocks);
+                state.decrypt_blocks_inout(blocks);
                 if buf.get_out() != pt {
                     return false;
                 }
