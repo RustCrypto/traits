@@ -8,7 +8,6 @@ use crate::{
     bigint::{Limb, U256},
     error::{Error, Result},
     ops::{Invert, LinearCombination, MulByGenerator, Reduce, ShrAssign},
-    pkcs8,
     point::AffineCoordinates,
     rand_core::RngCore,
     scalar::{FromUintUnchecked, IsHigh},
