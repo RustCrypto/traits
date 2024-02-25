@@ -2,7 +2,7 @@
 
 use super::SecretKey;
 use crate::{
-    pkcs8::{self, der::Decode, AssociatedOid},
+    pkcs8::{der::Decode, AssociatedOid},
     sec1::{ModulusSize, ValidatePublicKey},
     Curve, FieldBytesSize, ALGORITHM_OID,
 };

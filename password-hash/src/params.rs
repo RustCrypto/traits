@@ -7,7 +7,6 @@ use crate::{
 };
 use core::{
     fmt::{self, Debug, Write},
-    iter::FromIterator,
     str::{self, FromStr},
 };
 
@@ -328,7 +327,7 @@ impl Write for Buffer {
 
 #[cfg(test)]
 mod tests {
-    use super::{Error, FromIterator, Ident, ParamsString, Value};
+    use super::{Error, Ident, ParamsString, Value};
 
     #[cfg(feature = "alloc")]
     use alloc::string::ToString;

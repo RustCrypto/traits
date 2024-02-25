@@ -43,10 +43,7 @@ use pkcs8::DecodePublicKey;
 
 #[cfg(all(feature = "sec1", feature = "pkcs8"))]
 use {
-    crate::{
-        pkcs8::{self, AssociatedOid},
-        ALGORITHM_OID,
-    },
+    crate::{pkcs8::AssociatedOid, ALGORITHM_OID},
     pkcs8::der,
 };
 
