@@ -13,7 +13,7 @@ keywords = ["crypto", "traits"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-hybrid-array = "0.2.0-rc.4"
+hybrid-array = "0.2.0-rc.6"
 
 # optional dependencies
 rand_core = { version = "0.6.4", optional = true }
