@@ -8,8 +8,8 @@ macro_rules! new_test {
         #[test]
         fn $name() {
             use aead::{
+                array::{typenum::Unsigned, Array},
                 dev::blobby::Blob6Iterator,
-                generic_array::{typenum::Unsigned, GenericArray},
                 Aead, KeyInit, Payload,
             };
 
