@@ -552,7 +552,7 @@ impl Serialize for JwkEcKey {
             state.serialize_field("d", d)?;
         }
 
-        ser::SerializeStruct::end(state)
+        SerializeStruct::end(state)
     }
 }
 
