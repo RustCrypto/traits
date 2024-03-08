@@ -39,7 +39,10 @@ pub type Block<B> = Array<u8, <B as BlockSizeUser>::BlockSize>;
 pub type ParBlocks<T> = Array<Block<T>, <T as ParBlocksSizeUser>::ParBlocksSize>;
 
 /// Output array of [`OutputSizeUser`] implementors.
-pub type Output<T> = Array<u8, <T as OutputSizeUser>::OutputSize>;
+pub type Output<T> = Array<u8, OutputSize<T>>;
+
+/// Alias for the output size of [`OutputSizeUser`] implementors.
+pub type OutputSize<T> = <T as OutputSizeUser>::OutputSize;
 
 /// Key used by [`KeySizeUser`] implementors.
 pub type Key<B> = Array<u8, <B as KeySizeUser>::KeySize>;
