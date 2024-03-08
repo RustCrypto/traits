@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- Migrate to `doc_auto_cfg` ([#1370])
+- Exclude pre-1.60 crates from workspace ([#1380])
+- bump crypto-common to v0.2.0-pre; MSRV 1.65 ([#1385])
+- bump crypto-common to v0.2.0-pre.1 ([#1433])
+- bump crypto-common to v0.2.0-pre.2 ([#1436])
+- Bump `hybrid-array` to v0.2.0-pre.8 ([#1438])
+- Bump `crypto-common` and `hybrid-array` ([#1469])
+- Bump `hybrid-array` to v0.2.0-rc.4 ([#1493])
+- bump crypto-common to v0.2.0-pre.5 ([#1496])
+
+### Fixed
+- Fix `missing_debug_implementations` for some crates ([#1407])
+
+[#1370]: https://github.com/RustCrypto/traits/pull/1370
+[#1380]: https://github.com/RustCrypto/traits/pull/1380
+[#1385]: https://github.com/RustCrypto/traits/pull/1385
+[#1407]: https://github.com/RustCrypto/traits/pull/1407
+[#1433]: https://github.com/RustCrypto/traits/pull/1433
+[#1436]: https://github.com/RustCrypto/traits/pull/1436
+[#1438]: https://github.com/RustCrypto/traits/pull/1438
+[#1469]: https://github.com/RustCrypto/traits/pull/1469
+[#1493]: https://github.com/RustCrypto/traits/pull/1493
+[#1496]: https://github.com/RustCrypto/traits/pull/1496
+
 ## 0.5.1 (2023-05-19)
 ### Changed
 - Loosen `subtle` version requirement to `^2.4` ([#1260])
