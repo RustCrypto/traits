@@ -1350,7 +1350,7 @@ dependencies = [
 
 [[package]]
 name = "universal-hash"
-version = "0.6.0-pre"
+version = "0.6.0-pre.0"
 dependencies = [
  "crypto-common 0.2.0-pre.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
