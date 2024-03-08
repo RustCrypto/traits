@@ -1,6 +1,6 @@
 [package]
 name = "aead"
-version = "0.6.0-pre"
+version = "0.6.0-pre.0"
 description = """
 Traits for Authenticated Encryption with Associated Data (AEAD) algorithms,
 such as AES-GCM as ChaCha20Poly1305, which provide a high-level API
