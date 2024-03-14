@@ -3,7 +3,8 @@ use super::{
     UpdateCore, XofReaderCoreWrapper,
 };
 use crate::{
-    ExtendableOutput, ExtendableOutputReset, FixedOutput, FixedOutputReset, HashMarker, Update,
+    ExtendableOutput, ExtendableOutputReset, FixedOutput, FixedOutputReset, HashMarker,
+    PersonalizedInit, Update,
 };
 use block_buffer::BlockBuffer;
 use core::{
@@ -160,8 +161,27 @@ impl<T: BufferKindUser> Drop for CoreWrapper<T> {
 #[cfg(feature = "zeroize")]
 impl<T: BufferKindUser + zeroize::ZeroizeOnDrop> zeroize::ZeroizeOnDrop for CoreWrapper<T> {}
 
+impl<T> PersonalizedInit for CoreWrapper<T>
+where
+    T: BufferKindUser + PersonalizedInit,
+{
+    type PersonalizationExtArg = T::PersonalizationExtArg;
+    #[inline]
+    fn new_personalized(personalization: &[u8]) -> Self {
+        Self::from_core(T::new_personalized(personalization))
+    }
+
+    fn new_ext_personalized(personalization_ext: &Self::PersonalizationExtArg) -> Self {
+        Self::from_core(T::new_ext_personalized(personalization_ext))
+    }
+}
+
 #[cfg(feature = "oid")]
-impl<T: BufferKindUser + AssociatedOid> AssociatedOid for CoreWrapper<T> {
+#[cfg_attr(docsrs, doc(cfg(feature = "oid")))]
+impl<T> AssociatedOid for CoreWrapper<T>
+where
+    T: BufferKindUser + AssociatedOid,
+{
     const OID: ObjectIdentifier = T::OID;
 }
 
