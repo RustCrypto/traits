@@ -44,7 +44,7 @@ macro_rules! hash_serialization_test {
         #[test]
         fn $name() {
             use digest::{
-                crypto_common::{BlockSizeUser, SerializableState},
+                crypto_common::{hazmat::SerializableState, BlockSizeUser},
                 typenum::Unsigned,
                 Digest,
             };
@@ -77,7 +77,7 @@ macro_rules! hash_rt_outsize_serialization_test {
         #[test]
         fn $name() {
             use digest::{
-                crypto_common::{BlockSizeUser, SerializableState},
+                crypto_common::{hazmat::SerializableState, BlockSizeUser},
                 typenum::Unsigned,
                 Digest, Update, VariableOutput,
             };
