@@ -834,7 +834,6 @@ dependencies = [
 name = "kem"
 version = "0.3.0-pre"
 dependencies = [
- "generic-array",
  "hpke",
  "p256 0.9.0",
  "pqcrypto",
