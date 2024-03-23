@@ -268,6 +268,21 @@ pub trait VariableOutputReset: VariableOutput + Reset {
     }
 }
 
+/// Trait for hash functions with personalization string for domain separation.
+pub trait PersonalizedInit: Sized {
+    // It would be nice to define a default value equal to `[u8]`, but unfortunately
+    // associated type defaults are currently unstable
+
+    /// Extended personalization
+    type PersonalizationExtArg;
+
+    /// Create new hasher instance with the given personalization string.
+    fn new_personalized(customization: &[u8]) -> Self;
+
+    /// Create new hasher instance with the given extended personalization.
+    fn new_ext_personalized(customization_ext: &Self::PersonalizationExtArg) -> Self;
+}
+
 /// The error type used in variable hash traits.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct InvalidOutputSize;
