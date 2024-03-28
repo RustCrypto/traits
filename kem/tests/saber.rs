@@ -17,7 +17,7 @@ impl Encapsulate<SaberEncappedKey, SaberSharedSecret> for SaberPublicKey {
 
     fn encapsulate(
         &self,
-        _: impl CryptoRngCore,
+        _: &mut impl CryptoRngCore,
     ) -> Result<(SaberEncappedKey, SaberSharedSecret), ()> {
         let (ss, ek) = encapsulate(&self.0);
         Ok((ek, ss))

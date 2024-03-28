@@ -50,7 +50,7 @@ impl Encapsulate<EphemeralKey, SharedSecret> for EncapContext {
 
     fn encapsulate(
         &self,
-        _: impl CryptoRngCore,
+        _: &mut impl CryptoRngCore,
     ) -> Result<(EphemeralKey, SharedSecret), Self::Error> {
         // Make a new ephemeral key. This will be the encapped key
         let ek = EphemeralKey::default();
