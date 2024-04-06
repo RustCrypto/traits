@@ -16,10 +16,10 @@ use alloc::{
 use base64ct::{Base64UrlUnpadded as Base64Url, Encoding};
 use core::{
     fmt::{self, Debug},
-    marker::PhantomData,
     str::{self, FromStr},
 };
-use serdect::serde::{de, ser, Deserialize, Serialize};
+use serdect::serde::{de, Deserialize, Serialize};
+use sha2::Digest;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[cfg(feature = "arithmetic")]
@@ -32,14 +32,8 @@ use crate::{
 /// Key Type (`kty`) for elliptic curve keys.
 pub const EC_KTY: &str = "EC";
 
-/// Deserialization error message.
-const DE_ERROR_MSG: &str = "struct JwkEcKey with 5 elements";
-
 /// Name of the JWK type
 const JWK_TYPE_NAME: &str = "JwkEcKey";
-
-/// Field names
-const FIELDS: &[&str] = &["kty", "crv", "x", "y", "d"];
 
 /// Elliptic curve parameters used by JSON Web Keys.
 pub trait JwkParameters: Curve {
@@ -62,22 +56,23 @@ pub trait JwkParameters: Curve {
 ///
 /// [1]: https://tools.ietf.org/html/rfc7518#section-6
 // TODO(tarcieri): eagerly decode or validate `x`, `y`, and `d` as Base64
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(crate = "serdect::serde")]
 pub struct JwkEcKey {
     /// The `crv` parameter which identifies a particular elliptic curve
     /// as defined in RFC 7518 Section 6.2.1.1:
     /// <https://tools.ietf.org/html/rfc7518#section-6.2.1.1>
-    crv: String,
+    pub crv: String,
 
     /// The x-coordinate of the elliptic curve point which is the public key
     /// value associated with this JWK as defined in RFC 7518 6.2.1.2:
     /// <https://tools.ietf.org/html/rfc7518#section-6.2.1.2>
-    x: String,
+    pub x: String,
 
     /// The y-coordinate of the elliptic curve point which is the public key
     /// value associated with this JWK as defined in RFC 7518 6.2.1.3:
     /// <https://tools.ietf.org/html/rfc7518#section-6.2.1.3>
-    y: String,
+    pub y: String,
 
     /// The `d` ECC private key parameter as described in RFC 7518 6.2.2.1:
     /// <https://tools.ietf.org/html/rfc7518#section-6.2.2.1>
@@ -87,7 +82,85 @@ pub struct JwkEcKey {
     /// Inner value is encoded according to the `Integer-to-Octet-String`
     /// conversion as defined in SEC1 section 2.3.7:
     /// <https://www.secg.org/sec1-v2.pdf>
-    d: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub d: Option<String>,
+
+    /// Key Type (must be "EC" if present) as described in RFC 7517 4.1:
+    /// <https://datatracker.ietf.org/doc/html/rfc7517#section-4.1>
+    ///
+    /// Value is optional.
+    ///
+    /// For Elliptic-Curve the value must be "EC".
+    #[serde(deserialize_with = "deserialize_kty")]
+    pub kty: String,
+
+    /// The Public Key Use as described in RFC 7517 4.2:
+    /// <https://datatracker.ietf.org/doc/html/rfc7517#section-4.2>
+    ///
+    /// Value is optional and not used by this crate.
+    #[serde(skip_serializing_if = "Option::is_none", rename = "use")]
+    pub use_: Option<String>,
+
+    /// The Key Operations as described in RFC 7517 4.3:
+    /// <https://datatracker.ietf.org/doc/html/rfc7517#section-4.3>
+    ///
+    /// Value is optional and not used by this crate.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub key_ops: Option<alloc::vec::Vec<String>>,
+
+    /// The Algorithm as described in RFC 7517 4.4:
+    /// <https://datatracker.ietf.org/doc/html/rfc7517#section-4.4>
+    ///
+    /// Value is optional and not used by this crate.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub alg: Option<String>,
+
+    /// The Key ID as described in RFC 7517 4.5:
+    /// <https://datatracker.ietf.org/doc/html/rfc7517#section-4.5>
+    ///
+    /// Value is optional and not used by this crate.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kid: Option<String>,
+
+    /// The X.509 URL as described in RFC 7517 4.6:
+    /// <https://datatracker.ietf.org/doc/html/rfc7517#section-4.6>
+    ///
+    /// Value is optional and not used by this crate.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub x5u: Option<String>,
+
+    /// The X.509 Certificate Chain as described in RFC 7517 4.7:
+    /// <https://datatracker.ietf.org/doc/html/rfc7517#section-4.7>
+    ///
+    /// Value is optional and not used by this crate.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub x5c: Option<String>,
+
+    /// The X.509 Certificate SHA-1 Thumbprint as described in RFC 7517 4.8:
+    /// <https://datatracker.ietf.org/doc/html/rfc7517#section-4.8>
+    ///
+    /// Value is optional and not used by this crate.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub x5t: Option<String>,
+
+    /// The X.509 Certificate SHA-256 as described in RFC 7517 4.9:
+    /// <https://datatracker.ietf.org/doc/html/rfc7517#section-4.9>
+    ///
+    /// Value is optional and not used by this crate.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub x5t_s256: Option<String>,
+}
+
+fn deserialize_kty<'de, D>(deserializer: D) -> core::result::Result<String, D::Error>
+where
+    D: serdect::serde::Deserializer<'de>,
+{
+    let kty: &str = de::Deserialize::deserialize(deserializer)?;
+    if kty != EC_KTY {
+        return Err(de::Error::custom(format!("unsupported JWK kty: {kty:?}")));
+    }
+
+    Ok(kty.to_string())
 }
 
 impl JwkEcKey {
@@ -129,9 +202,50 @@ impl JwkEcKey {
                 x: Base64Url::encode_string(x),
                 y: Base64Url::encode_string(y),
                 d: None,
+                alg: None,
+                key_ops: None,
+                kid: None,
+                kty: EC_KTY.into(),
+                use_: None,
+                x5c: None,
+                x5t: None,
+                x5t_s256: None,
+                x5u: None,
             }),
             _ => None,
         }
+    }
+
+    /// Generates the thumbprint for JWK as defined in RFC 7638 (
+    /// <https://datatracker.ietf.org/doc/html/rfc7638>).
+    pub fn thumbprint(&self) -> Result<String> {
+        // For EC type the following fields are required to be
+        // present and in lexicographic order
+        #[derive(Serialize)]
+        #[serde(crate = "serdect::serde")]
+        struct Required {
+            crv: String,
+            kty: String,
+            x: String,
+            y: String,
+        }
+
+        let required_fields = Required {
+            crv: self.crv.to_owned(),
+            kty: self.kty.to_owned(),
+            x: self.x.to_owned(),
+            y: self.y.to_owned(),
+        };
+
+        let mut hasher = sha2::Sha256::new();
+        hasher.update(
+            serde_json::to_string(&required_fields)
+                .map_err(|_| Error)?
+                .as_bytes(),
+        );
+        Ok(base64ct::Base64UrlUnpadded::encode_string(
+            &hasher.finalize(),
+        ))
     }
 
     /// Get the public key component of this JWK as a SEC1 [`EncodedPoint`].
@@ -343,219 +457,6 @@ impl Zeroize for JwkEcKey {
     }
 }
 
-impl<'de> Deserialize<'de> for JwkEcKey {
-    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        /// Field positions
-        enum Field {
-            Kty,
-            Crv,
-            X,
-            Y,
-            D,
-        }
-
-        /// Field visitor
-        struct FieldVisitor;
-
-        impl<'de> de::Visitor<'de> for FieldVisitor {
-            type Value = Field;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                fmt::Formatter::write_str(formatter, "field identifier")
-            }
-
-            fn visit_u64<E>(self, value: u64) -> core::result::Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                match value {
-                    0 => Ok(Field::Kty),
-                    1 => Ok(Field::Crv),
-                    2 => Ok(Field::X),
-                    3 => Ok(Field::Y),
-                    4 => Ok(Field::D),
-                    _ => Err(de::Error::invalid_value(
-                        de::Unexpected::Unsigned(value),
-                        &"field index 0 <= i < 5",
-                    )),
-                }
-            }
-
-            fn visit_str<E>(self, value: &str) -> core::result::Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                self.visit_bytes(value.as_bytes())
-            }
-
-            fn visit_bytes<E>(self, value: &[u8]) -> core::result::Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                match value {
-                    b"kty" => Ok(Field::Kty),
-                    b"crv" => Ok(Field::Crv),
-                    b"x" => Ok(Field::X),
-                    b"y" => Ok(Field::Y),
-                    b"d" => Ok(Field::D),
-                    _ => Err(de::Error::unknown_field(
-                        &String::from_utf8_lossy(value),
-                        FIELDS,
-                    )),
-                }
-            }
-        }
-
-        impl<'de> Deserialize<'de> for Field {
-            #[inline]
-            fn deserialize<D>(__deserializer: D) -> core::result::Result<Self, D::Error>
-            where
-                D: de::Deserializer<'de>,
-            {
-                de::Deserializer::deserialize_identifier(__deserializer, FieldVisitor)
-            }
-        }
-
-        struct Visitor<'de> {
-            marker: PhantomData<JwkEcKey>,
-            lifetime: PhantomData<&'de ()>,
-        }
-
-        impl<'de> de::Visitor<'de> for Visitor<'de> {
-            type Value = JwkEcKey;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                fmt::Formatter::write_str(formatter, "struct JwkEcKey")
-            }
-
-            #[inline]
-            fn visit_seq<A>(self, mut seq: A) -> core::result::Result<Self::Value, A::Error>
-            where
-                A: de::SeqAccess<'de>,
-            {
-                let kty = de::SeqAccess::next_element::<String>(&mut seq)?
-                    .ok_or_else(|| de::Error::invalid_length(0, &DE_ERROR_MSG))?;
-
-                if kty != EC_KTY {
-                    return Err(de::Error::custom(format!("unsupported JWK kty: {kty:?}")));
-                }
-
-                let crv = de::SeqAccess::next_element::<String>(&mut seq)?
-                    .ok_or_else(|| de::Error::invalid_length(1, &DE_ERROR_MSG))?;
-
-                let x = de::SeqAccess::next_element::<String>(&mut seq)?
-                    .ok_or_else(|| de::Error::invalid_length(2, &DE_ERROR_MSG))?;
-
-                let y = de::SeqAccess::next_element::<String>(&mut seq)?
-                    .ok_or_else(|| de::Error::invalid_length(3, &DE_ERROR_MSG))?;
-
-                let d = de::SeqAccess::next_element::<Option<String>>(&mut seq)?
-                    .ok_or_else(|| de::Error::invalid_length(4, &DE_ERROR_MSG))?;
-
-                Ok(JwkEcKey { crv, x, y, d })
-            }
-
-            #[inline]
-            fn visit_map<A>(self, mut map: A) -> core::result::Result<Self::Value, A::Error>
-            where
-                A: de::MapAccess<'de>,
-            {
-                let mut kty: Option<String> = None;
-                let mut crv: Option<String> = None;
-                let mut x: Option<String> = None;
-                let mut y: Option<String> = None;
-                let mut d: Option<String> = None;
-
-                while let Some(key) = de::MapAccess::next_key::<Field>(&mut map)? {
-                    match key {
-                        Field::Kty => {
-                            if kty.is_none() {
-                                kty = Some(de::MapAccess::next_value::<String>(&mut map)?);
-                            } else {
-                                return Err(de::Error::duplicate_field(FIELDS[0]));
-                            }
-                        }
-                        Field::Crv => {
-                            if crv.is_none() {
-                                crv = Some(de::MapAccess::next_value::<String>(&mut map)?);
-                            } else {
-                                return Err(de::Error::duplicate_field(FIELDS[1]));
-                            }
-                        }
-                        Field::X => {
-                            if x.is_none() {
-                                x = Some(de::MapAccess::next_value::<String>(&mut map)?);
-                            } else {
-                                return Err(de::Error::duplicate_field(FIELDS[2]));
-                            }
-                        }
-                        Field::Y => {
-                            if y.is_none() {
-                                y = Some(de::MapAccess::next_value::<String>(&mut map)?);
-                            } else {
-                                return Err(de::Error::duplicate_field(FIELDS[3]));
-                            }
-                        }
-                        Field::D => {
-                            if d.is_none() {
-                                d = de::MapAccess::next_value::<Option<String>>(&mut map)?;
-                            } else {
-                                return Err(de::Error::duplicate_field(FIELDS[4]));
-                            }
-                        }
-                    }
-                }
-
-                let kty = kty.ok_or_else(|| de::Error::missing_field("kty"))?;
-
-                if kty != EC_KTY {
-                    return Err(de::Error::custom(format!("unsupported JWK kty: {kty}")));
-                }
-
-                let crv = crv.ok_or_else(|| de::Error::missing_field("crv"))?;
-                let x = x.ok_or_else(|| de::Error::missing_field("x"))?;
-                let y = y.ok_or_else(|| de::Error::missing_field("y"))?;
-
-                Ok(JwkEcKey { crv, x, y, d })
-            }
-        }
-
-        de::Deserializer::deserialize_struct(
-            deserializer,
-            JWK_TYPE_NAME,
-            FIELDS,
-            Visitor {
-                marker: PhantomData::<JwkEcKey>,
-                lifetime: PhantomData,
-            },
-        )
-    }
-}
-
-impl Serialize for JwkEcKey {
-    fn serialize<S>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        use ser::SerializeStruct;
-
-        let mut state = serializer.serialize_struct(JWK_TYPE_NAME, 5)?;
-
-        for (i, field) in [EC_KTY, &self.crv, &self.x, &self.y].iter().enumerate() {
-            state.serialize_field(FIELDS[i], field)?;
-        }
-
-        if let Some(d) = &self.d {
-            state.serialize_field("d", d)?;
-        }
-
-        SerializeStruct::end(state)
-    }
-}
-
 /// Decode a Base64url-encoded field element
 fn decode_base64url_fe<C: Curve>(s: &str) -> Result<FieldBytes<C>> {
     let mut result = FieldBytes::<C>::default();
@@ -590,6 +491,30 @@ mod tests {
           "crv":"P-256",
           "x":"gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0",
           "y":"SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps"
+        }
+    "#;
+
+    const JWK_PUBLIC_KEY_THUMBPRINT: &str = "_GK0r6GCoJt9zcssg9lay4obIxgCq05ntiRymRHADSU";
+
+    /// Example public key with an optional field.
+    const JWK_PUBLIC_KEY_OPTIONAL_FIELD: &str = r#"
+        {
+          "kty":"EC",
+          "crv":"P-256",
+          "x":"gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0",
+          "y":"SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps",
+          "alg": "ES512"
+        }
+    "#;
+
+    /// Example public key with an unknown field.
+    const JWK_PUBLIC_KEY_UNKNOWN_FIELD: &str = r#"
+        {
+          "kty":"EC",
+          "crv":"P-256",
+          "x":"gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0",
+          "y":"SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps",
+          "foo": "bar"
         }
     "#;
 
@@ -639,15 +564,66 @@ mod tests {
     #[test]
     fn serialize_private_key() {
         let actual = JwkEcKey::from_str(JWK_PRIVATE_KEY).unwrap().to_string();
-        let expected: String = JWK_PRIVATE_KEY.split_whitespace().collect();
-        assert_eq!(actual, expected);
+        let actual: alloc::collections::BTreeMap<String, String> =
+            serde_json::from_str(&actual).unwrap();
+        let expected: alloc::collections::BTreeMap<String, String> =
+            serde_json::from_str(JWK_PRIVATE_KEY).unwrap();
+        assert_eq!(actual.get("kty").unwrap(), expected.get("kty").unwrap());
+        assert_eq!(actual.get("crv").unwrap(), expected.get("crv").unwrap());
+        assert_eq!(actual.get("x").unwrap(), expected.get("x").unwrap());
+        assert_eq!(actual.get("y").unwrap(), expected.get("y").unwrap());
+        assert_eq!(actual.get("d").unwrap(), expected.get("d").unwrap());
     }
 
     #[test]
     fn serialize_public_key() {
         let actual = JwkEcKey::from_str(JWK_PUBLIC_KEY).unwrap().to_string();
-        let expected: String = JWK_PUBLIC_KEY.split_whitespace().collect();
-        assert_eq!(actual, expected);
+        let actual: alloc::collections::BTreeMap<String, String> =
+            serde_json::from_str(&actual).unwrap();
+        let expected: alloc::collections::BTreeMap<String, String> =
+            serde_json::from_str(JWK_PUBLIC_KEY).unwrap();
+        assert_eq!(actual.get("kty").unwrap(), expected.get("kty").unwrap());
+        assert_eq!(actual.get("crv").unwrap(), expected.get("crv").unwrap());
+        assert_eq!(actual.get("x").unwrap(), expected.get("x").unwrap());
+        assert_eq!(actual.get("y").unwrap(), expected.get("y").unwrap());
+    }
+
+    #[test]
+    fn serialize_public_key_optional_field() {
+        let actual = JwkEcKey::from_str(JWK_PUBLIC_KEY_OPTIONAL_FIELD)
+            .unwrap()
+            .to_string();
+        let actual: alloc::collections::BTreeMap<String, String> =
+            serde_json::from_str(&actual).unwrap();
+        let expected: alloc::collections::BTreeMap<String, String> =
+            serde_json::from_str(JWK_PUBLIC_KEY_OPTIONAL_FIELD).unwrap();
+        assert_eq!(actual.get("kty").unwrap(), expected.get("kty").unwrap());
+        assert_eq!(actual.get("crv").unwrap(), expected.get("crv").unwrap());
+        assert_eq!(actual.get("x").unwrap(), expected.get("x").unwrap());
+        assert_eq!(actual.get("y").unwrap(), expected.get("y").unwrap());
+        assert_eq!(actual.get("alg").unwrap(), expected.get("alg").unwrap());
+    }
+
+    #[test]
+    fn serialize_public_key_unknown_field() {
+        let actual = JwkEcKey::from_str(JWK_PUBLIC_KEY_UNKNOWN_FIELD)
+            .unwrap()
+            .to_string();
+        let actual: alloc::collections::BTreeMap<String, String> =
+            serde_json::from_str(&actual).unwrap();
+        let expected: alloc::collections::BTreeMap<String, String> =
+            serde_json::from_str(JWK_PUBLIC_KEY_UNKNOWN_FIELD).unwrap();
+        assert_eq!(actual.get("kty").unwrap(), expected.get("kty").unwrap());
+        assert_eq!(actual.get("crv").unwrap(), expected.get("crv").unwrap());
+        assert_eq!(actual.get("x").unwrap(), expected.get("x").unwrap());
+        assert_eq!(actual.get("y").unwrap(), expected.get("y").unwrap());
+    }
+
+    #[test]
+    fn calculate_jwk_thumbprint() {
+        let jwk = JwkEcKey::from_str(JWK_PUBLIC_KEY).unwrap();
+        let actual = jwk.thumbprint().unwrap();
+        assert_eq!(&actual, JWK_PUBLIC_KEY_THUMBPRINT);
     }
 
     #[cfg(feature = "dev")]
