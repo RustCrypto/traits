@@ -155,7 +155,7 @@ fn deserialize_kty<'de, D>(deserializer: D) -> core::result::Result<String, D::E
 where
     D: serdect::serde::Deserializer<'de>,
 {
-    let kty: &str = de::Deserialize::deserialize(deserializer)?;
+    let kty: &str = Deserialize::deserialize(deserializer)?;
     if kty != EC_KTY {
         return Err(de::Error::custom(format!("unsupported JWK kty: {kty:?}")));
     }
