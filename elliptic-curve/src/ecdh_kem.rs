@@ -18,8 +18,8 @@
 //!    "encapsulated" [`PublicKey`] returned by the server and uses the resulting
 //!    [`SharedSecret`]
 
-use crate::{CurveArithmetic, PublicKey};
 use crate::ecdh::{EphemeralSecret, SharedSecret};
+use crate::{CurveArithmetic, PublicKey};
 use kem::{Decapsulate, Encapsulate};
 
 impl<C> Decapsulate<PublicKey<C>, SharedSecret<C>> for EphemeralSecret<C>
@@ -39,7 +39,10 @@ where
 {
     type Error = ();
 
-    fn encapsulate(&self, rng: &mut impl rand_core::CryptoRngCore) -> Result<(PublicKey<C>, SharedSecret<C>), Self::Error> {
+    fn encapsulate(
+        &self,
+        rng: &mut impl rand_core::CryptoRngCore,
+    ) -> Result<(PublicKey<C>, SharedSecret<C>), Self::Error> {
         // generate another ephemeral ecdh secret
         let secret = EphemeralSecret::<C>::random(rng);
         let pk = secret.public_key();
