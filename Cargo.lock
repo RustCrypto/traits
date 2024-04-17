@@ -552,6 +552,7 @@ dependencies = [
  "hex-literal",
  "hkdf 0.13.0-pre.3",
  "hybrid-array",
+ "kem 0.3.0-pre.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pem-rfc7468 1.0.0-pre.0",
  "pkcs8 0.11.0-pre.0",
  "rand_core 0.6.4",
@@ -841,6 +842,16 @@ dependencies = [
  "rand",
  "rand_core 0.6.4",
  "x3dh-ke",
+ "zeroize",
+]
+
+[[package]]
+name = "kem"
+version = "0.3.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b8645470337db67b01a7f966decf7d0bafedbae74147d33e641c67a91df239f"
+dependencies = [
+ "rand_core 0.6.4",
  "zeroize",
 ]
 

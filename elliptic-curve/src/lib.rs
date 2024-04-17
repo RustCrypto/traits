@@ -88,6 +88,8 @@ pub mod scalar;
 pub mod dev;
 #[cfg(feature = "ecdh")]
 pub mod ecdh;
+#[cfg(feature = "ecdh-kem")]
+pub mod ecdh_kem;
 #[cfg(feature = "hash2curve")]
 pub mod hash2curve;
 #[cfg(feature = "arithmetic")]
