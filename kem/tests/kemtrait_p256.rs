@@ -1,4 +1,4 @@
-use kem::{Decapsulate, Encapsulate, KEM};
+use kem::{Decapsulate, Encapsulate, SimpleKEM};
 use p256::{
     ecdh::{EphemeralSecret, SharedSecret},
     PublicKey,
@@ -32,24 +32,19 @@ impl Encapsulate<PublicKey, Secret> for EncapsulatorP256 {
     }
 }
 
-impl From<PublicKey> for EncapsulatorP256 {
-    fn from(value: PublicKey) -> Self {
-        Self(value)
-    }
-}
-
-impl KEM for KemNistP256 {
+impl SimpleKEM for KemNistP256 {
     type DecapsulatingKey = DecapsulatorP256;
-    type PublicKey = PublicKey;
     type EncapsulatingKey = EncapsulatorP256;
     type EncapsulatedKey = PublicKey;
     type SharedSecret = Secret;
 
-    fn random_keypair(rng: &mut impl CryptoRngCore) -> (Self::DecapsulatingKey, Self::PublicKey) {
+    fn random_keypair(
+        rng: &mut impl CryptoRngCore,
+    ) -> (Self::DecapsulatingKey, Self::EncapsulatingKey) {
         let sk = EphemeralSecret::random(rng);
         let pk = sk.public_key();
 
-        (DecapsulatorP256(sk), pk)
+        (DecapsulatorP256(sk), EncapsulatorP256(pk))
     }
 }
 
@@ -64,16 +59,13 @@ impl SecretBytes for Secret {
     }
 }
 
-fn test_kemtrait_basic<K: KEM>()
+fn test_kemtrait_basic<K: SimpleKEM>()
 where
-    <K as KEM>::SharedSecret: SecretBytes,
-    <K as KEM>::EncapsulatingKey: From<<K as KEM>::PublicKey>,
+    <K as SimpleKEM>::SharedSecret: SecretBytes,
 {
     let mut rng = rand::thread_rng();
     let (sk, pk) = K::random_keypair(&mut rng);
-    let (ek, ss1) = <K as KEM>::EncapsulatingKey::from(pk)
-        .encapsulate(&mut rng)
-        .expect("never fails");
+    let (ek, ss1) = pk.encapsulate(&mut rng).expect("never fails");
     let ss2 = sk.decapsulate(&ek).expect("never fails");
 
     assert_eq!(ss1.as_slice(), ss2.as_slice());
