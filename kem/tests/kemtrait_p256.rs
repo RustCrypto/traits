@@ -1,5 +1,8 @@
 use kem::{Decapsulate, Encapsulate, KEM};
-use p256::{ecdh::{EphemeralSecret, SharedSecret}, PublicKey};
+use p256::{
+    ecdh::{EphemeralSecret, SharedSecret},
+    PublicKey,
+};
 use rand_core::CryptoRngCore;
 
 struct KemNistP256;
@@ -18,7 +21,10 @@ impl Decapsulate<PublicKey, Secret> for DecapsulatorP256 {
 impl Encapsulate<PublicKey, Secret> for EncapsulatorP256 {
     type Error = ();
 
-    fn encapsulate(&self, rng: &mut impl CryptoRngCore) -> Result<(PublicKey, Secret), Self::Error> {
+    fn encapsulate(
+        &self,
+        rng: &mut impl CryptoRngCore,
+    ) -> Result<(PublicKey, Secret), Self::Error> {
         let sk = EphemeralSecret::random(rng);
         let pk = sk.public_key();
 
@@ -26,17 +32,24 @@ impl Encapsulate<PublicKey, Secret> for EncapsulatorP256 {
     }
 }
 
+impl From<PublicKey> for EncapsulatorP256 {
+    fn from(value: PublicKey) -> Self {
+        Self(value)
+    }
+}
+
 impl KEM for KemNistP256 {
     type DecapsulatingKey = DecapsulatorP256;
+    type PublicKey = PublicKey;
     type EncapsulatingKey = EncapsulatorP256;
     type EncapsulatedKey = PublicKey;
     type SharedSecret = Secret;
 
-    fn random_keypair(rng: &mut impl CryptoRngCore) -> (Self::DecapsulatingKey, Self::EncapsulatingKey) {
+    fn random_keypair(rng: &mut impl CryptoRngCore) -> (Self::DecapsulatingKey, Self::PublicKey) {
         let sk = EphemeralSecret::random(rng);
         let pk = sk.public_key();
 
-        (DecapsulatorP256(sk), EncapsulatorP256(pk))
+        (DecapsulatorP256(sk), pk)
     }
 }
 
@@ -51,13 +64,16 @@ impl SecretBytes for Secret {
     }
 }
 
-fn test_kemtrait<K: KEM>()
+fn test_kemtrait_basic<K: KEM>()
 where
     <K as KEM>::SharedSecret: SecretBytes,
+    <K as KEM>::EncapsulatingKey: From<<K as KEM>::PublicKey>,
 {
     let mut rng = rand::thread_rng();
     let (sk, pk) = K::random_keypair(&mut rng);
-    let (ek, ss1) = pk.encapsulate(&mut rng).expect("never fails");
+    let (ek, ss1) = <K as KEM>::EncapsulatingKey::from(pk)
+        .encapsulate(&mut rng)
+        .expect("never fails");
     let ss2 = sk.decapsulate(&ek).expect("never fails");
 
     assert_eq!(ss1.as_slice(), ss2.as_slice());
@@ -65,5 +81,5 @@ where
 
 #[test]
 fn test_kemtrait_p256() {
-    test_kemtrait::<KemNistP256>();
+    test_kemtrait_basic::<KemNistP256>();
 }

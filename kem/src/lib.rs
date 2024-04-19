@@ -41,6 +41,9 @@ pub trait KEM {
     /// The type that will implement [`Decapsulate`]
     type DecapsulatingKey: Decapsulate<Self::EncapsulatedKey, Self::SharedSecret>;
 
+    /// The public key produced by [`random_keypair`]
+    type PublicKey;
+
     /// The type that will implement [`Encapsulate`]
     type EncapsulatingKey: Encapsulate<Self::EncapsulatedKey, Self::SharedSecret>;
 
@@ -51,5 +54,5 @@ pub trait KEM {
     type SharedSecret;
 
     /// Generates a new (decapsulating key, encapsulating key) keypair for the KEM model
-    fn random_keypair(rng: &mut impl CryptoRngCore) -> (Self::DecapsulatingKey, Self::EncapsulatingKey);
+    fn random_keypair(rng: &mut impl CryptoRngCore) -> (Self::DecapsulatingKey, Self::PublicKey);
 }
