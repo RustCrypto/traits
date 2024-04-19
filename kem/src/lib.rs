@@ -34,6 +34,18 @@ pub trait Decapsulate<EK, SS> {
     fn decapsulate(&self, encapsulated_key: &EK) -> Result<SS, Self::Error>;
 }
 
+// Helper type alias for SimpleKEM encapsulate errors
+type SimpleEncapError<X> = <<X as SimpleKEM>::EncapsulatingKey as Encapsulate<
+    <X as SimpleKEM>::EncapsulatedKey,
+    <X as SimpleKEM>::SharedSecret,
+>>::Error;
+
+// Helper type alias for SimpleKEM decapsulate errors
+type SimpleDecapError<X> = <<X as SimpleKEM>::DecapsulatingKey as Decapsulate<
+    <X as SimpleKEM>::EncapsulatedKey,
+    <X as SimpleKEM>::SharedSecret,
+>>::Error;
+
 /// This trait represents a simplified KEM model, where the encapsulating key and public key are the
 /// same type.
 pub trait SimpleKEM {
@@ -58,10 +70,7 @@ pub trait SimpleKEM {
     fn encapsulate(
         ek: &Self::EncapsulatingKey,
         rng: &mut impl CryptoRngCore,
-    ) -> Result<
-        (Self::EncapsulatedKey, Self::SharedSecret),
-        <Self::EncapsulatingKey as Encapsulate<Self::EncapsulatedKey, Self::SharedSecret>>::Error,
-    > {
+    ) -> Result<(Self::EncapsulatedKey, Self::SharedSecret), SimpleEncapError<Self>> {
         ek.encapsulate(rng)
     }
 
@@ -69,13 +78,22 @@ pub trait SimpleKEM {
     fn decapsulate(
         dk: &Self::DecapsulatingKey,
         ek: &Self::EncapsulatedKey,
-    ) -> Result<
-        Self::SharedSecret,
-        <Self::DecapsulatingKey as Decapsulate<Self::EncapsulatedKey, Self::SharedSecret>>::Error,
-    > {
+    ) -> Result<Self::SharedSecret, SimpleDecapError<Self>> {
         dk.decapsulate(ek)
     }
 }
+
+// Helper type alias for FullKEM encapsulate errors
+type FullEncapError<X> = <<X as FullKEM>::EncapsulatingKey as Encapsulate<
+    <X as FullKEM>::EncapsulatedKey,
+    <X as FullKEM>::SharedSecret,
+>>::Error;
+
+// Helper type alias for FullKEM decapsulate errors
+type FullDecapError<X> = <<X as FullKEM>::DecapsulatingKey as Decapsulate<
+    <X as FullKEM>::EncapsulatedKey,
+    <X as FullKEM>::SharedSecret,
+>>::Error;
 
 /// This is a trait that all KEM models should implement. It represents all the stages and types
 /// necessary for a KEM.
@@ -116,10 +134,7 @@ pub trait FullKEM {
     fn encapsulate(
         ek: &Self::EncapsulatingKey,
         rng: &mut impl CryptoRngCore,
-    ) -> Result<
-        (Self::EncapsulatedKey, Self::SharedSecret),
-        <Self::EncapsulatingKey as Encapsulate<Self::EncapsulatedKey, Self::SharedSecret>>::Error,
-    > {
+    ) -> Result<(Self::EncapsulatedKey, Self::SharedSecret), FullEncapError<Self>> {
         ek.encapsulate(rng)
     }
 
@@ -127,10 +142,7 @@ pub trait FullKEM {
     fn decapsulate(
         dk: &Self::DecapsulatingKey,
         ek: &Self::EncapsulatedKey,
-    ) -> Result<
-        Self::SharedSecret,
-        <Self::DecapsulatingKey as Decapsulate<Self::EncapsulatedKey, Self::SharedSecret>>::Error,
-    > {
+    ) -> Result<Self::SharedSecret, FullDecapError<Self>> {
         dk.decapsulate(ek)
     }
 }
