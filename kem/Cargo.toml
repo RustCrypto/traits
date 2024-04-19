@@ -18,7 +18,7 @@ zeroize = { version = "1.7", default-features = false }
 
 [dev-dependencies]
 hpke = "0.10"
-p256 = { version = "0.9", features = ["ecdsa"] }
+p256 = { version = "0.9", features = ["ecdh", "ecdsa"] }
 pqcrypto = { version = "0.15", default-features = false, features = [
     "pqcrypto-saber",
 ] }

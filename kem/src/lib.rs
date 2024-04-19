@@ -33,3 +33,23 @@ pub trait Decapsulate<EK, SS> {
     /// Decapsulates the given encapsulated key
     fn decapsulate(&self, encapsulated_key: &EK) -> Result<SS, Self::Error>;
 }
+
+/// This is a trait that all KEM models should implement, and should probably be promoted to the kem
+/// crate itself. It specifies the types of encapsulating and decapsulating keys created by key
+/// generation, the shared secret type, and the encapsulated key type
+pub trait KEM {
+    /// The type that will implement [`Decapsulate`]
+    type DecapsulatingKey: Decapsulate<Self::EncapsulatedKey, Self::SharedSecret>;
+
+    /// The type that will implement [`Encapsulate`]
+    type EncapsulatingKey: Encapsulate<Self::EncapsulatedKey, Self::SharedSecret>;
+
+    /// The type of the encapsulated key
+    type EncapsulatedKey;
+
+    /// The type of the shared secret
+    type SharedSecret;
+
+    /// Generates a new (decapsulating key, encapsulating key) keypair for the KEM model
+    fn random_keypair(rng: &mut impl CryptoRngCore) -> (Self::DecapsulatingKey, Self::EncapsulatingKey);
+}
