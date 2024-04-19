@@ -1,8 +1,11 @@
-use kem::{Decapsulate, Encapsulate};
+use kem::{Decapsulate, Encapsulate, FullKEM};
 
 use p256::ecdsa::Signature;
 use rand_core::CryptoRngCore;
 use x3dh_ke::{x3dh_a, x3dh_b, EphemeralKey, IdentityKey, Key, OneTimePreKey, SignedPreKey};
+
+/// A struct representing the x3dh KEM
+struct X3Dh;
 
 /// The shared secret type defined by x3dh_ke
 type SharedSecret = [u8; 32];
@@ -92,6 +95,22 @@ impl Decapsulate<EphemeralKey, SharedSecret> for DecapContext {
     }
 }
 
+impl FullKEM for X3Dh {
+    type PrivateKey = X3DhPrivkeyBundle;
+    type PublicKey = X3DhPubkeyBundle;
+    type DecapsulatingKey = DecapContext;
+    type EncapsulatingKey = EncapContext;
+    type EncapsulatedKey = EphemeralKey;
+    type SharedSecret = SharedSecret;
+
+    fn random_keypair(_: &mut impl CryptoRngCore) -> (Self::PrivateKey, Self::PublicKey) {
+        let sk = Self::PrivateKey::gen();
+        let pk = sk.as_pubkeys();
+
+        (sk, pk)
+    }
+}
+
 #[test]
 fn test_x3dh() {
     let mut rng = rand::thread_rng();
@@ -109,5 +128,25 @@ fn test_x3dh() {
     // Now do an authenticated encap
     let (encapped_key, ss1) = encap_context.encapsulate(&mut rng).unwrap();
     let ss2 = decap_context.decapsulate(&encapped_key).unwrap();
+    assert_eq!(ss1, ss2);
+}
+
+#[test]
+fn test_kemtrait_x3dh() {
+    let mut rng = rand::thread_rng();
+
+    // We use _a and _b suffixes to denote whether a key belongs to Alice or Bob. Alice is the
+    // sender in this case.
+    let sk_ident_a = IdentityKey::default();
+    let pk_ident_a = sk_ident_a.strip();
+    let (sk_bundle_b, pk_bundle_b) = X3Dh::random_keypair(&mut rng);
+
+    let encap_context = EncapContext(pk_bundle_b, sk_ident_a);
+    let decap_context = DecapContext(sk_bundle_b, pk_ident_a);
+
+    // Now do an authenticated encap
+    let (encapped_key, ss1) = X3Dh::encapsulate(&encap_context, &mut rng).unwrap();
+    let ss2 = X3Dh::decapsulate(&decap_context, &encapped_key).unwrap();
+
     assert_eq!(ss1, ss2);
 }

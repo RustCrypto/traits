@@ -53,19 +53,51 @@ pub trait SimpleKEM {
     fn random_keypair(
         rng: &mut impl CryptoRngCore,
     ) -> (Self::DecapsulatingKey, Self::EncapsulatingKey);
+
+    /// Forwards a call to [`encapsulate`](Encapsulate::encapsulate)
+    fn encapsulate(
+        ek: &Self::EncapsulatingKey,
+        rng: &mut impl CryptoRngCore,
+    ) -> Result<
+        (Self::EncapsulatedKey, Self::SharedSecret),
+        <Self::EncapsulatingKey as Encapsulate<Self::EncapsulatedKey, Self::SharedSecret>>::Error,
+    > {
+        ek.encapsulate(rng)
+    }
+
+    /// Forwards a call to [`decapsulate`](Decapsulate::decapsulate)
+    fn decapsulate(
+        dk: &Self::DecapsulatingKey,
+        ek: &Self::EncapsulatedKey,
+    ) -> Result<
+        Self::SharedSecret,
+        <Self::DecapsulatingKey as Decapsulate<Self::EncapsulatedKey, Self::SharedSecret>>::Error,
+    > {
+        dk.decapsulate(ek)
+    }
 }
 
 /// This is a trait that all KEM models should implement. It represents all the stages and types
-/// necessary for a KEM, from `KeyGen() -> (DecapsKey, PublicKey)`, `Encaps(EncapsulatingKey) ->
-/// (EncappedKey, SharedSecret)`, and `Decaps(EncappedKey) -> SharedSecret`. Promotion from
-/// [`PublicKey`](FullKEM::PublicKey) to [`EncapsulatingKey`](FullKEM::EncapsulatingKey) is context
-/// dependent.
+/// necessary for a KEM.
+///
+/// In particular,
+///
+/// 1. `KeyGen() -> (PrivateKey, PublicKey)`
+/// 2. `Encaps(EncapsulatingKey) -> (EncappedKey, SharedSecret)`
+/// 3. `Decaps(DecapsulatingKey, EncappedKey) -> SharedSecret`
+///
+/// Promotion from [`PrivateKey`](FullKEM::PrivateKey) to
+/// [`DecapsulatingKey`](FullKEM::DecapsulatingKey) and [`PublicKey`](FullKEM::PublicKey) to
+/// [`EncapsulatingKey`](FullKEM::EncapsulatingKey) is context dependent.
 pub trait FullKEM {
-    /// The type that will implement [`Decapsulate`]
-    type DecapsulatingKey: Decapsulate<Self::EncapsulatedKey, Self::SharedSecret>;
+    /// The private key produced by [`random_keypair`](FullKEM::random_keypair)
+    type PrivateKey;
 
     /// The public key produced by [`random_keypair`](FullKEM::random_keypair)
     type PublicKey;
+
+    /// The type that will implement [`Decapsulate`]
+    type DecapsulatingKey: Decapsulate<Self::EncapsulatedKey, Self::SharedSecret>;
 
     /// The type that will implement [`Encapsulate`]
     type EncapsulatingKey: Encapsulate<Self::EncapsulatedKey, Self::SharedSecret>;
@@ -76,18 +108,42 @@ pub trait FullKEM {
     /// The type of the shared secret
     type SharedSecret;
 
-    /// Generates a new (decapsulating key, encapsulating key) keypair for the KEM model
-    fn random_keypair(rng: &mut impl CryptoRngCore) -> (Self::DecapsulatingKey, Self::PublicKey);
+    /// Generates a new ([`PrivateKey`](FullKEM::PrivateKey), [`PublicKey`](FullKEM::PublicKey))
+    /// keypair for the KEM model
+    fn random_keypair(rng: &mut impl CryptoRngCore) -> (Self::PrivateKey, Self::PublicKey);
+
+    /// Forwards a call to [`encapsulate`](Encapsulate::encapsulate)
+    fn encapsulate(
+        ek: &Self::EncapsulatingKey,
+        rng: &mut impl CryptoRngCore,
+    ) -> Result<
+        (Self::EncapsulatedKey, Self::SharedSecret),
+        <Self::EncapsulatingKey as Encapsulate<Self::EncapsulatedKey, Self::SharedSecret>>::Error,
+    > {
+        ek.encapsulate(rng)
+    }
+
+    /// Forwards a call to [`decapsulate`](Decapsulate::decapsulate)
+    fn decapsulate(
+        dk: &Self::DecapsulatingKey,
+        ek: &Self::EncapsulatedKey,
+    ) -> Result<
+        Self::SharedSecret,
+        <Self::DecapsulatingKey as Decapsulate<Self::EncapsulatedKey, Self::SharedSecret>>::Error,
+    > {
+        dk.decapsulate(ek)
+    }
 }
 
 impl<K: SimpleKEM> FullKEM for K {
-    type DecapsulatingKey = K::DecapsulatingKey;
+    type PrivateKey = K::DecapsulatingKey;
     type PublicKey = K::EncapsulatingKey;
+    type DecapsulatingKey = K::DecapsulatingKey;
     type EncapsulatingKey = K::EncapsulatingKey;
     type EncapsulatedKey = K::EncapsulatedKey;
     type SharedSecret = K::SharedSecret;
 
-    fn random_keypair(rng: &mut impl CryptoRngCore) -> (Self::DecapsulatingKey, Self::PublicKey) {
+    fn random_keypair(rng: &mut impl CryptoRngCore) -> (Self::PrivateKey, Self::PublicKey) {
         Self::random_keypair(rng)
     }
 }

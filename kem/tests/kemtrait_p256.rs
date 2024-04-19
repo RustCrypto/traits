@@ -59,14 +59,15 @@ impl SecretBytes for Secret {
     }
 }
 
+// use a generic SimpleKEM function to ensure correctness
 fn test_kemtrait_basic<K: SimpleKEM>()
 where
     <K as SimpleKEM>::SharedSecret: SecretBytes,
 {
     let mut rng = rand::thread_rng();
     let (sk, pk) = K::random_keypair(&mut rng);
-    let (ek, ss1) = pk.encapsulate(&mut rng).expect("never fails");
-    let ss2 = sk.decapsulate(&ek).expect("never fails");
+    let (ek, ss1) = K::encapsulate(&pk, &mut rng).expect("never fails");
+    let ss2 = K::decapsulate(&sk, &ek).expect("never fails");
 
     assert_eq!(ss1.as_slice(), ss2.as_slice());
 }
