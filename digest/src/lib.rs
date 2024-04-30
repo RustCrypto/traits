@@ -274,13 +274,13 @@ pub trait CustomizedInit: Sized {
     // associated type defaults are currently unstable
 
     /// Extended customization
-    type CustomizedExtArg;
+    type CustomizedExtArg<'a>;
 
     /// Create new hasher instance with the given customization string.
     fn new_customized(customization: &[u8]) -> Self;
 
     /// Create new hasher instance with the given extended customization.
-    fn new_ext_customized(customization_ext: &Self::CustomizedExtArg) -> Self;
+    fn new_ext_customized(customization_ext: &Self::CustomizedExtArg<'_>) -> Self;
 }
 
 /// The error type used in variable hash traits.
