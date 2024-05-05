@@ -165,16 +165,9 @@ impl<T> CustomizedInit for CoreWrapper<T>
 where
     T: BufferKindUser + CustomizedInit,
 {
-    type CustomizedExtArg<'a> = T::CustomizedExtArg<'a>;
-
     #[inline]
     fn new_customized(customization: &[u8]) -> Self {
         Self::from_core(T::new_customized(customization))
-    }
-
-    #[inline]
-    fn new_ext_customized(customization_ext: &Self::CustomizedExtArg<'_>) -> Self {
-        Self::from_core(T::new_ext_customized(customization_ext))
     }
 }
 
