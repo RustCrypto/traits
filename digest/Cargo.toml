@@ -29,7 +29,6 @@ core-api = ["block-buffer"] # Enable Core API traits
 mac = ["subtle"] # Enable MAC traits
 rand_core = ["crypto-common/rand_core"] # Enable random key generation methods
 oid = ["const-oid"]
-spki = ["oid", "dep:spki"]
 zeroize = ["dep:zeroize", "block-buffer?/zeroize"]
 alloc = []
 std = ["alloc", "crypto-common/std"]
