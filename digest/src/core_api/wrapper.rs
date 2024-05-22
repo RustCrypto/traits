@@ -23,6 +23,8 @@ use crypto_common::{
 use crate::MacMarker;
 #[cfg(feature = "oid")]
 use const_oid::{AssociatedOid, ObjectIdentifier};
+#[cfg(feature = "spki")]
+use spki::{AlgorithmIdentifier, AssociatedAlgorithmIdentifier};
 
 /// Wrapper around [`BufferKindUser`].
 ///
@@ -177,6 +179,16 @@ where
     T: BufferKindUser + AssociatedOid,
 {
     const OID: ObjectIdentifier = T::OID;
+}
+
+#[cfg(feature = "spki")]
+impl<T> AssociatedAlgorithmIdentifier for CoreWrapper<T>
+where
+    T: BufferKindUser + AssociatedAlgorithmIdentifier,
+{
+    type Params = T::Params;
+
+    const ALGORITHM_IDENTIFIER: AlgorithmIdentifier<Self::Params> = T::ALGORITHM_IDENTIFIER;
 }
 
 type CoreWrapperSerializedStateSize<T> =
