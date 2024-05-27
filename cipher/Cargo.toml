@@ -18,7 +18,7 @@ inout = "=0.2.0-pre.4"
 
 # optional dependencies
 blobby = { version = "0.3", optional = true }
-zeroize = { version = "1.7", optional = true, default-features = false }
+zeroize = { version = "1.8", optional = true, default-features = false }
 
 [features]
 alloc = []
