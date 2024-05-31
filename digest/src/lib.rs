@@ -299,3 +299,12 @@ impl fmt::Display for InvalidBufferSize {
 
 #[cfg(feature = "std")]
 impl std::error::Error for InvalidBufferSize {}
+
+#[cfg(feature = "std")]
+mod hashwriter;
+#[cfg(feature = "std")]
+pub use hashwriter::HashWriter;
+#[cfg(feature = "std")]
+mod hashreader;
+#[cfg(feature = "std")]
+pub use hashreader::HashReader;
