@@ -3,6 +3,7 @@ use super::{Digest, FixedOutputReset, Output, Reset};
 use std::io;
 
 /// Abstraction over a reader which hashes the data being read
+#[derive(Debug)]
 pub struct HashReader<D: Digest, R: io::Read> {
     reader: R,
     hasher: D,
