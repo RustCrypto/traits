@@ -58,17 +58,6 @@ where
     async fn sign_digest_async(&self, digest: D) -> Result<S, Error>;
 }
 
-#[cfg(feature = "digest")]
-impl<D, S, T> AsyncDigestSigner<D, S> for T
-where
-    D: Digest,
-    T: signature::DigestSigner<D, S>,
-{
-    async fn sign_digest_async(&self, digest: D) -> Result<S, Error> {
-        self.try_sign_digest(digest)
-    }
-}
-
 /// Sign the given message using the provided external randomness source.
 #[cfg(feature = "rand_core")]
 #[allow(async_fn_in_trait)]
