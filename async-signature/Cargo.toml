@@ -17,6 +17,7 @@ signature = "=2.3.0-pre.3"
 
 [features]
 digest = ["signature/digest"]
+std = ["signature/std"]
 rand_core = ["signature/rand_core"]
 
 [package.metadata.docs.rs]
