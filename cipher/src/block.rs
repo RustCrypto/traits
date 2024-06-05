@@ -240,7 +240,7 @@ pub trait BlockCipherDecrypt: BlockSizeUser {
             .map(|blocks| self.decrypt_with_backend(BlocksCtx { blocks }))
     }
 
-    /// Decrypt input and unpad it. Returns resulting ciphertext slice.
+    /// Decrypt input and unpad it. Returns resulting plaintext slice.
     ///
     /// Returns [`UnpadError`] if padding is malformed or if input length is
     /// not multiple of `Self::BlockSize`.
@@ -258,7 +258,7 @@ pub trait BlockCipherDecrypt: BlockSizeUser {
         P::unpad_blocks(blocks.into_out())
     }
 
-    /// Decrypt input and unpad it in-place. Returns resulting ciphertext slice.
+    /// Decrypt input and unpad it in-place. Returns resulting plaintext slice.
     ///
     /// Returns [`UnpadError`] if padding is malformed or if input length is
     /// not multiple of `Self::BlockSize`.
@@ -272,7 +272,7 @@ pub trait BlockCipherDecrypt: BlockSizeUser {
     }
 
     /// Decrypt input and unpad it buffer-to-buffer. Returns resulting
-    /// ciphertext slice.
+    /// plaintext slice.
     ///
     /// Returns [`UnpadError`] if padding is malformed or if input length is
     /// not multiple of `Self::BlockSize`.
@@ -293,7 +293,7 @@ pub trait BlockCipherDecrypt: BlockSizeUser {
     }
 
     /// Decrypt input and unpad it in a newly allocated Vec. Returns resulting
-    /// ciphertext Vec.
+    /// plaintext `Vec`.
     ///
     /// Returns [`UnpadError`] if padding is malformed or if input length is
     /// not multiple of `Self::BlockSize`.
@@ -481,7 +481,7 @@ pub trait BlockModeDecrypt: BlockSizeUser + Sized {
             .map(|blocks| self.decrypt_with_backend(BlocksCtx { blocks }))
     }
 
-    /// Decrypt input and unpad it. Returns resulting ciphertext slice.
+    /// Decrypt input and unpad it. Returns resulting plaintext slice.
     ///
     /// Returns [`UnpadError`] if padding is malformed or if input length is
     /// not multiple of `Self::BlockSize`.
@@ -499,7 +499,7 @@ pub trait BlockModeDecrypt: BlockSizeUser + Sized {
         P::unpad_blocks(blocks.into_out())
     }
 
-    /// Decrypt input and unpad it in-place. Returns resulting ciphertext slice.
+    /// Decrypt input and unpad it in-place. Returns resulting plaintext slice.
     ///
     /// Returns [`UnpadError`] if padding is malformed or if input length is
     /// not multiple of `Self::BlockSize`.
@@ -513,7 +513,7 @@ pub trait BlockModeDecrypt: BlockSizeUser + Sized {
     }
 
     /// Decrypt input and unpad it buffer-to-buffer. Returns resulting
-    /// ciphertext slice.
+    /// plaintext slice.
     ///
     /// Returns [`UnpadError`] if padding is malformed or if input length is
     /// not multiple of `Self::BlockSize`.
@@ -534,7 +534,7 @@ pub trait BlockModeDecrypt: BlockSizeUser + Sized {
     }
 
     /// Decrypt input and unpad it in a newly allocated Vec. Returns resulting
-    /// ciphertext Vec.
+    /// plaintext `Vec`.
     ///
     /// Returns [`UnpadError`] if padding is malformed or if input length is
     /// not multiple of `Self::BlockSize`.
