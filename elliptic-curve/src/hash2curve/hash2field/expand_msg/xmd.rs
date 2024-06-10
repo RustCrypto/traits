@@ -151,7 +151,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use core::mem;
+    use core::mem::size_of;
     use hex_literal::hex;
     use hybrid_array::{
         typenum::{U128, U32},
@@ -177,16 +177,16 @@ mod test {
         let msg_len = block + msg.len();
         assert_eq!(msg, &bytes[block..msg_len]);
 
-        let l = msg_len + mem::size_of::<u16>();
+        let l = msg_len + size_of::<u16>();
         assert_eq!(len_in_bytes.to_be_bytes(), &bytes[msg_len..l]);
 
-        let pad = l + mem::size_of::<u8>();
+        let pad = l + size_of::<u8>();
         assert_eq!([0], &bytes[l..pad]);
 
         let dst = pad + usize::from(domain.len());
         domain.assert(&bytes[pad..dst]);
 
-        let dst_len = dst + mem::size_of::<u8>();
+        let dst_len = dst + size_of::<u8>();
         assert_eq!([domain.len()], &bytes[dst..dst_len]);
 
         assert_eq!(dst_len, bytes.len());
