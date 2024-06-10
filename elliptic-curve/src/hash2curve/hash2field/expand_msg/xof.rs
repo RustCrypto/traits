@@ -63,7 +63,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use core::mem;
+    use core::mem::size_of;
     use hex_literal::hex;
     use hybrid_array::{typenum::U128, Array, ArraySize};
     use sha3::Shake128;
@@ -72,7 +72,7 @@ mod test {
         let msg_len = msg.len();
         assert_eq!(msg, &bytes[..msg_len]);
 
-        let len_in_bytes_len = msg_len + mem::size_of::<u16>();
+        let len_in_bytes_len = msg_len + size_of::<u16>();
         assert_eq!(
             len_in_bytes.to_be_bytes(),
             &bytes[msg_len..len_in_bytes_len]
@@ -81,7 +81,7 @@ mod test {
         let dst = len_in_bytes_len + usize::from(domain.len());
         domain.assert(&bytes[len_in_bytes_len..dst]);
 
-        let dst_len = dst + mem::size_of::<u8>();
+        let dst_len = dst + size_of::<u8>();
         assert_eq!([domain.len()], &bytes[dst..dst_len]);
 
         assert_eq!(dst_len, bytes.len());
