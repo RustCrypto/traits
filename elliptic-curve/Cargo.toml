@@ -8,7 +8,8 @@ and public/secret keys composed thereof.
 """
 authors = ["RustCrypto Developers"]
 license = "Apache-2.0 OR MIT"
-repository = "https://github.com/RustCrypto/traits/tree/master/elliptic-curve"
+homepage = "https://github.com/RustCrypto/traits/tree/master/elliptic-curve"
+repository = "https://github.com/RustCrypto/traits"
 readme = "README.md"
 categories = ["cryptography", "no-std"]
 keywords = ["crypto", "ecc", "elliptic", "weierstrass"]
