@@ -142,8 +142,9 @@ where
 
     /// Deserialize secret key from an encoded secret scalar.
     pub fn from_bytes(bytes: &FieldBytes<C>) -> Result<Self> {
-        let inner: ScalarPrimitive<C> =
-            Option::from(ScalarPrimitive::from_bytes(bytes)).ok_or(Error)?;
+        let inner = ScalarPrimitive::<C>::from_bytes(bytes)
+            .into_option()
+            .ok_or(Error)?;
 
         if inner.is_zero().into() {
             return Err(Error);

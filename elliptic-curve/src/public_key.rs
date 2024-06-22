@@ -126,7 +126,7 @@ where
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
     {
         let point = EncodedPoint::<C>::from_bytes(bytes).map_err(|_| Error)?;
-        Option::from(Self::from_encoded_point(&point)).ok_or(Error)
+        Self::from_encoded_point(&point).into_option().ok_or(Error)
     }
 
     /// Convert this [`PublicKey`] into the

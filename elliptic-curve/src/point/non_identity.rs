@@ -188,7 +188,8 @@ where
     where
         D: de::Deserializer<'de>,
     {
-        Option::from(Self::new(P::deserialize(deserializer)?))
+        Self::new(P::deserialize(deserializer)?)
+            .into_option()
             .ok_or_else(|| de::Error::custom("expected non-identity point"))
     }
 }

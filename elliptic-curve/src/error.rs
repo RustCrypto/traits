@@ -21,6 +21,12 @@ impl From<base16ct::Error> for Error {
     }
 }
 
+impl From<core::array::TryFromSliceError> for Error {
+    fn from(_: core::array::TryFromSliceError) -> Error {
+        Error
+    }
+}
+
 #[cfg(feature = "pkcs8")]
 impl From<pkcs8::Error> for Error {
     fn from(_: pkcs8::Error) -> Error {
