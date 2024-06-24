@@ -36,10 +36,9 @@ impl Encapsulate<SaberEncappedKey, SaberSharedSecret> for SaberPublicKey {
 }
 
 impl Decapsulate<SaberEncappedKey, SaberSharedSecret> for SaberPrivateKey {
-    // TODO: Decapsulation is infallible. Make this the never type once it's available
-    type Error = ();
+    type Error = Infallible;
 
-    fn decapsulate(&self, ek: &SaberEncappedKey) -> Result<SaberSharedSecret, ()> {
+    fn decapsulate(&self, ek: &SaberEncappedKey) -> Result<SaberSharedSecret, Infallible> {
         Ok(decapsulate(ek, &self.0))
     }
 }
