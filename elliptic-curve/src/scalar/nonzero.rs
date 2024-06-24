@@ -47,6 +47,8 @@ where
         // While this method isn't constant-time, the attacker shouldn't learn
         // anything about unrelated outputs so long as `rng` is a secure `CryptoRng`.
         loop {
+            // TODO: remove after `Field::random` switches to `&mut impl RngCore`
+            #[allow(clippy::needless_borrows_for_generic_args)]
             if let Some(result) = Self::new(Field::random(&mut rng)).into() {
                 break result;
             }
@@ -270,11 +272,11 @@ where
     Scalar<C>: Reduce<I, Bytes = Self::Bytes> + ReduceNonZero<I>,
 {
     fn reduce_nonzero(n: I) -> Self {
-        Self::reduce(n)
+        <Self as Reduce<I>>::reduce(n)
     }
 
     fn reduce_nonzero_bytes(bytes: &Self::Bytes) -> Self {
-        Self::reduce_bytes(bytes)
+        <Self as Reduce<I>>::reduce_bytes(bytes)
     }
 }
 

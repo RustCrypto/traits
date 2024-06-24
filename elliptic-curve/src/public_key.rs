@@ -503,6 +503,7 @@ where
 }
 
 #[cfg(feature = "pem")]
+#[allow(clippy::to_string_trait_impl)]
 impl<C> ToString for PublicKey<C>
 where
     C: AssociatedOid + CurveArithmetic,

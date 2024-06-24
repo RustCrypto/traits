@@ -399,7 +399,7 @@ where
     type NonceOverhead = U5;
     type Counter = u32;
     const COUNTER_INCR: u32 = 1;
-    const COUNTER_MAX: u32 = core::u32::MAX;
+    const COUNTER_MAX: u32 = u32::MAX;
 
     fn encrypt_in_place(
         &self,
