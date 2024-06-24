@@ -21,7 +21,17 @@ impl Encapsulate<EncappedKey, SharedSecret> for PublicKey {
         &self,
         mut csprng: &mut impl CryptoRngCore,
     ) -> Result<(EncappedKey, SharedSecret), HpkeError> {
-        <X25519HkdfSha256 as KemTrait>::encap(&self.0, None, &mut csprng).map(|(ek, ss)| (ss, ek))
+        <X25519HkdfSha256 as KemTrait>::encap(&self.0, None, &mut csprng).map(|(ss, ek)| (ek, ss))
+    }
+
+    fn encapsulate_in_place(
+        &self,
+        csprng: &mut impl CryptoRngCore,
+        encapsulated_key: &mut EncappedKey,
+    ) -> Result<SharedSecret, HpkeError> {
+        let (ek, ss) = self.encapsulate(csprng)?;
+        *encapsulated_key = ek;
+        Ok(ss)
     }
 }
 

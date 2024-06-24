@@ -1,5 +1,7 @@
 use kem::{Decapsulate, Encapsulate};
 
+use core::convert::Infallible;
+
 use pqcrypto::kem::firesaber::{
     decapsulate, encapsulate, keypair, Ciphertext as SaberEncappedKey, PublicKey, SecretKey,
     SharedSecret as SaberSharedSecret,
@@ -12,15 +14,24 @@ struct SaberPublicKey(PublicKey);
 struct SaberPrivateKey(SecretKey);
 
 impl Encapsulate<SaberEncappedKey, SaberSharedSecret> for SaberPublicKey {
-    // TODO: Encapsulation is infallible. Make this the never type once it's available
-    type Error = ();
+    type Error = Infallible;
 
     fn encapsulate(
         &self,
         _: &mut impl CryptoRngCore,
-    ) -> Result<(SaberEncappedKey, SaberSharedSecret), ()> {
+    ) -> Result<(SaberEncappedKey, SaberSharedSecret), Infallible> {
         let (ss, ek) = encapsulate(&self.0);
         Ok((ek, ss))
+    }
+
+    fn encapsulate_in_place(
+        &self,
+        csprng: &mut impl CryptoRngCore,
+        encapsulated_key: &mut SaberEncappedKey,
+    ) -> Result<SaberSharedSecret, Infallible> {
+        let (ek, ss) = self.encapsulate(csprng)?;
+        *encapsulated_key = ek;
+        Ok(ss)
     }
 }
 

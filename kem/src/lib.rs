@@ -21,6 +21,14 @@ pub trait Encapsulate<EK, SS> {
 
     /// Encapsulates a fresh shared secret
     fn encapsulate(&self, rng: &mut impl CryptoRngCore) -> Result<(EK, SS), Self::Error>;
+
+    /// Encapsulates a fresh shared secret, placing the encapsulated key into the given mut ref.
+    /// If this errors, the final value of `encapsulated_key` MUST equal its original value.
+    fn encapsulate_in_place(
+        &self,
+        rng: &mut impl CryptoRngCore,
+        encapsulated_key: &mut EK,
+    ) -> Result<SS, Self::Error>;
 }
 
 /// A value that can be used to decapsulate an encapsulated key. Often, this will just be a secret

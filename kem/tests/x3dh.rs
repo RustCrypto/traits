@@ -68,6 +68,16 @@ impl Encapsulate<EphemeralKey, SharedSecret> for EncapContext {
 
         Ok((ek, shared_secret))
     }
+
+    fn encapsulate_in_place(
+        &self,
+        rng: &mut impl CryptoRngCore,
+        encapsulated_key: &mut EphemeralKey,
+    ) -> Result<SharedSecret, Self::Error> {
+        let (ek, ss) = self.encapsulate(rng)?;
+        *encapsulated_key = ek;
+        Ok(ss)
+    }
 }
 
 // Define an decapsulator. Since authenticated and unauthenticated encapped keys are represented by
