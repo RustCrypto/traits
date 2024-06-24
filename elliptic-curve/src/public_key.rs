@@ -29,13 +29,13 @@ use pkcs8::EncodePublicKey;
 #[cfg(all(feature = "alloc", feature = "sec1"))]
 use alloc::boxed::Box;
 
-#[cfg(any(feature = "jwk", feature = "pem"))]
+#[cfg(feature = "jwk")]
 use alloc::string::String;
 
 #[cfg(feature = "serde")]
 use serdect::serde::{de, ser, Deserialize, Serialize};
 
-#[cfg(any(feature = "pem", feature = "serde"))]
+#[cfg(feature = "serde")]
 use pkcs8::DecodePublicKey;
 
 #[cfg(all(feature = "sec1", feature = "pkcs8"))]
