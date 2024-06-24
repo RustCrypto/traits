@@ -84,7 +84,7 @@ where
     /// Decode [`ScalarPrimitive`] from a big endian byte slice.
     pub fn from_slice(slice: &[u8]) -> Result<Self> {
         let bytes = Array::try_from(slice).map_err(|_| Error)?;
-        Option::from(Self::from_bytes(&bytes)).ok_or(Error)
+        Self::from_bytes(&bytes).into_option().ok_or(Error)
     }
 
     /// Borrow the inner `C::Uint`.

@@ -13,7 +13,6 @@ use core::{
 };
 use crypto_bigint::{ArrayEncoding, Integer};
 use ff::{Field, PrimeField};
-use hybrid_array::{typenum::Unsigned, Array};
 use rand_core::CryptoRngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
@@ -287,11 +286,9 @@ where
     type Error = Error;
 
     fn try_from(bytes: &[u8]) -> Result<Self, Error> {
-        if bytes.len() == C::FieldBytesSize::USIZE {
-            Option::from(NonZeroScalar::from_repr(Array::clone_from_slice(bytes))).ok_or(Error)
-        } else {
-            Err(Error)
-        }
+        NonZeroScalar::from_repr(bytes.try_into()?)
+            .into_option()
+            .ok_or(Error)
     }
 }
 
@@ -346,7 +343,7 @@ where
         let mut bytes = FieldBytes::<C>::default();
 
         if base16ct::mixed::decode(hex, &mut bytes)?.len() == bytes.len() {
-            Option::from(Self::from_repr(bytes)).ok_or(Error)
+            Self::from_repr(bytes).into_option().ok_or(Error)
         } else {
             Err(Error)
         }
@@ -376,7 +373,8 @@ where
         D: de::Deserializer<'de>,
     {
         let scalar = ScalarPrimitive::deserialize(deserializer)?;
-        Option::from(Self::new(scalar.into()))
+        Self::new(scalar.into())
+            .into_option()
             .ok_or_else(|| de::Error::custom("expected non-zero scalar"))
     }
 }
