@@ -23,16 +23,6 @@ impl Encapsulate<EncappedKey, SharedSecret> for PublicKey {
     ) -> Result<(EncappedKey, SharedSecret), HpkeError> {
         <X25519HkdfSha256 as KemTrait>::encap(&self.0, None, &mut csprng).map(|(ss, ek)| (ek, ss))
     }
-
-    fn encapsulate_in_place(
-        &self,
-        csprng: &mut impl CryptoRngCore,
-        encapsulated_key: &mut EncappedKey,
-    ) -> Result<SharedSecret, HpkeError> {
-        let (ek, ss) = self.encapsulate(csprng)?;
-        *encapsulated_key = ek;
-        Ok(ss)
-    }
 }
 
 impl Decapsulate<EncappedKey, SharedSecret> for PrivateKey {
@@ -60,4 +50,6 @@ fn test_hpke() {
     let (ek, ss1) = pk_recip.encapsulate(&mut rng).unwrap();
     let ss2 = sk_recip.decapsulate(&ek).unwrap();
     assert_eq!(ss1.0, ss2.0);
+
+    // Can't use encapsulate_in_place for this crate, because EncappedKey has no constructor
 }

@@ -68,16 +68,6 @@ impl Encapsulate<EphemeralKey, SharedSecret> for EncapContext {
 
         Ok((ek, shared_secret))
     }
-
-    fn encapsulate_in_place(
-        &self,
-        rng: &mut impl CryptoRngCore,
-        encapsulated_key: &mut EphemeralKey,
-    ) -> Result<SharedSecret, Self::Error> {
-        let (ek, ss) = self.encapsulate(rng)?;
-        *encapsulated_key = ek;
-        Ok(ss)
-    }
 }
 
 // Define an decapsulator. Since authenticated and unauthenticated encapped keys are represented by
@@ -118,6 +108,14 @@ fn test_x3dh() {
 
     // Now do an authenticated encap
     let (encapped_key, ss1) = encap_context.encapsulate(&mut rng).unwrap();
+    let ss2 = decap_context.decapsulate(&encapped_key).unwrap();
+    assert_eq!(ss1, ss2);
+
+    // Now do the same but with encapsulate_in_place
+    let mut encapped_key = EphemeralKey::default();
+    let ss1 = encap_context
+        .encapsulate_in_place(&mut rng, &mut encapped_key)
+        .unwrap();
     let ss2 = decap_context.decapsulate(&encapped_key).unwrap();
     assert_eq!(ss1, ss2);
 }

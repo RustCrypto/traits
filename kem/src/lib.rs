@@ -28,7 +28,13 @@ pub trait Encapsulate<EK, SS> {
         &self,
         rng: &mut impl CryptoRngCore,
         encapsulated_key: &mut EK,
-    ) -> Result<SS, Self::Error>;
+    ) -> Result<SS, Self::Error> {
+        // Provide a default encapsulate_in_place implementation. If an implementer is
+        // performance-conscious, they can override this.
+        let (ek, ss) = self.encapsulate(rng)?;
+        *encapsulated_key = ek;
+        Ok(ss)
+    }
 }
 
 /// A value that can be used to decapsulate an encapsulated key. Often, this will just be a secret

@@ -23,16 +23,6 @@ impl Encapsulate<SaberEncappedKey, SaberSharedSecret> for SaberPublicKey {
         let (ss, ek) = encapsulate(&self.0);
         Ok((ek, ss))
     }
-
-    fn encapsulate_in_place(
-        &self,
-        csprng: &mut impl CryptoRngCore,
-        encapsulated_key: &mut SaberEncappedKey,
-    ) -> Result<SaberSharedSecret, Infallible> {
-        let (ek, ss) = self.encapsulate(csprng)?;
-        *encapsulated_key = ek;
-        Ok(ss)
-    }
 }
 
 impl Decapsulate<SaberEncappedKey, SaberSharedSecret> for SaberPrivateKey {
@@ -60,4 +50,6 @@ fn test_saber() {
     let (ek, ss1) = pk_recip.encapsulate(&mut rng).unwrap();
     let ss2 = sk_recip.decapsulate(&ek).unwrap();
     assert_eq!(ss1.as_bytes(), ss2.as_bytes());
+
+    // Can't use encapsulate_in_place for this crate, because Ciphertext has no constructor
 }
