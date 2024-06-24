@@ -39,8 +39,11 @@ pub enum Encoding {
     /// - sha256_crypt,
     /// - sha512_crypt,
     /// - md5_crypt
+    ///
+    /// ```text
     /// [.-9]      [A-Z]      [a-z]
     /// 0x2e-0x39, 0x41-0x5a, 0x61-0x7a
+    /// ```
     ShaCrypt,
 }
 

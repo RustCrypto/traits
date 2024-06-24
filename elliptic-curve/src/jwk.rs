@@ -168,6 +168,7 @@ impl FromStr for JwkEcKey {
     }
 }
 
+#[allow(clippy::to_string_trait_impl)]
 impl ToString for JwkEcKey {
     fn to_string(&self) -> String {
         serde_json::to_string(self).expect("JWK encoding error")
