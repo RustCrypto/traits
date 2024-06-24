@@ -43,7 +43,6 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features dev
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features digest
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features ecdh
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features hazmat
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features hash2curve
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features jwk
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features pem
@@ -55,7 +54,7 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,arithmetic,pkcs8
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,serde
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features arithmetic,serde
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,digest,ecdh,hazmat,hash2curve,jwk,pem,pkcs8,sec1,serde,voprf
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,digest,ecdh,hash2curve,jwk,pem,pkcs8,sec1,serde,voprf
 
   minimal-versions:
     # Temporarily disabled until elliptic-curve 0.13.0-pre.0 is published
