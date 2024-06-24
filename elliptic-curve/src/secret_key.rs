@@ -45,11 +45,8 @@ use {
 #[cfg(all(feature = "arithmetic", any(feature = "jwk", feature = "pem")))]
 use alloc::string::String;
 
-#[cfg(all(feature = "arithmetic", feature = "jwk"))]
-use alloc::string::ToString;
-
 #[cfg(all(doc, feature = "pkcs8"))]
-use {crate::pkcs8::DecodePrivateKey, core::str::FromStr};
+use crate::pkcs8::DecodePrivateKey;
 
 /// Elliptic curve secret keys.
 ///
@@ -71,9 +68,6 @@ use {crate::pkcs8::DecodePrivateKey, core::str::FromStr};
 /// To decode an elliptic curve private key from PKCS#8, enable the `pkcs8`
 /// feature of this crate (or the `pkcs8` feature of a specific RustCrypto
 /// elliptic curve crate) and use the [`DecodePrivateKey`]  trait to parse it.
-///
-/// When the `pem` feature of this crate (or a specific RustCrypto elliptic
-/// curve crate) is enabled, a [`FromStr`] impl is also available.
 #[derive(Clone)]
 pub struct SecretKey<C: Curve> {
     /// Scalar value
@@ -273,7 +267,7 @@ where
         C: JwkParameters + ValidatePublicKey,
         FieldBytesSize<C>: ModulusSize,
     {
-        jwk.parse::<JwkEcKey>().and_then(|jwk| Self::from_jwk(&jwk))
+        JwkEcKey::from_json(jwk).and_then(|jwk| Self::from_jwk(&jwk))
     }
 
     /// Serialize this secret key as [`JwkEcKey`] JSON Web Key (JWK).
@@ -295,7 +289,7 @@ where
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldBytesSize<C>: ModulusSize,
     {
-        Zeroizing::new(self.to_jwk().to_string())
+        Zeroizing::new(self.to_jwk().to_json().expect("JWK encoding error"))
     }
 }
 

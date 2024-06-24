@@ -19,14 +19,6 @@ use {
     pkcs8::{der, EncodePrivateKey},
 };
 
-// Imports for actual PEM support
-#[cfg(feature = "pem")]
-use {
-    crate::{error::Error, Result},
-    core::str::FromStr,
-    pkcs8::DecodePrivateKey,
-};
-
 impl<C> AssociatedAlgorithmIdentifier for SecretKey<C>
 where
     C: AssociatedOid + Curve,
@@ -73,18 +65,5 @@ where
         let ec_private_key = self.to_sec1_der()?;
         let pkcs8_key = pkcs8::PrivateKeyInfo::new(algorithm_identifier, &ec_private_key);
         Ok(der::SecretDocument::encode_msg(&pkcs8_key)?)
-    }
-}
-
-#[cfg(feature = "pem")]
-impl<C> FromStr for SecretKey<C>
-where
-    C: Curve + AssociatedOid + ValidatePublicKey,
-    FieldBytesSize<C>: ModulusSize,
-{
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Self::from_pkcs8_pem(s).map_err(|_| Error)
     }
 }

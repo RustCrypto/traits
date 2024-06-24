@@ -12,9 +12,6 @@ use crate::{JwkEcKey, JwkParameters};
 #[cfg(feature = "pkcs8")]
 use pkcs8::spki::{AlgorithmIdentifier, AssociatedAlgorithmIdentifier, ObjectIdentifier};
 
-#[cfg(feature = "pem")]
-use core::str::FromStr;
-
 #[cfg(feature = "sec1")]
 use {
     crate::{
@@ -33,7 +30,7 @@ use pkcs8::EncodePublicKey;
 use alloc::boxed::Box;
 
 #[cfg(any(feature = "jwk", feature = "pem"))]
-use alloc::string::{String, ToString};
+use alloc::string::String;
 
 #[cfg(feature = "serde")]
 use serdect::serde::{de, ser, Deserialize, Serialize};
@@ -70,9 +67,6 @@ use {
 /// elliptic curve crate) and use the
 /// [`elliptic_curve::pkcs8::DecodePublicKey`][`pkcs8::DecodePublicKey`]
 /// trait to parse it.
-///
-/// When the `pem` feature of this crate (or a specific RustCrypto elliptic
-/// curve crate) is enabled, a [`FromStr`] impl is also available.
 ///
 /// # `serde` support
 ///
@@ -181,7 +175,7 @@ where
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldBytesSize<C>: ModulusSize,
     {
-        jwk.parse::<JwkEcKey>().and_then(|jwk| Self::from_jwk(&jwk))
+        JwkEcKey::from_json(jwk).and_then(|jwk| Self::from_jwk(&jwk))
     }
 
     /// Serialize this public key as [`JwkEcKey`] JSON Web Key (JWK).
@@ -203,7 +197,7 @@ where
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldBytesSize<C>: ModulusSize,
     {
-        self.to_jwk().to_string()
+        self.to_jwk().to_json().expect("JWK encoding error")
     }
 }
 
@@ -485,34 +479,6 @@ where
             subject_public_key,
         }
         .try_into()
-    }
-}
-
-#[cfg(feature = "pem")]
-impl<C> FromStr for PublicKey<C>
-where
-    C: AssociatedOid + CurveArithmetic,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldBytesSize<C>: ModulusSize,
-{
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Self::from_public_key_pem(s).map_err(|_| Error)
-    }
-}
-
-#[cfg(feature = "pem")]
-#[allow(clippy::to_string_trait_impl)]
-impl<C> ToString for PublicKey<C>
-where
-    C: AssociatedOid + CurveArithmetic,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldBytesSize<C>: ModulusSize,
-{
-    fn to_string(&self) -> String {
-        self.to_public_key_pem(Default::default())
-            .expect("PEM encoding error")
     }
 }
 

@@ -8,16 +8,12 @@ use crate::{
     secret_key::SecretKey,
     Curve, Error, FieldBytes, FieldBytesSize, Result,
 };
-use alloc::{
-    borrow::ToOwned,
-    format,
-    string::{String, ToString},
-};
+use alloc::{borrow::ToOwned, format, string::String};
 use base64ct::{Base64UrlUnpadded as Base64Url, Encoding};
 use core::{
     fmt::{self, Debug},
     marker::PhantomData,
-    str::{self, FromStr},
+    str,
 };
 use serdect::serde::{de, ser, Deserialize, Serialize};
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -158,20 +154,15 @@ impl JwkEcKey {
     {
         self.try_into()
     }
-}
 
-impl FromStr for JwkEcKey {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
+    /// Decode from JSON string.
+    pub fn from_json(s: &str) -> Result<Self> {
         serde_json::from_str(s).map_err(|_| Error)
     }
-}
 
-#[allow(clippy::to_string_trait_impl)]
-impl ToString for JwkEcKey {
-    fn to_string(&self) -> String {
-        serde_json::to_string(self).expect("JWK encoding error")
+    /// Encode to JSON string.
+    pub fn to_json(&self) -> Result<String> {
+        serde_json::to_string(self).map_err(|_| Error)
     }
 }
 
@@ -613,7 +604,7 @@ mod tests {
 
     #[test]
     fn parse_private_key() {
-        let jwk = JwkEcKey::from_str(JWK_PRIVATE_KEY).unwrap();
+        let jwk = JwkEcKey::from_json(JWK_PRIVATE_KEY).unwrap();
         assert_eq!(jwk.crv, "P-256");
         assert_eq!(jwk.x, "gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0");
         assert_eq!(jwk.y, "SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps");
@@ -625,7 +616,7 @@ mod tests {
 
     #[test]
     fn parse_public_key() {
-        let jwk = JwkEcKey::from_str(JWK_PUBLIC_KEY).unwrap();
+        let jwk = JwkEcKey::from_json(JWK_PUBLIC_KEY).unwrap();
         assert_eq!(jwk.crv, "P-256");
         assert_eq!(jwk.x, "gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0");
         assert_eq!(jwk.y, "SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps");
@@ -634,19 +625,25 @@ mod tests {
 
     #[test]
     fn parse_unsupported() {
-        assert_eq!(JwkEcKey::from_str(UNSUPPORTED_JWK), Err(Error));
+        assert_eq!(JwkEcKey::from_json(UNSUPPORTED_JWK), Err(Error));
     }
 
     #[test]
     fn serialize_private_key() {
-        let actual = JwkEcKey::from_str(JWK_PRIVATE_KEY).unwrap().to_string();
+        let actual = JwkEcKey::from_json(JWK_PRIVATE_KEY)
+            .unwrap()
+            .to_json()
+            .unwrap();
         let expected: String = JWK_PRIVATE_KEY.split_whitespace().collect();
         assert_eq!(actual, expected);
     }
 
     #[test]
     fn serialize_public_key() {
-        let actual = JwkEcKey::from_str(JWK_PUBLIC_KEY).unwrap().to_string();
+        let actual = JwkEcKey::from_json(JWK_PUBLIC_KEY)
+            .unwrap()
+            .to_json()
+            .unwrap();
         let expected: String = JWK_PUBLIC_KEY.split_whitespace().collect();
         assert_eq!(actual, expected);
     }
@@ -654,7 +651,7 @@ mod tests {
     #[cfg(feature = "dev")]
     #[test]
     fn jwk_into_encoded_point() {
-        let jwk = JwkEcKey::from_str(JWK_PUBLIC_KEY).unwrap();
+        let jwk = JwkEcKey::from_json(JWK_PUBLIC_KEY).unwrap();
         let point = jwk.to_encoded_point::<MockCurve>().unwrap();
         let (x, y) = match point.coordinates() {
             Coordinates::Uncompressed { x, y } => (x, y),
@@ -668,7 +665,7 @@ mod tests {
     #[cfg(feature = "dev")]
     #[test]
     fn encoded_point_into_jwk() {
-        let jwk = JwkEcKey::from_str(JWK_PUBLIC_KEY).unwrap();
+        let jwk = JwkEcKey::from_json(JWK_PUBLIC_KEY).unwrap();
         let point = jwk.to_encoded_point::<MockCurve>().unwrap();
         let jwk2 = JwkEcKey::from_encoded_point::<MockCurve>(&point).unwrap();
         assert_eq!(jwk, jwk2);

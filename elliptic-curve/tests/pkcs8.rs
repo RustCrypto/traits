@@ -49,7 +49,7 @@ fn decode_pkcs8_public_key_from_der() {
 #[test]
 #[cfg(feature = "pem")]
 fn decode_pkcs8_public_key_from_pem() {
-    let public_key = PKCS8_PUBLIC_KEY_PEM.parse::<PublicKey>().unwrap();
+    let public_key = PublicKey::from_public_key_pem(PKCS8_PUBLIC_KEY_PEM).unwrap();
 
     // Ensure key parses equivalently to DER
     let der_key = PublicKey::from_public_key_der(&PKCS8_PUBLIC_KEY_DER[..]).unwrap();
