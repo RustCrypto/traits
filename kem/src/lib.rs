@@ -21,6 +21,14 @@ pub trait Encapsulate<EK, SS> {
 
     /// Encapsulates a fresh shared secret
     fn encapsulate(&self, rng: &mut impl CryptoRngCore) -> Result<(EK, SS), Self::Error>;
+}
+
+/// This trait implements in-place encapsulation. Often, the implementer will just be a public key.
+/// However, it can also be a bundle of public keys, or it can include a sender's private key for
+/// authenticated encapsulation.
+pub trait EncapsulateInPlace<EK, SS> {
+    /// Encapsulation error
+    type Error: Debug;
 
     /// Encapsulates a fresh shared secret, placing the encapsulated key into the given mut ref.
     /// If this errors, the final value of `encapsulated_key` MUST equal its original value.
@@ -28,13 +36,7 @@ pub trait Encapsulate<EK, SS> {
         &self,
         rng: &mut impl CryptoRngCore,
         encapsulated_key: &mut EK,
-    ) -> Result<SS, Self::Error> {
-        // Provide a default encapsulate_in_place implementation. If an implementer is
-        // performance-conscious, they can override this.
-        let (ek, ss) = self.encapsulate(rng)?;
-        *encapsulated_key = ek;
-        Ok(ss)
-    }
+    ) -> Result<SS, Self::Error>;
 }
 
 /// This trait implements decapsulation. Often, the implementer will just be a secret key. But, as

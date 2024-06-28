@@ -1,4 +1,4 @@
-use kem::{Decapsulate, Encapsulate};
+use kem::{Decapsulate, Encapsulate, EncapsulateInPlace};
 
 use p256::ecdsa::Signature;
 use rand_core::CryptoRngCore;
@@ -67,6 +67,22 @@ impl Encapsulate<EphemeralKey, SharedSecret> for EncapContext {
         let shared_secret = x3dh_a(sig, my_ik, spk, &ek, ik, opk)?;
 
         Ok((ek, shared_secret))
+    }
+}
+
+// Same thing but in-place
+impl EncapsulateInPlace<EphemeralKey, SharedSecret> for EncapContext {
+    type Error = &'static str;
+
+    // Do the dumb thing and just call encapsulate() and copy the result into the mut ref
+    fn encapsulate_in_place(
+        &self,
+        rng: &mut impl CryptoRngCore,
+        encapsulated_key: &mut EphemeralKey,
+    ) -> Result<SharedSecret, Self::Error> {
+        let (ek, ss) = self.encapsulate(rng)?;
+        *encapsulated_key = ek;
+        Ok(ss)
     }
 }
 
