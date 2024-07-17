@@ -61,6 +61,8 @@ pub use block_buffer;
 #[cfg(feature = "oid")]
 pub use const_oid;
 pub use crypto_common;
+#[cfg(feature = "spki")]
+pub use spki;
 
 #[cfg(feature = "const-oid")]
 pub use crate::digest::DynDigestWithOid;

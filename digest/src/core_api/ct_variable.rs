@@ -18,6 +18,8 @@ use crypto_common::{
     typenum::{IsLess, IsLessOrEqual, Le, LeEq, NonZero, Sum, U1, U256},
     Block, BlockSizeUser, OutputSizeUser,
 };
+#[cfg(feature = "spki")]
+use spki::{AlgorithmIdentifier, AssociatedAlgorithmIdentifier};
 
 /// Dummy type used with [`CtVariableCoreWrapper`] in cases when
 /// resulting hash does not have a known OID.
@@ -165,6 +167,19 @@ where
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
     const OID: ObjectIdentifier = O::OID;
+}
+
+#[cfg(feature = "spki")]
+impl<T, OutSize, O> AssociatedAlgorithmIdentifier for CtVariableCoreWrapper<T, OutSize, O>
+where
+    T: VariableOutputCore,
+    O: AssociatedAlgorithmIdentifier,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
+    LeEq<OutSize, T::OutputSize>: NonZero,
+{
+    type Params = O::Params;
+
+    const ALGORITHM_IDENTIFIER: AlgorithmIdentifier<Self::Params> = O::ALGORITHM_IDENTIFIER;
 }
 
 #[cfg(feature = "zeroize")]
