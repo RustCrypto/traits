@@ -19,7 +19,7 @@ dependencies = [
  "arrayvec",
  "blobby",
  "bytes",
- "crypto-common 0.2.0-pre.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crypto-common 0.2.0-pre.5",
  "heapless",
 ]
 
@@ -130,7 +130,7 @@ version = "0.11.0-pre.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ded684142010808eb980d9974ef794da2bcf97d13396143b1515e9f0fb4a10e"
 dependencies = [
- "crypto-common 0.2.0-pre.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crypto-common 0.2.0-pre.5",
  "zeroize",
 ]
 
@@ -221,7 +221,7 @@ name = "cipher"
 version = "0.5.0-pre.4"
 dependencies = [
  "blobby",
- "crypto-common 0.2.0-pre.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crypto-common 0.2.0-pre.5",
  "inout 0.2.0-pre.4",
  "zeroize",
 ]
@@ -318,6 +318,8 @@ dependencies = [
 [[package]]
 name = "crypto-common"
 version = "0.2.0-pre.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7aa2ec04f5120b830272a481e8d9d8ba4dda140d2cda59b0f1110d5eb93c38e"
 dependencies = [
  "getrandom",
  "hybrid-array",
@@ -326,9 +328,7 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.2.0-pre.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7aa2ec04f5120b830272a481e8d9d8ba4dda140d2cda59b0f1110d5eb93c38e"
+version = "0.2.0-rc.0"
 dependencies = [
  "getrandom",
  "hybrid-array",
@@ -436,7 +436,7 @@ dependencies = [
  "blobby",
  "block-buffer 0.11.0-pre.5",
  "const-oid 0.10.0-pre.2",
- "crypto-common 0.2.0-pre.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crypto-common 0.2.0-pre.5",
  "subtle",
  "zeroize",
 ]
@@ -449,7 +449,7 @@ checksum = "065d93ead7c220b85d5b4be4795d8398eac4ff68b5ee63895de0a3c1fb6edf25"
 dependencies = [
  "block-buffer 0.11.0-pre.5",
  "const-oid 0.10.0-pre.2",
- "crypto-common 0.2.0-pre.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crypto-common 0.2.0-pre.5",
  "subtle",
 ]
 
@@ -1316,7 +1316,7 @@ dependencies = [
 name = "universal-hash"
 version = "0.6.0-pre.0"
 dependencies = [
- "crypto-common 0.2.0-pre.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crypto-common 0.2.0-pre.5",
  "subtle",
 ]
 
