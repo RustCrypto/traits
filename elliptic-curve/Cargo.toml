@@ -19,7 +19,7 @@ rust-version = "1.73"
 [dependencies]
 base16ct = "0.2"
 crypto-bigint = { version = "=0.6.0-rc.0", default-features = false, features = ["rand_core", "hybrid-array", "zeroize"] }
-hybrid-array = { version = "0.2.0-rc.8", default-features = false, features = ["zeroize"] }
+hybrid-array = { version = "0.2.0-rc.9", default-features = false, features = ["zeroize"] }
 rand_core = { version = "0.6.4", default-features = false }
 subtle = { version = "2.6", default-features = false }
 zeroize = { version = "1.7", default-features = false }
