@@ -239,9 +239,9 @@ checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 
 [[package]]
 name = "const-oid"
-version = "0.10.0-pre.2"
+version = "0.10.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7e3352a27098ba6b09546e5f13b15165e6a88b5c2723afecb3ea9576b27e3ea"
+checksum = "9adcf94f05e094fca3005698822ec791cb4433ced416afda1c5ca3b8dfc05a2f"
 
 [[package]]
 name = "cpufeatures"
@@ -399,12 +399,12 @@ dependencies = [
 
 [[package]]
 name = "der"
-version = "0.8.0-pre.0"
+version = "0.8.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b489fd2221710c1dd46637d66b984161fb66134f81437a8489800306bcc2ecea"
+checksum = "05d9c07d3bd80cf0935ce478d07edf7e7a5b158446757f988f3e62082227b700"
 dependencies = [
- "const-oid 0.10.0-pre.2",
- "pem-rfc7468 1.0.0-pre.0",
+ "const-oid 0.10.0-rc.0",
+ "pem-rfc7468 1.0.0-rc.0",
  "zeroize",
 ]
 
@@ -434,7 +434,7 @@ version = "0.11.0-pre.8"
 dependencies = [
  "blobby",
  "block-buffer 0.11.0-rc.0",
- "const-oid 0.10.0-pre.2",
+ "const-oid 0.10.0-rc.0",
  "crypto-common 0.2.0-rc.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
  "zeroize",
@@ -507,10 +507,10 @@ dependencies = [
  "hex-literal",
  "hkdf 0.13.0-pre.3",
  "hybrid-array",
- "pem-rfc7468 1.0.0-pre.0",
- "pkcs8 0.11.0-pre.0",
+ "pem-rfc7468 1.0.0-rc.0",
+ "pkcs8 0.11.0-rc.0",
  "rand_core",
- "sec1 0.8.0-pre.1",
+ "sec1 0.8.0-rc.0",
  "serde_json",
  "serdect",
  "sha2 0.11.0-pre.3",
@@ -856,9 +856,9 @@ dependencies = [
 
 [[package]]
 name = "pem-rfc7468"
-version = "1.0.0-pre.0"
+version = "1.0.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76a65e1c27d1680f8805b3f8c9949f08d6aa5d6cbd088c9896e64a53821dc27d"
+checksum = "b2b24c1c4a3b352d47de5ec824193e68317dc0ce041f6279a4771eb550ab7f8c"
 dependencies = [
  "base64ct",
 ]
@@ -887,12 +887,12 @@ dependencies = [
 
 [[package]]
 name = "pkcs8"
-version = "0.11.0-pre.0"
+version = "0.11.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "935c09e0aecb0cb8f8907b57438b19a068cb74a25189b06724f061170b2465ff"
+checksum = "66180445f1dce533620a7743467ef85fe1c5e80cdaf7c7053609d7a2fbcdae20"
 dependencies = [
- "der 0.8.0-pre.0",
- "spki 0.8.0-pre.0",
+ "der 0.8.0-rc.0",
+ "spki 0.8.0-rc.0",
 ]
 
 [[package]]
@@ -1059,14 +1059,14 @@ dependencies = [
 
 [[package]]
 name = "sec1"
-version = "0.8.0-pre.1"
+version = "0.8.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02dc081ed777a3bab68583b52ffb8221677b6e90d483b320963a247e2c07f328"
+checksum = "32c98827dc6ed0ea1707286a3d14b4ad4e25e2643169cbf111568a46ff5b09f5"
 dependencies = [
  "base16ct",
- "der 0.8.0-pre.0",
+ "der 0.8.0-rc.0",
  "hybrid-array",
- "pkcs8 0.11.0-pre.0",
+ "pkcs8 0.11.0-rc.0",
  "serdect",
  "subtle",
  "zeroize",
@@ -1233,12 +1233,12 @@ dependencies = [
 
 [[package]]
 name = "spki"
-version = "0.8.0-pre.0"
+version = "0.8.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb2b56670f5ef52934c97efad30bf42585de0c33ec3e2a886e38b80d2db67243"
+checksum = "ee3fb1c675852398475928637b3ebbdd7e1d0cc24d27b3bbc81788b4eb51e310"
 dependencies = [
  "base64ct",
- "der 0.8.0-pre.0",
+ "der 0.8.0-rc.0",
 ]
 
 [[package]]
