@@ -14,7 +14,7 @@ macro_rules! block_cipher_test {
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
                 let mut state = <$cipher as KeyInit>::new_from_slice(key).unwrap();
 
-                let mut block = Array::clone_from_slice(pt);
+                let mut block = Array::try_from(pt).unwrap();
                 state.encrypt_block(&mut block);
                 if ct != block.as_slice() {
                     return false;
@@ -33,7 +33,7 @@ macro_rules! block_cipher_test {
 
                 let mut state = <$cipher as KeyInit>::new_from_slice(key).unwrap();
 
-                let block = Block::clone_from_slice(pt);
+                let block = Block::try_from(pt).unwrap();
                 let mut blocks1 = vec![block; 101];
                 for (i, b) in blocks1.iter_mut().enumerate() {
                     *b = block;
