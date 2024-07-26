@@ -249,13 +249,15 @@ pub trait AeadMut: AeadCore {
 /// postfix authentication tag will need to define their own implementation.
 macro_rules! impl_decrypt_in_place {
     ($aead:expr, $nonce:expr, $aad:expr, $buffer:expr) => {{
-        if $buffer.len() < Self::TagSize::to_usize() {
-            return Err(Error);
-        }
+        let tag_pos = $buffer
+            .len()
+            .checked_sub(Self::TagSize::to_usize())
+            .ok_or(Error)?;
 
-        let tag_pos = $buffer.len() - Self::TagSize::to_usize();
         let (msg, tag) = $buffer.as_mut().split_at_mut(tag_pos);
-        $aead.decrypt_in_place_detached($nonce, $aad, msg, Tag::<Self>::from_slice(tag))?;
+        let tag = Tag::<Self>::try_from(&*tag).expect("tag length mismatch");
+
+        $aead.decrypt_in_place_detached($nonce, $aad, msg, &tag)?;
         $buffer.truncate(tag_pos);
         Ok(())
     }};

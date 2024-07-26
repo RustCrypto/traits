@@ -163,8 +163,8 @@ where
     /// NOTE: this function is variable-time with respect to the input length. To avoid a timing
     /// sidechannel, always ensure that the input has been pre-padded to `C::FieldBytesSize`.
     pub fn from_slice(slice: &[u8]) -> Result<Self> {
-        if slice.len() == C::FieldBytesSize::USIZE {
-            Self::from_bytes(FieldBytes::<C>::from_slice(slice))
+        if let Ok(field_bytes) = <&FieldBytes<C>>::try_from(slice) {
+            Self::from_bytes(field_bytes)
         } else if (Self::MIN_SIZE..C::FieldBytesSize::USIZE).contains(&slice.len()) {
             let mut bytes = Zeroizing::new(FieldBytes::<C>::default());
             let offset = C::FieldBytesSize::USIZE.saturating_sub(slice.len());

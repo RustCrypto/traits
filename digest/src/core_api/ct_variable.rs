@@ -221,7 +221,7 @@ where
 
     fn serialize(&self) -> SerializedState<Self> {
         let serialized_inner = self.inner.serialize();
-        let serialized_outsize = Array::<u8, U1>::clone_from_slice(&[OutSize::U8]);
+        let serialized_outsize = Array([OutSize::U8]);
 
         serialized_inner.concat(serialized_outsize)
     }
