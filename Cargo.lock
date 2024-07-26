@@ -217,7 +217,7 @@ dependencies = [
 
 [[package]]
 name = "cipher"
-version = "0.5.0-pre.4"
+version = "0.5.0-pre.5"
 dependencies = [
  "blobby",
  "crypto-common 0.2.0-rc.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1294,7 +1294,7 @@ dependencies = [
 
 [[package]]
 name = "universal-hash"
-version = "0.6.0-pre.0"
+version = "0.6.0-rc.0"
 dependencies = [
  "crypto-common 0.2.0-rc.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "subtle",
