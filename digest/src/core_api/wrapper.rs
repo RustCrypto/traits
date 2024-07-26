@@ -197,8 +197,7 @@ where
 
     fn serialize(&self) -> SerializedState<Self> {
         let serialized_core = self.core.serialize();
-        let serialized_pos =
-            Array::<u8, U1>::clone_from_slice(&[self.buffer.get_pos().try_into().unwrap()]);
+        let serialized_pos = Array([self.buffer.get_pos().try_into().unwrap()]);
         let serialized_data = self.buffer.clone().pad_with_zeros();
 
         serialized_core

@@ -269,7 +269,11 @@ where
     FieldBytesSize<C>: ModulusSize,
 {
     fn from(public_key: &PublicKey<C>) -> CompressedPoint<C> {
-        CompressedPoint::<C>::clone_from_slice(public_key.to_encoded_point(true).as_bytes())
+        public_key
+            .to_encoded_point(true)
+            .as_bytes()
+            .try_into()
+            .expect("wrong compressed point size")
     }
 }
 
