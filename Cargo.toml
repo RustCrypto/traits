@@ -16,4 +16,5 @@ members = [
 ]
 
 [patch.crates-io]
+digest = { path = "./digest" }
 signature = { path = "./signature" }
