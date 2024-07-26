@@ -7,14 +7,13 @@ members = [
     "crypto",
     "crypto-common",
     "digest",
-    #"elliptic-curve",
+    "elliptic-curve",
     "kem",
     "password-hash",
     "signature",
     "signature_derive",
     "universal-hash",
 ]
-exclude = ["elliptic-curve"]
 
 [patch.crates-io]
 digest = { path = "./digest" }
