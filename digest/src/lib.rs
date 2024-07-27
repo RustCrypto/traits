@@ -308,3 +308,10 @@ pub use hashwriter::HashWriter;
 mod hashreader;
 #[cfg(feature = "std")]
 pub use hashreader::HashReader;
+
+#[cfg(feature = "alloc")]
+impl Update for alloc::vec::Vec<u8> {
+    fn update(&mut self, data: &[u8]) {
+        self.extend_from_slice(data)
+    }
+}
