@@ -58,7 +58,7 @@ checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
 name = "async-signature"
 version = "0.6.0-pre.1"
 dependencies = [
- "signature 2.3.0-pre.3",
+ "signature 2.3.0-pre.4",
 ]
 
 [[package]]
@@ -1194,7 +1194,7 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "2.3.0-pre.3"
+version = "2.3.0-pre.4"
 dependencies = [
  "digest 0.11.0-pre.9",
  "hex-literal",
