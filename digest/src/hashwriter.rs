@@ -1,4 +1,4 @@
-//! Adds hashing to any writer. Inspired by implemention in phase2 crate.
+//! Adds hashing to any writer. Inspired by implementation in phase2 crate.
 use super::{Digest, FixedOutputReset, Output, Reset};
 use std::io;
 
