@@ -13,6 +13,7 @@ mod wrapper;
 
 pub use core_api::{Counter, StreamBackend, StreamCipherCore, StreamCipherSeekCore, StreamClosure};
 pub use errors::{OverflowError, StreamCipherError};
+pub use wrapper::StreamCipherCoreWrapper;
 
 /// Marker trait for block-level asynchronous stream ciphers
 pub trait AsyncStreamCipher: Sized {
