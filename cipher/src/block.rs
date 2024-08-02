@@ -12,6 +12,7 @@
 
 #[cfg(all(feature = "block-padding", feature = "alloc"))]
 use alloc::{vec, vec::Vec};
+use crypto_common::{Block, BlockSizeUser};
 #[cfg(feature = "block-padding")]
 use inout::{
     block_padding::{Padding, UnpadError},
@@ -19,17 +20,15 @@ use inout::{
 };
 use inout::{InOut, InOutBuf, NotEqualError};
 
-pub use crypto_common::{array::ArraySize, typenum::Unsigned, Block, BlockSizeUser};
-
 mod backends;
 mod ctx;
-mod macros;
 
-pub use backends::*;
 use ctx::{BlockCtx, BlocksCtx};
 
-/// Marker trait for block ciphers.
-pub trait BlockCipher: BlockSizeUser {}
+pub use backends::{
+    BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherEncBackend, BlockCipherEncClosure,
+    BlockModeDecBackend, BlockModeDecClosure, BlockModeEncBackend, BlockModeEncClosure,
+};
 
 /// Encrypt-only functionality for block ciphers.
 pub trait BlockCipherEncrypt: BlockSizeUser + Sized {
@@ -132,6 +131,7 @@ pub trait BlockCipherEncrypt: BlockSizeUser + Sized {
     #[cfg(all(feature = "block-padding", feature = "alloc"))]
     #[inline]
     fn encrypt_padded_vec<P: Padding<Self::BlockSize>>(&self, msg: &[u8]) -> Vec<u8> {
+        use crypto_common::typenum::Unsigned;
         let bs = Self::BlockSize::USIZE;
         let mut out = vec![0; bs * (msg.len() / bs + 1)];
         let len = self
@@ -265,8 +265,6 @@ pub trait BlockCipherDecrypt: BlockSizeUser {
     }
 }
 
-impl<Alg: BlockCipher> BlockCipher for &Alg {}
-
 impl<Alg: BlockCipherEncrypt> BlockCipherEncrypt for &Alg {
     fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
         Alg::encrypt_with_backend(self, f);
@@ -384,6 +382,7 @@ pub trait BlockModeEncrypt: BlockSizeUser + Sized {
     #[cfg(all(feature = "block-padding", feature = "alloc"))]
     #[inline]
     fn encrypt_padded_vec<P: Padding<Self::BlockSize>>(self, msg: &[u8]) -> Vec<u8> {
+        use crypto_common::typenum::Unsigned;
         let bs = Self::BlockSize::USIZE;
         let mut out = vec![0; bs * (msg.len() / bs + 1)];
         let len = self

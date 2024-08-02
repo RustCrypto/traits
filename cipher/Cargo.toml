@@ -24,7 +24,8 @@ zeroize = { version = "1.7", optional = true, default-features = false }
 alloc = []
 std = ["alloc", "crypto-common/std", "inout/std"]
 block-padding = ["inout/block-padding"]
-rand_core = ["crypto-common/rand_core"] # Enable random key and IV generation methods
+# Enable random key and IV generation methods
+rand_core = ["crypto-common/rand_core"]
 dev = ["blobby"]
 
 [package.metadata.docs.rs]
