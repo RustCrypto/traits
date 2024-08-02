@@ -220,7 +220,7 @@ name = "cipher"
 version = "0.5.0-pre.6"
 dependencies = [
  "blobby",
- "crypto-common 0.2.0-rc.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crypto-common 0.2.0-rc.0",
  "inout 0.2.0-rc.0",
  "zeroize",
 ]

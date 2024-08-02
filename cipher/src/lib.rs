@@ -42,13 +42,7 @@ pub mod stream;
 pub use crypto_common::{
     array,
     typenum::{self, consts},
-    AlgorithmName, Block, BlockSizeUser, InnerIvInit, InvalidLength, Iv, IvSizeUser, Key, KeyInit,
-    KeyIvInit, KeySizeUser, ParBlocks, ParBlocksSizeUser,
+    AlgorithmName, Block, BlockSizeUser, InnerIvInit, InvalidLength, Iv, IvSizeUser, IvState, Key,
+    KeyInit, KeyIvInit, KeySizeUser, ParBlocks, ParBlocksSizeUser,
 };
 pub use inout::{InOut, InOutBuf};
-
-/// Trait for loading current IV state.
-pub trait IvState: IvSizeUser {
-    /// Returns current IV state.
-    fn iv_state(&self) -> Iv<Self>;
-}
