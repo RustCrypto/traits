@@ -14,8 +14,8 @@ use proc_macro::TokenStream;
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote;
 use syn::{
-    parse_macro_input, parse_quote, punctuated::Punctuated, DeriveInput, Ident, PredicateType,
-    Token, TraitBound, Type, TypeParam, TypeParamBound, WhereClause, WherePredicate,
+    parse_macro_input, parse_quote, punctuated::Punctuated, DeriveInput, Ident, Lifetime,
+    PredicateType, Token, TraitBound, Type, TypeParam, TypeParamBound, WhereClause, WherePredicate,
 };
 
 /// Derive the [`Signer`] trait for a type which impls [`DigestSigner`].
@@ -51,12 +51,19 @@ fn emit_signer_impl(input: DeriveInput) -> TokenStream2 {
     );
 
     let name = params.name;
+    let lifetimes = params.lifetimes;
     let impl_generics = params.impl_generics;
     let ty_generics = params.ty_generics;
     let where_clause = params.where_clause;
 
+    let sep = if lifetimes.is_empty() {
+        quote! {}
+    } else {
+        quote! {,}
+    };
+
     quote! {
-        impl<#(#impl_generics),*> ::signature::Signer<#s_ident> for #name<#(#ty_generics),*>
+        impl<#(#lifetimes),* #sep #(#impl_generics),*> ::signature::Signer<#s_ident> for #name<#(#lifetimes),* #sep #(#ty_generics),*>
         #where_clause
         {
             fn try_sign(&self, msg: &[u8]) -> ::signature::Result<#s_ident> {
@@ -99,12 +106,19 @@ fn emit_verifier_impl(input: DeriveInput) -> TokenStream2 {
     );
 
     let name = params.name;
+    let lifetimes = params.lifetimes;
     let impl_generics = params.impl_generics;
     let ty_generics = params.ty_generics;
     let where_clause = params.where_clause;
 
+    let sep = if lifetimes.is_empty() {
+        quote! {}
+    } else {
+        quote! {,}
+    };
+
     quote! {
-        impl<#(#impl_generics),*> ::signature::Verifier<#s_ident> for #name<#(#ty_generics),*>
+        impl<#(#lifetimes),* #sep #(#impl_generics),*> ::signature::Verifier<#s_ident> for #name<#(#lifetimes),* #sep #(#ty_generics),*>
         #where_clause
         {
             fn verify(&self, msg: &[u8], signature: &#s_ident) -> ::signature::Result<()> {
@@ -137,12 +151,19 @@ fn emit_digest_signer_impl(input: DeriveInput) -> TokenStream2 {
     );
 
     let name = params.name;
+    let lifetimes = params.lifetimes;
     let impl_generics = params.impl_generics;
     let ty_generics = params.ty_generics;
     let where_clause = params.where_clause;
 
+    let sep = if lifetimes.is_empty() {
+        quote! {}
+    } else {
+        quote! {,}
+    };
+
     quote! {
-        impl<#(#impl_generics),*> ::signature::DigestSigner<#d_ident, #s_ident> for #name<#(#ty_generics),*>
+        impl<#(#lifetimes),* #sep #(#impl_generics),*> ::signature::DigestSigner<#d_ident, #s_ident> for #name<#(#lifetimes),* #sep #(#ty_generics),*>
         #where_clause
         {
             fn try_sign_digest(&self, digest: #d_ident) -> ::signature::Result<#s_ident> {
@@ -175,12 +196,19 @@ fn emit_digest_verifier_impl(input: DeriveInput) -> TokenStream2 {
     );
 
     let name = params.name;
+    let lifetimes = params.lifetimes;
     let impl_generics = params.impl_generics;
     let ty_generics = params.ty_generics;
     let where_clause = params.where_clause;
 
+    let sep = if lifetimes.is_empty() {
+        quote! {}
+    } else {
+        quote! {,}
+    };
+
     quote! {
-        impl<#(#impl_generics),*> ::signature::DigestVerifier<#d_ident, #s_ident> for #name<#(#ty_generics),*>
+        impl<#(#lifetimes),* #sep #(#impl_generics),*> ::signature::DigestVerifier<#d_ident, #s_ident> for #name<#(#lifetimes),* #sep #(#ty_generics),*>
         #where_clause
         {
             fn verify_digest(&self, digest: #d_ident, signature: &#s_ident) -> ::signature::Result<()> {
@@ -194,6 +222,8 @@ fn emit_digest_verifier_impl(input: DeriveInput) -> TokenStream2 {
 struct DeriveParams {
     /// Name of the struct the trait impls are being added to.
     name: Ident,
+
+    lifetimes: Vec<Lifetime>,
 
     /// Generic parameters of `impl`.
     impl_generics: Vec<TypeParam>,
@@ -209,6 +239,12 @@ impl DeriveParams {
     /// Parse parameters from `DeriveInput`.
     fn new(input: DeriveInput) -> Self {
         let impl_generics = input.generics.type_params().cloned().collect();
+
+        let lifetimes = input
+            .generics
+            .lifetimes()
+            .map(|lt| lt.lifetime.clone())
+            .collect();
 
         let ty_generics = input
             .generics
@@ -227,6 +263,7 @@ impl DeriveParams {
 
         Self {
             name: input.ident,
+            lifetimes,
             impl_generics,
             ty_generics,
             where_clause,
@@ -383,6 +420,39 @@ mod tests {
                 {
                     fn verify_digest(&self, digest: __D, signature: &__S) -> ::signature::Result<()> {
                         self.verify_prehash(&digest.finalize(), signature)
+                    }
+                }
+            }
+            .to_string()
+        );
+    }
+
+    #[test]
+    fn signer_lifetimes() {
+        let input = parse_quote! {
+            #[derive(Signer)]
+            struct MySigner<'a, C>
+            where
+                C: EllipticCurve
+            {
+                scalar: Scalar<C::ScalarSize>,
+                _lifetime: &'a (),
+            }
+        };
+
+        let output = emit_signer_impl(input);
+
+        assert_eq!(
+            output.to_string(),
+            quote! {
+                impl<'a, C, __S> ::signature::Signer<__S> for MySigner<'a, C>
+                where
+                    C: EllipticCurve,
+                    __S: ::signature::PrehashSignature,
+                    Self: ::signature::DigestSigner<__S::Digest, __S>
+                {
+                    fn try_sign(&self, msg: &[u8]) -> ::signature::Result<__S> {
+                        self.try_sign_digest(__S::Digest::new_with_prefix(msg))
                     }
                 }
             }
