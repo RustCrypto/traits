@@ -3,10 +3,17 @@
 //! See [RustCrypto/stream-ciphers](https://github.com/RustCrypto/stream-ciphers)
 //! for ciphers implementation.
 
-use crate::errors::{OverflowError, StreamCipherError};
-use crate::stream_core::Counter;
-use crate::{Block, BlockModeDecrypt, BlockModeEncrypt};
+use crate::block::{BlockModeDecrypt, BlockModeEncrypt};
+use crypto_common::Block;
 use inout::{InOutBuf, NotEqualError};
+
+mod core_api;
+mod errors;
+mod wrapper;
+
+pub use core_api::{Counter, StreamBackend, StreamCipherCore, StreamCipherSeekCore, StreamClosure};
+pub use errors::{OverflowError, StreamCipherError};
+pub use wrapper::StreamCipherCoreWrapper;
 
 /// Marker trait for block-level asynchronous stream ciphers
 pub trait AsyncStreamCipher: Sized {

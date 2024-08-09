@@ -18,45 +18,34 @@
     missing_debug_implementations
 )]
 
-pub use crypto_common;
-pub use inout;
-
 #[cfg(all(feature = "block-padding", feature = "alloc"))]
 extern crate alloc;
-
 #[cfg(feature = "std")]
 extern crate std;
 
+#[cfg(feature = "dev")]
+pub use blobby;
+pub use crypto_common;
 #[cfg(feature = "rand_core")]
 pub use crypto_common::rand_core;
-
+pub use inout;
 #[cfg(feature = "block-padding")]
 pub use inout::block_padding;
-
 #[cfg(feature = "zeroize")]
 pub use zeroize;
 
-#[cfg(feature = "dev")]
-pub use blobby;
-
-mod block;
+pub mod block;
 #[cfg(feature = "dev")]
 mod dev;
-mod errors;
-mod stream;
-mod stream_core;
-mod stream_wrapper;
+pub mod stream;
 
-pub use crate::{block::*, errors::*, stream::*, stream_core::*, stream_wrapper::*};
+pub use block::*;
+pub use stream::*;
+
 pub use crypto_common::{
-    array,
+    array::{self, Array},
     typenum::{self, consts},
-    AlgorithmName, Block, InnerIvInit, InvalidLength, Iv, IvSizeUser, Key, KeyInit, KeyIvInit,
-    KeySizeUser, ParBlocks, ParBlocksSizeUser,
+    AlgorithmName, Block, BlockSizeUser, InnerIvInit, InvalidLength, Iv, IvSizeUser, IvState, Key,
+    KeyInit, KeyIvInit, KeySizeUser, ParBlocks, ParBlocksSizeUser,
 };
-
-/// Trait for loading current IV state.
-pub trait IvState: IvSizeUser {
-    /// Returns current IV state.
-    fn iv_state(&self) -> Iv<Self>;
-}
+pub use inout::{InOut, InOutBuf};

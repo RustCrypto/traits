@@ -1,4 +1,4 @@
-use crate::{
+use super::{
     errors::StreamCipherError, Block, OverflowError, SeekNum, StreamCipher, StreamCipherCore,
     StreamCipherSeek, StreamCipherSeekCore,
 };

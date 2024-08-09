@@ -13,18 +13,19 @@ keywords = ["crypto", "block-cipher", "stream-cipher", "trait"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = "0.2.0-rc.0"
+crypto-common = { path = "../crypto-common/", version = "0.2.0-rc.0" }
 inout = "0.2.0-rc.0"
 
 # optional dependencies
 blobby = { version = "0.3", optional = true }
-zeroize = { version = "1.7", optional = true, default-features = false }
+zeroize = { version = "1.8", optional = true, default-features = false }
 
 [features]
 alloc = []
 std = ["alloc", "crypto-common/std", "inout/std"]
 block-padding = ["inout/block-padding"]
-rand_core = ["crypto-common/rand_core"] # Enable random key and IV generation methods
+# Enable random key and IV generation methods
+rand_core = ["crypto-common/rand_core"]
 dev = ["blobby"]
 
 [package.metadata.docs.rs]
