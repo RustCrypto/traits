@@ -39,8 +39,11 @@ pub mod block;
 mod dev;
 pub mod stream;
 
+pub use block::*;
+pub use stream::*;
+
 pub use crypto_common::{
-    array,
+    array::{self, Array},
     typenum::{self, consts},
     AlgorithmName, Block, BlockSizeUser, InnerIvInit, InvalidLength, Iv, IvSizeUser, IvState, Key,
     KeyInit, KeyIvInit, KeySizeUser, ParBlocks, ParBlocksSizeUser,
