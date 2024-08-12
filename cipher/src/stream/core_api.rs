@@ -4,7 +4,7 @@ use crypto_common::{Block, BlockSizeUser, BlockSizes, ParBlocks, ParBlocksSizeUs
 use inout::{InOut, InOutBuf};
 
 /// Trait implemented by stream cipher backends.
-pub trait StreamBackend: ParBlocksSizeUser {
+pub trait StreamCipherBackend: ParBlocksSizeUser {
     /// Generate keystream block.
     fn gen_ks_block(&mut self, block: &mut Block<Self>);
 
@@ -30,9 +30,9 @@ pub trait StreamBackend: ParBlocksSizeUser {
 /// Trait for [`StreamBackend`] users.
 ///
 /// This trait is used to define rank-2 closures.
-pub trait StreamClosure: BlockSizeUser {
+pub trait StreamCipherClosure: BlockSizeUser {
     /// Execute closure with the provided stream cipher backend.
-    fn call<B: StreamBackend<BlockSize = Self::BlockSize>>(self, backend: &mut B);
+    fn call<B: StreamCipherBackend<BlockSize = Self::BlockSize>>(self, backend: &mut B);
 }
 
 /// Block-level synchronous stream ciphers.
@@ -45,7 +45,7 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
     fn remaining_blocks(&self) -> Option<usize>;
 
     /// Process data using backend provided to the rank-2 closure.
-    fn process_with_backend(&mut self, f: impl StreamClosure<BlockSize = Self::BlockSize>);
+    fn process_with_backend(&mut self, f: impl StreamCipherClosure<BlockSize = Self::BlockSize>);
 
     /// Write keystream block.
     ///
@@ -153,7 +153,7 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
 /// This trait is implemented for `i32`, `u32`, `u64`, `u128`, and `usize`.
 /// It's not intended to be implemented in third-party crates, but doing so
 /// is not forbidden.
-pub trait Counter:
+pub trait StreamCipherCounter:
     TryFrom<i32>
     + TryFrom<u32>
     + TryFrom<u64>
@@ -170,7 +170,7 @@ pub trait Counter:
 /// Block-level seeking trait for stream ciphers.
 pub trait StreamCipherSeekCore: StreamCipherCore {
     /// Counter type used inside stream cipher.
-    type Counter: Counter;
+    type Counter: StreamCipherCounter;
 
     /// Get current block position.
     fn get_block_pos(&self) -> Self::Counter;
@@ -181,7 +181,7 @@ pub trait StreamCipherSeekCore: StreamCipherCore {
 
 macro_rules! impl_counter {
     {$($t:ty )*} => {
-        $( impl Counter for $t { } )*
+        $( impl StreamCipherCounter for $t { } )*
     };
 }
 
@@ -193,9 +193,9 @@ struct WriteBlockCtx<'a, BS: BlockSizes> {
 impl<'a, BS: BlockSizes> BlockSizeUser for WriteBlockCtx<'a, BS> {
     type BlockSize = BS;
 }
-impl<'a, BS: BlockSizes> StreamClosure for WriteBlockCtx<'a, BS> {
+impl<'a, BS: BlockSizes> StreamCipherClosure for WriteBlockCtx<'a, BS> {
     #[inline(always)]
-    fn call<B: StreamBackend<BlockSize = BS>>(self, backend: &mut B) {
+    fn call<B: StreamCipherBackend<BlockSize = BS>>(self, backend: &mut B) {
         backend.gen_ks_block(self.block);
     }
 }
@@ -206,9 +206,9 @@ struct WriteBlocksCtx<'a, BS: BlockSizes> {
 impl<'a, BS: BlockSizes> BlockSizeUser for WriteBlocksCtx<'a, BS> {
     type BlockSize = BS;
 }
-impl<'a, BS: BlockSizes> StreamClosure for WriteBlocksCtx<'a, BS> {
+impl<'a, BS: BlockSizes> StreamCipherClosure for WriteBlocksCtx<'a, BS> {
     #[inline(always)]
-    fn call<B: StreamBackend<BlockSize = BS>>(self, backend: &mut B) {
+    fn call<B: StreamCipherBackend<BlockSize = BS>>(self, backend: &mut B) {
         if B::ParBlocksSize::USIZE > 1 {
             let (chunks, tail) = Array::slice_as_chunks_mut(self.blocks);
             for chunk in chunks {
@@ -231,9 +231,9 @@ impl<'inp, 'out, BS: BlockSizes> BlockSizeUser for ApplyBlockCtx<'inp, 'out, BS>
     type BlockSize = BS;
 }
 
-impl<'inp, 'out, BS: BlockSizes> StreamClosure for ApplyBlockCtx<'inp, 'out, BS> {
+impl<'inp, 'out, BS: BlockSizes> StreamCipherClosure for ApplyBlockCtx<'inp, 'out, BS> {
     #[inline(always)]
-    fn call<B: StreamBackend<BlockSize = BS>>(mut self, backend: &mut B) {
+    fn call<B: StreamCipherBackend<BlockSize = BS>>(mut self, backend: &mut B) {
         let mut t = Default::default();
         backend.gen_ks_block(&mut t);
         self.block.xor_in2out(&t);
@@ -248,10 +248,10 @@ impl<'inp, 'out, BS: BlockSizes> BlockSizeUser for ApplyBlocksCtx<'inp, 'out, BS
     type BlockSize = BS;
 }
 
-impl<'inp, 'out, BS: BlockSizes> StreamClosure for ApplyBlocksCtx<'inp, 'out, BS> {
+impl<'inp, 'out, BS: BlockSizes> StreamCipherClosure for ApplyBlocksCtx<'inp, 'out, BS> {
     #[inline(always)]
     #[allow(clippy::needless_range_loop)]
-    fn call<B: StreamBackend<BlockSize = BS>>(self, backend: &mut B) {
+    fn call<B: StreamCipherBackend<BlockSize = BS>>(self, backend: &mut B) {
         if B::ParBlocksSize::USIZE > 1 {
             let (chunks, mut tail) = self.blocks.into_chunks::<B::ParBlocksSize>();
             for mut chunk in chunks {

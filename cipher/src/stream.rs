@@ -11,7 +11,10 @@ mod core_api;
 mod errors;
 mod wrapper;
 
-pub use core_api::{Counter, StreamBackend, StreamCipherCore, StreamCipherSeekCore, StreamClosure};
+pub use core_api::{
+    StreamCipherBackend, StreamCipherClosure, StreamCipherCore, StreamCipherCounter,
+    StreamCipherSeekCore,
+};
 pub use errors::{OverflowError, StreamCipherError};
 pub use wrapper::StreamCipherCoreWrapper;
 
@@ -199,17 +202,21 @@ impl<C: StreamCipher> StreamCipher for &mut C {
 pub trait SeekNum: Sized {
     /// Try to get position for block number `block`, byte position inside
     /// block `byte`, and block size `bs`.
-    fn from_block_byte<T: Counter>(block: T, byte: u8, bs: u8) -> Result<Self, OverflowError>;
+    fn from_block_byte<T: StreamCipherCounter>(
+        block: T,
+        byte: u8,
+        bs: u8,
+    ) -> Result<Self, OverflowError>;
 
     /// Try to get block number and bytes position for given block size `bs`.
-    fn into_block_byte<T: Counter>(self, bs: u8) -> Result<(T, u8), OverflowError>;
+    fn into_block_byte<T: StreamCipherCounter>(self, bs: u8) -> Result<(T, u8), OverflowError>;
 }
 
 macro_rules! impl_seek_num {
     {$($t:ty )*} => {
         $(
             impl SeekNum for $t {
-                fn from_block_byte<T: Counter>(block: T, byte: u8, block_size: u8) -> Result<Self, OverflowError> {
+                fn from_block_byte<T: StreamCipherCounter>(block: T, byte: u8, block_size: u8) -> Result<Self, OverflowError> {
                     debug_assert!(byte != 0);
                     let rem = block_size.checked_sub(byte).ok_or(OverflowError)?;
                     let block: Self = block.try_into().map_err(|_| OverflowError)?;
@@ -219,7 +226,7 @@ macro_rules! impl_seek_num {
                         .ok_or(OverflowError)
                 }
 
-                fn into_block_byte<T: Counter>(self, block_size: u8) -> Result<(T, u8), OverflowError> {
+                fn into_block_byte<T: StreamCipherCounter>(self, block_size: u8) -> Result<(T, u8), OverflowError> {
                     let bs: Self = block_size.into();
                     let byte = (self % bs) as u8;
                     let block = T::try_from(self / bs).map_err(|_| OverflowError)?;
