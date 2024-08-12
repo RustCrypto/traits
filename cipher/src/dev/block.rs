@@ -293,7 +293,7 @@ macro_rules! block_encryptor_bench {
         #[bench]
         pub fn $block_name(bh: &mut test::Bencher) {
             #[allow(unused)]
-            use cipher::block::{BlockCipherEncrypt, BlockModeEncrypt};
+            use $crate::{BlockCipherEncrypt, BlockModeEncrypt};
 
             let mut cipher = $init;
             let mut blocks = vec![Default::default(); 1024];
@@ -310,7 +310,7 @@ macro_rules! block_encryptor_bench {
         #[bench]
         pub fn $blocks_name(bh: &mut test::Bencher) {
             #[allow(unused)]
-            use cipher::block::{BlockCipherEncrypt, BlockModeEncrypt};
+            use $crate::{BlockCipherEncrypt, BlockModeEncrypt};
 
             let mut cipher = $init;
             let mut blocks = vec![Default::default(); 1024];
@@ -356,7 +356,7 @@ macro_rules! block_decryptor_bench {
         #[bench]
         pub fn $block_name(bh: &mut test::Bencher) {
             #[allow(unused)]
-            use cipher::block::{BlockCipherDecrypt, BlockModeDecrypt};
+            use $crate::{BlockCipherDecrypt, BlockModeDecrypt};
 
             let mut cipher = $init;
             let mut blocks = vec![Default::default(); 1024];
@@ -373,7 +373,7 @@ macro_rules! block_decryptor_bench {
         #[bench]
         pub fn $blocks_name(bh: &mut test::Bencher) {
             #[allow(unused)]
-            use cipher::block::{BlockCipherDecrypt, BlockModeDecrypt};
+            use $crate::{BlockCipherDecrypt, BlockModeDecrypt};
 
             let mut cipher = $init;
             let mut blocks = vec![Default::default(); 1024];
