@@ -27,7 +27,7 @@ pub trait StreamCipherBackend: ParBlocksSizeUser {
     }
 }
 
-/// Trait for [`StreamBackend`] users.
+/// Trait for [`StreamCipherBackend`] users.
 ///
 /// This trait is used to define rank-2 closures.
 pub trait StreamCipherClosure: BlockSizeUser {
