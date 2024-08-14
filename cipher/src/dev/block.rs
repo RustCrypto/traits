@@ -7,8 +7,11 @@ macro_rules! block_cipher_test {
         #[test]
         fn $name() {
             use cipher::{
-                array::Array, blobby::Blob3Iterator, typenum::Unsigned, BlockCipherDecrypt,
-                BlockCipherEncrypt, BlockSizeUser, KeyInit,
+                array::Array,
+                blobby::Blob3Iterator,
+                block::{BlockCipherDecrypt, BlockCipherEncrypt},
+                typenum::Unsigned,
+                BlockSizeUser, KeyInit,
             };
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
@@ -290,7 +293,7 @@ macro_rules! block_encryptor_bench {
         #[bench]
         pub fn $block_name(bh: &mut test::Bencher) {
             #[allow(unused)]
-            use cipher::{BlockCipherEncrypt, BlockModeEncrypt};
+            use $crate::{BlockCipherEncrypt, BlockModeEncrypt};
 
             let mut cipher = $init;
             let mut blocks = vec![Default::default(); 1024];
@@ -307,7 +310,7 @@ macro_rules! block_encryptor_bench {
         #[bench]
         pub fn $blocks_name(bh: &mut test::Bencher) {
             #[allow(unused)]
-            use cipher::{BlockCipherEncrypt, BlockModeEncrypt};
+            use $crate::{BlockCipherEncrypt, BlockModeEncrypt};
 
             let mut cipher = $init;
             let mut blocks = vec![Default::default(); 1024];
@@ -353,7 +356,7 @@ macro_rules! block_decryptor_bench {
         #[bench]
         pub fn $block_name(bh: &mut test::Bencher) {
             #[allow(unused)]
-            use cipher::{BlockCipherDecrypt, BlockModeDecrypt};
+            use $crate::{BlockCipherDecrypt, BlockModeDecrypt};
 
             let mut cipher = $init;
             let mut blocks = vec![Default::default(); 1024];
@@ -370,7 +373,7 @@ macro_rules! block_decryptor_bench {
         #[bench]
         pub fn $blocks_name(bh: &mut test::Bencher) {
             #[allow(unused)]
-            use cipher::{BlockCipherDecrypt, BlockModeDecrypt};
+            use $crate::{BlockCipherDecrypt, BlockModeDecrypt};
 
             let mut cipher = $init;
             let mut blocks = vec![Default::default(); 1024];

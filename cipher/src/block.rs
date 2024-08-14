@@ -10,10 +10,9 @@
 //! [2]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
 //! [3]: https://en.wikipedia.org/wiki/Symmetric-key_algorithm
 
-use crate::{ParBlocks, ParBlocksSizeUser};
 #[cfg(all(feature = "block-padding", feature = "alloc"))]
 use alloc::{vec, vec::Vec};
-use crypto_common::BlockSizes;
+use crypto_common::{Block, BlockSizeUser};
 #[cfg(feature = "block-padding")]
 use inout::{
     block_padding::{Padding, UnpadError},
@@ -21,66 +20,20 @@ use inout::{
 };
 use inout::{InOut, InOutBuf, NotEqualError};
 
-pub use crypto_common::{array::ArraySize, typenum::Unsigned, Block, BlockSizeUser};
+mod backends;
+mod ctx;
 
-/// Marker trait for block ciphers.
-pub trait BlockCipher: BlockSizeUser {}
+use ctx::{BlockCtx, BlocksCtx};
 
-/// Trait implemented by block cipher encryption and decryption backends.
-pub trait BlockBackend: ParBlocksSizeUser {
-    /// Process single inout block.
-    fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>);
-
-    /// Process inout blocks in parallel.
-    #[inline(always)]
-    fn proc_par_blocks(&mut self, mut blocks: InOut<'_, '_, ParBlocks<Self>>) {
-        for i in 0..Self::ParBlocksSize::USIZE {
-            self.proc_block(blocks.get(i));
-        }
-    }
-
-    /// Process buffer of inout blocks. Length of the buffer MUST be smaller
-    /// than `Self::ParBlocksSize`.
-    #[inline(always)]
-    fn proc_tail_blocks(&mut self, blocks: InOutBuf<'_, '_, Block<Self>>) {
-        assert!(blocks.len() < Self::ParBlocksSize::USIZE);
-        for block in blocks {
-            self.proc_block(block);
-        }
-    }
-
-    /// Process single block in-place.
-    #[inline(always)]
-    fn proc_block_inplace(&mut self, block: &mut Block<Self>) {
-        self.proc_block(block.into());
-    }
-
-    /// Process blocks in parallel in-place.
-    #[inline(always)]
-    fn proc_par_blocks_inplace(&mut self, blocks: &mut ParBlocks<Self>) {
-        self.proc_par_blocks(blocks.into());
-    }
-
-    /// Process buffer of blocks in-place. Length of the buffer MUST be smaller
-    /// than `Self::ParBlocksSize`.
-    #[inline(always)]
-    fn proc_tail_blocks_inplace(&mut self, blocks: &mut [Block<Self>]) {
-        self.proc_tail_blocks(blocks.into());
-    }
-}
-
-/// Trait for [`BlockBackend`] users.
-///
-/// This trait is used to define rank-2 closures.
-pub trait BlockClosure: BlockSizeUser {
-    /// Execute closure with the provided block cipher backend.
-    fn call<B: BlockBackend<BlockSize = Self::BlockSize>>(self, backend: &mut B);
-}
+pub use backends::{
+    BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherEncBackend, BlockCipherEncClosure,
+    BlockModeDecBackend, BlockModeDecClosure, BlockModeEncBackend, BlockModeEncClosure,
+};
 
 /// Encrypt-only functionality for block ciphers.
 pub trait BlockCipherEncrypt: BlockSizeUser + Sized {
     /// Encrypt data using backend provided to the rank-2 closure.
-    fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = Self::BlockSize>);
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>);
 
     /// Encrypt single `inout` block.
     #[inline]
@@ -178,7 +131,9 @@ pub trait BlockCipherEncrypt: BlockSizeUser + Sized {
     #[cfg(all(feature = "block-padding", feature = "alloc"))]
     #[inline]
     fn encrypt_padded_vec<P: Padding<Self::BlockSize>>(&self, msg: &[u8]) -> Vec<u8> {
-        let mut out = allocate_out_vec::<Self>(msg.len());
+        use crypto_common::typenum::Unsigned;
+        let bs = Self::BlockSize::USIZE;
+        let mut out = vec![0; bs * (msg.len() / bs + 1)];
         let len = self
             .encrypt_padded_b2b::<P>(msg, &mut out)
             .expect("enough space for encrypting is allocated")
@@ -191,7 +146,7 @@ pub trait BlockCipherEncrypt: BlockSizeUser + Sized {
 /// Decrypt-only functionality for block ciphers.
 pub trait BlockCipherDecrypt: BlockSizeUser {
     /// Decrypt data using backend provided to the rank-2 closure.
-    fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = Self::BlockSize>);
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>);
 
     /// Decrypt single `inout` block.
     #[inline]
@@ -310,6 +265,18 @@ pub trait BlockCipherDecrypt: BlockSizeUser {
     }
 }
 
+impl<Alg: BlockCipherEncrypt> BlockCipherEncrypt for &Alg {
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
+        Alg::encrypt_with_backend(self, f);
+    }
+}
+
+impl<Alg: BlockCipherDecrypt> BlockCipherDecrypt for &Alg {
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
+        Alg::decrypt_with_backend(self, f);
+    }
+}
+
 /// Encrypt-only functionality for block ciphers and modes with mutable access to `self`.
 ///
 /// The main use case for this trait is blocks modes, but it also can be used
@@ -317,7 +284,7 @@ pub trait BlockCipherDecrypt: BlockSizeUser {
 /// underlying hardware peripheral.
 pub trait BlockModeEncrypt: BlockSizeUser + Sized {
     /// Encrypt data using backend provided to the rank-2 closure.
-    fn encrypt_with_backend(&mut self, f: impl BlockClosure<BlockSize = Self::BlockSize>);
+    fn encrypt_with_backend(&mut self, f: impl BlockModeEncClosure<BlockSize = Self::BlockSize>);
 
     /// Encrypt single `inout` block.
     #[inline]
@@ -415,7 +382,9 @@ pub trait BlockModeEncrypt: BlockSizeUser + Sized {
     #[cfg(all(feature = "block-padding", feature = "alloc"))]
     #[inline]
     fn encrypt_padded_vec<P: Padding<Self::BlockSize>>(self, msg: &[u8]) -> Vec<u8> {
-        let mut out = allocate_out_vec::<Self>(msg.len());
+        use crypto_common::typenum::Unsigned;
+        let bs = Self::BlockSize::USIZE;
+        let mut out = vec![0; bs * (msg.len() / bs + 1)];
         let len = self
             .encrypt_padded_b2b::<P>(msg, &mut out)
             .expect("enough space for encrypting is allocated")
@@ -432,7 +401,7 @@ pub trait BlockModeEncrypt: BlockSizeUser + Sized {
 /// underlying hardware peripheral.
 pub trait BlockModeDecrypt: BlockSizeUser + Sized {
     /// Decrypt data using backend provided to the rank-2 closure.
-    fn decrypt_with_backend(&mut self, f: impl BlockClosure<BlockSize = Self::BlockSize>);
+    fn decrypt_with_backend(&mut self, f: impl BlockModeDecClosure<BlockSize = Self::BlockSize>);
 
     /// Decrypt single `inout` block.
     #[inline]
@@ -549,146 +518,4 @@ pub trait BlockModeDecrypt: BlockSizeUser + Sized {
         out.truncate(len);
         Ok(out)
     }
-}
-
-impl<Alg: BlockCipher> BlockCipher for &Alg {}
-
-impl<Alg: BlockCipherEncrypt> BlockCipherEncrypt for &Alg {
-    fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = Self::BlockSize>) {
-        Alg::encrypt_with_backend(self, f);
-    }
-}
-
-impl<Alg: BlockCipherDecrypt> BlockCipherDecrypt for &Alg {
-    fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = Self::BlockSize>) {
-        Alg::decrypt_with_backend(self, f);
-    }
-}
-
-/// Closure used in methods which operate over separate blocks.
-struct BlockCtx<'inp, 'out, BS: BlockSizes> {
-    block: InOut<'inp, 'out, Block<Self>>,
-}
-
-impl<'inp, 'out, BS: BlockSizes> BlockSizeUser for BlockCtx<'inp, 'out, BS> {
-    type BlockSize = BS;
-}
-
-impl<'inp, 'out, BS: BlockSizes> BlockClosure for BlockCtx<'inp, 'out, BS> {
-    #[inline(always)]
-    fn call<B: BlockBackend<BlockSize = BS>>(self, backend: &mut B) {
-        backend.proc_block(self.block);
-    }
-}
-
-/// Closure used in methods which operate over slice of blocks.
-struct BlocksCtx<'inp, 'out, BS: BlockSizes> {
-    blocks: InOutBuf<'inp, 'out, Block<Self>>,
-}
-
-impl<'inp, 'out, BS: BlockSizes> BlockSizeUser for BlocksCtx<'inp, 'out, BS> {
-    type BlockSize = BS;
-}
-
-impl<'inp, 'out, BS: BlockSizes> BlockClosure for BlocksCtx<'inp, 'out, BS> {
-    #[inline(always)]
-    fn call<B: BlockBackend<BlockSize = BS>>(self, backend: &mut B) {
-        if B::ParBlocksSize::USIZE > 1 {
-            let (chunks, tail) = self.blocks.into_chunks();
-            for chunk in chunks {
-                backend.proc_par_blocks(chunk);
-            }
-            backend.proc_tail_blocks(tail);
-        } else {
-            for block in self.blocks {
-                backend.proc_block(block);
-            }
-        }
-    }
-}
-
-#[cfg(all(feature = "block-padding", feature = "alloc"))]
-fn allocate_out_vec<BS: BlockSizeUser>(len: usize) -> Vec<u8> {
-    let bs = BS::BlockSize::USIZE;
-    vec![0; bs * (len / bs + 1)]
-}
-
-/// Implement simple block backend
-#[macro_export]
-macro_rules! impl_simple_block_encdec {
-    (
-        <$($N:ident$(:$b0:ident$(+$b:ident)*)?),*>
-        $cipher:ident, $block_size:ty, $state:ident, $block:ident,
-        encrypt: $enc_block:block
-        decrypt: $dec_block:block
-    ) => {
-        impl<$($N$(:$b0$(+$b)*)?),*> $crate::BlockSizeUser for $cipher<$($N),*> {
-            type BlockSize = $block_size;
-        }
-
-        impl<$($N$(:$b0$(+$b)*)?),*> $crate::BlockCipherEncrypt for $cipher<$($N),*> {
-            fn encrypt_with_backend(&self, f: impl $crate::BlockClosure<BlockSize = $block_size>) {
-                struct EncBack<'a, $($N$(:$b0$(+$b)*)?),* >(&'a $cipher<$($N),*>);
-
-                impl<'a, $($N$(:$b0$(+$b)*)?),* > $crate::BlockSizeUser for EncBack<'a, $($N),*> {
-                    type BlockSize = $block_size;
-                }
-
-                impl<'a, $($N$(:$b0$(+$b)*)?),* > $crate::ParBlocksSizeUser for EncBack<'a, $($N),*> {
-                    type ParBlocksSize = $crate::consts::U1;
-                }
-
-                impl<'a, $($N$(:$b0$(+$b)*)?),* > $crate::BlockBackend for EncBack<'a, $($N),*> {
-                    #[inline(always)]
-                    fn proc_block(
-                        &mut self,
-                        mut $block: $crate::inout::InOut<'_, '_, $crate::Block<Self>>
-                    ) {
-                        let $state: &$cipher<$($N),*> = self.0;
-                        $enc_block
-                    }
-                }
-
-                f.call(&mut EncBack(self))
-            }
-        }
-
-        impl<$($N$(:$b0$(+$b)*)?),*> $crate::BlockCipherDecrypt for $cipher<$($N),*> {
-            fn decrypt_with_backend(&self, f: impl $crate::BlockClosure<BlockSize = $block_size>) {
-                struct DecBack<'a, $($N$(:$b0$(+$b)*)?),* >(&'a $cipher<$($N),*>);
-
-                impl<'a, $($N$(:$b0$(+$b)*)?),* > $crate::BlockSizeUser for DecBack<'a, $($N),*> {
-                    type BlockSize = $block_size;
-                }
-
-                impl<'a, $($N$(:$b0$(+$b)*)?),* > $crate::ParBlocksSizeUser for DecBack<'a, $($N),*> {
-                    type ParBlocksSize = $crate::consts::U1;
-                }
-
-                impl<'a, $($N$(:$b0$(+$b)*)?),* > $crate::BlockBackend for DecBack<'a, $($N),*> {
-                    #[inline(always)]
-                    fn proc_block(
-                        &mut self,
-                        mut $block: $crate::inout::InOut<'_, '_, $crate::Block<Self>>
-                    ) {
-                        let $state: &$cipher<$($N),*> = self.0;
-                        $dec_block
-                    }
-                }
-
-                f.call(&mut DecBack(self))
-            }
-        }
-    };
-    (
-        $cipher:ident, $block_size:ty, $state:ident, $block:ident,
-        encrypt: $enc_block:block
-        decrypt: $dec_block:block
-    ) => {
-        $crate::impl_simple_block_encdec!(
-            <> $cipher, $block_size, $state, $block,
-            encrypt: $enc_block
-            decrypt: $dec_block
-        );
-    };
 }

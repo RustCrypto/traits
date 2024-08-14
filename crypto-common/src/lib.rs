@@ -305,6 +305,12 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     }
 }
 
+/// Trait for loading current IV state.
+pub trait IvState: IvSizeUser {
+    /// Returns current IV state.
+    fn iv_state(&self) -> Iv<Self>;
+}
+
 impl<T> KeySizeUser for T
 where
     T: InnerUser,

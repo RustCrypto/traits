@@ -1,7 +1,7 @@
 [package]
 name = "cipher"
 description = "Traits for describing block ciphers and stream ciphers"
-version = "0.5.0-pre.6"
+version = "0.5.0-pre.7"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -13,18 +13,19 @@ keywords = ["crypto", "block-cipher", "stream-cipher", "trait"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = "0.2.0-rc.0"
+crypto-common = { version = "0.2.0-rc.1", path = "../crypto-common/" }
 inout = "0.2.0-rc.0"
 
 # optional dependencies
 blobby = { version = "0.3", optional = true }
-zeroize = { version = "1.7", optional = true, default-features = false }
+zeroize = { version = "1.8", optional = true, default-features = false }
 
 [features]
 alloc = []
 std = ["alloc", "crypto-common/std", "inout/std"]
 block-padding = ["inout/block-padding"]
-rand_core = ["crypto-common/rand_core"] # Enable random key and IV generation methods
+# Enable random key and IV generation methods
+rand_core = ["crypto-common/rand_core"]
 dev = ["blobby"]
 
 [package.metadata.docs.rs]
