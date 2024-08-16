@@ -56,8 +56,8 @@ let hash = hasher.finalize();
 println!("Result: {:x}", hash);
 ```
 
-In this example `hash` has type [`Array<u8, U64>`][2], which is a generic
-alternative to `[u8; 64]`.
+In this example `hash` has type [`Array<u8, U32>`][2], which is a generic
+alternative to `[u8; 32]`.
 
 Alternatively you can use chained approach, which is equivalent to the previous
 example:
