@@ -182,6 +182,11 @@ impl Output {
         self.encoding
     }
 
+    /// Creates a copy of this [`Output`] with the specified [`Encoding`].
+    pub fn with_encoding(&self, encoding: Encoding) -> Self {
+        Self { encoding, ..*self }
+    }
+
     /// Get the length of the output value as a byte slice.
     pub fn len(&self) -> usize {
         usize::from(self.length)
