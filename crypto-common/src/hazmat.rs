@@ -24,8 +24,7 @@ impl fmt::Display for DeserializeStateError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for DeserializeStateError {}
+impl core::error::Error for DeserializeStateError {}
 
 /// Types which can serialize the internal state and be restored from it.
 ///

@@ -9,9 +9,6 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms, missing_debug_implementations)]
 
-#[cfg(feature = "std")]
-extern crate std;
-
 /// Hazardous materials.
 pub mod hazmat;
 
@@ -389,5 +386,4 @@ impl fmt::Display for InvalidLength {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for InvalidLength {}
+impl core::error::Error for InvalidLength {}
