@@ -49,7 +49,7 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]:  https://buildstats.info/crate/signature
+[crate-image]:  https://img.shields.io/crates/v/signature
 [crate-link]: https://crates.io/crates/signature
 [docs-image]: https://docs.rs/signature/badge.svg
 [docs-link]: https://docs.rs/signature/
