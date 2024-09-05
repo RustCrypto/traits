@@ -18,3 +18,6 @@ members = [
 [patch.crates-io]
 digest = { path = "./digest" }
 signature = { path = "./signature" }
+
+sec1 = { git = "https://github.com/RustCrypto/formats.git" }
+pkcs8 = { git = "https://github.com/RustCrypto/formats.git" }
