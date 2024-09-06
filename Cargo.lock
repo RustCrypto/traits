@@ -496,7 +496,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.14.0-pre.6"
+version = "0.14.0-rc.0"
 dependencies = [
  "base16ct",
  "base64ct",
@@ -508,9 +508,9 @@ dependencies = [
  "hkdf 0.13.0-pre.4",
  "hybrid-array",
  "pem-rfc7468 1.0.0-rc.1",
- "pkcs8 0.11.0-rc.0",
+ "pkcs8 0.11.0-rc.1",
  "rand_core",
- "sec1 0.8.0-rc.0",
+ "sec1 0.8.0-rc.1",
  "serde_json",
  "serdect",
  "sha2 0.11.0-pre.4",
@@ -893,8 +893,9 @@ dependencies = [
 
 [[package]]
 name = "pkcs8"
-version = "0.11.0-rc.0"
-source = "git+https://github.com/RustCrypto/formats.git#3fb883b2f445e74f38f51fef63a347ecfe69f623"
+version = "0.11.0-rc.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eacd2c7141f32aef1cfd1ad0defb5287a3d94592d7ab57c1ae20e3f9f1f0db1f"
 dependencies = [
  "der 0.8.0-rc.0",
  "spki 0.8.0-rc.0",
@@ -1067,13 +1068,14 @@ dependencies = [
 
 [[package]]
 name = "sec1"
-version = "0.8.0-rc.0"
-source = "git+https://github.com/RustCrypto/formats.git#3fb883b2f445e74f38f51fef63a347ecfe69f623"
+version = "0.8.0-rc.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "99890e11f8ab873d750adfe2a8e46062d6f8b78431d3ec1e0e7daba10b8ba397"
 dependencies = [
  "base16ct",
  "der 0.8.0-rc.0",
  "hybrid-array",
- "pkcs8 0.11.0-rc.0",
+ "pkcs8 0.11.0-rc.1",
  "serdect",
  "subtle",
  "zeroize",
