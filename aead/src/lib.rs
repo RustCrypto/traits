@@ -263,6 +263,89 @@ macro_rules! impl_decrypt_in_place {
     }};
 }
 
+
+/// Caller-provided input and output stateless AEAD trait.
+///
+/// This trait is both object safe and has no dependencies on `alloc` or `std`.
+pub trait AeadInto: AeadCore {
+    /// Encrypt the given plaintext, writing the ciphertext and authentication
+    /// tag into the given buffer.
+    ///
+    /// The buffer must have sufficient capacity to store the ciphertext
+    /// message, which will always be larger than the original plaintext.
+    /// The exact size needed is cipher-dependent, but generally includes
+    /// the size of an authentication tag.
+    ///
+    /// Returns an error if the buffer has insufficient capacity to store the
+    /// resulting ciphertext message.
+    ///
+    /// The default implementation assumes a postfix tag (ala AES-GCM,
+    /// AES-GCM-SIV, ChaCha20Poly1305). [`AeadInto`] implementations which do
+    /// not use a postfix tag will need to override this to correctly assemble
+    /// the ciphertext message.
+    fn encrypt_into(
+        &self,
+        nonce: &Nonce<Self>,
+        plaintext: &[u8],
+        associated_data: &[u8],
+        ciphertext: &mut [u8],
+    ) -> Result<()> {
+        if ciphertext.len() != plaintext.len().checked_add(Self::TagSize::to_usize()).ok_or(Error)? {
+            return Err(Error);
+        }
+        let (ciphertext, t) = ciphertext.split_at_mut(plaintext.len());
+        let tag = self.encrypt_into_detached(nonce, plaintext, associated_data, ciphertext)?;
+        t.copy_from_slice(tag.as_slice());
+        Ok(())
+    }
+
+    /// Encrypt the data into the given buffer, returning the authentication
+    /// tag.
+    fn encrypt_into_detached(
+        &self,
+        nonce: &Nonce<Self>,
+        plaintext: &[u8],
+        associated_data: &[u8],
+        ciphertext: &mut [u8],
+    ) -> Result<Tag<Self>>;
+
+    /// Decrypt the message into the given buffer, returning an error in the
+    /// event the provided authentication tag does not match the given
+    /// ciphertext (i.e. ciphertext is modified/unauthentic
+    ///
+    /// The default implementation assumes a postfix tag (ala AES-GCM,
+    /// AES-GCM-SIV, ChaCha20Poly1305). [`AeadInto`] implementations which do
+    /// not use a postfix tag will need to override this to correctly assemble
+    /// the ciphertext message.
+    fn decrypt_into(
+        &self,
+        nonce: &Nonce<Self>,
+        ciphertext: &[u8],
+        associated_data: &[u8],
+        plaintext: &mut [u8],
+    ) -> Result<()> {
+        if ciphertext.len() != plaintext.len().checked_add(Self::TagSize::to_usize()).ok_or(Error)? {
+            return Err(Error);
+        }
+        let (ciphertext, t) = ciphertext.split_at(plaintext.len());
+        let tag = t.try_into().map_err(|_| Error)?;
+        self.decrypt_into_detached(nonce, ciphertext, associated_data, plaintext, tag)?;
+        Ok(())
+    }
+
+    /// Decrypt the message into the given buffer, returning an error in the
+    /// event the provided authentication tag does not match the given
+    /// ciphertext (i.e. ciphertext is modified/unauthentic)
+    fn decrypt_into_detached(
+        &self,
+        nonce: &Nonce<Self>,
+        ciphertext: &[u8],
+        associated_data: &[u8],
+        plaintext: &mut [u8],
+        tag: &Tag<Self>,
+    ) -> Result<()>;
+}
+
 /// In-place stateless AEAD trait.
 ///
 /// This trait is both object safe and has no dependencies on `alloc` or `std`.
@@ -375,6 +458,88 @@ pub trait AeadMutInPlace: AeadCore {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut [u8],
+        tag: &Tag<Self>,
+    ) -> Result<()>;
+}
+
+/// Caller-provided input and output statelful AEAD trait.
+///
+/// This trait is both object safe and has no dependencies on `alloc` or `std`.
+pub trait AeadMutInto: AeadCore {
+    /// Encrypt the given plaintext, writing the ciphertext and authentication
+    /// tag into the given buffer.
+    ///
+    /// The buffer must have sufficient capacity to store the ciphertext
+    /// message, which will always be larger than the original plaintext.
+    /// The exact size needed is cipher-dependent, but generally includes
+    /// the size of an authentication tag.
+    ///
+    /// Returns an error if the buffer has insufficient capacity to store the
+    /// resulting ciphertext message.
+    ///
+    /// The default implementation assumes a postfix tag (ala AES-GCM,
+    /// AES-GCM-SIV, ChaCha20Poly1305). [`AeadMutInto`] implementations which
+    /// do not use a postfix tag will need to override this to correctly
+    /// assemble the ciphertext message.
+    fn encrypt_into(
+        &mut self,
+        nonce: &Nonce<Self>,
+        plaintext: &[u8],
+        associated_data: &[u8],
+        ciphertext: &mut [u8],
+    ) -> Result<()> {
+        if ciphertext.len() != plaintext.len().checked_add(Self::TagSize::to_usize()).ok_or(Error)? {
+            return Err(Error);
+        }
+        let (ciphertext, t) = ciphertext.split_at_mut(plaintext.len());
+        let tag = self.encrypt_into_detached(nonce, plaintext, associated_data, ciphertext)?;
+        t.copy_from_slice(tag.as_slice());
+        Ok(())
+    }
+
+    /// Encrypt the data into the given buffer, returning the authentication
+    /// tag
+    fn encrypt_into_detached(
+        &mut self,
+        nonce: &Nonce<Self>,
+        plaintext: &[u8],
+        associated_data: &[u8],
+        ciphertext: &mut [u8],
+    ) -> Result<Tag<Self>>;
+
+    /// Decrypt the message into the given buffer, returning an error in the
+    /// event the provided authentication tag does not match the given
+    /// ciphertext (i.e. ciphertext is modified/unauthentic
+    ///
+    /// The default implementation assumes a postfix tag (ala AES-GCM,
+    /// AES-GCM-SIV, ChaCha20Poly1305). [`AeadMutInto`] implementations which
+    /// do not use a postfix tag will need to override this to correctly
+    /// assemble the ciphertext message.
+    fn decrypt_into(
+        &mut self,
+        nonce: &Nonce<Self>,
+        ciphertext: &[u8],
+        associated_data: &[u8],
+        plaintext: &mut [u8],
+    ) -> Result<()> {
+        if ciphertext.len() != plaintext.len().checked_add(Self::TagSize::to_usize()).ok_or(Error)? {
+            return Err(Error);
+        }
+        let (ciphertext, t) = ciphertext.split_at(plaintext.len());
+        let tag = t.try_into().map_err(|_| Error)?;
+        self.decrypt_into_detached(nonce, ciphertext, associated_data, plaintext, tag)?;
+        Ok(())
+    }
+
+    /// Decrypt the message into the given buffer, returning an error in the
+    /// event the provided authentication tag does not match the given
+    /// ciphertext (i.e. ciphertext is modified/unauthentic)
+    fn decrypt_into_detached(
+        &mut self,
+        nonce: &Nonce<Self>,
+        ciphertext: &[u8],
+        associated_data: &[u8],
+        plaintext: &mut [u8],
         tag: &Tag<Self>,
     ) -> Result<()>;
 }
