@@ -510,7 +510,7 @@ dependencies = [
  "pem-rfc7468 1.0.0-rc.1",
  "pkcs8 0.11.0-rc.1",
  "rand_core",
- "sec1 0.8.0-rc.1",
+ "sec1 0.8.0-rc.2",
  "serde_json",
  "serdect",
  "sha2 0.11.0-pre.4",
@@ -1068,9 +1068,9 @@ dependencies = [
 
 [[package]]
 name = "sec1"
-version = "0.8.0-rc.1"
+version = "0.8.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99890e11f8ab873d750adfe2a8e46062d6f8b78431d3ec1e0e7daba10b8ba397"
+checksum = "ce9453a41af5251f8439173d21b0ed2ae5d4a7c411abb76661806a44811a9d2c"
 dependencies = [
  "base16ct",
  "der 0.8.0-rc.0",
@@ -1130,9 +1130,9 @@ dependencies = [
 
 [[package]]
 name = "serdect"
-version = "0.3.0-pre.0"
+version = "0.3.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "791ef964bfaba6be28a5c3f0c56836e17cb711ac009ca1074b9c735a3ebf240a"
+checksum = "2a504c8ee181e3e594d84052f983d60afe023f4d94d050900be18062bbbf7b58"
 dependencies = [
  "base16ct",
  "serde",
