@@ -40,7 +40,6 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features bytes
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features heapless
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features rand_core
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features stream
 
   # TODO(tarcieri): re-enable after next `crypto-common` release
   #  minimal-versions:
