@@ -31,7 +31,6 @@ std = ["alloc", "crypto-common/std"]
 dev = ["blobby"]
 getrandom = ["crypto-common/getrandom"]
 rand_core = ["crypto-common/rand_core"]
-stream = []
 
 [package.metadata.docs.rs]
 all-features = true

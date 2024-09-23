@@ -1,46 +1,17 @@
 //! Streaming AEAD support.
 //!
-//! Implementation of the STREAM online authenticated encryption construction
-//! as described in the paper
-//! [Online Authenticated-Encryption and its Nonce-Reuse Misuse-Resistance][1].
+//! See the [`aead-stream`] crate for a generic implementation of the STREAM construction.
 //!
-//! ## About
-//!
-//! The STREAM construction supports encrypting/decrypting sequences of AEAD
-//! message segments, which is useful in cases where the overall message is too
-//! large to fit in a single buffer and needs to be processed incrementally.
-//!
-//! STREAM defends against reordering and truncation attacks which are common
-//! in naive schemes which attempt to provide these properties, and is proven
-//! to meet the security definition of "nonce-based online authenticated
-//! encryption" (nOAE) as given in the aforementioned paper.
-//!
-//! ## Diagram
-//!
-//! ![STREAM Diagram](https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/img/AEADs/rogaway-stream.svg)
-//!
-//! Legend:
-//!
-//! - 𝐄k: AEAD encryption under key `k`
-//! - 𝐌: message
-//! - 𝐍: nonce
-//! - 𝐀: additional associated data
-//! - 𝐂: ciphertext
-//! - 𝜏: MAC tag
-//!
-//! [1]: https://eprint.iacr.org/2015/189.pdf
+//! [`aead-stream`]: https://docs.rs/aead-stream
 
 #![allow(clippy::upper_case_acronyms)]
 
 use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, KeyInit, Result};
 use core::ops::{AddAssign, Sub};
-use crypto_common::array::{
-    typenum::{Unsigned, U4, U5},
-    Array, ArraySize,
-};
+use crypto_common::array::{Array, ArraySize};
 
 #[cfg(feature = "alloc")]
-use {crate::Payload, alloc::vec::Vec};
+use {crate::Payload, alloc::vec::Vec, crypto_common::array::typenum::Unsigned};
 
 /// Nonce as used by a given AEAD construction and STREAM primitive.
 pub type Nonce<A, S> = Array<u8, NonceSize<A, S>>;
@@ -49,22 +20,6 @@ pub type Nonce<A, S> = Array<u8, NonceSize<A, S>>;
 /// the STREAM protocol itself.
 pub type NonceSize<A, S> =
     <<A as AeadCore>::NonceSize as Sub<<S as StreamPrimitive<A>>::NonceOverhead>>::Output;
-
-/// STREAM encryptor instantiated with [`StreamBE32`] as the underlying
-/// STREAM primitive.
-pub type EncryptorBE32<A> = Encryptor<A, StreamBE32<A>>;
-
-/// STREAM decryptor instantiated with [`StreamBE32`] as the underlying
-/// STREAM primitive.
-pub type DecryptorBE32<A> = Decryptor<A, StreamBE32<A>>;
-
-/// STREAM encryptor instantiated with [`StreamLE31`] as the underlying
-/// STREAM primitive.
-pub type EncryptorLE31<A> = Encryptor<A, StreamLE31<A>>;
-
-/// STREAM decryptor instantiated with [`StreamLE31`] as the underlying
-/// STREAM primitive.
-pub type DecryptorLE31<A> = Decryptor<A, StreamLE31<A>>;
 
 /// Create a new STREAM from the provided AEAD.
 pub trait NewStream<A>: StreamPrimitive<A>
@@ -354,188 +309,3 @@ impl_stream_object!(
     "decrypt",
     "𝒟 STREAM decryptor"
 );
-
-/// The original "Rogaway-flavored" STREAM as described in the paper
-/// [Online Authenticated-Encryption and its Nonce-Reuse Misuse-Resistance][1].
-///
-/// Uses a 32-bit big endian counter and 1-byte "last block" flag stored as
-/// the last 5-bytes of the AEAD nonce.
-///
-/// [1]: https://eprint.iacr.org/2015/189.pdf
-#[derive(Debug)]
-pub struct StreamBE32<A>
-where
-    A: AeadInPlace,
-    A::NonceSize: Sub<U5>,
-    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArraySize,
-{
-    /// Underlying AEAD cipher
-    aead: A,
-
-    /// Nonce (sans STREAM overhead)
-    nonce: Nonce<A, Self>,
-}
-
-impl<A> NewStream<A> for StreamBE32<A>
-where
-    A: AeadInPlace,
-    A::NonceSize: Sub<U5>,
-    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArraySize,
-{
-    fn from_aead(aead: A, nonce: &Nonce<A, Self>) -> Self {
-        Self {
-            aead,
-            nonce: nonce.clone(),
-        }
-    }
-}
-
-impl<A> StreamPrimitive<A> for StreamBE32<A>
-where
-    A: AeadInPlace,
-    A::NonceSize: Sub<U5>,
-    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArraySize,
-{
-    type NonceOverhead = U5;
-    type Counter = u32;
-    const COUNTER_INCR: u32 = 1;
-    const COUNTER_MAX: u32 = u32::MAX;
-
-    fn encrypt_in_place(
-        &self,
-        position: u32,
-        last_block: bool,
-        associated_data: &[u8],
-        buffer: &mut dyn Buffer,
-    ) -> Result<()> {
-        let nonce = self.aead_nonce(position, last_block);
-        self.aead.encrypt_in_place(&nonce, associated_data, buffer)
-    }
-
-    fn decrypt_in_place(
-        &self,
-        position: Self::Counter,
-        last_block: bool,
-        associated_data: &[u8],
-        buffer: &mut dyn Buffer,
-    ) -> Result<()> {
-        let nonce = self.aead_nonce(position, last_block);
-        self.aead.decrypt_in_place(&nonce, associated_data, buffer)
-    }
-}
-
-impl<A> StreamBE32<A>
-where
-    A: AeadInPlace,
-    A::NonceSize: Sub<U5>,
-    <<A as AeadCore>::NonceSize as Sub<U5>>::Output: ArraySize,
-{
-    /// Compute the full AEAD nonce including the STREAM counter and last
-    /// block flag.
-    fn aead_nonce(&self, position: u32, last_block: bool) -> crate::Nonce<A> {
-        let mut result = Array::default();
-
-        // TODO(tarcieri): use `generic_array::sequence::Concat` (or const generics)
-        let (prefix, tail) = result.split_at_mut(NonceSize::<A, Self>::to_usize());
-        prefix.copy_from_slice(&self.nonce);
-
-        let (counter, flag) = tail.split_at_mut(4);
-        counter.copy_from_slice(&position.to_be_bytes());
-        flag[0] = last_block as u8;
-
-        result
-    }
-}
-
-/// STREAM as instantiated with a 31-bit little endian counter and 1-bit
-/// "last block" flag stored as the most significant bit of the counter
-/// when interpreted as a 32-bit integer.
-///
-/// The 31-bit + 1-bit value is stored as the last 4 bytes of the AEAD nonce.
-#[derive(Debug)]
-pub struct StreamLE31<A>
-where
-    A: AeadInPlace,
-    A::NonceSize: Sub<U4>,
-    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArraySize,
-{
-    /// Underlying AEAD cipher
-    aead: A,
-
-    /// Nonce (sans STREAM overhead)
-    nonce: Nonce<A, Self>,
-}
-
-impl<A> NewStream<A> for StreamLE31<A>
-where
-    A: AeadInPlace,
-    A::NonceSize: Sub<U4>,
-    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArraySize,
-{
-    fn from_aead(aead: A, nonce: &Nonce<A, Self>) -> Self {
-        Self {
-            aead,
-            nonce: nonce.clone(),
-        }
-    }
-}
-
-impl<A> StreamPrimitive<A> for StreamLE31<A>
-where
-    A: AeadInPlace,
-    A::NonceSize: Sub<U4>,
-    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArraySize,
-{
-    type NonceOverhead = U4;
-    type Counter = u32;
-    const COUNTER_INCR: u32 = 1;
-    const COUNTER_MAX: u32 = 0xfff_ffff;
-
-    fn encrypt_in_place(
-        &self,
-        position: u32,
-        last_block: bool,
-        associated_data: &[u8],
-        buffer: &mut dyn Buffer,
-    ) -> Result<()> {
-        let nonce = self.aead_nonce(position, last_block)?;
-        self.aead.encrypt_in_place(&nonce, associated_data, buffer)
-    }
-
-    fn decrypt_in_place(
-        &self,
-        position: Self::Counter,
-        last_block: bool,
-        associated_data: &[u8],
-        buffer: &mut dyn Buffer,
-    ) -> Result<()> {
-        let nonce = self.aead_nonce(position, last_block)?;
-        self.aead.decrypt_in_place(&nonce, associated_data, buffer)
-    }
-}
-
-impl<A> StreamLE31<A>
-where
-    A: AeadInPlace,
-    A::NonceSize: Sub<U4>,
-    <<A as AeadCore>::NonceSize as Sub<U4>>::Output: ArraySize,
-{
-    /// Compute the full AEAD nonce including the STREAM counter and last
-    /// block flag.
-    fn aead_nonce(&self, position: u32, last_block: bool) -> Result<crate::Nonce<A>> {
-        if position > Self::COUNTER_MAX {
-            return Err(Error);
-        }
-
-        let mut result = Array::default();
-
-        // TODO(tarcieri): use `generic_array::sequence::Concat` (or const generics)
-        let (prefix, tail) = result.split_at_mut(NonceSize::<A, Self>::to_usize());
-        prefix.copy_from_slice(&self.nonce);
-
-        let position_with_flag = position | ((last_block as u32) << 31);
-        tail.copy_from_slice(&position_with_flag.to_le_bytes());
-
-        Ok(result)
-    }
-}

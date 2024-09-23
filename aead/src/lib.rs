@@ -22,7 +22,6 @@ extern crate std;
 #[cfg(feature = "dev")]
 pub mod dev;
 
-#[cfg(feature = "stream")]
 pub mod stream;
 
 pub use crypto_common::{
