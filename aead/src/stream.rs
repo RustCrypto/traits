@@ -8,10 +8,10 @@
 
 use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, KeyInit, Result};
 use core::ops::{AddAssign, Sub};
-use crypto_common::array::{typenum::Unsigned, Array, ArraySize};
+use crypto_common::array::{Array, ArraySize};
 
 #[cfg(feature = "alloc")]
-use {crate::Payload, alloc::vec::Vec};
+use {crate::Payload, alloc::vec::Vec, crypto_common::array::typenum::Unsigned};
 
 /// Nonce as used by a given AEAD construction and STREAM primitive.
 pub type Nonce<A, S> = Array<u8, NonceSize<A, S>>;
