@@ -8,6 +8,7 @@ use subtle::ConditionallySelectable;
 use subtle::ConstantTimeEq;
 
 /// The Optimized Simplified Shallue-van de Woestijne-Ulas parameters
+#[derive(Debug)]
 pub struct OsswuMapParams<F>
 where
     F: Field,

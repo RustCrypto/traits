@@ -2,6 +2,7 @@
 
 use super::{Domain, ExpandMsg, Expander};
 use crate::{Error, Result};
+use core::fmt;
 use digest::{ExtendableOutput, Update, XofReader};
 use hybrid_array::typenum::U32;
 
@@ -16,6 +17,18 @@ where
     HashT: Default + ExtendableOutput + Update,
 {
     reader: <HashT as ExtendableOutput>::Reader,
+}
+
+impl<HashT> fmt::Debug for ExpandMsgXof<HashT>
+where
+    HashT: Default + ExtendableOutput + Update,
+    <HashT as ExtendableOutput>::Reader: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ExpandMsgXof")
+            .field("reader", &self.reader)
+            .finish()
+    }
 }
 
 /// ExpandMsgXof implements `expand_message_xof` for the [`ExpandMsg`] trait
