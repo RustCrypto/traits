@@ -23,9 +23,10 @@ pub trait Encapsulate<EK, SS> {
     fn encapsulate(&self, rng: &mut impl CryptoRngCore) -> Result<(EK, SS), Self::Error>;
 }
 
-/// A value that can be used to decapsulate an encapsulated key. Often, this will just be a secret
-/// key. But, as with [`Encapsulate`], it can be a bundle of secret keys, or it can include a
-/// sender's private key for authenticated encapsulation.
+/// A value that can be used to decapsulate an encapsulated key.
+///
+/// Often, this will just be a secret key. But, as with [`Encapsulate`], it can be a bundle
+/// of secret keys, or it can include a sender's private key for authenticated encapsulation.
 pub trait Decapsulate<EK, SS> {
     /// Decapsulation error
     type Error: Debug;
