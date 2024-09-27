@@ -20,6 +20,7 @@ use digest::{
 /// - `len_in_bytes == 0`
 /// - `len_in_bytes > u16::MAX`
 /// - `len_in_bytes > 255 * HashT::OutputSize`
+#[derive(Debug)]
 pub struct ExpandMsgXmd<HashT>(PhantomData<HashT>)
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
@@ -87,6 +88,7 @@ where
 }
 
 /// [`Expander`] type for [`ExpandMsgXmd`].
+#[derive(Debug)]
 pub struct ExpanderXmd<'a, HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,

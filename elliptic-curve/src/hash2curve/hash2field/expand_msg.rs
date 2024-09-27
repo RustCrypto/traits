@@ -43,6 +43,7 @@ pub trait Expander {
 /// Implements [section 5.4.3 of `draft-irtf-cfrg-hash-to-curve-13`][dst].
 ///
 /// [dst]: https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-5.4.3
+#[derive(Debug)]
 pub(crate) enum Domain<'a, L>
 where
     L: ArraySize + IsLess<U256>,

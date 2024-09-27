@@ -7,6 +7,7 @@ use ff::Field;
 use hybrid_array::{typenum::Unsigned, Array, ArraySize};
 
 /// The coefficients for mapping from one isogenous curve to another
+#[derive(Debug)]
 pub struct IsogenyCoefficients<F: Field + AddAssign + Mul<Output = F>> {
     /// The coefficients for the x numerator
     pub xnum: &'static [F],

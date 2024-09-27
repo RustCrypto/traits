@@ -30,7 +30,7 @@ use crate::{
     point::AffineCoordinates, AffinePoint, Curve, CurveArithmetic, FieldBytes, NonZeroScalar,
     ProjectivePoint, PublicKey,
 };
-use core::borrow::Borrow;
+use core::{borrow::Borrow, fmt};
 use digest::{crypto_common::BlockSizeUser, Digest};
 use group::Curve as _;
 use hkdf::{hmac::SimpleHmac, Hkdf};
@@ -97,6 +97,12 @@ where
     scalar: NonZeroScalar<C>,
 }
 
+impl<C: CurveArithmetic> fmt::Debug for EphemeralSecret<C> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("EphemeralSecret").finish_non_exhaustive()
+    }
+}
+
 impl<C> EphemeralSecret<C>
 where
     C: CurveArithmetic,
@@ -155,6 +161,12 @@ where
 pub struct SharedSecret<C: Curve> {
     /// Computed secret value
     secret_bytes: FieldBytes<C>,
+}
+
+impl<C: Curve> fmt::Debug for SharedSecret<C> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SharedSecret").finish_non_exhaustive()
+    }
 }
 
 impl<C: Curve> SharedSecret<C> {

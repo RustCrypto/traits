@@ -2,6 +2,7 @@
 
 use super::Scalar;
 use crate::{ops::Invert, CurveArithmetic};
+use core::fmt;
 use group::ff::Field;
 use rand_core::CryptoRngCore;
 use subtle::CtOption;
@@ -24,6 +25,12 @@ where
 
     /// Mask value.
     mask: Scalar<C>,
+}
+
+impl<C: CurveArithmetic> fmt::Debug for BlindedScalar<C> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("BlindedScalar").finish_non_exhaustive()
+    }
 }
 
 impl<C> BlindedScalar<C>

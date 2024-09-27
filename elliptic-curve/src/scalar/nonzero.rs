@@ -36,6 +36,12 @@ where
     scalar: Scalar<C>,
 }
 
+impl<C: CurveArithmetic> fmt::Debug for NonZeroScalar<C> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("NonZeroScalar").finish_non_exhaustive()
+    }
+}
+
 impl<C> NonZeroScalar<C>
 where
     C: CurveArithmetic,
