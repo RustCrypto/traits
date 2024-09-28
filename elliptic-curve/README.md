@@ -15,7 +15,7 @@ and public/secret keys composed thereof.
 
 ## Minimum Supported Rust Version
 
-Requires Rust **1.73** or higher.
+Requires Rust **1.81** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
@@ -49,6 +49,6 @@ dual licensed as above, without any additional terms or conditions.
 [build-image]: https://github.com/RustCrypto/traits/actions/workflows/elliptic-curve.yml/badge.svg
 [build-link]: https://github.com/RustCrypto/traits/actions/workflows/elliptic-curve.yml
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.73+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.81+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260040-elliptic-curves

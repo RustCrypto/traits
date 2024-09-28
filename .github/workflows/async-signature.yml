@@ -42,7 +42,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.75.0 # MSRV
+          - 1.81.0  # Minimum Rust version the tests pass on
           - stable
     steps:
       - uses: actions/checkout@v4
@@ -50,7 +50,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - run: cargo check --all-features
       - run: cargo test --release
       - run: cargo test --all-features --release
 
