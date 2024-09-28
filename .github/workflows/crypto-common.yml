@@ -2,9 +2,9 @@ name: crypto-common
 
 on:
   pull_request:
-      paths:
-        - "crypto-common/**"
-        - "Cargo.*"
+    paths:
+      - "crypto-common/**"
+      - "Cargo.*"
   push:
     branches: master
 
@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.65.0 # MSRV
+          - 1.81.0 # MSRV
           - stable
         target:
           - thumbv7em-none-eabi
@@ -39,14 +39,14 @@ jobs:
   minimal-versions:
     uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
     with:
-        working-directory: ${{ github.workflow }}
+      working-directory: ${{ github.workflow }}
 
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         rust:
-          - 1.65.0 # MSRV
+          - 1.81.0 # MSRV
           - stable
     steps:
       - uses: actions/checkout@v4
