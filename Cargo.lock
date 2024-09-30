@@ -145,9 +145,9 @@ dependencies = [
 
 [[package]]
 name = "block-padding"
-version = "0.4.0-rc.0"
+version = "0.4.0-rc.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d7992d59cd95a984bde8833d4d025886eec3718777971ad15c58df0b070254a"
+checksum = "8cac2491ec009b98aa75f36cca2b50e3da7d212918fe953886f6a319042f6016"
 dependencies = [
  "hybrid-array",
 ]
@@ -221,7 +221,7 @@ version = "0.5.0-pre.7"
 dependencies = [
  "blobby",
  "crypto-common 0.2.0-rc.1",
- "inout 0.2.0-rc.0",
+ "inout 0.2.0-rc.1",
  "zeroize",
 ]
 
@@ -726,11 +726,11 @@ dependencies = [
 
 [[package]]
 name = "inout"
-version = "0.2.0-rc.0"
+version = "0.2.0-rc.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbc33218cf9ce7b927426ee4ad3501bcc5d8c26bf5fb4a82849a083715aca427"
+checksum = "161ac07241f4d11c21b6d82f1fef1c05aec030c0bf568b35281efe453ea450a7"
 dependencies = [
- "block-padding 0.4.0-rc.0",
+ "block-padding 0.4.0-rc.1",
  "hybrid-array",
 ]
 
