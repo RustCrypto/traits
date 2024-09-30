@@ -30,7 +30,7 @@ rand_core = ["crypto-common/rand_core"] # Enable random key generation methods
 oid = ["const-oid"]
 zeroize = ["dep:zeroize", "block-buffer?/zeroize"]
 alloc = []
-std = ["alloc", "crypto-common/std"]
+std = ["alloc"]
 dev = ["blobby"]
 
 [package.metadata.docs.rs]

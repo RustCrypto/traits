@@ -22,7 +22,7 @@ zeroize = { version = "1.8", optional = true, default-features = false }
 
 [features]
 alloc = []
-std = ["alloc", "crypto-common/std"]
+std = ["alloc"]
 block-padding = ["inout/block-padding"]
 # Enable random key and IV generation methods
 rand_core = ["crypto-common/rand_core"]

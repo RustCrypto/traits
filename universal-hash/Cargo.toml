@@ -17,7 +17,7 @@ crypto-common = "0.2.0-rc.0"
 subtle = { version = "2.4", default-features = false }
 
 [features]
-std = ["crypto-common/std"]
+std = []
 
 [package.metadata.docs.rs]
 all-features = true
