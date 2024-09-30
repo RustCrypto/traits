@@ -35,7 +35,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-      - run: cargo doc --all-features
+      # TODO(tarcieri): remove `--exclude crypto` after new release series
+      - run: cargo doc --workspace --all-features --no-deps --exclude crypto
 
   rustfmt:
     runs-on: ubuntu-latest
