@@ -36,7 +36,7 @@ jobs:
         with:
           toolchain: stable
       # TODO(tarcieri): remove `--exclude crypto` after new release series
-      - run: cargo doc --all-features --workspace --exclude crypto
+      - run: cargo doc --workspace --all-features --no-deps --exclude crypto
 
   rustfmt:
     runs-on: ubuntu-latest
