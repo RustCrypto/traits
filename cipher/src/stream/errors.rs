@@ -17,8 +17,7 @@ impl fmt::Display for StreamCipherError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for StreamCipherError {}
+impl core::error::Error for StreamCipherError {}
 
 /// The error type returned when a cipher position can not be represented
 /// by the requested type.
@@ -37,5 +36,4 @@ impl From<OverflowError> for StreamCipherError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for OverflowError {}
+impl core::error::Error for OverflowError {}
