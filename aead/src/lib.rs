@@ -16,9 +16,6 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-#[cfg(feature = "std")]
-extern crate std;
-
 #[cfg(feature = "dev")]
 pub mod dev;
 
@@ -69,8 +66,7 @@ impl fmt::Display for Error {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for Error {}
+impl core::error::Error for Error {}
 
 /// Nonce: single-use value for ensuring ciphertexts are unique
 pub type Nonce<A> = Array<u8, <A as AeadCore>::NonceSize>;
