@@ -27,7 +27,6 @@ heapless = { version = "0.8", optional = true, default-features = false }
 [features]
 default = ["rand_core"]
 alloc = []
-std = ["alloc"]
 dev = ["blobby"]
 getrandom = ["crypto-common/getrandom"]
 rand_core = ["crypto-common/rand_core"]
