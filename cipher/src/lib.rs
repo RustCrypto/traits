@@ -20,8 +20,6 @@
 
 #[cfg(all(feature = "block-padding", feature = "alloc"))]
 extern crate alloc;
-#[cfg(feature = "std")]
-extern crate std;
 
 #[cfg(feature = "dev")]
 pub use blobby;
