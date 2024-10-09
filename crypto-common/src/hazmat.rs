@@ -28,6 +28,16 @@ impl core::error::Error for DeserializeStateError {}
 
 /// Types which can serialize the internal state and be restored from it.
 ///
+/// # Compatibility
+///
+/// Serialized state can be assumed to be stable across backwards compatible
+/// versions of an implementation crate, i.e. any `0.x.y` version of a crate
+/// should be able to decode data serialized with any other `0.x.z` version,
+/// but it may not be able to correctly decode data serialized with a non-`x`
+/// version.
+///
+/// This guarantee is a subject to issues such as security fixes.
+///
 /// # SECURITY WARNING
 ///
 /// Serialized state may contain sensitive data.
