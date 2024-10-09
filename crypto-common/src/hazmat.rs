@@ -36,7 +36,7 @@ impl core::error::Error for DeserializeStateError {}
 /// but it may not be able to correctly decode data serialized with a non-`x`
 /// version.
 ///
-/// This guarantee is a subject to issues such as security fixes
+/// This guarantee is a subject to issues such as security fixes.
 ///
 /// # SECURITY WARNING
 ///
