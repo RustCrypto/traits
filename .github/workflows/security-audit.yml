@@ -11,84 +11,16 @@ on:
     - cron: "0 0 * * *"
 
 jobs:
-  security_audit_workspace:
+  security_audit:
     name: Security Audit Workspace
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Cache cargo bin
         uses: actions/cache@v4
         with:
           path: ~/.cargo/bin
-          key: ${{ runner.os }}-cargo-audit-v0.20
-      - uses: actions-rs/audit-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  security_audit_crypto:
-    name: Security Audit crypto
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: crypto
-    steps:
-      - uses: actions/checkout@v4
-      - name: Cache cargo bin
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin
-          key: ${{ runner.os }}-cargo-audit-v0.20
-      - uses: actions-rs/audit-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  security_audit_elliptic-curve:
-    name: Security Audit elliptic-curve
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: elliptic-curve
-    steps:
-      - uses: actions/checkout@v4
-      - name: Cache cargo bin
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin
-          key: ${{ runner.os }}-cargo-audit-v0.20
-      - uses: actions-rs/audit-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  security_audit_kem:
-    name: Security Audit kem
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: kem
-    steps:
-      - uses: actions/checkout@v4
-      - name: Cache cargo bin
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin
-          key: ${{ runner.os }}-cargo-audit-v0.20
-      - uses: actions-rs/audit-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  security_audit_password-hash:
-    name: Security Audit password-hash
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: password-hash
-    steps:
-      - uses: actions/checkout@v4
-      - name: Cache cargo bin
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin
-          key: ${{ runner.os }}-cargo-audit-v0.20
-      - uses: actions-rs/audit-check@v1
+          key: ${{ runner.os }}-cargo-audit-v0.20-ubuntu-v24.04
+      - uses: rustsec/audit-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
