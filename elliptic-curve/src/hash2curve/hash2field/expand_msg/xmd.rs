@@ -53,7 +53,7 @@ where
         let len_in_bytes_u16 = u16::try_from(len_in_bytes).map_err(|_| Error)?;
 
         let b_in_bytes = HashT::OutputSize::to_usize();
-        let ell = u8::try_from((len_in_bytes + b_in_bytes - 1) / b_in_bytes).map_err(|_| Error)?;
+        let ell = u8::try_from(len_in_bytes.div_ceil(b_in_bytes)).map_err(|_| Error)?;
 
         let domain = Domain::xmd::<HashT>(dsts)?;
         let mut b_0 = HashT::default();
@@ -103,7 +103,7 @@ where
     ell: u8,
 }
 
-impl<'a, HashT> ExpanderXmd<'a, HashT>
+impl<HashT> ExpanderXmd<'_, HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
     HashT::OutputSize: IsLess<U256>,
@@ -133,7 +133,7 @@ where
     }
 }
 
-impl<'a, HashT> Expander for ExpanderXmd<'a, HashT>
+impl<HashT> Expander for ExpanderXmd<'_, HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
     HashT::OutputSize: IsLess<U256>,
