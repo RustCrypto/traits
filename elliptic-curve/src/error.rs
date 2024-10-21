@@ -9,6 +9,8 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Error;
 
+impl core::error::Error for Error {}
+
 impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("crypto error")
@@ -40,6 +42,3 @@ impl From<sec1::Error> for Error {
         Error
     }
 }
-
-#[cfg(feature = "std")]
-impl std::error::Error for Error {}
