@@ -361,7 +361,7 @@ impl<'de> Deserialize<'de> for JwkEcKey {
         /// Field visitor
         struct FieldVisitor;
 
-        impl<'de> de::Visitor<'de> for FieldVisitor {
+        impl de::Visitor<'_> for FieldVisitor {
             type Value = Field;
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
