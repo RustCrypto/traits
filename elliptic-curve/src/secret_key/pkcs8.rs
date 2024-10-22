@@ -17,9 +17,10 @@ use {
         AffinePoint, CurveArithmetic,
     },
     pkcs8::{
-        der::{self, asn1::OctetStringRef},
+        der::{self, asn1::OctetStringRef, Encode},
         EncodePrivateKey,
     },
+    zeroize::Zeroizing,
 };
 
 // Imports for actual PEM support
@@ -54,8 +55,7 @@ where
             .algorithm
             .assert_oids(ALGORITHM_OID, C::OID)?;
 
-        let ec_private_key = EcPrivateKey::from_der(private_key_info.private_key.as_bytes())?;
-        Ok(Self::try_from(ec_private_key)?)
+        Ok(EcPrivateKey::from_der(private_key_info.private_key.as_bytes())?.try_into()?)
     }
 }
 
@@ -72,7 +72,19 @@ where
             parameters: Some((&C::OID).into()),
         };
 
-        let ec_private_key = self.to_sec1_der()?;
+        let private_key_bytes = Zeroizing::new(self.to_bytes());
+        let public_key_bytes = self.public_key().to_encoded_point(false);
+
+        // TODO(tarcieri): unify with `to_sec1_der()` by building an owned `EcPrivateKey`
+        let ec_private_key = Zeroizing::new(
+            EcPrivateKey {
+                private_key: &private_key_bytes,
+                parameters: None,
+                public_key: Some(public_key_bytes.as_bytes()),
+            }
+            .to_der()?,
+        );
+
         let pkcs8_key = pkcs8::PrivateKeyInfoRef::new(
             algorithm_identifier,
             OctetStringRef::new(&ec_private_key)?,
