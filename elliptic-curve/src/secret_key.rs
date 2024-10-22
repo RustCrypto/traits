@@ -29,7 +29,7 @@ use {
         sec1::{EncodedPoint, ModulusSize, ValidatePublicKey},
         FieldBytesSize,
     },
-    sec1::der,
+    sec1::der::{self, oid::AssociatedOid},
 };
 
 #[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
@@ -184,7 +184,7 @@ where
     #[cfg(feature = "sec1")]
     pub fn from_sec1_der(der_bytes: &[u8]) -> Result<Self>
     where
-        C: Curve + ValidatePublicKey,
+        C: AssociatedOid + Curve + ValidatePublicKey,
         FieldBytesSize<C>: ModulusSize,
     {
         sec1::EcPrivateKey::try_from(der_bytes)?
@@ -196,17 +196,18 @@ where
     #[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
     pub fn to_sec1_der(&self) -> der::Result<Zeroizing<Vec<u8>>>
     where
-        C: CurveArithmetic,
+        C: AssociatedOid + CurveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldBytesSize<C>: ModulusSize,
     {
         let private_key_bytes = Zeroizing::new(self.to_bytes());
         let public_key_bytes = self.public_key().to_encoded_point(false);
+        let parameters = sec1::EcParameters::NamedCurve(C::OID);
 
         let ec_private_key = Zeroizing::new(
             sec1::EcPrivateKey {
                 private_key: &private_key_bytes,
-                parameters: None,
+                parameters: Some(parameters),
                 public_key: Some(public_key_bytes.as_bytes()),
             }
             .to_der()?,
@@ -225,7 +226,7 @@ where
     #[cfg(feature = "pem")]
     pub fn from_sec1_pem(s: &str) -> Result<Self>
     where
-        C: Curve + ValidatePublicKey,
+        C: AssociatedOid + Curve + ValidatePublicKey,
         FieldBytesSize<C>: ModulusSize,
     {
         let (label, der_bytes) = pem::decode_vec(s.as_bytes()).map_err(|_| Error)?;
@@ -244,7 +245,7 @@ where
     #[cfg(feature = "pem")]
     pub fn to_sec1_pem(&self, line_ending: pem::LineEnding) -> Result<Zeroizing<String>>
     where
-        C: CurveArithmetic,
+        C: AssociatedOid + CurveArithmetic,
         AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
         FieldBytesSize<C>: ModulusSize,
     {
@@ -344,16 +345,21 @@ where
 #[cfg(feature = "sec1")]
 impl<C> TryFrom<sec1::EcPrivateKey<'_>> for SecretKey<C>
 where
-    C: Curve + ValidatePublicKey,
+    C: AssociatedOid + Curve + ValidatePublicKey,
     FieldBytesSize<C>: ModulusSize,
 {
     type Error = der::Error;
 
     fn try_from(sec1_private_key: sec1::EcPrivateKey<'_>) -> der::Result<Self> {
-        let secret_key = Self::from_slice(sec1_private_key.private_key)
-            .map_err(|_| der::Tag::Sequence.value_error())?;
+        if let Some(sec1::EcParameters::NamedCurve(curve_oid)) = sec1_private_key.parameters {
+            if C::OID != curve_oid {
+                return Err(der::Tag::ObjectIdentifier.value_error());
+            }
+        }
 
-        // TODO(tarcieri): validate `sec1_private_key.params`?
+        let secret_key = Self::from_slice(sec1_private_key.private_key)
+            .map_err(|_| der::Tag::OctetString.value_error())?;
+
         if let Some(pk_bytes) = sec1_private_key.public_key {
             let pk = EncodedPoint::<C>::from_bytes(pk_bytes)
                 .map_err(|_| der::Tag::BitString.value_error())?;
