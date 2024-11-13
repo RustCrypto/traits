@@ -154,7 +154,7 @@ impl<'a> Value<'a> {
     }
 }
 
-impl<'a> AsRef<str> for Value<'a> {
+impl AsRef<str> for Value<'_> {
     fn as_ref(&self) -> &str {
         self.as_str()
     }
@@ -184,7 +184,7 @@ impl<'a> TryFrom<&Value<'a>> for Decimal {
     }
 }
 
-impl<'a> fmt::Display for Value<'a> {
+impl fmt::Display for Value<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
     }
