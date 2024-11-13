@@ -240,9 +240,9 @@ checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 
 [[package]]
 name = "const-oid"
-version = "0.10.0-rc.2"
+version = "0.10.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a0d96d207edbe5135e55038e79ab9ad6d75ba83b14cdf62326ce5b12bc46ab5"
+checksum = "68ff6be19477a1bd5441f382916a89bc2a0b2c35db6d41e0f6e8538bf6d6463f"
 
 [[package]]
 name = "cpufeatures"
@@ -393,7 +393,7 @@ version = "0.8.0-rc.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "82db698b33305f0134faf590b9d1259dc171b5481ac41d5c8146c3b3ee7d4319"
 dependencies = [
- "const-oid 0.10.0-rc.2",
+ "const-oid 0.10.0-rc.3",
  "pem-rfc7468 1.0.0-rc.2",
  "zeroize",
 ]
@@ -424,7 +424,7 @@ version = "0.11.0-pre.9"
 dependencies = [
  "blobby",
  "block-buffer 0.11.0-rc.3",
- "const-oid 0.10.0-rc.2",
+ "const-oid 0.10.0-rc.3",
  "crypto-common 0.2.0-rc.1",
  "subtle",
  "zeroize",
