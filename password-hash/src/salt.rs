@@ -163,7 +163,7 @@ impl<'a> Salt<'a> {
     }
 }
 
-impl<'a> AsRef<str> for Salt<'a> {
+impl AsRef<str> for Salt<'_> {
     fn as_ref(&self) -> &str {
         self.as_str()
     }
@@ -177,13 +177,13 @@ impl<'a> TryFrom<&'a str> for Salt<'a> {
     }
 }
 
-impl<'a> fmt::Display for Salt<'a> {
+impl fmt::Display for Salt<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
     }
 }
 
-impl<'a> fmt::Debug for Salt<'a> {
+impl fmt::Debug for Salt<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Salt({:?})", self.as_str())
     }

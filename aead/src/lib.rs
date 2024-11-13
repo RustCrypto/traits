@@ -487,7 +487,7 @@ pub struct Payload<'msg, 'aad> {
 }
 
 #[cfg(feature = "alloc")]
-impl<'msg, 'aad> From<&'msg [u8]> for Payload<'msg, 'aad> {
+impl<'msg> From<&'msg [u8]> for Payload<'msg, '_> {
     fn from(msg: &'msg [u8]) -> Self {
         Self { msg, aad: b"" }
     }

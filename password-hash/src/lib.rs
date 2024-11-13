@@ -250,7 +250,7 @@ impl<'a> TryFrom<&'a str> for PasswordHash<'a> {
     }
 }
 
-impl<'a> fmt::Display for PasswordHash<'a> {
+impl fmt::Display for PasswordHash<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, self.algorithm)?;
 

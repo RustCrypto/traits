@@ -64,11 +64,11 @@ pub trait UniversalHash: BlockSizeUser + Sized {
             blocks: &'a [Block<Self>],
         }
 
-        impl<'a, BS: BlockSizes> BlockSizeUser for Ctx<'a, BS> {
+        impl<BS: BlockSizes> BlockSizeUser for Ctx<'_, BS> {
             type BlockSize = BS;
         }
 
-        impl<'a, BS: BlockSizes> UhfClosure for Ctx<'a, BS> {
+        impl<BS: BlockSizes> UhfClosure for Ctx<'_, BS> {
             #[inline(always)]
             fn call<B: UhfBackend<BlockSize = BS>>(self, backend: &mut B) {
                 let pb = B::ParBlocksSize::USIZE;

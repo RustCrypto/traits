@@ -106,8 +106,7 @@ impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
         };
 
         let bs = T::BlockSize::USIZE;
-        // TODO: use div_ceil on 1.73+ MSRV bump
-        let blocks = (data_len + bs - 1) / bs;
+        let blocks = data_len.div_ceil(bs);
         if blocks > rem_blocks {
             Err(StreamCipherError)
         } else {

@@ -91,13 +91,13 @@ impl<'a> Ident<'a> {
     }
 }
 
-impl<'a> AsRef<str> for Ident<'a> {
+impl AsRef<str> for Ident<'_> {
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl<'a> Deref for Ident<'a> {
+impl Deref for Ident<'_> {
     type Target = str;
 
     fn deref(&self) -> &str {
@@ -115,13 +115,13 @@ impl<'a> TryFrom<&'a str> for Ident<'a> {
     }
 }
 
-impl<'a> fmt::Display for Ident<'a> {
+impl fmt::Display for Ident<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self)
     }
 }
 
-impl<'a> fmt::Debug for Ident<'a> {
+impl fmt::Debug for Ident<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("Ident").field(&self.as_ref()).finish()
     }

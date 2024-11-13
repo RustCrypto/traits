@@ -11,32 +11,32 @@ pub(super) struct BlockCtx<'inp, 'out, BS: BlockSizes> {
     pub block: InOut<'inp, 'out, Block<Self>>,
 }
 
-impl<'inp, 'out, BS: BlockSizes> BlockSizeUser for BlockCtx<'inp, 'out, BS> {
+impl<BS: BlockSizes> BlockSizeUser for BlockCtx<'_, '_, BS> {
     type BlockSize = BS;
 }
 
-impl<'inp, 'out, BS: BlockSizes> BlockCipherEncClosure for BlockCtx<'inp, 'out, BS> {
+impl<BS: BlockSizes> BlockCipherEncClosure for BlockCtx<'_, '_, BS> {
     #[inline(always)]
     fn call<B: BlockCipherEncBackend<BlockSize = BS>>(self, backend: &B) {
         backend.encrypt_block(self.block);
     }
 }
 
-impl<'inp, 'out, BS: BlockSizes> BlockCipherDecClosure for BlockCtx<'inp, 'out, BS> {
+impl<BS: BlockSizes> BlockCipherDecClosure for BlockCtx<'_, '_, BS> {
     #[inline(always)]
     fn call<B: BlockCipherDecBackend<BlockSize = BS>>(self, backend: &B) {
         backend.decrypt_block(self.block);
     }
 }
 
-impl<'inp, 'out, BS: BlockSizes> BlockModeEncClosure for BlockCtx<'inp, 'out, BS> {
+impl<BS: BlockSizes> BlockModeEncClosure for BlockCtx<'_, '_, BS> {
     #[inline(always)]
     fn call<B: BlockModeEncBackend<BlockSize = BS>>(self, backend: &mut B) {
         backend.encrypt_block(self.block);
     }
 }
 
-impl<'inp, 'out, BS: BlockSizes> BlockModeDecClosure for BlockCtx<'inp, 'out, BS> {
+impl<BS: BlockSizes> BlockModeDecClosure for BlockCtx<'_, '_, BS> {
     #[inline(always)]
     fn call<B: BlockModeDecBackend<BlockSize = BS>>(self, backend: &mut B) {
         backend.decrypt_block(self.block);
@@ -47,11 +47,11 @@ pub(super) struct BlocksCtx<'inp, 'out, BS: BlockSizes> {
     pub blocks: InOutBuf<'inp, 'out, Block<Self>>,
 }
 
-impl<'inp, 'out, BS: BlockSizes> BlockSizeUser for BlocksCtx<'inp, 'out, BS> {
+impl<BS: BlockSizes> BlockSizeUser for BlocksCtx<'_, '_, BS> {
     type BlockSize = BS;
 }
 
-impl<'inp, 'out, BS: BlockSizes> BlockCipherEncClosure for BlocksCtx<'inp, 'out, BS> {
+impl<BS: BlockSizes> BlockCipherEncClosure for BlocksCtx<'_, '_, BS> {
     #[inline(always)]
     fn call<B: BlockCipherEncBackend<BlockSize = BS>>(self, backend: &B) {
         if B::ParBlocksSize::USIZE > 1 {
@@ -68,7 +68,7 @@ impl<'inp, 'out, BS: BlockSizes> BlockCipherEncClosure for BlocksCtx<'inp, 'out,
     }
 }
 
-impl<'inp, 'out, BS: BlockSizes> BlockCipherDecClosure for BlocksCtx<'inp, 'out, BS> {
+impl<BS: BlockSizes> BlockCipherDecClosure for BlocksCtx<'_, '_, BS> {
     #[inline(always)]
     fn call<B: BlockCipherDecBackend<BlockSize = BS>>(self, backend: &B) {
         if B::ParBlocksSize::USIZE > 1 {
@@ -85,7 +85,7 @@ impl<'inp, 'out, BS: BlockSizes> BlockCipherDecClosure for BlocksCtx<'inp, 'out,
     }
 }
 
-impl<'inp, 'out, BS: BlockSizes> BlockModeEncClosure for BlocksCtx<'inp, 'out, BS> {
+impl<BS: BlockSizes> BlockModeEncClosure for BlocksCtx<'_, '_, BS> {
     #[inline(always)]
     fn call<B: BlockModeEncBackend<BlockSize = BS>>(self, backend: &mut B) {
         if B::ParBlocksSize::USIZE > 1 {
@@ -102,7 +102,7 @@ impl<'inp, 'out, BS: BlockSizes> BlockModeEncClosure for BlocksCtx<'inp, 'out, B
     }
 }
 
-impl<'inp, 'out, BS: BlockSizes> BlockModeDecClosure for BlocksCtx<'inp, 'out, BS> {
+impl<BS: BlockSizes> BlockModeDecClosure for BlocksCtx<'_, '_, BS> {
     #[inline(always)]
     fn call<B: BlockModeDecBackend<BlockSize = BS>>(self, backend: &mut B) {
         if B::ParBlocksSize::USIZE > 1 {
