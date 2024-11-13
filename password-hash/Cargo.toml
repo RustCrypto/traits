@@ -15,7 +15,7 @@ repository = "https://github.com/RustCrypto/traits"
 categories = ["authentication", "cryptography", "no-std"]
 keywords = ["crypt", "mcf", "password", "pbkdf", "phc"]
 edition = "2021"
-rust-version = "1.60"
+rust-version = "1.81"
 
 [dependencies]
 base64ct = "1.6"
@@ -27,7 +27,6 @@ rand_core = { version = "0.6.4", optional = true, default-features = false }
 [features]
 default = ["rand_core"]
 alloc = ["base64ct/alloc"]
-std = ["alloc", "base64ct/std", "rand_core/std"]
 
 getrandom = ["rand_core/getrandom"]
 
