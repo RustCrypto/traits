@@ -8,9 +8,6 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms, missing_debug_implementations)]
 
-#[cfg(feature = "std")]
-extern crate std;
-
 pub use crypto_common::{
     self, array,
     typenum::{self, consts},
@@ -152,5 +149,4 @@ impl core::fmt::Display for Error {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for Error {}
+impl core::error::Error for Error {}

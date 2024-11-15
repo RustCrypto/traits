@@ -99,11 +99,11 @@ impl fmt::Display for Error {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+impl core::error::Error for Error {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         match self {
-            Self::B64Encoding(err) => Some(err),
+            // TODO: restore after base64ct will migrate to core::error::Error
+            // Self::B64Encoding(err) => Some(err),
             Self::ParamValueInvalid(err) => Some(err),
             Self::SaltInvalid(err) => Some(err),
             _ => None,
@@ -167,5 +167,4 @@ impl fmt::Display for InvalidValue {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for InvalidValue {}
+impl core::error::Error for InvalidValue {}

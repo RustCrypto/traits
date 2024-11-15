@@ -278,5 +278,4 @@ impl fmt::Display for MacError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for MacError {}
+impl core::error::Error for MacError {}

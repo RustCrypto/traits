@@ -284,8 +284,7 @@ impl fmt::Display for InvalidOutputSize {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for InvalidOutputSize {}
+impl core::error::Error for InvalidOutputSize {}
 
 /// Buffer length is not equal to hash output size.
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
@@ -297,8 +296,7 @@ impl fmt::Display for InvalidBufferSize {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for InvalidBufferSize {}
+impl core::error::Error for InvalidBufferSize {}
 
 #[cfg(feature = "std")]
 mod hashwriter;

@@ -27,8 +27,6 @@
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
-#[cfg(feature = "std")]
-extern crate std;
 
 #[cfg(feature = "rand_core")]
 pub use rand_core;

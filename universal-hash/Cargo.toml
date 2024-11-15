@@ -16,9 +16,6 @@ categories = ["cryptography", "no-std"]
 crypto-common = "0.2.0-rc.0"
 subtle = { version = "2.4", default-features = false }
 
-[features]
-std = []
-
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
