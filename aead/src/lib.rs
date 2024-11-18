@@ -276,19 +276,7 @@ pub trait AeadInPlace: AeadCore {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
-    ) -> Result<()> {
-        let tag = self.encrypt_in_place_detached(nonce, associated_data, buffer.as_mut())?;
-        buffer.extend_from_slice(tag.as_slice())?;
-        Ok(())
-    }
-
-    /// Encrypt the data in-place, returning the authentication tag
-    fn encrypt_in_place_detached(
-        &self,
-        nonce: &Nonce<Self>,
-        associated_data: &[u8],
-        buffer: &mut [u8],
-    ) -> Result<Tag<Self>>;
+    ) -> Result<()>;
 
     /// Decrypt the message in-place, returning an error in the event the
     /// provided authentication tag does not match the given ciphertext.
@@ -300,9 +288,17 @@ pub trait AeadInPlace: AeadCore {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
-    ) -> Result<()> {
-        impl_decrypt_in_place!(self, nonce, associated_data, buffer)
-    }
+    ) -> Result<()>;
+}
+
+pub trait AeadInPlaceDetached: AeadCore {
+    /// Encrypt the data in-place, returning the authentication tag.
+    fn encrypt_in_place_detached(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+    ) -> Result<Tag<Self>>;
 
     /// Decrypt the message in-place, returning an error in the event the provided
     /// authentication tag does not match the given ciphertext (i.e. ciphertext
@@ -314,6 +310,30 @@ pub trait AeadInPlace: AeadCore {
         buffer: &mut [u8],
         tag: &Tag<Self>,
     ) -> Result<()>;
+}
+
+pub trait PostfixTagged {}
+
+impl<T: AeadInPlaceDetached + PostfixTagged> AeadInPlace for T {
+    fn encrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()> {
+        let tag = self.encrypt_in_place_detached(nonce, associated_data, buffer.as_mut())?;
+        buffer.extend_from_slice(tag.as_slice())?;
+        Ok(())
+    }
+
+    fn decrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()> {
+        impl_decrypt_in_place!(self, nonce, associated_data, buffer)
+    }
 }
 
 /// In-place stateful AEAD trait.
