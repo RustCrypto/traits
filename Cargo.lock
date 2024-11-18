@@ -21,6 +21,7 @@ dependencies = [
  "bytes",
  "crypto-common 0.2.0-rc.1",
  "heapless",
+ "inout 0.2.0-rc.2",
 ]
 
 [[package]]

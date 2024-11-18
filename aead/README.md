@@ -13,9 +13,43 @@ able to execute [chosen-ciphertext attacks]. The resulting security property,
 [ciphertext indistinguishability], is considered a basic requirement for
 modern cryptographic implementations.
 
-See [RustCrypto/AEADs] for cipher implementations which use this trait.
+See [RustCrypto/AEADs] for cipher implementations which implement traits from
+this crate.
 
-[Documentation][docs-link]
+## Nonces: ⚠️ Security Warning ⚠️
+
+AEAD algorithms accept a parameter to encryption/decryption called
+a "nonce" which must be unique every time encryption is performed and
+never repeated for the same key. The nonce is often prepended to the
+ciphertext. The nonce used to produce a given ciphertext must be passed
+to the decryption function in order for it to decrypt correctly.
+
+AEAD algorithms often fail catastrophically if nonces are ever repeated
+for the same key (with SIV modes being a "misuse-resistent" exception).
+
+Nonces don't necessarily have to be random, but it is one strategy
+which is often used in practice.
+
+Using random nonces runs the risk of repeating them unless the nonce
+size is particularly large, e.g. 192-bit extended nonces used by the
+`XChaCha20Poly1305` and `XSalsa20Poly1305` constructions.
+
+[NIST SP 800-38D] recommends the following for 128-bit nonces:
+
+> The total number of invocations of the authenticated encryption
+> function shall not exceed 2^32, including all IV lengths and all
+> instances of the authenticated encryption function with the given key.
+
+Following this guideline, only 4,294,967,296 messages with random
+nonces can be encrypted under a given key. While this bound is high,
+it's possible to encounter in practice, and systems which might
+reach it should consider alternatives to purely random nonces, like
+a counter or a combination of a random nonce + counter.
+
+See the [`aead-stream`] crate for a ready-made implementation of the latter.
+
+[NIST SP 800-38D]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
+[`aead-stream`]: https://docs.rs/aead-stream
 
 ## Minimum Supported Rust Version
 

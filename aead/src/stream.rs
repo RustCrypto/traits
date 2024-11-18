@@ -6,7 +6,7 @@
 
 #![allow(clippy::upper_case_acronyms)]
 
-use crate::{AeadCore, AeadInPlace, Buffer, Error, Key, KeyInit, Result};
+use crate::{Aead, Buffer, Error, Key, KeyInit, Result};
 use core::ops::{AddAssign, Sub};
 use crypto_common::array::{Array, ArraySize};
 
@@ -19,12 +19,12 @@ pub type Nonce<A, S> = Array<u8, NonceSize<A, S>>;
 /// Size of a nonce as used by a STREAM construction, sans the overhead of
 /// the STREAM protocol itself.
 pub type NonceSize<A, S> =
-    <<A as AeadCore>::NonceSize as Sub<<S as StreamPrimitive<A>>::NonceOverhead>>::Output;
+    <<A as Aead>::NonceSize as Sub<<S as StreamPrimitive<A>>::NonceOverhead>>::Output;
 
 /// Create a new STREAM from the provided AEAD.
 pub trait NewStream<A>: StreamPrimitive<A>
 where
-    A: AeadInPlace,
+    A: Aead,
     A::NonceSize: Sub<Self::NonceOverhead>,
     NonceSize<A, Self>: ArraySize,
 {
@@ -49,7 +49,7 @@ where
 /// Deliberately immutable and stateless to permit parallel operation.
 pub trait StreamPrimitive<A>
 where
-    A: AeadInPlace,
+    A: Aead,
     A::NonceSize: Sub<Self::NonceOverhead>,
     NonceSize<A, Self>: ArraySize,
 {
@@ -157,7 +157,7 @@ macro_rules! impl_stream_object {
         #[derive(Debug)]
         pub struct $name<A, S>
         where
-            A: AeadInPlace,
+            A: Aead,
             S: StreamPrimitive<A>,
             A::NonceSize: Sub<<S as StreamPrimitive<A>>::NonceOverhead>,
             NonceSize<A, S>: ArraySize,
@@ -171,7 +171,7 @@ macro_rules! impl_stream_object {
 
         impl<A, S> $name<A, S>
         where
-            A: AeadInPlace,
+            A: Aead,
             S: StreamPrimitive<A>,
             A::NonceSize: Sub<<S as StreamPrimitive<A>>::NonceOverhead>,
             NonceSize<A, S>: ArraySize,
