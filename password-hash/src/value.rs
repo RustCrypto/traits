@@ -50,7 +50,7 @@ impl<'a> Value<'a> {
     /// Parse a [`Value`] from the provided `str`, validating it according to
     /// the PHC string format's rules.
     pub fn new(input: &'a str) -> Result<Self> {
-        if input.as_bytes().len() > Self::MAX_LENGTH {
+        if input.len() > Self::MAX_LENGTH {
             return Err(Error::ParamValueInvalid(InvalidValue::TooLong));
         }
 

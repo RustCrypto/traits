@@ -103,7 +103,7 @@ impl<'a> Salt<'a> {
     /// Create a [`Salt`] from the given B64-encoded input string, validating
     /// [`Salt::MIN_LENGTH`] and [`Salt::MAX_LENGTH`] restrictions.
     pub fn from_b64(input: &'a str) -> Result<Self> {
-        let length = input.as_bytes().len();
+        let length = input.len();
 
         if length < Self::MIN_LENGTH {
             return Err(Error::SaltInvalid(InvalidValue::TooShort));
@@ -215,7 +215,7 @@ impl SaltString {
         // Assert `s` parses successfully as a `Salt`
         Salt::from_b64(s)?;
 
-        let len = s.as_bytes().len();
+        let len = s.len();
 
         let mut bytes = [0u8; Salt::MAX_LENGTH];
         bytes[..len].copy_from_slice(s.as_bytes());
