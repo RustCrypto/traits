@@ -173,7 +173,7 @@ impl FromStr for ParamsString {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self> {
-        if s.as_bytes().len() > MAX_LENGTH {
+        if s.len() > MAX_LENGTH {
             return Err(Error::ParamsMaxExceeded);
         }
 
@@ -201,11 +201,11 @@ impl FromStr for ParamsString {
         }
 
         let mut bytes = [0u8; MAX_LENGTH];
-        bytes[..s.as_bytes().len()].copy_from_slice(s.as_bytes());
+        bytes[..s.len()].copy_from_slice(s.as_bytes());
 
         Ok(Self(Buffer {
             bytes,
-            length: s.as_bytes().len() as u8,
+            length: s.len() as u8,
         }))
     }
 }
