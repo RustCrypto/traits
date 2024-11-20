@@ -175,9 +175,8 @@ pub trait Aead {
         let res_len = msg.len() + tag_len;
         let tag = self.detached_encrypt_inout(nonce, associated_data, msg)?;
         tag_dst.copy_from_slice(&tag);
-
-        let out_buf = into_out_buf2(buffer);
-        Ok(&mut out_buf[..res_len])
+        let res = &mut buffer.into_out()[..res_len];
+        Ok(res)
     }
 
     /// Decrypt the [`InOutBuf`] data, verify the appended authentication tag, and return
@@ -199,7 +198,7 @@ pub trait Aead {
         let (mut buf, tag) = buffer.split_at(ct_len);
         let tag = tag.get_in().try_into().expect("tag has correct length");
         self.detached_decrypt_inout(nonce, associated_data, buf.reborrow(), tag)?;
-        Ok(into_out_buf(buf))
+        Ok(buf.into_out())
     }
 
     /// Encrypt the plaintext data of length `plaintext_len` residing at the beggining of `buffer`
@@ -473,18 +472,6 @@ fn split_reserved<'a>(
         let tail = core::slice::from_raw_parts_mut(out_ptr.add(in_len), out_len - in_len);
         (body, tail)
     }
-}
-
-fn into_out_buf<'out>(buf: InOutBuf<'_, 'out, u8>) -> &'out mut [u8] {
-    let out_len = buf.len();
-    let (_, out_ptr) = buf.into_raw();
-    unsafe { core::slice::from_raw_parts_mut(out_ptr, out_len) }
-}
-
-fn into_out_buf2<'out>(buf: InOutBufReserved<'_, 'out, u8>) -> &'out mut [u8] {
-    let out_len = buf.get_out_len();
-    let (_, out_ptr) = buf.into_raw();
-    unsafe { core::slice::from_raw_parts_mut(out_ptr, out_len) }
 }
 
 /// AEAD payloads (message + AAD).
