@@ -25,8 +25,6 @@ use arrayvec::ArrayVec;
 #[cfg(feature = "dev")]
 pub mod dev;
 
-pub mod stream;
-
 pub use crypto_common::{
     self,
     array::{self, typenum::consts},
