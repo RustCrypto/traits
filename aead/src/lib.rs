@@ -25,10 +25,6 @@ use arrayvec::ArrayVec;
 #[cfg(feature = "dev")]
 pub mod dev;
 
-mod dyn_aead;
-
-pub use dyn_aead::DynAead;
-
 pub mod stream;
 
 pub use crypto_common::{
