@@ -739,7 +739,7 @@ dependencies = [
 [[package]]
 name = "inout"
 version = "0.2.0-rc.2"
-source = "git+https://github.com/RustCrypto/utils#8bb6c50988ba6c32d92e4a8e640027ab3c0920cd"
+source = "git+https://github.com/RustCrypto/utils#794835232842098d2003acb5b12f8218e5a1fe01"
 dependencies = [
  "hybrid-array",
 ]

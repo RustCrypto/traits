@@ -5,7 +5,7 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/8f1a9894/logo.svg"
 )]
-// #![forbid(unsafe_code)]
+#![forbid(unsafe_code)]
 #![warn(
     clippy::unwrap_used,
     // missing_docs,
@@ -169,7 +169,7 @@ pub trait Aead {
         associated_data: &[u8],
         mut buffer: InOutBufReserved<'_, 'out, u8>,
     ) -> Result<&'out mut [u8]> {
-        let (msg, tail) = split_reserved(&mut buffer);
+        let (msg, tail) = buffer.split_reserved();
         let tag_len = Self::TagSize::USIZE;
         let tag_dst = tail.get_mut(..tag_len).ok_or(Error)?;
         let res_len = msg.len() + tag_len;
@@ -456,21 +456,6 @@ pub trait Aead {
         let mut nonce = Nonce::<Self>::default();
         rng.try_fill_bytes(&mut nonce)?;
         Ok(nonce)
-    }
-}
-
-// TODO: move to `inout`
-fn split_reserved<'a>(
-    buf: &'a mut InOutBufReserved<'_, '_, u8>,
-) -> (InOutBuf<'a, 'a, u8>, &'a mut [u8]) {
-    let in_len = buf.get_in_len();
-    let out_len = buf.get_out_len();
-    let in_ptr = buf.get_in().as_ptr();
-    let out_ptr = buf.get_out().as_mut_ptr();
-    unsafe {
-        let body = InOutBuf::from_raw(in_ptr, out_ptr, in_len);
-        let tail = core::slice::from_raw_parts_mut(out_ptr.add(in_len), out_len - in_len);
-        (body, tail)
     }
 }
 
