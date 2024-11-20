@@ -1,4 +1,4 @@
-use crate::{Error, Result};
+use crate::Result;
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
@@ -65,7 +65,7 @@ impl<const N: usize> Buffer for ArrayVec<u8, N> {
     fn resize(&mut self, len: usize) -> Result<()> {
         if let Some(ext_len) = len.checked_sub(self.len()) {
             let buf = &[0u8; N][..ext_len];
-            self.try_extend_from_slice(buf).map_err(|_| Error)
+            self.try_extend_from_slice(buf).map_err(|_| crate::Error)
         } else {
             self.truncate(len);
             Ok(())
@@ -73,7 +73,7 @@ impl<const N: usize> Buffer for ArrayVec<u8, N> {
     }
 
     fn extend_from_slice(&mut self, other: &[u8]) -> Result<()> {
-        ArrayVec::try_extend_from_slice(self, other).map_err(|_| Error)
+        ArrayVec::try_extend_from_slice(self, other).map_err(|_| crate::Error)
     }
 
     fn truncate(&mut self, len: usize) {
@@ -84,11 +84,11 @@ impl<const N: usize> Buffer for ArrayVec<u8, N> {
 #[cfg(feature = "heapless")]
 impl<const N: usize> Buffer for heapless::Vec<u8, N> {
     fn resize(&mut self, len: usize) -> Result<()> {
-        heapless::Vec::resize(self, len, 0).map_err(|_| Error)
+        heapless::Vec::resize(self, len, 0).map_err(|_| crate::Error)
     }
 
     fn extend_from_slice(&mut self, other: &[u8]) -> Result<()> {
-        heapless::Vec::extend_from_slice(self, other).map_err(|_| Error)
+        heapless::Vec::extend_from_slice(self, other).map_err(|_| crate::Error)
     }
 
     fn truncate(&mut self, len: usize) {
