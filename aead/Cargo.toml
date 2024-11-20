@@ -17,7 +17,7 @@ rust-version = "1.81"
 
 [dependencies]
 crypto-common = "0.2.0-rc.0"
-inout = { version = "0.2.0-rc.1", git = "https://github.com/RustCrypto/utils" } 
+inout = "0.2.0-rc.3"
 
 # optional dependencies
 arrayvec = { version = "0.7", optional = true, default-features = false }

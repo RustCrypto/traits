@@ -21,7 +21,7 @@ dependencies = [
  "bytes",
  "crypto-common 0.2.0-rc.1",
  "heapless",
- "inout 0.2.0-rc.2 (git+https://github.com/RustCrypto/utils)",
+ "inout 0.2.0-rc.3",
 ]
 
 [[package]]
@@ -223,7 +223,7 @@ version = "0.5.0-pre.7"
 dependencies = [
  "blobby",
  "crypto-common 0.2.0-rc.1",
- "inout 0.2.0-rc.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "inout 0.2.0-rc.3",
  "zeroize",
 ]
 
@@ -728,19 +728,11 @@ dependencies = [
 
 [[package]]
 name = "inout"
-version = "0.2.0-rc.2"
+version = "0.2.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14db49369b2c3f15deb5806de446e05c7f07a2d778b54b278c994fcd1d686f31"
+checksum = "de49db00f5add6dad75a57946b75de0f26287a6fc95f4f277d48419200422beb"
 dependencies = [
  "block-padding 0.4.0-rc.2",
- "hybrid-array",
-]
-
-[[package]]
-name = "inout"
-version = "0.2.0-rc.2"
-source = "git+https://github.com/RustCrypto/utils#794835232842098d2003acb5b12f8218e5a1fe01"
-dependencies = [
  "hybrid-array",
 ]
 
