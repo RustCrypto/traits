@@ -213,13 +213,8 @@ pub trait Aead {
         buffer: &'out mut [u8],
         plaintext_len: usize,
     ) -> Result<&'out mut [u8]> {
-        let tag_len = Self::TagSize::USIZE;
-        let res_len = plaintext_len + tag_len;
-        let buf = buffer.get_mut(..res_len).ok_or(Error)?;
-        let (msg, tag_dst) = buf.split_at_mut(plaintext_len);
-        let tag = self.detached_encrypt_inout(nonce, associated_data, msg.into())?;
-        tag_dst.copy_from_slice(&tag);
-        Ok(buf)
+        let buffer = InOutBufReserved::from_mut_slice(buffer, plaintext_len).map_err(|_| Error)?;
+        self.postfix_encrypt_inout(nonce, associated_data, buffer)
     }
 
     /// Decrypt the data in `buffer` in-place, verify the appended authentication tag, and return
@@ -236,12 +231,7 @@ pub trait Aead {
         associated_data: &[u8],
         buffer: &'out mut [u8],
     ) -> Result<&'out mut [u8]> {
-        let tag_len = Self::TagSize::USIZE;
-        let ct_len = buffer.len().checked_sub(tag_len).ok_or(Error)?;
-        let (buf, tag) = buffer.split_at_mut(ct_len);
-        let tag = (&*tag).try_into().expect("tag has correct length");
-        self.detached_decrypt_inout(nonce, associated_data, buf.into(), tag)?;
-        Ok(buf)
+        self.postfix_decrypt_inout(nonce, associated_data, buffer.into())
     }
 
     /// Encrypt the data in `plaintext`, write resulting ciphertext to `buffer`, append
@@ -259,14 +249,8 @@ pub trait Aead {
         plaintext: &[u8],
         buffer: &'out mut [u8],
     ) -> Result<&'out mut [u8]> {
-        let tag_len = Self::TagSize::USIZE;
-        let res_len = plaintext.len() + tag_len;
-        let buf = buffer.get_mut(..res_len).ok_or(Error)?;
-        let (msg_dst, tag_dst) = buf.split_at_mut(plaintext.len());
-        let inout_buf = InOutBuf::new(plaintext, msg_dst).expect("ct_dst has correct length");
-        let tag = self.detached_encrypt_inout(nonce, associated_data, inout_buf)?;
-        tag_dst.copy_from_slice(&tag);
-        Ok(buf)
+        let buffer = InOutBufReserved::from_slices(plaintext, buffer).map_err(|_| Error)?;
+        self.postfix_encrypt_inout(nonce, associated_data, buffer)
     }
 
     /// Decrypt the data in `ciphertext`, write resulting ciphertext to `buffer`, verify
@@ -286,14 +270,8 @@ pub trait Aead {
         ciphertext: &[u8],
         buffer: &'out mut [u8],
     ) -> Result<&'out mut [u8]> {
-        let tag_len = Self::TagSize::USIZE;
-        let pt_len = ciphertext.len().checked_sub(tag_len).ok_or(Error)?;
-        let pt_dst = buffer.get_mut(..pt_len).ok_or(Error)?;
-        let (ct, tag) = ciphertext.split_at(pt_len);
-        let tag = tag.try_into().expect("tag has correct length");
-        let buf = InOutBuf::new(ct, pt_dst).expect("buffers have the same length");
-        self.detached_decrypt_inout(nonce, associated_data, buf, tag)?;
-        Ok(pt_dst)
+        let buffer = InOutBuf::new(ciphertext, buffer).map_err(|_| Error)?;
+        self.postfix_decrypt_inout(nonce, associated_data, buffer)
     }
 
     /// Encrypt the data in `buffer`, and append the authentication tag to it.
