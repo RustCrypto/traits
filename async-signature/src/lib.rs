@@ -20,79 +20,16 @@ pub use signature::{self, Error};
 #[cfg(feature = "digest")]
 pub use signature::digest::{self, Digest};
 
-#[cfg(feature = "rand_core")]
-use signature::rand_core::CryptoRngCore;
+#[deprecated(since = "0.6.0", note = "use `signature::AsyncSigner` instead")]
+pub use signature::AsyncSigner;
 
-/// Asynchronously sign the provided message bytestring using `Self`
-/// (e.g. client for a Cloud KMS or HSM), returning a digital signature.
-///
-/// This trait is an async equivalent of the [`signature::Signer`] trait.
-#[allow(async_fn_in_trait)]
-pub trait AsyncSigner<S> {
-    /// Attempt to sign the given message, returning a digital signature on
-    /// success, or an error if something went wrong.
-    ///
-    /// The main intended use case for signing errors is when communicating
-    /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
-    async fn sign_async(&self, msg: &[u8]) -> Result<S, Error>;
-}
-
-impl<S, T> AsyncSigner<S> for T
-where
-    T: signature::Signer<S>,
-{
-    async fn sign_async(&self, msg: &[u8]) -> Result<S, Error> {
-        self.try_sign(msg)
-    }
-}
-
-/// Asynchronously sign the given prehashed message [`Digest`] using `Self`.
-///
-/// This trait is an async equivalent of the [`signature::DigestSigner`] trait.
 #[cfg(feature = "digest")]
-#[allow(async_fn_in_trait)]
-pub trait AsyncDigestSigner<D, S>
-where
-    D: Digest,
-{
-    /// Attempt to sign the given prehashed message [`Digest`], returning a
-    /// digital signature on success, or an error if something went wrong.
-    async fn sign_digest_async(&self, digest: D) -> Result<S, Error>;
-}
-
-/// Sign the given message using the provided external randomness source.
-#[cfg(feature = "rand_core")]
-#[allow(async_fn_in_trait)]
-pub trait AsyncRandomizedSigner<S> {
-    /// Sign the given message and return a digital signature
-    async fn sign_with_rng_async(&self, rng: &mut impl CryptoRngCore, msg: &[u8]) -> S {
-        self.try_sign_with_rng_async(rng, msg)
-            .await
-            .expect("signature operation failed")
-    }
-
-    /// Attempt to sign the given message, returning a digital signature on
-    /// success, or an error if something went wrong.
-    ///
-    /// The main intended use case for signing errors is when communicating
-    /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
-    async fn try_sign_with_rng_async(
-        &self,
-        rng: &mut impl CryptoRngCore,
-        msg: &[u8],
-    ) -> Result<S, Error>;
-}
+#[deprecated(since = "0.6.0", note = "use `signature::AsyncDigestSigner` instead")]
+pub use signature::AsyncDigestSigner;
 
 #[cfg(feature = "rand_core")]
-impl<S, T> AsyncRandomizedSigner<S> for T
-where
-    T: signature::RandomizedSigner<S>,
-{
-    async fn try_sign_with_rng_async(
-        &self,
-        rng: &mut impl CryptoRngCore,
-        msg: &[u8],
-    ) -> Result<S, Error> {
-        self.try_sign_with_rng(rng, msg)
-    }
-}
+#[deprecated(
+    since = "0.6.0",
+    note = "use `signature::AsyncRandomizedSigner` instead"
+)]
+pub use signature::AsyncRandomizedSigner;

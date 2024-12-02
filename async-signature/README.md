@@ -7,6 +7,10 @@
 [![Project Chat][chat-image]][chat-link]
 [![Build Status][build-image]][build-link]
 
+## Deprecated
+
+This crate is now deprecated, all the types are available in [`signature`][signature-crate]
+
 ## Minimum Supported Rust Version
 
 Rust **1.81** or higher.
@@ -41,3 +45,4 @@ dual licensed as above, without any additional terms or conditions.
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260048-signatures
 [build-image]: https://github.com/RustCrypto/traits/workflows/async-signature/badge.svg?branch=master&event=push
 [build-link]: https://github.com/RustCrypto/traits/actions?query=workflow:async-signature
+[signature-crate]: https://crates.io/crates/signature
