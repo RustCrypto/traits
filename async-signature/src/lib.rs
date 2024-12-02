@@ -13,6 +13,8 @@
     missing_debug_implementations
 )]
 
+pub mod hazmat;
+
 pub use signature::{self, Error};
 
 #[cfg(feature = "digest")]
