@@ -21,15 +21,21 @@ impl<TS: ArraySize, BS: BlockSizes> TweakSizeUser for BlockCtx<'_, TS, BS> {
 }
 
 impl<TS: ArraySize, BS: BlockSizes> TweakBlockCipherEncClosure for BlockCtx<'_, TS, BS> {
-    #[inline(always)]
-    fn call<B: TweakBlockCipherEncBackend<BlockSize = BS, TweakSize = TS>>(self, backend: &B) {
-        backend.encrypt_block(self.tweak, self.block);
+    #[inline]
+    fn call<B>(self, backend: &B)
+    where
+        B: TweakBlockCipherEncBackend<BlockSize = BS, TweakSize = TS>,
+    {
+        backend.encrypt_block_inout(self.tweak, self.block);
     }
 }
 
 impl<TS: ArraySize, BS: BlockSizes> TweakBlockCipherDecClosure for BlockCtx<'_, TS, BS> {
-    #[inline(always)]
-    fn call<B: TweakBlockCipherDecBackend<BlockSize = BS, TweakSize = TS>>(self, backend: &B) {
-        backend.decrypt_block(self.tweak, self.block);
+    #[inline]
+    fn call<B>(self, backend: &B)
+    where
+        B: TweakBlockCipherDecBackend<BlockSize = BS, TweakSize = TS>,
+    {
+        backend.decrypt_block_inout(self.tweak, self.block);
     }
 }

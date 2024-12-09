@@ -1,13 +1,13 @@
 use core::marker::PhantomData;
 
-use crypto_common::{array::ArraySize, Block, BlockSizes, ParBlocks, ParBlocksSizeUser};
+use crypto_common::{array::ArraySize, Block, BlockSizes, ParBlocksSizeUser};
 
 use super::{
     TweakBlockCipherDecBackend, TweakBlockCipherDecClosure, TweakBlockCipherDecrypt,
     TweakBlockCipherEncBackend, TweakBlockCipherEncrypt, TweakSizeUser,
 };
 use crate::{
-    tweak::TweakBlockCipherEncClosure, BlockCipherDecBackend, BlockCipherDecClosure,
+    consts::U1, tweak::TweakBlockCipherEncClosure, BlockCipherDecBackend, BlockCipherDecClosure,
     BlockCipherDecrypt, BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt,
     BlockSizeUser,
 };
@@ -22,6 +22,7 @@ impl<C: TweakSizeUser + BlockSizeUser> BlockSizeUser for ZeroTweak<C> {
 }
 
 impl<C: TweakBlockCipherEncrypt> BlockCipherEncrypt for ZeroTweak<C> {
+    #[inline]
     fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
         self.0.encrypt_with_backend(ClosureWrapper {
             f,
@@ -31,6 +32,7 @@ impl<C: TweakBlockCipherEncrypt> BlockCipherEncrypt for ZeroTweak<C> {
 }
 
 impl<C: TweakBlockCipherDecrypt> BlockCipherDecrypt for ZeroTweak<C> {
+    #[inline]
     fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
         self.0.decrypt_with_backend(ClosureWrapper {
             f,
@@ -58,6 +60,7 @@ impl<TS: ArraySize, BS: BlockSizes, F> TweakBlockCipherEncClosure for ClosureWra
 where
     F: BlockCipherEncClosure<BlockSize = BS>,
 {
+    #[inline]
     fn call<B: TweakBlockCipherEncBackend<BlockSize = BS, TweakSize = TS>>(self, backend: &B) {
         self.f.call(&BackendWrapper {
             backend,
@@ -70,6 +73,7 @@ impl<TS: ArraySize, BS: BlockSizes, F> TweakBlockCipherDecClosure for ClosureWra
 where
     F: BlockCipherDecClosure<BlockSize = BS>,
 {
+    #[inline]
     fn call<B: TweakBlockCipherDecBackend<BlockSize = BS, TweakSize = TS>>(self, backend: &B) {
         self.f.call(&BackendWrapper {
             backend,
@@ -89,34 +93,26 @@ impl<BS: BlockSizes, B> BlockSizeUser for BackendWrapper<'_, BS, B> {
     type BlockSize = BS;
 }
 
-impl<BS: BlockSizes, B: ParBlocksSizeUser> ParBlocksSizeUser for BackendWrapper<'_, BS, B> {
-    type ParBlocksSize = B::ParBlocksSize;
+impl<BS: BlockSizes, B> ParBlocksSizeUser for BackendWrapper<'_, BS, B> {
+    type ParBlocksSize = U1;
 }
 
-impl<BS: BlockSizes, B: TweakBlockCipherEncBackend<BlockSize = BS>> BlockCipherEncBackend
-    for BackendWrapper<'_, BS, B>
+impl<BS: BlockSizes, B> BlockCipherEncBackend for BackendWrapper<'_, BS, B>
+where
+    B: TweakBlockCipherEncBackend<BlockSize = BS>,
 {
     #[inline]
     fn encrypt_block(&self, block: inout::InOut<'_, '_, Block<Self>>) {
-        self.backend.encrypt_block(&Default::default(), block);
-    }
-
-    #[inline]
-    fn encrypt_par_blocks(&self, blocks: inout::InOut<'_, '_, ParBlocks<Self>>) {
-        self.backend.encrypt_par_blocks(&Default::default(), blocks);
+        self.backend.encrypt_block_inout(&Default::default(), block);
     }
 }
 
-impl<BS: BlockSizes, B: TweakBlockCipherDecBackend<BlockSize = BS>> BlockCipherDecBackend
-    for BackendWrapper<'_, BS, B>
+impl<BS: BlockSizes, B> BlockCipherDecBackend for BackendWrapper<'_, BS, B>
+where
+    B: TweakBlockCipherDecBackend<BlockSize = BS>,
 {
     #[inline]
     fn decrypt_block(&self, block: inout::InOut<'_, '_, Block<Self>>) {
-        self.backend.decrypt_block(&Default::default(), block);
-    }
-
-    #[inline]
-    fn decrypt_par_blocks(&self, blocks: inout::InOut<'_, '_, ParBlocks<Self>>) {
-        self.backend.decrypt_par_blocks(&Default::default(), blocks);
+        self.backend.decrypt_block_inout(&Default::default(), block);
     }
 }

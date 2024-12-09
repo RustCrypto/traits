@@ -3,8 +3,7 @@
 //! [1]: https://people.eecs.berkeley.edu/~daw/papers/tweak-crypto02.pdf
 use crypto_common::{
     array::{Array, ArraySize},
-    typenum::Unsigned,
-    Block, BlockSizeUser, ParBlocks, ParBlocksSizeUser,
+    Block, BlockSizeUser,
 };
 use inout::InOut;
 
@@ -13,8 +12,6 @@ mod zero;
 
 pub use zero::ZeroTweak;
 
-/// Array of tweaks used by a implementor of [`TweakSizeUser`] and [`ParBlocksSizeUser`].
-pub type ParTweaks<C> = Array<Tweak<C>, <C as ParBlocksSizeUser>::ParBlocksSize>;
 /// Tweak used by a [`TweakSizeUser`] implementor.
 pub type Tweak<C> = Array<u8, <C as TweakSizeUser>::TweakSize>;
 
@@ -109,37 +106,47 @@ pub trait TweakBlockCipherDecClosure: BlockSizeUser + TweakSizeUser {
 }
 
 /// Trait implemented by block cipher mode encryption backends.
-pub trait TweakBlockCipherEncBackend: ParBlocksSizeUser + TweakSizeUser {
+pub trait TweakBlockCipherEncBackend: BlockSizeUser + TweakSizeUser {
     /// Encrypt single inout block.
-    fn encrypt_block(&self, tweak: &Tweak<Self>, block: InOut<'_, '_, Block<Self>>);
+    fn encrypt_block_inout(&self, tweak: &Tweak<Self>, block: InOut<'_, '_, Block<Self>>);
 
-    /// Encrypt inout blocks in parallel.
-    #[inline(always)]
-    fn encrypt_par_blocks(
+    /// Encrypt single block in-place.
+    #[inline]
+    fn encrypt_block(&self, tweak: &Tweak<Self>, block: &mut Block<Self>) {
+        self.encrypt_block_inout(tweak, block.into());
+    }
+
+    /// Encrypt `in_block` and write result to `out_block`.
+    #[inline]
+    fn encrypt_block_b2b(
         &self,
-        tweak: &ParTweaks<Self>,
-        mut blocks: InOut<'_, '_, ParBlocks<Self>>,
+        tweak: &Tweak<Self>,
+        in_block: &Block<Self>,
+        out_block: &mut Block<Self>,
     ) {
-        for i in 0..Self::ParBlocksSize::USIZE {
-            self.encrypt_block(&tweak[i], blocks.get(i));
-        }
+        self.encrypt_block_inout(tweak, (in_block, out_block).into());
     }
 }
 
 /// Trait implemented by block cipher mode decryption backends.
-pub trait TweakBlockCipherDecBackend: ParBlocksSizeUser + TweakSizeUser {
+pub trait TweakBlockCipherDecBackend: BlockSizeUser + TweakSizeUser {
     /// Decrypt single inout block.
-    fn decrypt_block(&self, tweak: &Tweak<Self>, block: InOut<'_, '_, Block<Self>>);
+    fn decrypt_block_inout(&self, tweak: &Tweak<Self>, block: InOut<'_, '_, Block<Self>>);
 
-    /// Decrypt inout blocks in parallel.
-    #[inline(always)]
-    fn decrypt_par_blocks(
+    /// Decrypt single block in-place.
+    #[inline]
+    fn decrypt_block(&self, tweak: &Tweak<Self>, block: &mut Block<Self>) {
+        self.decrypt_block_inout(tweak, block.into());
+    }
+
+    /// Decrypt `in_block` and write result to `out_block`.
+    #[inline]
+    fn decrypt_block_b2b(
         &self,
-        tweak: &ParTweaks<Self>,
-        mut blocks: InOut<'_, '_, ParBlocks<Self>>,
+        tweak: &Tweak<Self>,
+        in_block: &Block<Self>,
+        out_block: &mut Block<Self>,
     ) {
-        for i in 0..Self::ParBlocksSize::USIZE {
-            self.decrypt_block(&tweak[i], blocks.get(i));
-        }
+        self.decrypt_block_inout(tweak, (in_block, out_block).into());
     }
 }
