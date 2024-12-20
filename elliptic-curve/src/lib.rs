@@ -191,8 +191,7 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
         + FieldBytesEncoding<Self>
         + ShrAssign<usize>;
 
-    /// Order of this elliptic curve, i.e. number of elements in the scalar
-    /// field.
+    /// Order of the group formed by the elliptic curves points.
     const ORDER: Self::Uint;
 }
 
