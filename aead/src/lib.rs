@@ -374,6 +374,63 @@ pub trait AeadMutInPlace: AeadCore {
     ) -> Result<()>;
 }
 
+/// In-place stateless AEADs that support additional processing on the expected
+/// tag before comparing the result to the received tag.
+///
+/// # ⚠️Hazmat Trait
+///
+/// This trait was added to allow implementation of committing AEAD wrappers
+/// like CTX which require access to the expected tag at decryption time.
+/// **Incorrect usage of this trait can destroy the integrity guarantees that
+/// an AEAD otherwise provides. Unless you know exactly what you're doing and
+/// have a good reason to need the expected tag's value beyond checking the
+/// received tag's correctness, do not use this trait's function.**
+pub trait DelegatedAuthenticityAeadInPlace: AeadInPlace {
+    /// Decrypt the data in-place, returning an error in the event the provided
+    /// authentication tag does not match the given ciphertext (i.e. ciphertext
+    /// is modified/unauthentic), with additional tag processing
+    ///
+    /// The `tag_closure` argument is a function that receives the expected tag
+    /// and performs a computation on it to produce a new value that can then be
+    /// directly compared to the received tag.
+    fn decrypt_in_place_detached_with_tag_processing<N: ArrayLength<u8>>(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+        received_tag: GenericArray<u8, N>,
+        tag_closure: impl Fn(&Tag<Self>) -> GenericArray<u8, N>,
+    ) -> Result<()>;
+}
+/// In-place stateful AEADs that support additional processing on the expected
+/// tag before comparing the result to the received tag.
+///
+/// # ⚠️Hazmat Trait
+///
+/// This trait was added to allow implementation of committing AEAD wrappers
+/// like CTX which require access to the expected tag at decryption time.
+/// **Incorrect usage of this trait can destroy the integrity guarantees that
+/// an AEAD otherwise provides. Unless you know exactly what you're doing and
+/// have a good reason to need the expected tag's value beyond checking the
+/// received tag's correctness, do not use this trait's function.**
+pub trait DelegatedAuthenticityAeadMutInPlace: AeadMutInPlace {
+    /// Decrypt the data in-place, returning an error in the event the provided
+    /// authentication tag does not match the given ciphertext (i.e. ciphertext
+    /// is modified/unauthentic), with additional tag processing
+    ///
+    /// The `tag_closure` argument is a function that receives the expected tag
+    /// and performs a computation on it to produce a new value that can then be
+    /// directly compared to the received tag.
+    fn decrypt_in_place_detached_with_tag_processing<N: ArrayLength<u8>>(
+        &mut self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+        received_tag: GenericArray<u8, N>,
+        tag_closure: impl Fn(&Tag<Self>) -> GenericArray<u8, N>,
+    ) -> Result<()>;
+}
+
 #[cfg(feature = "alloc")]
 impl<Alg: AeadInPlace> Aead for Alg {
     fn encrypt<'msg, 'aad>(
