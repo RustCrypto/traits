@@ -1120,9 +1120,9 @@ dependencies = [
 
 [[package]]
 name = "serdect"
-version = "0.3.0-rc.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a504c8ee181e3e594d84052f983d60afe023f4d94d050900be18062bbbf7b58"
+checksum = "f42f67da2385b51a5f9652db9c93d78aeaf7610bf5ec366080b6de810604af53"
 dependencies = [
  "base16ct",
  "serde",
