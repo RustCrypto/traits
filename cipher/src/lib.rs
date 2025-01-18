@@ -36,9 +36,11 @@ pub mod block;
 #[cfg(feature = "dev")]
 mod dev;
 pub mod stream;
+pub mod tweak;
 
 pub use block::*;
 pub use stream::*;
+pub use tweak::*;
 
 pub use crypto_common::{
     array::{self, Array},
