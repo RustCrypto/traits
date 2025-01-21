@@ -51,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rust 2021 edition; MSRV 1.56 ([#1051])
 
 ### Removed
-- `Ouput` replaced by `Block` ([#1051])
+- `Output` replaced by `Block` ([#1051])
 - `UniversalHash::reset` replaced with `Reset` trait from `crypto-common` ([#1051])
 
 [#1051]: https://github.com/RustCrypto/traits/pull/1051
