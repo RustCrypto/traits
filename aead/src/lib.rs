@@ -85,10 +85,6 @@ pub trait AeadCore {
     /// The maximum length of the tag.
     type TagSize: ArraySize;
 
-    /// The upper bound amount of additional space required to support a
-    /// ciphertext vs. a plaintext.
-    type CiphertextOverhead: ArraySize + Unsigned;
-
     /// Generate a random nonce for this AEAD algorithm.
     ///
     /// AEAD algorithms accept a parameter to encryption/decryption called
@@ -575,11 +571,9 @@ mod tests {
 
     /// Ensure that `AeadInPlace` is object-safe
     #[allow(dead_code)]
-    type DynAeadInPlace<N, T, O> =
-        dyn AeadInPlace<NonceSize = N, TagSize = T, CiphertextOverhead = O>;
+    type DynAeadInPlace<N, T> = dyn AeadInPlace<NonceSize = N, TagSize = T>;
 
     /// Ensure that `AeadMutInPlace` is object-safe
     #[allow(dead_code)]
-    type DynAeadMutInPlace<N, T, O> =
-        dyn AeadMutInPlace<NonceSize = N, TagSize = T, CiphertextOverhead = O>;
+    type DynAeadMutInPlace<N, T> = dyn AeadMutInPlace<NonceSize = N, TagSize = T>;
 }
