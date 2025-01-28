@@ -1,0 +1,10 @@
+[files]
+extend-exclude = [
+    ".git/",
+    "elliptic-curve/src/jwk.rs",
+    "signature/tests/derive.rs"
+]
+
+[default.extend-words]
+# Authenticated Key Exchange
+"AKE" = "AKE"

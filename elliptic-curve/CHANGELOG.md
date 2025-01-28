@@ -198,7 +198,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Move `hash2field` into `hash2curve` module ([#903])
 - Bump `ff` and `group` dependencies to v0.12 ([#994])
 - Use `serdect` crate ([#996])
-- Replace `AlgorithmParamters` with `AssociatedOid` ([#1001])
+- Replace `AlgorithmParameters` with `AssociatedOid` ([#1001])
 - Bump `crypto-bigint` dependency to v0.4 ([#1005])
 - Bump `der` dependency to v0.6 ([#1006])
 - Bump `pkcs8` dependency to v0.9 ([#1006])
