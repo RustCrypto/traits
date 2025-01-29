@@ -188,12 +188,29 @@ pub trait KeyInit: KeySizeUser + Sized {
         rng.try_fill_bytes(&mut key)?;
         Ok(key)
     }
+
+    /// Check if a key might be considered weak
+    fn weak_key_test(_key: &Key<Self>) -> Result<(), WeakKeyError> {
+        Ok(())
+    }
+
+    /// Create new value from fixed size key and check for weakness
+    fn new_checked(key: &Key<Self>) -> Result<Self, WeakKeyError> {
+        Self::weak_key_test(key)?;
+        Ok(Self::new(key))
+    }
 }
 
 /// Types which can be initialized from key and initialization vector (nonce).
 pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     /// Create new value from fixed length key and nonce.
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self;
+
+    /// Create new value from fixed length key and nonce. This will check for for weakness
+    fn new_checked(key: &Key<Self>, iv: &Iv<Self>) -> Result<Self, WeakKeyError> {
+        Self::weak_iv_test(iv)?;
+        Ok(Self::new(key, iv))
+    }
 
     /// Create new value from variable length key and nonce.
     #[inline]
@@ -258,6 +275,11 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
         let iv = Self::generate_iv_with_rng(rng)?;
         Ok((key, iv))
     }
+
+    /// Check if an IV might be considered weak
+    fn weak_iv_test(_iv: &Iv<Self>) -> Result<(), WeakKeyError> {
+        Ok(())
+    }
 }
 
 /// Types which can be initialized from another type (usually block ciphers).
@@ -300,6 +322,11 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
         rng.try_fill_bytes(&mut iv)?;
         Ok(iv)
     }
+
+    /// Check if an IV might be considered weak
+    fn weak_iv_test(_iv: &Iv<Self>) -> Result<(), WeakKeyError> {
+        Ok(())
+    }
 }
 
 /// Trait for loading current IV state.
@@ -330,6 +357,12 @@ where
     fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidLength> {
         T::Inner::new_from_slice(key).and_then(|i| T::inner_iv_slice_init(i, iv))
     }
+
+    #[inline]
+    fn new_checked(key: &Key<Self>, iv: &Iv<Self>) -> Result<Self, WeakKeyError> {
+        Self::weak_iv_test(iv)?;
+        Ok(Self::inner_iv_init(T::Inner::new_checked(key)?, iv))
+    }
 }
 
 impl<T> KeyInit for T
@@ -347,6 +380,12 @@ where
         T::Inner::new_from_slice(key)
             .map_err(|_| InvalidLength)
             .map(Self::inner_init)
+    }
+
+    #[inline]
+    fn new_checked(key: &Key<Self>) -> Result<Self, WeakKeyError> {
+        T::Inner::weak_key_test(key)?;
+        Ok(Self::inner_init(T::Inner::new(key)))
     }
 }
 
@@ -387,3 +426,16 @@ impl fmt::Display for InvalidLength {
 }
 
 impl core::error::Error for InvalidLength {}
+
+/// The error type returned when a key is tested to be weak the [`KeyInit::weak_key_test`].
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct WeakKeyError;
+
+impl fmt::Display for WeakKeyError {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("WeakKey")
+    }
+}
+
+impl core::error::Error for WeakKeyError {}
