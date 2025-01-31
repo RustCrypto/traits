@@ -176,7 +176,7 @@ pub trait KeyInit: KeySizeUser + Sized {
     #[inline]
     fn generate_key() -> Result<Key<Self>, getrandom::Error> {
         let mut key = Key::<Self>::default();
-        getrandom::getrandom(&mut key)?;
+        getrandom::fill(&mut key)?;
         Ok(key)
     }
 
@@ -208,7 +208,7 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     #[inline]
     fn generate_key() -> Result<Key<Self>, getrandom::Error> {
         let mut key = Key::<Self>::default();
-        getrandom::getrandom(&mut key)?;
+        getrandom::fill(&mut key)?;
         Ok(key)
     }
 
@@ -226,7 +226,7 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     #[inline]
     fn generate_iv() -> Result<Iv<Self>, getrandom::Error> {
         let mut iv = Iv::<Self>::default();
-        getrandom::getrandom(&mut iv)?;
+        getrandom::fill(&mut iv)?;
         Ok(iv)
     }
 
@@ -288,7 +288,7 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     #[inline]
     fn generate_iv() -> Result<Iv<Self>, getrandom::Error> {
         let mut iv = Iv::<Self>::default();
-        getrandom::getrandom(&mut iv)?;
+        getrandom::fill(&mut iv)?;
         Ok(iv)
     }
 
