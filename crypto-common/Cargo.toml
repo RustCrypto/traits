@@ -17,7 +17,7 @@ hybrid-array = "0.2"
 
 # optional dependencies
 rand_core = { version = "0.6.4", optional = true }
-getrandom = { version = "0.2", optional = true }
+getrandom = { version = "0.3", optional = true }
 
 [features]
 getrandom = ["dep:getrandom", "rand_core?/getrandom"]
