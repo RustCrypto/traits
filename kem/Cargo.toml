@@ -24,7 +24,7 @@ pqcrypto = { version = "0.15", default-features = false, features = [
     "pqcrypto-saber",
 ] }
 pqcrypto-traits = "0.3"
-rand = { version = "0.8" }
+rand = { version = "0.9" }
 x3dh-ke = "0.1"
 
 [package.metadata.docs.rs]
