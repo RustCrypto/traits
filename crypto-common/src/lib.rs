@@ -163,6 +163,19 @@ pub trait KeyInit: KeySizeUser + Sized {
     /// Create new value from fixed size key.
     fn new(key: &Key<Self>) -> Self;
 
+    /// Check if the key might be considered weak.
+    #[inline]
+    fn weak_key_test(_key: &Key<Self>) -> Result<(), WeakKeyError> {
+        Ok(())
+    }
+
+    /// Create new value from fixed size key after checking it for weakness.
+    #[inline]
+    fn new_checked(key: &Key<Self>) -> Result<Self, WeakKeyError> {
+        Self::weak_key_test(key)?;
+        Ok(Self::new(key))
+    }
+
     /// Create new value from variable size key.
     #[inline]
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
@@ -194,6 +207,19 @@ pub trait KeyInit: KeySizeUser + Sized {
 pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     /// Create new value from fixed length key and nonce.
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self;
+
+    /// Check if the key might be considered weak.
+    #[inline]
+    fn weak_key_test(_key: &Key<Self>) -> Result<(), WeakKeyError> {
+        Ok(())
+    }
+
+    /// Create new value from fixed length key and nonce after checking the key for weakness.
+    #[inline]
+    fn new_checked(key: &Key<Self>, iv: &Iv<Self>) -> Result<Self, WeakKeyError> {
+        Self::weak_key_test(iv)?;
+        Ok(Self::new(key, iv))
+    }
 
     /// Create new value from variable length key and nonce.
     #[inline]
@@ -330,6 +356,11 @@ where
     fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidLength> {
         T::Inner::new_from_slice(key).and_then(|i| T::inner_iv_slice_init(i, iv))
     }
+
+    #[inline]
+    fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+        T::Inner::weak_key_test(key)
+    }
 }
 
 impl<T> KeyInit for T
@@ -347,6 +378,11 @@ where
         T::Inner::new_from_slice(key)
             .map_err(|_| InvalidLength)
             .map(Self::inner_init)
+    }
+
+    #[inline]
+    fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+        T::Inner::weak_key_test(key)
     }
 }
 
@@ -370,6 +406,11 @@ where
             .map_err(|_| InvalidLength)
             .map(Self::inner_init)
     }
+
+    #[inline]
+    fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+        T::Inner::weak_key_test(key)
+    }
 }
 */
 
@@ -387,3 +428,16 @@ impl fmt::Display for InvalidLength {
 }
 
 impl core::error::Error for InvalidLength {}
+
+/// The error type returned when a key is found to be weak.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct WeakKeyError;
+
+impl fmt::Display for WeakKeyError {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("WeakKey")
+    }
+}
+
+impl core::error::Error for WeakKeyError {}
