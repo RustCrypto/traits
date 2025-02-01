@@ -217,7 +217,7 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     /// Create new value from fixed length key and nonce after checking the key for weakness.
     #[inline]
     fn new_checked(key: &Key<Self>, iv: &Iv<Self>) -> Result<Self, WeakKeyError> {
-        Self::weak_key_test(iv)?;
+        Self::weak_key_test(key)?;
         Ok(Self::new(key, iv))
     }
 
