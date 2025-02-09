@@ -5,7 +5,7 @@ use core::{fmt, str};
 
 use crate::errors::InvalidValue;
 #[cfg(feature = "rand_core")]
-use rand_core::RngCore;
+use rand_core::CryptoRng;
 
 /// Error message used with `expect` for when internal invariants are violated
 /// (i.e. the contents of a [`Salt`] should always be valid)
@@ -203,7 +203,7 @@ pub struct SaltString {
 impl SaltString {
     /// Generate a random B64-encoded [`SaltString`].
     #[cfg(feature = "rand_core")]
-    pub fn generate(mut rng: impl RngCore) -> Self {
+    pub fn generate(mut rng: impl CryptoRng) -> Self {
         let mut bytes = [0u8; Salt::RECOMMENDED_LENGTH];
         rng.fill_bytes(&mut bytes);
         Self::encode_b64(&bytes).expect(INVARIANT_VIOLATED_MSG)
