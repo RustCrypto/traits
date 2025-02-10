@@ -125,8 +125,7 @@ pub trait AeadCore {
         Ok(nonce)
     }
 
-    /// Generate a random nonce for this AEAD algorithm using the specified
-    /// [`CryptoRngCore`].
+    /// Generate a random nonce for this AEAD algorithm using the specified [`CryptoRng`].
     ///
     /// See [`AeadCore::generate_nonce`] documentation for requirements for
     /// random nonces.
@@ -137,8 +136,7 @@ pub trait AeadCore {
         nonce
     }
 
-    /// Generate a random nonce for this AEAD algorithm using the specified
-    /// [`CryptoRngCore`].
+    /// Generate a random nonce for this AEAD algorithm using the specified [`TryCryptoRng`].
     ///
     /// See [`AeadCore::generate_nonce`] documentation for requirements for
     /// random nonces.
