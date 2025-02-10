@@ -16,11 +16,11 @@ categories = ["cryptography", "no-std"]
 hybrid-array = "0.2"
 
 # optional dependencies
-rand_core = { version = "0.6.4", optional = true }
-getrandom = { version = "0.3", optional = true }
+rand_core = { version = "0.9", optional = true }
 
 [features]
-getrandom = ["dep:getrandom", "rand_core?/getrandom"]
+os_rng = ["rand_core/os_rng", "rand_core"]
+rand_core = ["dep:rand_core"]
 
 [package.metadata.docs.rs]
 all-features = true

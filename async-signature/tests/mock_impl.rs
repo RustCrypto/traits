@@ -28,9 +28,9 @@ where
 
 #[cfg(feature = "rand_core")]
 impl async_signature::AsyncRandomizedSigner<Signature> for MockSigner {
-    async fn try_sign_with_rng_async(
+    async fn try_sign_with_rng_async<R: async_signature::signature::rand_core::TryCryptoRng>(
         &self,
-        _rng: &mut impl async_signature::signature::rand_core::CryptoRngCore,
+        _rng: &mut R,
         _msg: &[u8],
     ) -> Result<Signature, Error> {
         unimplemented!("just meant to check compilation")
