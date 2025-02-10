@@ -13,7 +13,7 @@ keywords = ["digest", "crypto", "hash"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = "0.2.0-rc.0"
+crypto-common = "0.2.0-rc.1"
 
 # optional dependencies
 block-buffer = { version = "0.11.0-rc.2", optional = true }
@@ -27,6 +27,7 @@ default = ["core-api"]
 core-api = ["block-buffer"] # Enable Core API traits
 mac = ["subtle"] # Enable MAC traits
 rand_core = ["crypto-common/rand_core"] # Enable random key generation methods
+os_rng = ["crypto-common/rand_core", "rand_core"]
 oid = ["const-oid"]
 zeroize = ["dep:zeroize", "block-buffer?/zeroize"]
 alloc = []

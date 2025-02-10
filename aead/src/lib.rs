@@ -30,8 +30,6 @@ pub use crypto_common::{
 pub use arrayvec;
 #[cfg(feature = "bytes")]
 pub use bytes;
-#[cfg(feature = "getrandom")]
-pub use crypto_common::rand_core::OsRng;
 #[cfg(feature = "heapless")]
 pub use heapless;
 
@@ -45,10 +43,10 @@ use crypto_common::array::{typenum::Unsigned, Array, ArraySize};
 use alloc::vec::Vec;
 #[cfg(feature = "bytes")]
 use bytes::BytesMut;
-#[cfg(feature = "getrandom")]
-use crypto_common::getrandom;
+#[cfg(feature = "os_rng")]
+use crypto_common::rand_core::{OsError, OsRng, TryRngCore};
 #[cfg(feature = "rand_core")]
-use rand_core::CryptoRngCore;
+use rand_core::{CryptoRng, TryCryptoRng};
 
 /// Error type.
 ///
@@ -120,28 +118,32 @@ pub trait AeadCore {
     /// See the [`stream`] module for a ready-made implementation of the latter.
     ///
     /// [NIST SP 800-38D]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
-    #[cfg(feature = "getrandom")]
-    fn generate_nonce() -> core::result::Result<Nonce<Self>, getrandom::Error>
-    where
-        Nonce<Self>: Default,
-    {
+    #[cfg(feature = "os_rng")]
+    fn generate_nonce() -> core::result::Result<Nonce<Self>, OsError> {
         let mut nonce = Nonce::<Self>::default();
-        getrandom::fill(&mut nonce)?;
+        OsRng.try_fill_bytes(&mut nonce)?;
         Ok(nonce)
     }
 
-    /// Generate a random nonce for this AEAD algorithm using the specified
-    /// [`CryptoRngCore`].
+    /// Generate a random nonce for this AEAD algorithm using the specified [`CryptoRng`].
     ///
     /// See [`AeadCore::generate_nonce`] documentation for requirements for
     /// random nonces.
     #[cfg(feature = "rand_core")]
-    fn generate_nonce_with_rng(
-        rng: &mut impl CryptoRngCore,
-    ) -> core::result::Result<Nonce<Self>, rand_core::Error>
-    where
-        Nonce<Self>: Default,
-    {
+    fn generate_nonce_with_rng<R: CryptoRng>(rng: &mut R) -> Nonce<Self> {
+        let mut nonce = Nonce::<Self>::default();
+        rng.fill_bytes(&mut nonce);
+        nonce
+    }
+
+    /// Generate a random nonce for this AEAD algorithm using the specified [`TryCryptoRng`].
+    ///
+    /// See [`AeadCore::generate_nonce`] documentation for requirements for
+    /// random nonces.
+    #[cfg(feature = "rand_core")]
+    fn try_generate_nonce_with_rng<R: TryCryptoRng>(
+        rng: &mut R,
+    ) -> core::result::Result<Nonce<Self>, R::Error> {
         let mut nonce = Nonce::<Self>::default();
         rng.try_fill_bytes(&mut nonce)?;
         Ok(nonce)
