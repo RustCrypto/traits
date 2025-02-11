@@ -21,6 +21,7 @@ getrandom = { version = "0.3", optional = true }
 
 [features]
 getrandom = ["dep:getrandom", "rand_core?/getrandom"]
+zeroize = ["hybrid-array/zeroize"]
 
 [package.metadata.docs.rs]
 all-features = true
