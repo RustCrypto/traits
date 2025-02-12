@@ -83,19 +83,6 @@ impl From<Box<dyn core::error::Error + Send + Sync + 'static>> for Error {
     }
 }
 
-// #[cfg(feature = "rand_core")]
-// impl From<rand_core::OsError> for Error {
-//     #[cfg(not(feature = "alloc"))]
-//     fn from(_source: rand_core::Error) -> Error {
-//         Error::new()
-//     }
-
-//     #[cfg(feature = "alloc")]
-//     fn from(source: rand_core::OsError) -> Error {
-//         Error::from_source(source)
-//     }
-// }
-
 impl core::error::Error for Error {
     fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         #[cfg(not(feature = "alloc"))]
