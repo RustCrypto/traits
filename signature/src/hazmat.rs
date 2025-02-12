@@ -99,9 +99,9 @@ pub trait AsyncRandomizedPrehashSigner<S> {
     ///
     /// Allowed lengths are algorithm-dependent and up to a particular
     /// implementation to decide.
-    async fn sign_prehash_with_rng_async(
+    async fn sign_prehash_with_rng_async<R: CryptoRng>(
         &self,
-        rng: &mut impl CryptoRngCore,
+        rng: &mut R,
         prehash: &[u8],
     ) -> Result<S, Error>;
 }
