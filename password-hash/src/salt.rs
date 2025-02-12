@@ -5,7 +5,7 @@ use core::{fmt, str};
 
 use crate::errors::InvalidValue;
 #[cfg(feature = "rand_core")]
-use rand_core::CryptoRngCore;
+use rand_core::{CryptoRng, TryCryptoRng};
 
 /// Error message used with `expect` for when internal invariants are violated
 /// (i.e. the contents of a [`Salt`] should always be valid)
@@ -201,12 +201,21 @@ pub struct SaltString {
 
 #[allow(clippy::len_without_is_empty)]
 impl SaltString {
-    /// Generate a random B64-encoded [`SaltString`].
+    /// Generate a random B64-encoded [`SaltString`] from [`CryptoRng`].
     #[cfg(feature = "rand_core")]
-    pub fn generate(mut rng: impl CryptoRngCore) -> Self {
+    pub fn from_rng<R: CryptoRng>(rng: &mut R) -> Self {
         let mut bytes = [0u8; Salt::RECOMMENDED_LENGTH];
         rng.fill_bytes(&mut bytes);
         Self::encode_b64(&bytes).expect(INVARIANT_VIOLATED_MSG)
+    }
+
+    /// Generate a random B64-encoded [`SaltString`] from [`TryCryptoRng`].
+    #[cfg(feature = "rand_core")]
+    pub fn try_from_rng<R: TryCryptoRng>(rng: &mut R) -> core::result::Result<Self, R::Error> {
+        let mut bytes = [0u8; Salt::RECOMMENDED_LENGTH];
+        rng.try_fill_bytes(&mut bytes)?;
+        let salt = Self::encode_b64(&bytes).expect(INVARIANT_VIOLATED_MSG);
+        Ok(salt)
     }
 
     /// Create a new [`SaltString`] from the given B64-encoded input string,

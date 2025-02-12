@@ -9,7 +9,7 @@
 use crate::Error;
 
 #[cfg(feature = "rand_core")]
-use crate::rand_core::CryptoRngCore;
+use crate::rand_core::CryptoRng;
 
 /// Sign the provided message prehash, returning a digital signature.
 pub trait PrehashSigner<S> {
@@ -43,11 +43,7 @@ pub trait RandomizedPrehashSigner<S> {
     ///
     /// Allowed lengths are algorithm-dependent and up to a particular
     /// implementation to decide.
-    fn sign_prehash_with_rng(
-        &self,
-        rng: &mut impl CryptoRngCore,
-        prehash: &[u8],
-    ) -> Result<S, Error>;
+    fn sign_prehash_with_rng<R: CryptoRng>(&self, rng: &mut R, prehash: &[u8]) -> Result<S, Error>;
 }
 
 /// Verify the provided message prehash using `Self` (e.g. a public key)

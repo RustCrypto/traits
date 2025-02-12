@@ -16,7 +16,7 @@ categories = ["cryptography", "no-std"]
 rust-version = "1.81"
 
 [dependencies]
-crypto-common = "0.2.0-rc.0"
+crypto-common = "0.2.0-rc.1"
 
 # optional dependencies
 arrayvec = { version = "0.7", optional = true, default-features = false }
@@ -28,7 +28,7 @@ heapless = { version = "0.8", optional = true, default-features = false }
 default = ["rand_core"]
 alloc = []
 dev = ["blobby"]
-getrandom = ["crypto-common/getrandom"]
+os_rng = ["crypto-common/os_rng", "rand_core"]
 rand_core = ["crypto-common/rand_core"]
 
 [package.metadata.docs.rs]
