@@ -15,7 +15,7 @@ use subtle::{Choice, ConstantTimeEq};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 #[cfg(feature = "arithmetic")]
-use crate::{CurveArithmetic, NonZeroScalar, PublicKey, rand_core::CryptoRngCore};
+use crate::{CurveArithmetic, NonZeroScalar, PublicKey, rand_core::CryptoRng};
 
 #[cfg(feature = "jwk")]
 use crate::jwk::{JwkEcKey, JwkParameters};
@@ -91,7 +91,7 @@ where
 
     /// Generate a random [`SecretKey`].
     #[cfg(feature = "arithmetic")]
-    pub fn random(rng: &mut impl CryptoRngCore) -> Self
+    pub fn random<R: CryptoRng>(rng: &mut R) -> Self
     where
         C: CurveArithmetic,
     {

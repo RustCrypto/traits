@@ -13,7 +13,7 @@ use core::{
 };
 use crypto_bigint::{ArrayEncoding, Integer};
 use ff::{Field, PrimeField};
-use rand_core::CryptoRngCore;
+use rand_core::CryptoRng;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
@@ -47,7 +47,7 @@ where
     C: CurveArithmetic,
 {
     /// Generate a random `NonZeroScalar`.
-    pub fn random(mut rng: &mut impl CryptoRngCore) -> Self {
+    pub fn random<R: CryptoRng>(mut rng: &mut R) -> Self {
         // Use rejection sampling to eliminate zero values.
         // While this method isn't constant-time, the attacker shouldn't learn
         // anything about unrelated outputs so long as `rng` is a secure `CryptoRng`.
