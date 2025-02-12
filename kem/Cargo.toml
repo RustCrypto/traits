@@ -14,7 +14,7 @@ categories = ["cryptography", "no-std"]
 rust-version = "1.66"
 
 [dependencies]
-rand_core = "0.6"
+rand_core = "0.9"
 zeroize = { version = "1.7", default-features = false }
 
 [dev-dependencies]

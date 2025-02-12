@@ -504,7 +504,7 @@ dependencies = [
  "hybrid-array",
  "pem-rfc7468 1.0.0-rc.2",
  "pkcs8 0.11.0-rc.1",
- "rand_core 0.6.4",
+ "rand_core 0.9.0",
  "sec1 0.8.0-rc.3",
  "serde_json",
  "serdect",
@@ -785,7 +785,7 @@ dependencies = [
  "pqcrypto",
  "pqcrypto-traits",
  "rand",
- "rand_core 0.6.4",
+ "rand_core 0.9.0",
  "x3dh-ke",
  "zeroize",
 ]
