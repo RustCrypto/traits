@@ -21,6 +21,7 @@ rand_core = { version = "0.9", optional = true }
 [features]
 os_rng = ["rand_core/os_rng", "rand_core"]
 rand_core = ["dep:rand_core"]
+zeroize = ["hybrid-array/zeroize"]
 
 [package.metadata.docs.rs]
 all-features = true
