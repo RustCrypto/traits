@@ -186,7 +186,7 @@ where
 #[allow(async_fn_in_trait)]
 pub trait AsyncRandomizedSigner<S> {
     /// Sign the given message and return a digital signature
-    async fn sign_with_rng_async(&self, rng: &mut impl CryptoRngCore, msg: &[u8]) -> S {
+    async fn sign_with_rng_async<R: CryptoRng>(&self, rng: &mut R, msg: &[u8]) -> S {
         self.try_sign_with_rng_async(rng, msg)
             .await
             .expect("signature operation failed")
@@ -197,9 +197,9 @@ pub trait AsyncRandomizedSigner<S> {
     ///
     /// The main intended use case for signing errors is when communicating
     /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
-    async fn try_sign_with_rng_async(
+    async fn try_sign_with_rng_async<R: CryptoRng>(
         &self,
-        rng: &mut impl CryptoRngCore,
+        rng: &mut R,
         msg: &[u8],
     ) -> Result<S, Error>;
 }
@@ -209,9 +209,9 @@ impl<S, T> AsyncRandomizedSigner<S> for T
 where
     T: RandomizedSigner<S>,
 {
-    async fn try_sign_with_rng_async(
+    async fn try_sign_with_rng_async<R: CryptoRng>(
         &self,
-        rng: &mut impl CryptoRngCore,
+        rng: &mut R,
         msg: &[u8],
     ) -> Result<S, Error> {
         self.try_sign_with_rng(rng, msg)
