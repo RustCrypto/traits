@@ -503,7 +503,7 @@ dependencies = [
  "hkdf 0.13.0-pre.4",
  "hybrid-array",
  "pem-rfc7468 1.0.0-rc.2",
- "pkcs8 0.11.0-rc.1",
+ "pkcs8 0.11.0-rc.2",
  "rand_core 0.6.4",
  "sec1 0.8.0-rc.3",
  "serde_json",
@@ -900,9 +900,9 @@ dependencies = [
 
 [[package]]
 name = "pkcs8"
-version = "0.11.0-rc.1"
+version = "0.11.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eacd2c7141f32aef1cfd1ad0defb5287a3d94592d7ab57c1ae20e3f9f1f0db1f"
+checksum = "f22636de7c995e997ed3d8d2949b7414d4faba3efa7312a6c0e75d875a14bdd4"
 dependencies = [
  "der 0.8.0-rc.1",
  "spki 0.8.0-rc.1",
@@ -1092,7 +1092,7 @@ dependencies = [
  "base16ct",
  "der 0.8.0-rc.1",
  "hybrid-array",
- "pkcs8 0.11.0-rc.1",
+ "pkcs8 0.11.0-rc.2",
  "serdect",
  "subtle",
  "zeroize",
