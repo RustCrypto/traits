@@ -14,7 +14,7 @@ edition = "2021"
 rust-version = "1.81"
 
 [dependencies]
-signature = "=2.3.0-pre.5"
+signature = "=2.3.0-pre.6"
 
 [features]
 digest = ["signature/digest"]
