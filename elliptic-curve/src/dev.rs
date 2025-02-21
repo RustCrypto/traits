@@ -114,12 +114,10 @@ impl Field for Scalar {
         self.0.is_zero()
     }
 
-    #[must_use]
     fn square(&self) -> Self {
         unimplemented!();
     }
 
-    #[must_use]
     fn double(&self) -> Self {
         self.add(self)
     }
@@ -601,7 +599,6 @@ impl group::Group for ProjectivePoint {
         Choice::from(u8::from(self == &Self::Identity))
     }
 
-    #[must_use]
     fn double(&self) -> Self {
         unimplemented!();
     }
