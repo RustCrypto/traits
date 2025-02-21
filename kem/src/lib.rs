@@ -10,7 +10,7 @@
 #![warn(missing_docs, unused_qualifications, missing_debug_implementations)]
 
 use core::fmt::Debug;
-use rand_core::CryptoRngCore;
+use rand_core::CryptoRng;
 
 /// A value that can be encapsulated to. Often, this will just be a public key. However, it can
 /// also be a bundle of public keys, or it can include a sender's private key for authenticated
@@ -20,7 +20,7 @@ pub trait Encapsulate<EK, SS> {
     type Error: Debug;
 
     /// Encapsulates a fresh shared secret
-    fn encapsulate(&self, rng: &mut impl CryptoRngCore) -> Result<(EK, SS), Self::Error>;
+    fn encapsulate(&self, rng: &mut impl CryptoRng) -> Result<(EK, SS), Self::Error>;
 }
 
 /// A value that can be used to decapsulate an encapsulated key.
