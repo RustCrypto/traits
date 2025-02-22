@@ -23,7 +23,7 @@ checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 name = "async-signature"
 version = "0.6.0-pre.4"
 dependencies = [
- "signature 2.3.0-pre.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "signature",
 ]
 
 [[package]]
@@ -110,6 +110,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68ff6be19477a1bd5441f382916a89bc2a0b2c35db6d41e0f6e8538bf6d6463f"
 
 [[package]]
+name = "cpufeatures"
+version = "0.2.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59ed5838eebb26a2bb2e58f6d5b5316989ae9d08bab10e0e6d103e656d1b0280"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "crypto"
 version = "0.6.0-pre"
 dependencies = [
@@ -119,7 +128,7 @@ dependencies = [
  "digest 0.11.0-pre.10",
  "elliptic-curve",
  "password-hash",
- "signature 2.3.0-pre.6",
+ "signature",
  "universal-hash",
 ]
 
@@ -165,15 +174,6 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.11.0-pre.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf2e3d6615d99707295a9673e889bf363a04b2a466bd320c65a72536f7577379"
-dependencies = [
- "crypto-common 0.2.0-rc.2 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "digest"
 version = "0.11.0-pre.10"
 dependencies = [
  "blobby",
@@ -182,6 +182,16 @@ dependencies = [
  "crypto-common 0.2.0-rc.2",
  "subtle",
  "zeroize",
+]
+
+[[package]]
+name = "digest"
+version = "0.11.0-pre.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c478574b20020306f98d61c8ca3322d762e1ff08117422ac6106438605ea516"
+dependencies = [
+ "block-buffer",
+ "crypto-common 0.2.0-rc.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -262,6 +272,12 @@ dependencies = [
  "hash32",
  "stable_deref_trait",
 ]
+
+[[package]]
+name = "hex-literal"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bcaaec4551594c969335c98c903c1397853d4198408ea609190f420500f6be71"
 
 [[package]]
 name = "hybrid-array"
@@ -387,20 +403,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "signature"
-version = "2.3.0-pre.6"
+name = "sha2"
+version = "0.11.0-pre.4"
+source = "git+https://github.com/RustCrypto/hashes.git?branch=edition_upgrade#cfe82a0f1a9a6c89c5b6d8309f2603c644dc97ea"
 dependencies = [
- "rand_core 0.9.2",
+ "cfg-if",
+ "cpufeatures",
+ "digest 0.11.0-pre.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "signature"
 version = "2.3.0-pre.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4633ec5613e4218fbab07568ca79ee388e3c041af75f0f83a15f040f096f94cf"
 dependencies = [
- "digest 0.11.0-pre.9",
+ "digest 0.11.0-pre.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hex-literal",
  "rand_core 0.9.2",
+ "sha2",
+ "signature_derive",
 ]
 
 [[package]]

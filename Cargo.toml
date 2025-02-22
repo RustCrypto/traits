@@ -11,8 +11,12 @@ members = [
     "password-hash",
     "signature_derive",
     "universal-hash",
+    "signature",
 ]
 exclude = [
     "elliptic-curve",
-    "signature",
 ]
+
+[patch.crates-io]
+signature = { path = "signature" }
+sha2 = { git = "https://github.com/RustCrypto/hashes.git", branch = "edition_upgrade" }
