@@ -15,7 +15,7 @@ use subtle::{Choice, ConstantTimeEq};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 #[cfg(feature = "arithmetic")]
-use crate::{rand_core::CryptoRngCore, CurveArithmetic, NonZeroScalar, PublicKey};
+use crate::{CurveArithmetic, NonZeroScalar, PublicKey, rand_core::CryptoRngCore};
 
 #[cfg(feature = "jwk")]
 use crate::jwk::{JwkEcKey, JwkParameters};
@@ -26,8 +26,8 @@ use pem_rfc7468::{self as pem, PemLabel};
 #[cfg(feature = "sec1")]
 use {
     crate::{
-        sec1::{EncodedPoint, ModulusSize, ValidatePublicKey},
         FieldBytesSize,
+        sec1::{EncodedPoint, ModulusSize, ValidatePublicKey},
     },
     sec1::der::{self, oid::AssociatedOid},
 };
@@ -35,8 +35,8 @@ use {
 #[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
 use {
     crate::{
-        sec1::{FromEncodedPoint, ToEncodedPoint},
         AffinePoint,
+        sec1::{FromEncodedPoint, ToEncodedPoint},
     },
     alloc::vec::Vec,
     sec1::der::Encode,

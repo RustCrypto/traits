@@ -1,5 +1,5 @@
 [workspace]
-resolver = "2"
+resolver = "3"
 members = [
     "aead",
     "async-signature",
@@ -7,15 +7,12 @@ members = [
     "crypto",
     "crypto-common",
     "digest",
-    "elliptic-curve",
     "kem",
     "password-hash",
-    "signature",
     "signature_derive",
     "universal-hash",
 ]
-
-[patch.crates-io]
-crypto-common = { path = "./crypto-common" }
-digest = { path = "./digest" }
-signature = { path = "./signature" }
+exclude = [
+    "elliptic-curve",
+    "signature",
+]

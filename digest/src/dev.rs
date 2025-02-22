@@ -44,9 +44,9 @@ macro_rules! hash_serialization_test {
         #[test]
         fn $name() {
             use digest::{
-                crypto_common::{hazmat::SerializableState, BlockSizeUser},
-                typenum::Unsigned,
                 Digest,
+                crypto_common::{BlockSizeUser, hazmat::SerializableState},
+                typenum::Unsigned,
             };
 
             let mut h = <$hasher>::new();
@@ -77,9 +77,9 @@ macro_rules! hash_rt_outsize_serialization_test {
         #[test]
         fn $name() {
             use digest::{
-                crypto_common::{hazmat::SerializableState, BlockSizeUser},
-                typenum::Unsigned,
                 Digest, Update, VariableOutput,
+                crypto_common::{BlockSizeUser, hazmat::SerializableState},
+                typenum::Unsigned,
             };
             const HASH_OUTPUT_SIZE: usize = <$hasher>::MAX_OUTPUT_SIZE - 1;
 

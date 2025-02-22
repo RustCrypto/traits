@@ -10,8 +10,8 @@ repository = "https://github.com/RustCrypto/traits"
 readme = "README.md"
 keywords = ["crypto", "ecdsa", "ed25519", "signature", "signing"]
 categories = ["cryptography", "no-std"]
-edition = "2021"
-rust-version = "1.81"
+edition = "2024"
+rust-version = "1.85"
 
 [dependencies]
 signature = "=2.3.0-pre.6"

@@ -4,7 +4,7 @@
 
 use core::ops::{AddAssign, Mul};
 use ff::Field;
-use hybrid_array::{typenum::Unsigned, Array, ArraySize};
+use hybrid_array::{Array, ArraySize, typenum::Unsigned};
 
 /// The coefficients for mapping from one isogenous curve to another
 #[derive(Debug)]

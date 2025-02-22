@@ -114,7 +114,7 @@ pub trait RandomizedDigestSigner<D: Digest, S> {
     /// Attempt to sign the given prehashed message `Digest`, returning a
     /// digital signature on success, or an error if something went wrong.
     fn try_sign_digest_with_rng<R: TryCryptoRng>(&self, rng: &mut R, digest: D)
-        -> Result<S, Error>;
+    -> Result<S, Error>;
 }
 
 /// Sign the provided message bytestring using `&mut Self` (e.g. an evolving

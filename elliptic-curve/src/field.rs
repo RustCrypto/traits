@@ -1,10 +1,10 @@
 //! Field elements.
 
 use crate::{
-    bigint::{ArrayEncoding, ByteArray, Integer},
     Curve,
+    bigint::{ArrayEncoding, ByteArray, Integer},
 };
-use hybrid_array::{typenum::Unsigned, Array};
+use hybrid_array::{Array, typenum::Unsigned};
 
 /// Size of serialized field elements of this elliptic curve.
 pub type FieldBytesSize<C> = <C as Curve>::FieldBytesSize;

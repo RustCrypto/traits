@@ -5,20 +5,20 @@ version = "0.11.0-pre.9"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-edition = "2021"
-rust-version = "1.81"
+edition = "2024"
+rust-version = "1.85"
 documentation = "https://docs.rs/digest"
 repository = "https://github.com/RustCrypto/traits"
 keywords = ["digest", "crypto", "hash"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = "0.2.0-rc.1"
+crypto-common = { version = "0.2.0-rc.1", path = "../crypto-common" }
 
 # optional dependencies
-block-buffer = { version = "0.11.0-rc.2", optional = true }
+block-buffer = { version = "0.11.0-rc.4", optional = true }
 subtle = { version = "2.4", default-features = false, optional = true }
-blobby = { version = "0.3", optional = true }
+blobby = { version = "0.4.0-pre.0", optional = true }
 const-oid = { version = "0.10.0-rc.3", optional = true }
 zeroize = { version = "1.7", optional = true, default-features = false }
 

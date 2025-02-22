@@ -8,26 +8,22 @@ Collection of traits which describe functionality of cryptographic primitives.
 
 | Name                | Algorithm | Crates.io | Docs  | MSRV |
 |---------------------|-----------|:---------:|:-----:|:----:|
-| [`aead`]            | [Authenticated encryption]    | [![crates.io](https://img.shields.io/crates/v/aead.svg)](https://crates.io/crates/aead) | [![Documentation](https://docs.rs/aead/badge.svg)](https://docs.rs/aead) | ![MSRV 1.56][msrv-1.56] |
-| [`async‑signature`] | [Digital signature]           | [![crates.io](https://img.shields.io/crates/v/async-signature.svg)](https://crates.io/crates/async-signature) | [![Documentation](https://docs.rs/async-signature/badge.svg)](https://docs.rs/async-signature) | ![MSRV 1.56][msrv-1.56] |
-| [`cipher`]          | [Block] and [stream cipher]   | [![crates.io](https://img.shields.io/crates/v/cipher.svg)](https://crates.io/crates/cipher) | [![Documentation](https://docs.rs/cipher/badge.svg)](https://docs.rs/cipher) | ![MSRV 1.56][msrv-1.56] |
-| [`crypto‑common`]      | Common cryptographic traits | [![crates.io](https://img.shields.io/crates/v/crypto-common.svg)](https://crates.io/crates/crypto-common) | [![Documentation](https://docs.rs/crypto-common/badge.svg)](https://docs.rs/crypto-common) | ![MSRV 1.56][msrv-1.56] |
-| [`digest`]          | [Cryptographic hash function] | [![crates.io](https://img.shields.io/crates/v/digest.svg)](https://crates.io/crates/digest) | [![Documentation](https://docs.rs/digest/badge.svg)](https://docs.rs/digest) | ![MSRV 1.57][msrv-1.57] |
-| [`elliptic‑curve`]  | [Elliptic curve cryptography] | [![crates.io](https://img.shields.io/crates/v/elliptic-curve.svg)](https://crates.io/crates/elliptic-curve) | [![Documentation](https://docs.rs/elliptic-curve/badge.svg)](https://docs.rs/elliptic-curve) | ![MSRV 1.65][msrv-1.65] |
-| [`kem`]             | [Key encapsulation mechanism] | [![crates.io](https://img.shields.io/crates/v/kem.svg)](https://crates.io/crates/kem) | [![Documentation](https://docs.rs/kem/badge.svg)](https://docs.rs/kem) | ![MSRV 1.60][msrv-1.60] |
-| [`password-hash`]   | [Password hashing]            | [![crates.io](https://img.shields.io/crates/v/password-hash.svg)](https://crates.io/crates/password-hash) | [![Documentation](https://docs.rs/password-hash/badge.svg)](https://docs.rs/password-hash) | ![MSRV 1.60][msrv-1.60] |
-| [`signature`]       | [Digital signature]           | [![crates.io](https://img.shields.io/crates/v/signature.svg)](https://crates.io/crates/signature) | [![Documentation](https://docs.rs/signature/badge.svg)](https://docs.rs/signature) | ![MSRV 1.56][msrv-1.56] |
-| [`universal‑hash`]  | [Universal hash function]     | [![crates.io](https://img.shields.io/crates/v/universal-hash.svg)](https://crates.io/crates/universal-hash) | [![Documentation](https://docs.rs/universal-hash/badge.svg)](https://docs.rs/universal-hash) | ![MSRV 1.56][msrv-1.56] |
+| [`aead`]            | [Authenticated encryption]    | [![crates.io](https://img.shields.io/crates/v/aead.svg)](https://crates.io/crates/aead) | [![Documentation](https://docs.rs/aead/badge.svg)](https://docs.rs/aead) | ![MSRV 1.85][msrv-1.85] |
+| [`async‑signature`] | [Digital signature]           | [![crates.io](https://img.shields.io/crates/v/async-signature.svg)](https://crates.io/crates/async-signature) | [![Documentation](https://docs.rs/async-signature/badge.svg)](https://docs.rs/async-signature) | ![MSRV 1.85][msrv-1.85] |
+| [`cipher`]          | [Block] and [stream cipher]   | [![crates.io](https://img.shields.io/crates/v/cipher.svg)](https://crates.io/crates/cipher) | [![Documentation](https://docs.rs/cipher/badge.svg)](https://docs.rs/cipher) | ![MSRV 1.85][msrv-1.85] |
+| [`crypto‑common`]      | Common cryptographic traits | [![crates.io](https://img.shields.io/crates/v/crypto-common.svg)](https://crates.io/crates/crypto-common) | [![Documentation](https://docs.rs/crypto-common/badge.svg)](https://docs.rs/crypto-common) | ![MSRV 1.85][msrv-1.85] |
+| [`digest`]          | [Cryptographic hash function] | [![crates.io](https://img.shields.io/crates/v/digest.svg)](https://crates.io/crates/digest) | [![Documentation](https://docs.rs/digest/badge.svg)](https://docs.rs/digest) | ![MSRV 1.85][msrv-1.85] |
+| [`elliptic‑curve`]  | [Elliptic curve cryptography] | [![crates.io](https://img.shields.io/crates/v/elliptic-curve.svg)](https://crates.io/crates/elliptic-curve) | [![Documentation](https://docs.rs/elliptic-curve/badge.svg)](https://docs.rs/elliptic-curve) | ![MSRV 1.85][msrv-1.85] |
+| [`kem`]             | [Key encapsulation mechanism] | [![crates.io](https://img.shields.io/crates/v/kem.svg)](https://crates.io/crates/kem) | [![Documentation](https://docs.rs/kem/badge.svg)](https://docs.rs/kem) | ![MSRV 1.85][msrv-1.85] |
+| [`password-hash`]   | [Password hashing]            | [![crates.io](https://img.shields.io/crates/v/password-hash.svg)](https://crates.io/crates/password-hash) | [![Documentation](https://docs.rs/password-hash/badge.svg)](https://docs.rs/password-hash) | ![MSRV 1.85][msrv-1.85] |
+| [`signature`]       | [Digital signature]           | [![crates.io](https://img.shields.io/crates/v/signature.svg)](https://crates.io/crates/signature) | [![Documentation](https://docs.rs/signature/badge.svg)](https://docs.rs/signature) | ![MSRV 1.85][msrv-1.85] |
+| [`universal‑hash`]  | [Universal hash function]     | [![crates.io](https://img.shields.io/crates/v/universal-hash.svg)](https://crates.io/crates/universal-hash) | [![Documentation](https://docs.rs/universal-hash/badge.svg)](https://docs.rs/universal-hash) | ![MSRV 1.85][msrv-1.85] |
 
 ### Additional Crates
 
 | Crate name | Description             | Crates.io | Docs  | MSRV |
 |------------|-------------------------|:---------:|:-----:|:----:|
-| [`crypto`] | Facade for trait crates | [![crates.io](https://img.shields.io/crates/v/crypto.svg)](https://crates.io/crates/crypto) | [![Documentation](https://docs.rs/crypto/badge.svg)](https://docs.rs/crypto) | ![MSRV 1.57][msrv-1.57] |
-
-### Minimum Supported Rust Version (MSRV) Policy
-
-MSRV bumps are considered breaking changes and will be performed only with minor version bump.
+| [`crypto`] | Facade for trait crates | [![crates.io](https://img.shields.io/crates/v/crypto.svg)](https://crates.io/crates/crypto) | [![Documentation](https://docs.rs/crypto/badge.svg)](https://docs.rs/crypto) | ![MSRV 1.85][msrv-1.85] |
 
 ## License
 
@@ -49,10 +45,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [deps-image]: https://deps.rs/repo/github/RustCrypto/traits/status.svg
 [deps-link]: https://deps.rs/repo/github/RustCrypto/traits
-[msrv-1.56]: https://img.shields.io/badge/rustc-1.56.0+-blue.svg
-[msrv-1.57]: https://img.shields.io/badge/rustc-1.57.0+-blue.svg
-[msrv-1.60]: https://img.shields.io/badge/rustc-1.60.0+-blue.svg
-[msrv-1.65]: https://img.shields.io/badge/rustc-1.65.0+-blue.svg
+[msrv-1.85]: https://img.shields.io/badge/rustc-1.85.0+-blue.svg
 
 [//]: # (crates)
 

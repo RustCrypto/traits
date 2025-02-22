@@ -7,7 +7,7 @@ macro_rules! stream_cipher_test {
         #[test]
         fn $name() {
             use cipher::array::Array;
-            use cipher::{blobby::Blob4Iterator, KeyIvInit, StreamCipher};
+            use cipher::{KeyIvInit, StreamCipher, blobby::Blob4Iterator};
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {

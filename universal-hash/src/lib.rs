@@ -9,13 +9,12 @@
 #![warn(missing_docs, rust_2018_idioms, missing_debug_implementations)]
 
 pub use crypto_common::{
-    self, array,
+    self, Block, Key, KeyInit, ParBlocks, Reset, array,
     typenum::{self, consts},
-    Block, Key, KeyInit, ParBlocks, Reset,
 };
 
 use core::slice;
-use crypto_common::{array::Array, BlockSizeUser, BlockSizes, ParBlocksSizeUser};
+use crypto_common::{BlockSizeUser, BlockSizes, ParBlocksSizeUser, array::Array};
 use subtle::ConstantTimeEq;
 use typenum::Unsigned;
 

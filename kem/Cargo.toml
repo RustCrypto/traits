@@ -8,10 +8,10 @@ documentation = "https://docs.rs/kem"
 homepage = "https://github.com/RustCrypto/traits/tree/master/kem"
 repository = "https://github.com/RustCrypto/traits"
 readme = "README.md"
-edition = "2021"
 keywords = ["crypto"]
 categories = ["cryptography", "no-std"]
-rust-version = "1.66"
+edition = "2024"
+rust-version = "1.85"
 
 [dependencies]
 rand_core = "0.9"

@@ -43,9 +43,9 @@ pub use stream::*;
 pub use tweak::*;
 
 pub use crypto_common::{
-    array::{self, Array},
-    typenum::{self, consts},
     AlgorithmName, Block, BlockSizeUser, InnerIvInit, InvalidLength, Iv, IvSizeUser, IvState, Key,
     KeyInit, KeyIvInit, KeySizeUser, ParBlocks, ParBlocksSizeUser,
+    array::{self, Array},
+    typenum::{self, consts},
 };
 pub use inout::{InOut, InOutBuf};

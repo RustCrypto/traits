@@ -13,12 +13,12 @@
 #[cfg(all(feature = "block-padding", feature = "alloc"))]
 use alloc::{vec, vec::Vec};
 use crypto_common::{Block, BlockSizeUser};
+use inout::{InOut, InOutBuf, NotEqualError};
 #[cfg(feature = "block-padding")]
 use inout::{
-    block_padding::{Padding, UnpadError},
     InOutBufReserved, PadError,
+    block_padding::{Padding, UnpadError},
 };
-use inout::{InOut, InOutBuf, NotEqualError};
 
 mod backends;
 mod ctx;

@@ -9,8 +9,6 @@
 
 Traits which describe the functionality of [password hashing algorithms].
 
-[Documentation][docs-link]
-
 ## About
 
 Provides a `no_std`-friendly implementation of the
@@ -26,18 +24,6 @@ this crate for interoperability:
 - [`argon2`] - Argon2 memory hard key derivation function
 - [`pbkdf2`] - Password-Based Key Derivation Function v2
 - [`scrypt`] - scrypt key derivation function
-
-## Minimum Supported Rust Version
-
-Rust **1.81** or higher.
-
-Minimum supported Rust version may be changed in the future, but it will be
-accompanied by a minor version bump.
-
-## SemVer Policy
-
-- All on-by-default features of this library are covered by SemVer
-- MSRV is considered exempt from SemVer as noted above
 
 ## License
 
@@ -63,7 +49,7 @@ dual licensed as above, without any additional terms or conditions.
 [build-image]: https://github.com/RustCrypto/traits/workflows/password-hash/badge.svg?branch=master&event=push
 [build-link]: https://github.com/RustCrypto/traits/actions?query=workflow:password-hash
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.81+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260046-password-hashes
 

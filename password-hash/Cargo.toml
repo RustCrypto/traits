@@ -14,8 +14,8 @@ homepage = "https://github.com/RustCrypto/traits/tree/master/password-hash"
 repository = "https://github.com/RustCrypto/traits"
 categories = ["authentication", "cryptography", "no-std"]
 keywords = ["crypt", "mcf", "password", "pbkdf", "phc"]
-edition = "2021"
-rust-version = "1.81"
+edition = "2024"
+rust-version = "1.85"
 
 [dependencies]
 base64ct = "1.6"

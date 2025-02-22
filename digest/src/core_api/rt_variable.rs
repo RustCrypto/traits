@@ -10,10 +10,10 @@ use core::{
     ops::{Add, Sub},
 };
 use crypto_common::{
+    AddBlockSize, SubBlockSize,
     array::{Array, ArraySize},
     hazmat::{DeserializeStateError, SerializableState, SerializedState, SubSerializedStateSize},
-    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U256},
-    AddBlockSize, SubBlockSize,
+    typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U256, Unsigned},
 };
 #[cfg(feature = "zeroize")]
 use zeroize::ZeroizeOnDrop;

@@ -1,7 +1,7 @@
 //! Elliptic curve public keys.
 
 use crate::{
-    point::NonIdentity, AffinePoint, CurveArithmetic, Error, NonZeroScalar, ProjectivePoint, Result,
+    AffinePoint, CurveArithmetic, Error, NonZeroScalar, ProjectivePoint, Result, point::NonIdentity,
 };
 use core::fmt::Debug;
 use group::{Curve, Group};
@@ -18,9 +18,9 @@ use core::str::FromStr;
 #[cfg(feature = "sec1")]
 use {
     crate::{
+        FieldBytesSize,
         point::PointCompression,
         sec1::{CompressedPoint, EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
-        FieldBytesSize,
     },
     core::cmp::Ordering,
     subtle::{Choice, CtOption},
@@ -36,14 +36,14 @@ use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 
 #[cfg(feature = "serde")]
-use serdect::serde::{de, ser, Deserialize, Serialize};
+use serdect::serde::{Deserialize, Serialize, de, ser};
 
 #[cfg(any(feature = "pem", feature = "serde"))]
 use pkcs8::DecodePublicKey;
 
 #[cfg(all(feature = "sec1", feature = "pkcs8"))]
 use {
-    crate::{pkcs8::AssociatedOid, ALGORITHM_OID},
+    crate::{ALGORITHM_OID, pkcs8::AssociatedOid},
     pkcs8::der,
 };
 

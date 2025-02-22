@@ -1,6 +1,6 @@
 [package]
 name          = "signature_derive"
-version       = "2.1.0"
+version       = "2.2.0"
 authors       = ["RustCrypto Developers"]
 license       = "Apache-2.0 OR MIT"
 description   = "Custom derive support for the 'signature' crate"
@@ -8,8 +8,8 @@ documentation = "https://docs.rs/signature"
 homepage      = "https://github.com/RustCrypto/traits/tree/master/signature_derive"
 repository    = "https://github.com/RustCrypto/traits"
 readme        = "README.md"
-edition       = "2021"
-rust-version  = "1.60"
+edition       = "2024"
+rust-version  = "1.85"
 keywords      = ["crypto", "ecdsa", "ed25519", "signature", "signing"]
 categories    = ["cryptography", "no-std"]
 

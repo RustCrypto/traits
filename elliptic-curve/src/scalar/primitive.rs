@@ -1,11 +1,11 @@
 //! Generic scalar type with primitive functionality.
 
 use crate::{
+    Curve, Error, FieldBytes, FieldBytesEncoding, Result,
     array::Array,
-    bigint::{prelude::*, Limb, NonZero},
+    bigint::{Limb, NonZero, prelude::*},
     scalar::FromUintUnchecked,
     scalar::IsHigh,
-    Curve, Error, FieldBytes, FieldBytesEncoding, Result,
 };
 use base16ct::HexDisplay;
 use core::{
@@ -25,7 +25,7 @@ use zeroize::DefaultIsZeroes;
 use super::{CurveArithmetic, Scalar};
 
 #[cfg(feature = "serde")]
-use serdect::serde::{de, ser, Deserialize, Serialize};
+use serdect::serde::{Deserialize, Serialize, de, ser};
 
 /// Generic scalar type with primitive functionality.
 ///

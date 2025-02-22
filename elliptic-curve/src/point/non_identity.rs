@@ -2,12 +2,12 @@
 
 use core::ops::{Deref, Mul};
 
-use group::{prime::PrimeCurveAffine, Curve, GroupEncoding};
+use group::{Curve, GroupEncoding, prime::PrimeCurveAffine};
 use rand_core::{CryptoRng, RngCore};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "serde")]
-use serdect::serde::{de, ser, Deserialize, Serialize};
+use serdect::serde::{Deserialize, Serialize, de, ser};
 
 use crate::{CurveArithmetic, NonZeroScalar, Scalar};
 

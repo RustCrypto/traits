@@ -2,8 +2,8 @@
 //!
 //! [1]: https://people.eecs.berkeley.edu/~daw/papers/tweak-crypto02.pdf
 use crypto_common::{
-    array::{Array, ArraySize},
     Block, BlockSizeUser,
+    array::{Array, ArraySize},
 };
 use inout::InOut;
 

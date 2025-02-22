@@ -78,7 +78,7 @@ mod test {
     use super::*;
     use core::mem::size_of;
     use hex_literal::hex;
-    use hybrid_array::{typenum::U128, Array, ArraySize};
+    use hybrid_array::{Array, ArraySize, typenum::U128};
     use sha3::Shake128;
 
     fn assert_message(msg: &[u8], domain: &Domain<'_, U32>, len_in_bytes: u16, bytes: &[u8]) {

@@ -1,10 +1,10 @@
 //! Elliptic curve arithmetic traits.
 
 use crate::{
+    Curve, FieldBytes, PrimeCurve, ScalarPrimitive,
     ops::{Invert, LinearCombination, MulByGenerator, Reduce, ShrAssign},
     point::AffineCoordinates,
     scalar::{FromUintUnchecked, IsHigh},
-    Curve, FieldBytes, PrimeCurve, ScalarPrimitive,
 };
 use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
