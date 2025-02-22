@@ -1,7 +1,7 @@
 [package]
 name = "digest"
 description = "Traits for cryptographic hash functions and message authentication codes"
-version = "0.11.0-pre.9"
+version = "0.11.0-pre.10"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -13,7 +13,7 @@ keywords = ["digest", "crypto", "hash"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.1", path = "../crypto-common" }
+crypto-common = { version = "0.2.0-rc.2", path = "../crypto-common" }
 
 # optional dependencies
 block-buffer = { version = "0.11.0-rc.4", optional = true }
