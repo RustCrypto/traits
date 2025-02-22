@@ -116,7 +116,7 @@ dependencies = [
  "aead",
  "cipher",
  "crypto-common 0.2.0-rc.2",
- "digest 0.11.0-pre.9",
+ "digest 0.11.0-pre.10",
  "elliptic-curve",
  "password-hash",
  "signature 2.3.0-pre.6",
@@ -138,19 +138,19 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.2.0-rc.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0b8ce8218c97789f16356e7896b3714f26c2ee1079b79c0b7ae7064bb9089fa"
+version = "0.2.0-rc.2"
 dependencies = [
- "hybrid-array 0.2.3",
+ "hybrid-array 0.3.0",
+ "rand_core 0.9.2",
 ]
 
 [[package]]
 name = "crypto-common"
 version = "0.2.0-rc.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "170d71b5b14dec99db7739f6fc7d6ec2db80b78c3acb77db48392ccc3d8a9ea0"
 dependencies = [
  "hybrid-array 0.3.0",
- "rand_core 0.9.2",
 ]
 
 [[package]]
@@ -166,6 +166,15 @@ dependencies = [
 [[package]]
 name = "digest"
 version = "0.11.0-pre.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf2e3d6615d99707295a9673e889bf363a04b2a466bd320c65a72536f7577379"
+dependencies = [
+ "crypto-common 0.2.0-rc.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "digest"
+version = "0.11.0-pre.10"
 dependencies = [
  "blobby",
  "block-buffer",
@@ -173,15 +182,6 @@ dependencies = [
  "crypto-common 0.2.0-rc.2",
  "subtle",
  "zeroize",
-]
-
-[[package]]
-name = "digest"
-version = "0.11.0-pre.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf2e3d6615d99707295a9673e889bf363a04b2a466bd320c65a72536f7577379"
-dependencies = [
- "crypto-common 0.2.0-rc.1",
 ]
 
 [[package]]
@@ -399,7 +399,7 @@ version = "2.3.0-pre.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4633ec5613e4218fbab07568ca79ee388e3c041af75f0f83a15f040f096f94cf"
 dependencies = [
- "digest 0.11.0-pre.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "digest 0.11.0-pre.9",
  "rand_core 0.9.2",
 ]
 
