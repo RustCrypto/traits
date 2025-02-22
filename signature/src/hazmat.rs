@@ -43,7 +43,7 @@ pub trait RandomizedPrehashSigner<S> {
     ///
     /// Allowed lengths are algorithm-dependent and up to a particular
     /// implementation to decide.
-    fn sign_prehash_with_rng<R: TryCryptoRng>(
+    fn sign_prehash_with_rng<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
         prehash: &[u8],
@@ -103,7 +103,7 @@ pub trait AsyncRandomizedPrehashSigner<S> {
     ///
     /// Allowed lengths are algorithm-dependent and up to a particular
     /// implementation to decide.
-    async fn sign_prehash_with_rng_async<R: TryCryptoRng>(
+    async fn sign_prehash_with_rng_async<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
         prehash: &[u8],
