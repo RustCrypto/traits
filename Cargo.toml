@@ -9,8 +9,10 @@ members = [
     "digest",
     "kem",
     "password-hash",
-    "signature",
     "signature_derive",
     "universal-hash",
 ]
-exclude = ["elliptic-curve"]
+exclude = [
+    "elliptic-curve",
+    "signature",
+]
