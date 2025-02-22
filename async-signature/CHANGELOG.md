@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.6.0 (UNRELEASED)
+### Changed
+- Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
+
+[#1759]: https://github.com/RustCrypto/traits/pull/1759
+
 ## 0.5.1 (2024-04-02)
 ### Added
 - `no_std` support ([#1544])

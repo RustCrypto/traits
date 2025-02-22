@@ -1,4 +1,4 @@
-use crypto_common::{typenum::Unsigned, Block, BlockSizeUser, BlockSizes};
+use crypto_common::{Block, BlockSizeUser, BlockSizes, typenum::Unsigned};
 use inout::{InOut, InOutBuf};
 
 use super::{

@@ -1,7 +1,7 @@
 //! Random blinding support for [`Scalar`]
 
 use super::Scalar;
-use crate::{ops::Invert, CurveArithmetic};
+use crate::{CurveArithmetic, ops::Invert};
 use core::fmt;
 use group::ff::Field;
 use rand_core::CryptoRngCore;

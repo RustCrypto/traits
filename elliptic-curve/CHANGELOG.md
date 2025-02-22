@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.14.0 (UNRELEASED)
+### Changed
+- Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
+
+[#1759]: https://github.com/RustCrypto/traits/pull/1759
+
 ## 0.13.8 (2023-11-18)
 ### Changed
 - `SecretKey::from_slice` now allows >=24-bytes ([#1412])

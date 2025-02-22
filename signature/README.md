@@ -13,20 +13,8 @@ generating and verifying [digital signatures].
 Used by the [`dsa`], [`ecdsa`], [`ed25519`], and [`rsa`] crates maintained by
 the [RustCrypto] organization, as well as [`ed25519-dalek`].
 
-[Documentation][docs-link]
+## SemVer Policy Exemptions
 
-## Minimum Supported Rust Version
-
-Rust **1.81** or higher.
-
-Minimum supported Rust version can be changed in the future, but it will be
-done with a minor version bump.
-
-## SemVer Policy
-
-- All on-by-default features of this library are covered by SemVer
-- MSRV is considered exempt from SemVer as noted above
-- The `derive` feature is stable and covered by SemVer
 - The off-by-default features `digest` and `rand_core` are unstable features 
   which are also considered exempt from SemVer as they correspond to pre-1.0
   crates which are still subject to changes. Breaking changes to these features
@@ -56,7 +44,7 @@ dual licensed as above, without any additional terms or conditions.
 [build-image]: https://github.com/RustCrypto/traits/actions/workflows/signature.yml/badge.svg
 [build-link]: https://github.com/RustCrypto/traits/actions/workflows/signature.yml
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.81+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260048-signatures
 

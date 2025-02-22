@@ -7,7 +7,7 @@ mod expand_msg;
 pub use expand_msg::{xmd::*, xof::*, *};
 
 use crate::{Error, Result};
-use hybrid_array::{typenum::Unsigned, Array, ArraySize};
+use hybrid_array::{Array, ArraySize, typenum::Unsigned};
 
 /// The trait for helping to convert to a field element.
 pub trait FromOkm {

@@ -13,10 +13,10 @@ use core::{
     ops::{Add, Sub},
 };
 use crypto_common::{
+    BlockSizeUser, InvalidLength, Key, KeyInit, KeySizeUser, Output,
     array::{Array, ArraySize},
     hazmat::{DeserializeStateError, SerializableState, SerializedState, SubSerializedStateSize},
     typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U256},
-    BlockSizeUser, InvalidLength, Key, KeyInit, KeySizeUser, Output,
 };
 
 #[cfg(feature = "mac")]

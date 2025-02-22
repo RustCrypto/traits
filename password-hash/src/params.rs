@@ -2,8 +2,8 @@
 
 use crate::errors::InvalidValue;
 use crate::{
-    value::{Decimal, Value},
     Encoding, Error, Ident, Result,
+    value::{Decimal, Value},
 };
 use core::{
     fmt::{self, Debug, Write},

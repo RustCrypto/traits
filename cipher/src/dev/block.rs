@@ -7,11 +7,11 @@ macro_rules! block_cipher_test {
         #[test]
         fn $name() {
             use cipher::{
+                BlockSizeUser, KeyInit,
                 array::Array,
                 blobby::Blob3Iterator,
                 block::{BlockCipherDecrypt, BlockCipherEncrypt},
                 typenum::Unsigned,
-                BlockSizeUser, KeyInit,
             };
 
             fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
@@ -104,8 +104,8 @@ macro_rules! block_mode_enc_test {
         #[test]
         fn $name() {
             use cipher::{
-                array::Array, blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
-                BlockCipherEncrypt, BlockModeEncrypt, BlockSizeUser, KeyIvInit,
+                BlockCipherEncrypt, BlockModeEncrypt, BlockSizeUser, KeyIvInit, array::Array,
+                blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
             };
 
             fn run_test(key: &[u8], iv: &[u8], pt: &[u8], ct: &[u8]) -> bool {
@@ -162,8 +162,8 @@ macro_rules! block_mode_dec_test {
         #[test]
         fn $name() {
             use cipher::{
-                array::Array, blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
-                BlockCipherDecrypt, BlockModeDecrypt, BlockSizeUser, KeyIvInit,
+                BlockCipherDecrypt, BlockModeDecrypt, BlockSizeUser, KeyIvInit, array::Array,
+                blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
             };
 
             fn run_test(key: &[u8], iv: &[u8], pt: &[u8], ct: &[u8]) -> bool {

@@ -4,6 +4,7 @@
 //! the traits in this crate.
 
 use crate::{
+    Curve, CurveArithmetic, FieldBytesEncoding, PrimeCurve,
     array::typenum::U32,
     bigint::{Limb, U256},
     error::{Error, Result},
@@ -14,7 +15,6 @@ use crate::{
     sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     zeroize::DefaultIsZeroes,
-    Curve, CurveArithmetic, FieldBytesEncoding, PrimeCurve,
 };
 use core::{
     iter::{Product, Sum},
@@ -448,11 +448,7 @@ impl ConstantTimeEq for AffinePoint {
 impl ConditionallySelectable for AffinePoint {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         // Not really constant time, but this is dev code
-        if choice.into() {
-            *b
-        } else {
-            *a
-        }
+        if choice.into() { *b } else { *a }
     }
 }
 
@@ -535,11 +531,7 @@ impl ConstantTimeEq for ProjectivePoint {
 
 impl ConditionallySelectable for ProjectivePoint {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        if choice.into() {
-            *b
-        } else {
-            *a
-        }
+        if choice.into() { *b } else { *a }
     }
 }
 

@@ -5,12 +5,12 @@ use core::marker::PhantomData;
 use super::{Domain, ExpandMsg, Expander};
 use crate::{Error, Result};
 use digest::{
+    FixedOutput, HashMarker,
     array::{
-        typenum::{IsLess, IsLessOrEqual, Unsigned, U256},
         Array,
+        typenum::{IsLess, IsLessOrEqual, U256, Unsigned},
     },
     core_api::BlockSizeUser,
-    FixedOutput, HashMarker,
 };
 
 /// Placeholder type for implementing `expand_message_xmd` based on a hash function
@@ -156,8 +156,8 @@ mod test {
     use core::mem::size_of;
     use hex_literal::hex;
     use hybrid_array::{
-        typenum::{U128, U32},
         ArraySize,
+        typenum::{U32, U128},
     };
     use sha2::Sha256;
 

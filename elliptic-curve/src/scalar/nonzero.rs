@@ -1,9 +1,9 @@
 //! Non-zero scalar type.
 
 use crate::{
+    CurveArithmetic, Error, FieldBytes, PrimeCurve, Scalar, ScalarPrimitive, SecretKey,
     ops::{Invert, Reduce, ReduceNonZero},
     scalar::IsHigh,
-    CurveArithmetic, Error, FieldBytes, PrimeCurve, Scalar, ScalarPrimitive, SecretKey,
 };
 use base16ct::HexDisplay;
 use core::{
@@ -18,7 +18,7 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
 #[cfg(feature = "serde")]
-use serdect::serde::{de, ser, Deserialize, Serialize};
+use serdect::serde::{Deserialize, Serialize, de, ser};
 
 /// Non-zero scalar type.
 ///

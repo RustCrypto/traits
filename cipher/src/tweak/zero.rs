@@ -1,15 +1,15 @@
 use core::marker::PhantomData;
 
-use crypto_common::{array::ArraySize, Block, BlockSizes, ParBlocksSizeUser};
+use crypto_common::{Block, BlockSizes, ParBlocksSizeUser, array::ArraySize};
 
 use super::{
     TweakBlockCipherDecBackend, TweakBlockCipherDecClosure, TweakBlockCipherDecrypt,
     TweakBlockCipherEncBackend, TweakBlockCipherEncrypt, TweakSizeUser,
 };
 use crate::{
-    consts::U1, tweak::TweakBlockCipherEncClosure, BlockCipherDecBackend, BlockCipherDecClosure,
-    BlockCipherDecrypt, BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt,
-    BlockSizeUser,
+    BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
+    BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, consts::U1,
+    tweak::TweakBlockCipherEncClosure,
 };
 
 /// Wrapper around tweakable block cipher which implements

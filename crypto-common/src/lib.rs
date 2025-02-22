@@ -20,8 +20,8 @@ pub use hybrid_array::typenum;
 
 use core::fmt;
 use hybrid_array::{
-    typenum::{Diff, Sum, Unsigned},
     Array, ArraySize,
+    typenum::{Diff, Sum, Unsigned},
 };
 
 #[cfg(feature = "rand_core")]
@@ -79,7 +79,7 @@ pub trait BlockSizes: ArraySize + sealed::BlockSizes {}
 impl<T: ArraySize + sealed::BlockSizes> BlockSizes for T {}
 
 mod sealed {
-    use crate::typenum::{Gr, IsGreater, IsLess, Le, NonZero, Unsigned, U0, U256};
+    use crate::typenum::{Gr, IsGreater, IsLess, Le, NonZero, U0, U256, Unsigned};
 
     pub trait BlockSizes {}
 

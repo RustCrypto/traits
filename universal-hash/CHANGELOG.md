@@ -5,8 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.6.0 (UNRELEASED)
 ### Changed
+- Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
 - Migrate to `doc_auto_cfg` ([#1370])
 - Exclude pre-1.60 crates from workspace ([#1380])
 - bump crypto-common to v0.2.0-pre; MSRV 1.65 ([#1385])
@@ -30,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#1469]: https://github.com/RustCrypto/traits/pull/1469
 [#1493]: https://github.com/RustCrypto/traits/pull/1493
 [#1496]: https://github.com/RustCrypto/traits/pull/1496
+[#1759]: https://github.com/RustCrypto/traits/pull/1759
 
 ## 0.5.1 (2023-05-19)
 ### Changed

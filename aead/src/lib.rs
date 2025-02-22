@@ -22,8 +22,8 @@ pub mod dev;
 pub mod stream;
 
 pub use crypto_common::{
-    array::{self, typenum::consts},
     Key, KeyInit, KeySizeUser,
+    array::{self, typenum::consts},
 };
 
 #[cfg(feature = "arrayvec")]
@@ -37,7 +37,7 @@ pub use heapless;
 pub use crypto_common::rand_core;
 
 use core::fmt;
-use crypto_common::array::{typenum::Unsigned, Array, ArraySize};
+use crypto_common::array::{Array, ArraySize, typenum::Unsigned};
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;

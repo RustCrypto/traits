@@ -2,9 +2,9 @@
 
 use super::SecretKey;
 use crate::{
-    pkcs8::{der::Decode, AssociatedOid},
+    ALGORITHM_OID, Curve, FieldBytesSize,
+    pkcs8::{AssociatedOid, der::Decode},
     sec1::{ModulusSize, ValidatePublicKey},
-    Curve, FieldBytesSize, ALGORITHM_OID,
 };
 use pkcs8::spki::{AlgorithmIdentifier, AssociatedAlgorithmIdentifier, ObjectIdentifier};
 use sec1::EcPrivateKey;
@@ -13,12 +13,12 @@ use sec1::EcPrivateKey;
 #[cfg(all(feature = "alloc", feature = "arithmetic"))]
 use {
     crate::{
-        sec1::{FromEncodedPoint, ToEncodedPoint},
         AffinePoint, CurveArithmetic,
+        sec1::{FromEncodedPoint, ToEncodedPoint},
     },
     pkcs8::{
-        der::{self, asn1::OctetStringRef, Encode},
         EncodePrivateKey,
+        der::{self, Encode, asn1::OctetStringRef},
     },
     zeroize::Zeroizing,
 };
@@ -26,7 +26,7 @@ use {
 // Imports for actual PEM support
 #[cfg(feature = "pem")]
 use {
-    crate::{error::Error, Result},
+    crate::{Result, error::Error},
     core::str::FromStr,
     pkcs8::DecodePrivateKey,
 };

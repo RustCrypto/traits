@@ -10,8 +10,8 @@ repository = "https://github.com/RustCrypto/traits"
 readme = "README.md"
 keywords = ["crypto", "ecdsa", "ed25519", "signature", "signing"]
 categories = ["cryptography", "no-std"]
-edition = "2021"
-rust-version = "1.81"
+edition = "2024"
+rust-version = "1.85"
 
 [dependencies]
 derive = { package = "signature_derive", version = "2", optional = true, path = "../signature_derive" }
@@ -19,7 +19,7 @@ digest = { version = "=0.11.0-pre.9", optional = true, default-features = false 
 rand_core = { version = "0.9", optional = true, default-features = false }
 
 [dev-dependencies]
-hex-literal = "0.4"
+hex-literal = "1"
 sha2 = { version = "=0.11.0-pre.4", default-features = false }
 
 [features]

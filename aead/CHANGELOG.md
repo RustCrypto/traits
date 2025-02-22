@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fixup `hybrid-array` migration ([#1531])
 
 ### Changed
+- Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
 - Migrate to `doc_auto_cfg` ([#1370])
 - Exclude pre-1.60 crates from workspace ([#1380])
 - bump `crypto-common` to v0.2.0-pre; MSRV 1.65 ([#1384])
@@ -39,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#1469]: https://github.com/RustCrypto/traits/pull/1469
 [#1496]: https://github.com/RustCrypto/traits/pull/1496
 [#1531]: https://github.com/RustCrypto/traits/pull/1531
+[#1759]: https://github.com/RustCrypto/traits/pull/1759
 
 ## 0.5.2 (2023-04-02)
 ### Added

@@ -1,9 +1,9 @@
 use super::{
-    errors::StreamCipherError, Block, OverflowError, SeekNum, StreamCipher, StreamCipherCore,
-    StreamCipherSeek, StreamCipherSeekCore,
+    Block, OverflowError, SeekNum, StreamCipher, StreamCipherCore, StreamCipherSeek,
+    StreamCipherSeekCore, errors::StreamCipherError,
 };
 use core::fmt;
-use crypto_common::{typenum::Unsigned, Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser};
+use crypto_common::{Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser, typenum::Unsigned};
 use inout::InOutBuf;
 #[cfg(feature = "zeroize")]
 use zeroize::{Zeroize, ZeroizeOnDrop};

@@ -1,5 +1,5 @@
 use super::{FixedOutput, FixedOutputReset, InvalidBufferSize, Reset, Update};
-use crypto_common::{typenum::Unsigned, Output, OutputSizeUser};
+use crypto_common::{Output, OutputSizeUser, typenum::Unsigned};
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;

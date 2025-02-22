@@ -1,7 +1,6 @@
 use crate::array::{
-    self,
-    typenum::{Diff, Prod, Sum, Unsigned, U1, U16, U2, U4, U8},
-    Array, ArraySize,
+    self, Array, ArraySize,
+    typenum::{Diff, Prod, Sum, U1, U2, U4, U8, U16, Unsigned},
 };
 use core::{convert::TryInto, default::Default, fmt};
 
@@ -52,7 +51,7 @@ where
     fn serialize(&self) -> SerializedState<Self>;
     /// Create an object from serialized internal state.
     fn deserialize(serialized_state: &SerializedState<Self>)
-        -> Result<Self, DeserializeStateError>;
+    -> Result<Self, DeserializeStateError>;
 }
 
 macro_rules! impl_seializable_state_unsigned {

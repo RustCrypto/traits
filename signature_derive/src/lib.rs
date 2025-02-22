@@ -14,8 +14,8 @@ use proc_macro::TokenStream;
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote;
 use syn::{
-    parse_macro_input, parse_quote, punctuated::Punctuated, DeriveInput, Ident, PredicateType,
-    Token, TraitBound, Type, TypeParam, TypeParamBound, WhereClause, WherePredicate,
+    DeriveInput, Ident, PredicateType, Token, TraitBound, Type, TypeParam, TypeParamBound,
+    WhereClause, WherePredicate, parse_macro_input, parse_quote, punctuated::Punctuated,
 };
 
 /// Derive the [`Signer`] trait for a type which impls [`DigestSigner`].

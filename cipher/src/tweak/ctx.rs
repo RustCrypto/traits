@@ -1,4 +1,4 @@
-use crypto_common::{array::ArraySize, Block, BlockSizeUser, BlockSizes};
+use crypto_common::{Block, BlockSizeUser, BlockSizes, array::ArraySize};
 use inout::InOut;
 
 use super::{

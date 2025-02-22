@@ -5,15 +5,15 @@ version = "0.2.0-rc.1"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-edition = "2021"
-rust-version = "1.81"
+edition = "2024"
+rust-version = "1.85"
 documentation = "https://docs.rs/crypto-common"
 repository = "https://github.com/RustCrypto/traits"
 keywords = ["crypto", "traits"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-hybrid-array = "0.2"
+hybrid-array = "0.3"
 
 # optional dependencies
 rand_core = { version = "0.9", optional = true }

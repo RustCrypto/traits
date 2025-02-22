@@ -134,11 +134,7 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
             return Err(MacError);
         }
         let choice = self.finalize_fixed().ct_eq(tag);
-        if choice.into() {
-            Ok(())
-        } else {
-            Err(MacError)
-        }
+        if choice.into() { Ok(()) } else { Err(MacError) }
     }
 
     #[inline]
@@ -151,11 +147,7 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
             return Err(MacError);
         }
         let choice = self.finalize_fixed_reset().ct_eq(tag);
-        if choice.into() {
-            Ok(())
-        } else {
-            Err(MacError)
-        }
+        if choice.into() { Ok(()) } else { Err(MacError) }
     }
 
     fn verify_truncated_left(self, tag: &[u8]) -> Result<(), MacError> {
@@ -165,11 +157,7 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
         }
         let choice = self.finalize_fixed()[..n].ct_eq(tag);
 
-        if choice.into() {
-            Ok(())
-        } else {
-            Err(MacError)
-        }
+        if choice.into() { Ok(()) } else { Err(MacError) }
     }
 
     fn verify_truncated_right(self, tag: &[u8]) -> Result<(), MacError> {
@@ -180,11 +168,7 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
         let m = Self::OutputSize::USIZE - n;
         let choice = self.finalize_fixed()[m..].ct_eq(tag);
 
-        if choice.into() {
-            Ok(())
-        } else {
-            Err(MacError)
-        }
+        if choice.into() { Ok(()) } else { Err(MacError) }
     }
 }
 

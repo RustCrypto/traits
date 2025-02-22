@@ -4,9 +4,9 @@
 //! <https://tools.ietf.org/html/rfc7518#section-6>
 
 use crate::{
+    Curve, Error, FieldBytes, FieldBytesSize, Result,
     sec1::{Coordinates, EncodedPoint, ModulusSize, ValidatePublicKey},
     secret_key::SecretKey,
-    Curve, Error, FieldBytes, FieldBytesSize, Result,
 };
 use alloc::{
     borrow::ToOwned,
@@ -19,14 +19,14 @@ use core::{
     marker::PhantomData,
     str::{self, FromStr},
 };
-use serdect::serde::{de, ser, Deserialize, Serialize};
+use serdect::serde::{Deserialize, Serialize, de, ser};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 #[cfg(feature = "arithmetic")]
 use crate::{
+    AffinePoint, CurveArithmetic,
     public_key::PublicKey,
     sec1::{FromEncodedPoint, ToEncodedPoint},
-    AffinePoint, CurveArithmetic,
 };
 
 /// Key Type (`kty`) for elliptic curve keys.

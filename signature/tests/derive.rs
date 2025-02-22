@@ -2,12 +2,12 @@
 
 #![cfg(all(feature = "derive", feature = "digest"))]
 
-use digest::{array::Array, Digest, OutputSizeUser};
+use digest::{Digest, OutputSizeUser, array::Array};
 use hex_literal::hex;
 use sha2::Sha256;
 use signature::{
-    hazmat::{PrehashSigner, PrehashVerifier},
     DigestSigner, DigestVerifier, Error, PrehashSignature, SignatureEncoding, Signer, Verifier,
+    hazmat::{PrehashSigner, PrehashVerifier},
 };
 
 /// Test vector to compute SHA-256 digest of
