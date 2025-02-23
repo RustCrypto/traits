@@ -3,7 +3,7 @@
 use core::ops::{Deref, Mul};
 
 use group::{Curve, GroupEncoding, prime::PrimeCurveAffine};
-use rand_core::{CryptoRng, RngCore};
+use rand_core::CryptoRng;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "serde")]
@@ -58,7 +58,7 @@ where
     P: ConditionallySelectable + ConstantTimeEq + Curve + Default,
 {
     /// Generate a random `NonIdentity<ProjectivePoint>`.
-    pub fn random(mut rng: impl CryptoRng + RngCore) -> Self {
+    pub fn random<R: CryptoRng>(mut rng: R) -> Self {
         loop {
             if let Some(point) = Self::new(P::random(&mut rng)).into() {
                 break point;

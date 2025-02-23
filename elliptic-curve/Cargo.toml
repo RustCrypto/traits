@@ -18,22 +18,22 @@ rust-version = "1.85"
 
 [dependencies]
 base16ct = "0.2"
-crypto-bigint = { version = "0.6", default-features = false, features = ["rand_core", "hybrid-array", "zeroize"] }
-hybrid-array = { version = "0.2", default-features = false, features = ["zeroize"] }
-rand_core = { version = "0.6.4", default-features = false }
+crypto-bigint = { version = "0.7.0-pre", default-features = false, features = ["rand_core", "hybrid-array", "zeroize"] }
+hybrid-array = { version = "0.3", default-features = false, features = ["zeroize"] }
+rand_core = { version = "0.9.0", default-features = false }
 subtle = { version = "2.6", default-features = false }
 zeroize = { version = "1.7", default-features = false }
 
 # optional dependencies
 base64ct = { version = "1", optional = true, default-features = false, features = ["alloc"] }
-digest = { version = "=0.11.0-pre.9", optional = true }
+digest = { version = "=0.11.0-pre.10", optional = true }
 ff = { version = "0.13", optional = true, default-features = false }
 group = { version = "0.13", optional = true, default-features = false }
 hkdf = { version = "=0.13.0-pre.4", optional = true, default-features = false }
 hex-literal = { version = "1", optional = true }
 pem-rfc7468 = { version = "1.0.0-rc.2", optional = true, features = ["alloc"] }
 pkcs8 = { version = "0.11.0-rc.1", optional = true, default-features = false }
-sec1 = { version = "0.8.0-rc.3", optional = true, features = ["subtle", "zeroize"] }
+sec1 = { version = "0.8.0-rc.4", optional = true, features = ["subtle", "zeroize"] }
 serdect = { version = "0.3", optional = true, default-features = false, features = ["alloc"] }
 serde_json = { version = "1.0.121", optional = true, default-features = false, features = ["alloc"] }
 tap = { version = "1.0.1", optional = true, default-features = false } # hack for minimal-versions support for `bits`

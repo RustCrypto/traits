@@ -28,7 +28,9 @@ where
 
 #[cfg(feature = "rand_core")]
 impl async_signature::AsyncRandomizedSigner<Signature> for MockSigner {
-    async fn try_sign_with_rng_async<R: async_signature::signature::rand_core::TryCryptoRng>(
+    async fn try_sign_with_rng_async<
+        R: async_signature::signature::rand_core::TryCryptoRng + ?Sized,
+    >(
         &self,
         _rng: &mut R,
         _msg: &[u8],

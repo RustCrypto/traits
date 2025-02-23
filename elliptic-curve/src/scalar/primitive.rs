@@ -14,7 +14,7 @@ use core::{
     ops::{Add, AddAssign, Neg, ShrAssign, Sub, SubAssign},
     str,
 };
-use rand_core::CryptoRngCore;
+use rand_core::CryptoRng;
 use subtle::{
     Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
     CtOption,
@@ -65,7 +65,7 @@ where
     pub const MODULUS: C::Uint = C::ORDER;
 
     /// Generate a random [`ScalarPrimitive`].
-    pub fn random(rng: &mut impl CryptoRngCore) -> Self {
+    pub fn random<R: CryptoRng>(rng: &mut R) -> Self {
         Self {
             inner: C::Uint::random_mod(rng, &NonZero::new(Self::MODULUS).unwrap()),
         }

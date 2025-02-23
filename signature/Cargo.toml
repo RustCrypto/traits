@@ -15,7 +15,7 @@ rust-version = "1.85"
 
 [dependencies]
 derive = { package = "signature_derive", version = "2", optional = true, path = "../signature_derive" }
-digest = { version = "=0.11.0-pre.9", optional = true, default-features = false }
+digest = { version = "=0.11.0-pre.10", optional = true, default-features = false }
 rand_core = { version = "0.9", optional = true, default-features = false }
 
 [dev-dependencies]
