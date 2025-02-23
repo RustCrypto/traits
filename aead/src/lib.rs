@@ -206,7 +206,7 @@ pub trait Aead: AeadCore {
     ) -> Result<Vec<u8>>;
 }
 
-/// In-place stateless AEAD trait.
+/// In-place AEAD trait.
 ///
 /// This trait is both object safe and has no dependencies on `alloc` or `std`.
 pub trait AeadInPlace: AeadCore {
@@ -224,13 +224,24 @@ pub trait AeadInPlace: AeadCore {
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
-    ) -> Result<()> {
-        let tag = self.encrypt_in_place_detached(nonce, associated_data, buffer.as_mut())?;
-        buffer.extend_from_slice(tag.as_slice())?;
-        Ok(())
-    }
+    ) -> Result<()>;
 
-    /// Encrypt the data in-place, returning the authentication tag
+    /// Decrypt the message in-place, returning an error in the event the
+    /// provided authentication tag does not match the given ciphertext.
+    ///
+    /// The buffer will be truncated to the length of the original plaintext
+    /// message upon success.
+    fn decrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()>;
+}
+
+/// In-place AEAD trait which handles the authentication tag as a return value/separate parameter.
+pub trait AeadInPlaceDetached: AeadCore {
+    /// Encrypt the data in-place, returning the authentication tag.
     fn encrypt_in_place_detached(
         &self,
         nonce: &Nonce<Self>,
@@ -238,11 +249,36 @@ pub trait AeadInPlace: AeadCore {
         buffer: &mut [u8],
     ) -> Result<Tag<Self>>;
 
-    /// Decrypt the message in-place, returning an error in the event the
-    /// provided authentication tag does not match the given ciphertext.
-    ///
-    /// The buffer will be truncated to the length of the original plaintext
-    /// message upon success.
+    /// Decrypt the message in-place, returning an error in the event the provided
+    /// authentication tag does not match the given ciphertext (i.e. ciphertext
+    /// is modified/unauthentic)
+    fn decrypt_in_place_detached(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+        tag: &Tag<Self>,
+    ) -> Result<()>;
+}
+
+/// Marker trait for AEAD algorithms which append the authentication tag to the end of the
+/// ciphertext message.
+///
+/// This is the common convention for AEAD algorithms.
+pub trait PostfixTagged {}
+
+impl<T: AeadInPlaceDetached + PostfixTagged> AeadInPlace for T {
+    fn encrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()> {
+        let tag = self.encrypt_in_place_detached(nonce, associated_data, buffer.as_mut())?;
+        buffer.extend_from_slice(tag.as_slice())?;
+        Ok(())
+    }
+
     fn decrypt_in_place(
         &self,
         nonce: &Nonce<Self>,
@@ -261,17 +297,6 @@ pub trait AeadInPlace: AeadCore {
         buffer.truncate(tag_pos);
         Ok(())
     }
-
-    /// Decrypt the message in-place, returning an error in the event the provided
-    /// authentication tag does not match the given ciphertext (i.e. ciphertext
-    /// is modified/unauthentic)
-    fn decrypt_in_place_detached(
-        &self,
-        nonce: &Nonce<Self>,
-        associated_data: &[u8],
-        buffer: &mut [u8],
-        tag: &Tag<Self>,
-    ) -> Result<()>;
 }
 
 #[cfg(feature = "alloc")]
