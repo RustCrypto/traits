@@ -309,7 +309,7 @@ dependencies = [
 [[package]]
 name = "hmac"
 version = "0.13.0-pre.4"
-source = "git+https://github.com/baloo/MACs.git?branch=baloo%2Fedition-2024#cea718c1fcec0504c7ba030a2ad465d7b1881047"
+source = "git+https://github.com/RustCrypto/MACs.git#c7cbed0bd3f7026cc01251cd4602d0db4d0495b9"
 dependencies = [
  "digest 0.11.0-pre.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
