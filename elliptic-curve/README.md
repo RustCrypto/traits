@@ -32,8 +32,8 @@ dual licensed as above, without any additional terms or conditions.
 [crate-link]: https://crates.io/crates/elliptic-curve
 [docs-image]: https://docs.rs/elliptic-curve/badge.svg
 [docs-link]: https://docs.rs/elliptic-curve/
-[build-image]: https://github.com/RustCrypto/traits/actions/workflows/elliptic-curve.yml/badge.svg
-[build-link]: https://github.com/RustCrypto/traits/actions/workflows/elliptic-curve.yml
+[build-image]: https://github.com/RustCrypto/traits/actions/workflows/elliptic-curve.yml/badge.svg?branch=master
+[build-link]: https://github.com/RustCrypto/traits/actions/workflows/elliptic-curve.yml?query=branch:master
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
