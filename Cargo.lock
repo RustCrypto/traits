@@ -147,7 +147,7 @@ dependencies = [
 [[package]]
 name = "crypto-bigint"
 version = "0.7.0-pre.0"
-source = "git+https://github.com/RustCrypto/crypto-bigint.git#8fe22cba8196b08acd06546757f2f474aa20db1e"
+source = "git+https://github.com/RustCrypto/crypto-bigint.git#e1065ce5fa73ee15e73f36a2ed0c6d4ca7b8fe8f"
 dependencies = [
  "hybrid-array",
  "num-traits",
@@ -309,7 +309,7 @@ dependencies = [
 [[package]]
 name = "hmac"
 version = "0.13.0-pre.4"
-source = "git+https://github.com/baloo/MACs.git?branch=baloo%2Fedition-2024#e97856eac291ab85e181af927192277532af34ca"
+source = "git+https://github.com/baloo/MACs.git?branch=baloo%2Fedition-2024#cea718c1fcec0504c7ba030a2ad465d7b1881047"
 dependencies = [
  "digest 0.11.0-pre.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -359,9 +359,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.169"
+version = "0.2.170"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5aba8db14291edd000dfcc4d620c7ebfb122c613afb886ca8803fa4e128a20a"
+checksum = "875b3680cb2f8f71bdcf9a30f38d48282f5d3c95cbf9b3fa57269bb5d5c06828"
 
 [[package]]
 name = "memchr"
@@ -506,7 +506,7 @@ dependencies = [
 [[package]]
 name = "sha2"
 version = "0.11.0-pre.4"
-source = "git+https://github.com/RustCrypto/hashes.git?branch=edition_upgrade#cfe82a0f1a9a6c89c5b6d8309f2603c644dc97ea"
+source = "git+https://github.com/RustCrypto/hashes#479ad0b5b48bc6044aa10a9896ccd54f28f0cccc"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -516,7 +516,7 @@ dependencies = [
 [[package]]
 name = "sha3"
 version = "0.11.0-pre.4"
-source = "git+https://github.com/RustCrypto/hashes.git?branch=edition_upgrade#cfe82a0f1a9a6c89c5b6d8309f2603c644dc97ea"
+source = "git+https://github.com/RustCrypto/hashes#479ad0b5b48bc6044aa10a9896ccd54f28f0cccc"
 dependencies = [
  "digest 0.11.0-pre.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "keccak",
