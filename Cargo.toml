@@ -18,9 +18,8 @@ members = [
 [patch.crates-io]
 signature = { path = "signature" }
 
-# https://github.com/RustCrypto/hashes/pull/652
-sha2 = { git = "https://github.com/RustCrypto/hashes.git", branch = "edition_upgrade" }
-sha3 = { git = "https://github.com/RustCrypto/hashes.git", branch = "edition_upgrade" }
+sha2 = { git = "https://github.com/RustCrypto/hashes" }
+sha3 = { git = "https://github.com/RustCrypto/hashes" }
 
 # https://github.com/RustCrypto/MACs/pull/178
 hmac = { git = "https://github.com/baloo/MACs.git", branch = "baloo/edition-2024" }
