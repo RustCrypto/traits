@@ -41,8 +41,8 @@ dual licensed as above, without any additional terms or conditions.
 [crate-link]: https://crates.io/crates/signature
 [docs-image]: https://docs.rs/signature/badge.svg
 [docs-link]: https://docs.rs/signature/
-[build-image]: https://github.com/RustCrypto/traits/actions/workflows/signature.yml/badge.svg
-[build-link]: https://github.com/RustCrypto/traits/actions/workflows/signature.yml
+[build-image]: https://github.com/RustCrypto/traits/actions/workflows/signature.yml/badge.svg?branch=master
+[build-link]: https://github.com/RustCrypto/traits/actions/workflows/signature.yml?query=branch:master
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg

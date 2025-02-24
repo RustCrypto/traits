@@ -29,13 +29,13 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/password-hash
-[crate-link]: https://crates.io/crates/password-hash
-[docs-image]: https://docs.rs/password-hash/badge.svg
-[docs-link]: https://docs.rs/password-hash/
-[build-image]: https://github.com/RustCrypto/traits/workflows/password-hash/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/traits/actions?query=workflow:password-hash
+[crate-image]: https://img.shields.io/crates/v/signature_derive
+[crate-link]: https://crates.io/crates/signature_derive
+[docs-image]: https://docs.rs/signature_derive/badge.svg
+[docs-link]: https://docs.rs/signature_derive/
+[build-image]: https://github.com/RustCrypto/traits/actions/workflows/signature_derive.yml/badge.svg?branch=master
+[build-link]: https://github.com/RustCrypto/traits/actions/workflows/signature_derive.yml?query=branch:master
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
-[chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260046-password-hashes
+[chat-link]: https://rustcrypto.zulipchat.com/#narrow/channel/260048-signatures
