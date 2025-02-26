@@ -99,7 +99,7 @@ impl Field for Scalar {
     const ZERO: Self = Self(ScalarPrimitive::ZERO);
     const ONE: Self = Self(ScalarPrimitive::ONE);
 
-    fn random(mut rng: impl RngCore) -> Self {
+    fn random<R: RngCore + ?Sized>(rng: &mut R) -> Self {
         let mut bytes = FieldBytes::default();
 
         loop {

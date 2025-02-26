@@ -47,14 +47,13 @@ where
     C: CurveArithmetic,
 {
     /// Generate a random `NonZeroScalar`.
-    pub fn random<R: CryptoRng + ?Sized>(mut rng: &mut R) -> Self {
+    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
         // Use rejection sampling to eliminate zero values.
         // While this method isn't constant-time, the attacker shouldn't learn
         // anything about unrelated outputs so long as `rng` is a secure `CryptoRng`.
         loop {
             // TODO: remove after `Field::random` switches to `&mut impl RngCore`
-            #[allow(clippy::needless_borrows_for_generic_args)]
-            if let Some(result) = Self::new(Field::random(&mut rng)).into() {
+            if let Some(result) = Self::new(Field::random(rng)).into() {
                 break result;
             }
         }

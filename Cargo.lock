@@ -237,7 +237,7 @@ dependencies = [
 [[package]]
 name = "ff"
 version = "0.13.0"
-source = "git+https://github.com/pinkforest/ff.git?branch=bump-rand-core#c734f7f21d6639bc6494dde538209d0770207c49"
+source = "git+https://github.com/baloo/ff.git?branch=baloo%2Frelax-sized-rng#4ae604c5af58d047de06ea42197ef44f3f7d7834"
 dependencies = [
  "bitvec",
  "rand_core",
