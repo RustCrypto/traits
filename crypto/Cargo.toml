@@ -1,16 +1,16 @@
 [package]
 name = "crypto"
 version = "0.6.0-pre"
-description = "Facade crate for all of the RustCrypto traits (e.g. `aead`, `cipher`, `digest`)"
 authors = ["The RustCrypto Project Developers"]
-license = "Apache-2.0 OR MIT"
-documentation = "https://docs.rs/crypto"
-repository = "https://github.com/RustCrypto/traits"
-keywords = ["crypto", "encryption", "rustcrypto"]
-categories = ["cryptography", "no-std"]
-readme = "README.md"
 edition = "2024"
 rust-version = "1.85"
+documentation = "https://docs.rs/crypto"
+readme = "README.md"
+repository = "https://github.com/RustCrypto/traits"
+license = "Apache-2.0 OR MIT"
+keywords = ["crypto", "encryption", "rustcrypto"]
+categories = ["cryptography", "no-std"]
+description = "Facade crate for all of the RustCrypto traits (e.g. `aead`, `cipher`, `digest`)"
 
 [dependencies]
 crypto-common = { version = "0.2.0-rc.1", path = "../crypto-common", default-features = false }
