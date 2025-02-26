@@ -237,7 +237,6 @@ dependencies = [
 [[package]]
 name = "ff"
 version = "0.13.0"
-source = "git+https://github.com/baloo/ff.git?branch=baloo%2Frelax-sized-rng#4ae604c5af58d047de06ea42197ef44f3f7d7834"
 dependencies = [
  "bitvec",
  "rand_core",

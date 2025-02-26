@@ -13,7 +13,7 @@ use core::{
 };
 use crypto_bigint::{ArrayEncoding, Integer};
 use ff::{Field, PrimeField};
-use rand_core::CryptoRng;
+use rand_core::{CryptoRng, TryCryptoRng};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
@@ -55,6 +55,19 @@ where
             // TODO: remove after `Field::random` switches to `&mut impl RngCore`
             if let Some(result) = Self::new(Field::random(rng)).into() {
                 break result;
+            }
+        }
+    }
+
+    /// Generate a random `NonZeroScalar`.
+    pub fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
+        // Use rejection sampling to eliminate zero values.
+        // While this method isn't constant-time, the attacker shouldn't learn
+        // anything about unrelated outputs so long as `rng` is a secure `CryptoRng`.
+        loop {
+            // TODO: remove after `Field::random` switches to `&mut impl RngCore`
+            if let Some(result) = Self::new(Scalar::<C>::try_from_rng(rng)?).into() {
+                break Ok(result);
             }
         }
     }
