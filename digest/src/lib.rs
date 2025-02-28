@@ -55,6 +55,8 @@ pub mod core_api;
 mod digest;
 #[cfg(feature = "mac")]
 mod mac;
+#[doc(hidden)]
+pub mod newtype;
 
 #[cfg(feature = "core-api")]
 pub use block_buffer;
