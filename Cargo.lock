@@ -237,7 +237,6 @@ dependencies = [
 [[package]]
 name = "ff"
 version = "0.13.0"
-source = "git+https://github.com/pinkforest/ff.git?branch=bump-rand-core#c734f7f21d6639bc6494dde538209d0770207c49"
 dependencies = [
  "bitvec",
  "rand_core",
