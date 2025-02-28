@@ -1,17 +1,16 @@
 [package]
 name = "signature"
-description = "Traits for cryptographic signature algorithms (e.g. ECDSA, Ed25519)"
 version = "2.3.0-pre.6"
 authors = ["RustCrypto Developers"]
-license = "Apache-2.0 OR MIT"
-documentation = "https://docs.rs/signature"
-homepage = "https://github.com/RustCrypto/traits/tree/master/signature"
-repository = "https://github.com/RustCrypto/traits"
-readme = "README.md"
-keywords = ["crypto", "ecdsa", "ed25519", "signature", "signing"]
-categories = ["cryptography", "no-std"]
 edition = "2024"
 rust-version = "1.85"
+documentation = "https://docs.rs/signature"
+readme = "README.md"
+repository = "https://github.com/RustCrypto/traits"
+license = "Apache-2.0 OR MIT"
+keywords = ["crypto", "ecdsa", "ed25519", "signature", "signing"]
+categories = ["cryptography", "no-std"]
+description = "Traits for cryptographic signature algorithms (e.g. ECDSA, Ed25519)"
 
 [dependencies]
 derive = { package = "signature_derive", version = "2", optional = true, path = "../signature_derive" }
