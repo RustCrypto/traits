@@ -575,7 +575,7 @@ impl ToEncodedPoint<MockCurve> for ProjectivePoint {
 impl group::Group for ProjectivePoint {
     type Scalar = Scalar;
 
-    fn random(_rng: impl RngCore) -> Self {
+    fn random<R: RngCore + ?Sized>(_rng: &mut R) -> Self {
         unimplemented!();
     }
 
