@@ -293,7 +293,7 @@ dependencies = [
 [[package]]
 name = "group"
 version = "0.13.0"
-source = "git+https://github.com/pinkforest/group.git?branch=bump-rand-0.9#06ac6fb11ced26fbf980ee65e74fced4da66ec3e"
+source = "git+https://github.com/baloo/group.git?branch=baloo%2Frelax-rng#0a2efb85c53397a076a2d1b70c3ccde9a690e463"
 dependencies = [
  "ff",
  "rand_core",
