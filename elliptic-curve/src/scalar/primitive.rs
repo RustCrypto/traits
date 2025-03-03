@@ -65,7 +65,7 @@ where
     pub const MODULUS: C::Uint = C::ORDER;
 
     /// Generate a random [`ScalarPrimitive`].
-    pub fn random<R: CryptoRng>(rng: &mut R) -> Self {
+    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
         Self {
             inner: C::Uint::random_mod(rng, &NonZero::new(Self::MODULUS).unwrap()),
         }

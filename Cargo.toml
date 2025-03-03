@@ -32,4 +32,4 @@ ff = { git = "https://github.com/zkcrypto/ff.git", branch = "release-0.14.0" }
 
 # https://github.com/zkcrypto/group/pull/56
 # https://github.com/zkcrypto/group/pull/57
-group = { git = "https://github.com/baloo/group.git", branch = "baloo/relax-rng" }
+group = { git = "https://github.com/baloo/group.git", branch = "baloo/try_from_rng" }

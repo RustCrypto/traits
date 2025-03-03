@@ -293,7 +293,7 @@ dependencies = [
 [[package]]
 name = "group"
 version = "0.13.0"
-source = "git+https://github.com/baloo/group.git?branch=baloo%2Frelax-rng#0a2efb85c53397a076a2d1b70c3ccde9a690e463"
+source = "git+https://github.com/baloo/group.git?branch=baloo%2Ftry_from_rng#b0d6ea48fe55327b11ea03f9a965d9e16bb83adc"
 dependencies = [
  "ff",
  "rand_core",
