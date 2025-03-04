@@ -29,7 +29,9 @@ hmac = { git = "https://github.com/RustCrypto/MACs.git" }
 crypto-bigint = { git = "https://github.com/RustCrypto/crypto-bigint.git" }
 
 # https://github.com/zkcrypto/ff/pull/122
-ff = { git = "https://github.com/pinkforest/ff.git", branch = "bump-rand-core" }
+# https://github.com/zkcrypto/ff/pull/126
+# https://github.com/zkcrypto/ff/pull/127
+ff = { git = "https://github.com/baloo/ff.git", branch = "baloo/try_from_rng" }
 
 # https://github.com/zkcrypto/group/pull/56
 group = { git = "https://github.com/pinkforest/group.git", branch = "bump-rand-0.9" }
