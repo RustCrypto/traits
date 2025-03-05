@@ -63,6 +63,9 @@ pub enum Error {
 
     /// Invalid algorithm version.
     Version,
+
+    /// Out of memory (heap allocation failure).
+    OutOfMemory,
 }
 
 impl fmt::Display for Error {
@@ -95,6 +98,7 @@ impl fmt::Display for Error {
             }
             Self::SaltInvalid(val_err) => write!(f, "salt invalid: {}", val_err),
             Self::Version => write!(f, "invalid algorithm version"),
+            Self::OutOfMemory => write!(f, "out of memory"),
         }
     }
 }
