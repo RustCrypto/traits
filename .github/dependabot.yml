@@ -4,6 +4,10 @@ updates:
   directory: "/"
   allow:
     - dependency-type: "all"
+  groups:
+    all-deps:
+      patterns:
+        - "*"
   schedule:
     interval: daily
   open-pull-requests-limit: 10
