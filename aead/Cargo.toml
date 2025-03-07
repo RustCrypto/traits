@@ -16,7 +16,7 @@ keywords = ["crypto", "encryption"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.1", path = "../crypto-common" }
+crypto-common = "0.2.0-rc.1"
 
 # optional dependencies
 arrayvec = { version = "0.7", optional = true, default-features = false }

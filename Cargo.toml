@@ -16,7 +16,25 @@ members = [
 ]
 
 [patch.crates-io]
-signature = { path = "signature" }
+# Use crates.io patch instead of a `path = "../foo"` in each
+# crate of this workspace.
+# This allows to pull a git dependency from outside this workspace
+# without having to also pull all the transitive dependencies from
+# within this workspace.
+# Otherwise, the transitive dependency gets duplicated and you end
+# up with objects not implementing trait error that are hard to debug.
+aead             = { path = "./aead" }
+async-signature  = { path = "./async-signature" }
+cipher           = { path = "./cipher" }
+crypto           = { path = "./crypto" }
+crypto-common    = { path = "./crypto-common" }
+digest           = { path = "./digest" }
+elliptic-curve   = { path = "./elliptic-curve" }
+kem              = { path = "./kem" }
+password-hash    = { path = "./password-hash" }
+signature_derive = { path = "./signature_derive" }
+universal-hash   = { path = "./universal-hash" }
+signature        = { path = "./signature" }
 
 sha2 = { git = "https://github.com/RustCrypto/hashes" }
 sha3 = { git = "https://github.com/RustCrypto/hashes" }
