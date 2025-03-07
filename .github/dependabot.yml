@@ -1,6 +1,7 @@
 version: 2
 updates:
 - package-ecosystem: cargo
+  versioning-strategy: lockfile-only
   directory: "/"
   allow:
     - dependency-type: "all"
@@ -9,7 +10,7 @@ updates:
       patterns:
         - "*"
   schedule:
-    interval: daily
+    interval: weekly
   open-pull-requests-limit: 10
 - package-ecosystem: github-actions
   directory: "/"
