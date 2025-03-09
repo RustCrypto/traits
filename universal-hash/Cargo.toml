@@ -13,7 +13,7 @@ keywords = ["crypto", "mac"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.1", path = "../crypto-common" }
+crypto-common = "0.2.0-rc.1"
 subtle = { version = "2.4", default-features = false }
 
 [package.metadata.docs.rs]

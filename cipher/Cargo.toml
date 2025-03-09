@@ -13,7 +13,7 @@ keywords = ["crypto", "block-cipher", "stream-cipher", "trait"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.2", path = "../crypto-common" }
+crypto-common = "0.2.0-rc.2"
 inout = "0.2.0-rc.4"
 
 # optional dependencies
