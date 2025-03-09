@@ -31,7 +31,7 @@ crypto-bigint = { git = "https://github.com/RustCrypto/crypto-bigint.git" }
 # https://github.com/zkcrypto/ff/pull/122
 # https://github.com/zkcrypto/ff/pull/126
 # https://github.com/zkcrypto/ff/pull/127
-ff = { git = "https://github.com/baloo/ff.git", branch = "baloo/try_from_rng" }
+ff = { git = "https://github.com/zkcrypto/ff.git", branch = "release-0.14.0" }
 
 # https://github.com/zkcrypto/group/pull/56
 group = { git = "https://github.com/pinkforest/group.git", branch = "bump-rand-0.9" }
