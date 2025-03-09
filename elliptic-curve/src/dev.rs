@@ -10,7 +10,7 @@ use crate::{
     error::{Error, Result},
     ops::{Invert, LinearCombination, MulByGenerator, Reduce, ShrAssign},
     point::AffineCoordinates,
-    rand_core::{RngCore, TryRngCore},
+    rand_core::{RngCore, TryCryptoRng},
     scalar::{FromUintUnchecked, IsHigh},
     sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
@@ -99,7 +99,7 @@ impl Field for Scalar {
     const ZERO: Self = Self(ScalarPrimitive::ZERO);
     const ONE: Self = Self(ScalarPrimitive::ONE);
 
-    fn try_from_rng<R: TryRngCore + ?Sized>(rng: &mut R) -> core::result::Result<Self, R::Error> {
+    fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> core::result::Result<Self, R::Error> {
         let mut bytes = FieldBytes::default();
 
         loop {
