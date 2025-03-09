@@ -99,17 +99,6 @@ impl Field for Scalar {
     const ZERO: Self = Self(ScalarPrimitive::ZERO);
     const ONE: Self = Self(ScalarPrimitive::ONE);
 
-    fn random<R: RngCore + ?Sized>(rng: &mut R) -> Self {
-        let mut bytes = FieldBytes::default();
-
-        loop {
-            rng.fill_bytes(&mut bytes);
-            if let Some(scalar) = Self::from_repr(bytes).into() {
-                return scalar;
-            }
-        }
-    }
-
     fn try_from_rng<R: TryRngCore + ?Sized>(rng: &mut R) -> core::result::Result<Self, R::Error> {
         let mut bytes = FieldBytes::default();
 
