@@ -248,7 +248,7 @@ dependencies = [
 [[package]]
 name = "ff"
 version = "0.13.0"
-source = "git+https://github.com/zkcrypto/ff.git?branch=release-0.14.0#1bb634588722b1b7ce986d239c263e332bedda7f"
+source = "git+https://github.com/baloo/ff.git?branch=baloo%2Fcrypto-rng#31c707d4e9bcd2bc49e465a0f08913a573a8884d"
 dependencies = [
  "bitvec",
  "ff_derive",
@@ -259,7 +259,7 @@ dependencies = [
 [[package]]
 name = "ff_derive"
 version = "0.13.0"
-source = "git+https://github.com/zkcrypto/ff.git?branch=release-0.14.0#1bb634588722b1b7ce986d239c263e332bedda7f"
+source = "git+https://github.com/baloo/ff.git?branch=baloo%2Fcrypto-rng#31c707d4e9bcd2bc49e465a0f08913a573a8884d"
 dependencies = [
  "addchain",
  "cfg-if",
