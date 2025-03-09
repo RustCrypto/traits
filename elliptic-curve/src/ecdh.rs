@@ -34,7 +34,7 @@ use core::{borrow::Borrow, fmt};
 use digest::{Digest, crypto_common::BlockSizeUser};
 use group::Curve as _;
 use hkdf::{Hkdf, hmac::SimpleHmac};
-use rand_core::CryptoRng;
+use rand_core::{CryptoRng, TryCryptoRng};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Low-level Elliptic Curve Diffie-Hellman (ECDH) function.
@@ -112,6 +112,13 @@ where
         Self {
             scalar: NonZeroScalar::random(rng),
         }
+    }
+
+    /// Generate a cryptographically random [`EphemeralSecret`].
+    pub fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
+        Ok(Self {
+            scalar: NonZeroScalar::try_from_rng(rng)?,
+        })
     }
 
     /// Get the public key associated with this ephemeral secret.
