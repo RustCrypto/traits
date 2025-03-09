@@ -15,7 +15,10 @@ use subtle::{Choice, ConstantTimeEq};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 #[cfg(feature = "arithmetic")]
-use crate::{CurveArithmetic, NonZeroScalar, PublicKey, rand_core::CryptoRng};
+use crate::{
+    CurveArithmetic, NonZeroScalar, PublicKey,
+    rand_core::{CryptoRng, TryCryptoRng},
+};
 
 #[cfg(feature = "jwk")]
 use crate::jwk::{JwkEcKey, JwkParameters};
@@ -98,6 +101,19 @@ where
         Self {
             inner: NonZeroScalar::<C>::random(rng).into(),
         }
+    }
+
+    /// Generate a random [`SecretKey`].
+    #[cfg(feature = "arithmetic")]
+    pub fn try_from_rng<R: TryCryptoRng + ?Sized>(
+        rng: &mut R,
+    ) -> core::result::Result<Self, R::Error>
+    where
+        C: CurveArithmetic,
+    {
+        Ok(Self {
+            inner: NonZeroScalar::<C>::try_from_rng(rng)?.into(),
+        })
     }
 
     /// Create a new secret key from a scalar value.
