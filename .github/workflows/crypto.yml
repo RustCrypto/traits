@@ -39,6 +39,7 @@ jobs:
                --features aead,cipher,digest,elliptic-curve,signature,universal-hash
 
   minimal-versions:
+    if: false # disabled until we stop using pre-releases
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
