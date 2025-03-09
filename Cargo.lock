@@ -552,8 +552,9 @@ dependencies = [
 
 [[package]]
 name = "sha2"
-version = "0.11.0-pre.4"
-source = "git+https://github.com/RustCrypto/hashes#479ad0b5b48bc6044aa10a9896ccd54f28f0cccc"
+version = "0.11.0-pre.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19b4241d1a56954dce82cecda5c8e9c794eef6f53abe5e5216bac0a0ea71ffa7"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -562,8 +563,9 @@ dependencies = [
 
 [[package]]
 name = "sha3"
-version = "0.11.0-pre.4"
-source = "git+https://github.com/RustCrypto/hashes#479ad0b5b48bc6044aa10a9896ccd54f28f0cccc"
+version = "0.11.0-pre.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1bc997d7a5fa67cc1e352b2001124d28edb948b4e7a16567f9b3c1e51952524"
 dependencies = [
  "digest 0.11.0-pre.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "keccak",

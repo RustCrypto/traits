@@ -40,8 +40,8 @@ tap = { version = "1.0.1", optional = true, default-features = false } # hack fo
 
 [dev-dependencies]
 hex-literal = "1"
-sha2 = "=0.11.0-pre.4"
-sha3 = "=0.11.0-pre.4"
+sha2 = "=0.11.0-pre.5"
+sha3 = "=0.11.0-pre.5"
 
 [features]
 default = ["arithmetic"]
