@@ -1,19 +1,19 @@
 [package]
 name = "aead"
 version = "0.6.0-rc.0"
+authors = ["RustCrypto Developers"]
+edition = "2024"
+rust-version = "1.85"
+documentation = "https://docs.rs/aead"
+readme = "README.md"
+repository = "https://github.com/RustCrypto/traits"
+license = "MIT OR Apache-2.0"
+keywords = ["crypto", "encryption"]
+categories = ["cryptography", "no-std"]
 description = """
 Traits for Authenticated Encryption with Associated Data (AEAD) algorithms,
 such as AES-GCM as ChaCha20Poly1305, which provide a high-level API
 """
-authors = ["RustCrypto Developers"]
-license = "MIT OR Apache-2.0"
-readme = "README.md"
-edition = "2024"
-rust-version = "1.85"
-documentation = "https://docs.rs/aead"
-repository = "https://github.com/RustCrypto/traits"
-keywords = ["crypto", "encryption"]
-categories = ["cryptography", "no-std"]
 
 [dependencies]
 crypto-common = { version = "0.2.0-rc.1", path = "../crypto-common" }

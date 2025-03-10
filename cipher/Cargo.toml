@@ -1,16 +1,16 @@
 [package]
 name = "cipher"
-description = "Traits for describing block ciphers and stream ciphers"
 version = "0.5.0-pre.8"
 authors = ["RustCrypto Developers"]
-license = "MIT OR Apache-2.0"
-readme = "README.md"
 edition = "2024"
 rust-version = "1.85"
 documentation = "https://docs.rs/cipher"
+readme = "README.md"
 repository = "https://github.com/RustCrypto/traits"
+license = "MIT OR Apache-2.0"
 keywords = ["crypto", "block-cipher", "stream-cipher", "trait"]
 categories = ["cryptography", "no-std"]
+description = "Traits for describing block ciphers and stream ciphers"
 
 [dependencies]
 crypto-common = { version = "0.2.0-rc.2", path = "../crypto-common" }

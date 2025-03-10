@@ -1,20 +1,20 @@
 [package]
 name = "elliptic-curve"
 version = "0.14.0-rc.1"
+authors = ["RustCrypto Developers"]
+edition = "2024"
+rust-version = "1.85"
+documentation = "https://docs.rs/elliptic-curve"
+readme = "README.md"
+repository = "https://github.com/RustCrypto/traits"
+license = "Apache-2.0 OR MIT"
+categories = ["cryptography", "no-std"]
+keywords = ["crypto", "ecc", "elliptic", "weierstrass"]
 description = """
 General purpose Elliptic Curve Cryptography (ECC) support, including types
 and traits for representing various elliptic curve forms, scalars, points,
 and public/secret keys composed thereof.
 """
-authors = ["RustCrypto Developers"]
-license = "Apache-2.0 OR MIT"
-homepage = "https://github.com/RustCrypto/traits/tree/master/elliptic-curve"
-repository = "https://github.com/RustCrypto/traits"
-readme = "README.md"
-categories = ["cryptography", "no-std"]
-keywords = ["crypto", "ecc", "elliptic", "weierstrass"]
-edition = "2024"
-rust-version = "1.85"
 
 [dependencies]
 base16ct = "0.2"
