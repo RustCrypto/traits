@@ -274,6 +274,12 @@ pub trait CustomizedInit: Sized {
     fn new_customized(customization: &[u8]) -> Self;
 }
 
+/// Trait adding customization string to hash functions with variable output.
+pub trait VarOutputCustomized: Sized {
+    /// Create new hasher instance with the given customization string and output size.
+    fn new_customized(customization: &[u8], output_size: usize) -> Self;
+}
+
 /// The error type used in variable hash traits.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct InvalidOutputSize;

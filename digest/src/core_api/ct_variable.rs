@@ -2,9 +2,9 @@ use super::{
     AlgorithmName, Buffer, BufferKindUser, FixedOutputCore, Reset, TruncSide, UpdateCore,
     VariableOutputCore,
 };
-use crate::HashMarker;
 #[cfg(feature = "mac")]
 use crate::MacMarker;
+use crate::{CustomizedInit, HashMarker, VarOutputCustomized};
 #[cfg(feature = "oid")]
 use const_oid::{AssociatedOid, ObjectIdentifier};
 use core::{
@@ -126,6 +126,21 @@ where
     fn default() -> Self {
         Self {
             inner: T::new(OutSize::USIZE).unwrap(),
+            _out: PhantomData,
+        }
+    }
+}
+
+impl<T, OutSize, O> CustomizedInit for CtVariableCoreWrapper<T, OutSize, O>
+where
+    T: VariableOutputCore + VarOutputCustomized,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
+    LeEq<OutSize, T::OutputSize>: NonZero,
+{
+    #[inline]
+    fn new_customized(customization: &[u8]) -> Self {
+        Self {
+            inner: T::new_customized(customization, OutSize::USIZE),
             _out: PhantomData,
         }
     }
