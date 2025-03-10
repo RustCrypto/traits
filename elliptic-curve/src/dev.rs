@@ -10,7 +10,7 @@ use crate::{
     error::{Error, Result},
     ops::{Invert, LinearCombination, MulByGenerator, Reduce, ShrAssign},
     point::AffineCoordinates,
-    rand_core::{RngCore, TryRngCore},
+    rand_core::TryRngCore,
     scalar::{FromUintUnchecked, IsHigh},
     sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
@@ -575,7 +575,7 @@ impl ToEncodedPoint<MockCurve> for ProjectivePoint {
 impl group::Group for ProjectivePoint {
     type Scalar = Scalar;
 
-    fn random(_rng: impl RngCore) -> Self {
+    fn try_from_rng<R: TryRngCore + ?Sized>(_rng: &mut R) -> core::result::Result<Self, R::Error> {
         unimplemented!();
     }
 
