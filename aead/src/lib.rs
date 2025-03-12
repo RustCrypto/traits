@@ -30,11 +30,12 @@ pub use crypto_common::{
 pub use arrayvec;
 #[cfg(feature = "bytes")]
 pub use bytes;
-#[cfg(feature = "heapless")]
-pub use heapless;
-
 #[cfg(feature = "rand_core")]
 pub use crypto_common::rand_core;
+#[cfg(feature = "heapless")]
+pub use heapless;
+#[cfg(feature = "inout")]
+pub use inout;
 
 use core::fmt;
 use crypto_common::array::{Array, ArraySize};
