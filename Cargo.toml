@@ -13,6 +13,7 @@ members = [
     "signature_derive",
     "universal-hash",
     "signature",
+    "vrf",
 ]
 
 [patch.crates-io]
