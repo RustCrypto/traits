@@ -37,14 +37,18 @@ pub use heapless;
 pub use crypto_common::rand_core;
 
 use core::fmt;
-use crypto_common::array::{Array, ArraySize, typenum::Unsigned};
+use crypto_common::array::{Array, ArraySize};
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 #[cfg(feature = "bytes")]
 use bytes::BytesMut;
+#[cfg(any(feature = "alloc", feature = "inout"))]
+use crypto_common::array::typenum::Unsigned;
 #[cfg(feature = "os_rng")]
 use crypto_common::rand_core::{OsError, OsRng, TryRngCore};
+#[cfg(feature = "inout")]
+use inout::InOutBuf;
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, TryCryptoRng};
 
@@ -240,23 +244,24 @@ pub trait AeadInPlace: AeadCore {
 }
 
 /// In-place AEAD trait which handles the authentication tag as a return value/separate parameter.
-pub trait AeadInPlaceDetached: AeadCore {
-    /// Encrypt the data in-place, returning the authentication tag.
-    fn encrypt_in_place_detached(
+#[cfg(feature = "inout")]
+pub trait AeadInOut: AeadCore {
+    /// Encrypt the data in the provided [`InOutBuf`], returning the authentication tag.
+    fn encrypt_inout_detached(
         &self,
         nonce: &Nonce<Self>,
         associated_data: &[u8],
-        buffer: &mut [u8],
+        buffer: InOutBuf<'_, '_, u8>,
     ) -> Result<Tag<Self>>;
 
-    /// Decrypt the message in-place, returning an error in the event the provided
-    /// authentication tag does not match the given ciphertext (i.e. ciphertext
+    /// Decrypt the data in the provided [`InOutBuf`], returning an error in the event the
+    /// provided authentication tag is invalid for the given ciphertext (i.e. ciphertext
     /// is modified/unauthentic)
-    fn decrypt_in_place_detached(
+    fn decrypt_inout_detached(
         &self,
         nonce: &Nonce<Self>,
         associated_data: &[u8],
-        buffer: &mut [u8],
+        buffer: InOutBuf<'_, '_, u8>,
         tag: &Tag<Self>,
     ) -> Result<()>;
 }
@@ -266,38 +271,6 @@ pub trait AeadInPlaceDetached: AeadCore {
 ///
 /// This is the common convention for AEAD algorithms.
 pub trait PostfixTagged {}
-
-impl<T: AeadInPlaceDetached + PostfixTagged> AeadInPlace for T {
-    fn encrypt_in_place(
-        &self,
-        nonce: &Nonce<Self>,
-        associated_data: &[u8],
-        buffer: &mut dyn Buffer,
-    ) -> Result<()> {
-        let tag = self.encrypt_in_place_detached(nonce, associated_data, buffer.as_mut())?;
-        buffer.extend_from_slice(tag.as_slice())?;
-        Ok(())
-    }
-
-    fn decrypt_in_place(
-        &self,
-        nonce: &Nonce<Self>,
-        associated_data: &[u8],
-        buffer: &mut dyn Buffer,
-    ) -> Result<()> {
-        let tag_pos = buffer
-            .len()
-            .checked_sub(Self::TagSize::to_usize())
-            .ok_or(Error)?;
-
-        let (msg, tag) = buffer.as_mut().split_at_mut(tag_pos);
-        let tag = Tag::<Self>::try_from(&*tag).expect("tag length mismatch");
-
-        self.decrypt_in_place_detached(nonce, associated_data, msg, &tag)?;
-        buffer.truncate(tag_pos);
-        Ok(())
-    }
-}
 
 #[cfg(feature = "alloc")]
 impl<Alg: AeadInPlace> Aead for Alg {
@@ -322,6 +295,39 @@ impl<Alg: AeadInPlace> Aead for Alg {
         let mut buffer = Vec::from(payload.msg);
         self.decrypt_in_place(nonce, payload.aad, &mut buffer)?;
         Ok(buffer)
+    }
+}
+
+#[cfg(feature = "inout")]
+impl<T: AeadInOut + PostfixTagged> AeadInPlace for T {
+    fn encrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()> {
+        let tag = self.encrypt_inout_detached(nonce, associated_data, buffer.as_mut().into())?;
+        buffer.extend_from_slice(tag.as_slice())?;
+        Ok(())
+    }
+
+    fn decrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()> {
+        let tag_pos = buffer
+            .len()
+            .checked_sub(Self::TagSize::to_usize())
+            .ok_or(Error)?;
+
+        let (msg, tag) = buffer.as_mut().split_at_mut(tag_pos);
+        let tag = Tag::<Self>::try_from(&*tag).expect("tag length mismatch");
+
+        self.decrypt_inout_detached(nonce, associated_data, msg.into(), &tag)?;
+        buffer.truncate(tag_pos);
+        Ok(())
     }
 }
 
