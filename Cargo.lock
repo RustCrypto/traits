@@ -664,6 +664,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "vrf"
+version = "0.1.0"
+dependencies = [
+ "digest 0.11.0-pre.10 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "wasi"
 version = "0.13.3+wasi-0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
