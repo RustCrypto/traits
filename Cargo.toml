@@ -12,7 +12,7 @@ members = [
     "password-hash",
     "signature_derive",
     "universal-hash",
-    "signature", 
+    "signature",
     "vrf",
 ]
 
