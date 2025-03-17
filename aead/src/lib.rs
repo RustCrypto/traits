@@ -137,7 +137,7 @@ pub trait Aead {
 
     /// Generate a random nonce for this AEAD algorithm using the specified [`CryptoRng`].
     ///
-    /// See [`AeadCore::generate_nonce`] documentation for requirements for
+    /// See [`Aead::generate_nonce`] documentation for requirements for
     /// random nonces.
     #[cfg(feature = "rand_core")]
     fn generate_nonce_with_rng<R: CryptoRng>(rng: &mut R) -> Nonce<Self> {
@@ -148,7 +148,7 @@ pub trait Aead {
 
     /// Generate a random nonce for this AEAD algorithm using the specified [`TryCryptoRng`].
     ///
-    /// See [`AeadCore::generate_nonce`] documentation for requirements for
+    /// See [`Aead::generate_nonce`] documentation for requirements for
     /// random nonces.
     #[cfg(feature = "rand_core")]
     fn try_generate_nonce_with_rng<R: TryCryptoRng>(
