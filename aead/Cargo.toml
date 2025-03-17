@@ -17,16 +17,16 @@ such as AES-GCM as ChaCha20Poly1305, which provide a high-level API
 
 [dependencies]
 crypto-common = { version = "0.2.0-rc.1", path = "../crypto-common" }
+inout = "0.2.0-rc.4"
 
 # optional dependencies
 arrayvec = { version = "0.7", optional = true, default-features = false }
 blobby = { version = "0.4.0-pre.0", optional = true }
 bytes = { version = "1", optional = true, default-features = false }
 heapless = { version = "0.8", optional = true, default-features = false }
-inout = { version = "0.2.0-rc.4", optional = true, default-features = false }
 
 [features]
-default = ["inout", "rand_core"]
+default = ["rand_core"]
 alloc = []
 dev = ["blobby"]
 os_rng = ["crypto-common/os_rng", "rand_core"]
