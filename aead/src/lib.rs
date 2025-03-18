@@ -205,7 +205,8 @@ pub trait Aead {
                 tag_dst.copy_from_slice(&tag);
             }
             TagPosition::Postfix => {
-                let tag = self.encrypt_inout_detached(nonce, associated_data, buffer.as_mut().into())?;
+                let tag =
+                    self.encrypt_inout_detached(nonce, associated_data, buffer.as_mut().into())?;
                 buffer.extend_from_slice(tag.as_slice())?;
             }
         }
