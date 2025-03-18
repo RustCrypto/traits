@@ -178,58 +178,6 @@ pub trait Aead {
         tag: &Tag<Self>,
     ) -> Result<()>;
 
-    /// Encrypt the data in the provided mutable slice, returning the authentication tag.
-    fn encrypt_detached(
-        &self,
-        nonce: &Nonce<Self>,
-        associated_data: &[u8],
-        buffer: &mut [u8],
-    ) -> Result<Tag<Self>> {
-        self.encrypt_inout_detached(nonce, associated_data, buffer.into())
-    }
-
-    /// Decrypt the data in the provided mutable slice, returning an error in the event the
-    /// provided authentication tag is invalid for the given ciphertext (i.e. ciphertext
-    /// is modified/unauthentic)
-    fn decrypt_detached(
-        &self,
-        nonce: &Nonce<Self>,
-        associated_data: &[u8],
-        buffer: &mut [u8],
-        tag: &Tag<Self>,
-    ) -> Result<()> {
-        self.decrypt_inout_detached(nonce, associated_data, buffer.into(), tag)
-    }
-
-    /// Encrypt the given plaintext payload, returning the authentication tag and writing
-    /// the resulting ciphertext to `buffer_out`.
-    fn encrypt_b2b_detached<'msg, 'aad>(
-        &self,
-        nonce: &Nonce<Self>,
-        plaintext: impl Into<Payload<'msg, 'aad>>,
-        buffer_out: &mut [u8],
-    ) -> Result<Tag<Self>> {
-        let payload = plaintext.into();
-        let inout_buf = InOutBuf::new(payload.msg, buffer_out).map_err(|_| Error)?;
-        self.encrypt_inout_detached(nonce, payload.aad, inout_buf)
-    }
-
-    /// Decrypt Decrypt the given ciphertext slice and write result to `buffer_out`, returning
-    /// an error in the event the provided authentication tag is invalid for the given ciphertext
-    /// (i.e. ciphertext is modified/unauthentic) or in the event if the buffers have different
-    /// length.
-    fn decrypt_b2b_detached<'msg, 'aad>(
-        &self,
-        nonce: &Nonce<Self>,
-        ciphertext: impl Into<Payload<'msg, 'aad>>,
-        buffer_out: &mut [u8],
-        tag: &Tag<Self>,
-    ) -> Result<()> {
-        let payload = ciphertext.into();
-        let inout_buf = InOutBuf::new(payload.msg, buffer_out).map_err(|_| Error)?;
-        self.decrypt_inout_detached(nonce, payload.aad, inout_buf, tag)
-    }
-
     /// Encrypt the given buffer containing a plaintext message in-place.
     ///
     /// The buffer must have sufficient capacity to store the ciphertext
@@ -253,11 +201,11 @@ pub trait Aead {
                 let tag_size = Self::TagSize::USIZE;
                 buffer.copy_within(..msg_len, tag_size);
                 let (tag_dst, msg) = buffer.split_at_mut(tag_size);
-                let tag = self.encrypt_detached(nonce, associated_data, msg)?;
+                let tag = self.encrypt_inout_detached(nonce, associated_data, msg.into())?;
                 tag_dst.copy_from_slice(&tag);
             }
             TagKind::Postfix => {
-                let tag = self.encrypt_detached(nonce, associated_data, buffer.as_mut())?;
+                let tag = self.encrypt_inout_detached(nonce, associated_data, buffer.as_mut().into())?;
                 buffer.extend_from_slice(tag.as_slice())?;
             }
         }
@@ -282,13 +230,13 @@ pub trait Aead {
             TagKind::Prefix => {
                 let (msg, tag) = buffer.as_mut().split_at_mut(tag_size);
                 let tag = Tag::<Self>::try_from(&*tag).expect("tag length mismatch");
-                self.decrypt_detached(nonce, associated_data, msg, &tag)?;
+                self.decrypt_inout_detached(nonce, associated_data, msg.into(), &tag)?;
                 buffer.as_mut().copy_within(tag_size.., 0);
             }
             TagKind::Postfix => {
                 let (msg, tag) = buffer.as_mut().split_at_mut(tagless_len);
                 let tag = Tag::<Self>::try_from(&*tag).expect("tag length mismatch");
-                self.decrypt_detached(nonce, associated_data, msg, &tag)?;
+                self.decrypt_inout_detached(nonce, associated_data, msg.into(), &tag)?;
             }
         }
         buffer.truncate(tagless_len);
