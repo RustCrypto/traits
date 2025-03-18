@@ -75,7 +75,7 @@ pub type Tag<A> = Array<u8, <A as Aead>::TagSize>;
 
 /// Enum which specifies tag position used by an AEAD algorithm.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub enum TagKind {
+pub enum TagPosition {
     /// Postfix tag
     Postfix,
     /// Prefix tag
@@ -91,7 +91,7 @@ pub trait Aead {
     type TagSize: ArraySize;
 
     /// The AEAD tag position.
-    const TAG_KIND: TagKind;
+    const TAG_POSITION: TagPosition;
 
     /// Generate a random nonce for this AEAD algorithm.
     ///
@@ -193,8 +193,8 @@ pub trait Aead {
         associated_data: &[u8],
         buffer: &mut dyn Buffer,
     ) -> Result<()> {
-        match Self::TAG_KIND {
-            TagKind::Prefix => {
+        match Self::TAG_POSITION {
+            TagPosition::Prefix => {
                 let msg_len = buffer.len();
                 buffer.extend_from_slice(&Tag::<Self>::default())?;
                 let buffer = buffer.as_mut();
@@ -204,7 +204,7 @@ pub trait Aead {
                 let tag = self.encrypt_inout_detached(nonce, associated_data, msg.into())?;
                 tag_dst.copy_from_slice(&tag);
             }
-            TagKind::Postfix => {
+            TagPosition::Postfix => {
                 let tag = self.encrypt_inout_detached(nonce, associated_data, buffer.as_mut().into())?;
                 buffer.extend_from_slice(tag.as_slice())?;
             }
@@ -226,14 +226,14 @@ pub trait Aead {
         let tag_size = Self::TagSize::USIZE;
         let tagless_len = buffer.len().checked_sub(tag_size).ok_or(Error)?;
 
-        match Self::TAG_KIND {
-            TagKind::Prefix => {
+        match Self::TAG_POSITION {
+            TagPosition::Prefix => {
                 let (msg, tag) = buffer.as_mut().split_at_mut(tag_size);
                 let tag = Tag::<Self>::try_from(&*tag).expect("tag length mismatch");
                 self.decrypt_inout_detached(nonce, associated_data, msg.into(), &tag)?;
                 buffer.as_mut().copy_within(tag_size.., 0);
             }
-            TagKind::Postfix => {
+            TagPosition::Postfix => {
                 let (msg, tag) = buffer.as_mut().split_at_mut(tagless_len);
                 let tag = Tag::<Self>::try_from(&*tag).expect("tag length mismatch");
                 self.decrypt_inout_detached(nonce, associated_data, msg.into(), &tag)?;
