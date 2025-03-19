@@ -221,6 +221,7 @@ macro_rules! newtype {
 }
 
 #[cfg(test)]
+#[cfg(feature = "core-api")]
 mod tests {
     use crate::HashMarker;
     use crate::consts::U8;
