@@ -68,10 +68,10 @@ impl fmt::Display for Error {
 impl core::error::Error for Error {}
 
 /// Nonce: single-use value for ensuring ciphertexts are unique
-pub type Nonce<A> = Array<u8, <A as Aead>::NonceSize>;
+pub type Nonce<A> = Array<u8, <A as AeadCore>::NonceSize>;
 
 /// Tag: authentication code which ensures ciphertexts are authentic
-pub type Tag<A> = Array<u8, <A as Aead>::TagSize>;
+pub type Tag<A> = Array<u8, <A as AeadCore>::TagSize>;
 
 /// Enum which specifies tag position used by an AEAD algorithm.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -83,7 +83,7 @@ pub enum TagPosition {
 }
 
 /// Authenticated Encryption with Associated Data (AEAD) algorithm.
-pub trait Aead {
+pub trait AeadCore {
     /// The length of a nonce.
     type NonceSize: ArraySize;
 
@@ -137,7 +137,7 @@ pub trait Aead {
 
     /// Generate a random nonce for this AEAD algorithm using the specified [`CryptoRng`].
     ///
-    /// See [`Aead::generate_nonce`] documentation for requirements for
+    /// See [`AeadCore::generate_nonce`] documentation for requirements for
     /// random nonces.
     #[cfg(feature = "rand_core")]
     fn generate_nonce_with_rng<R: CryptoRng>(rng: &mut R) -> Nonce<Self> {
@@ -148,7 +148,7 @@ pub trait Aead {
 
     /// Generate a random nonce for this AEAD algorithm using the specified [`TryCryptoRng`].
     ///
-    /// See [`Aead::generate_nonce`] documentation for requirements for
+    /// See [`AeadCore::generate_nonce`] documentation for requirements for
     /// random nonces.
     #[cfg(feature = "rand_core")]
     fn try_generate_nonce_with_rng<R: TryCryptoRng>(
@@ -158,7 +158,10 @@ pub trait Aead {
         rng.try_fill_bytes(&mut nonce)?;
         Ok(nonce)
     }
+}
 
+/// In-place AEAD trait which handles the authentication tag as a return value/separate parameter.
+pub trait AeadInOut: AeadCore {
     /// Encrypt the data in the provided [`InOutBuf`], returning the authentication tag.
     fn encrypt_inout_detached(
         &self,
@@ -177,7 +180,11 @@ pub trait Aead {
         buffer: InOutBuf<'_, '_, u8>,
         tag: &Tag<Self>,
     ) -> Result<()>;
+}
 
+/// Authenticated Encryption with Associated Data (AEAD) algorithm.
+#[cfg(feature = "alloc")]
+pub trait Aead: AeadCore {
     /// Encrypt the given buffer containing a plaintext message in-place.
     ///
     /// The buffer must have sufficient capacity to store the ciphertext
@@ -187,6 +194,80 @@ pub trait Aead {
     ///
     /// Returns an error if the buffer has insufficient capacity to store the
     /// resulting ciphertext message.
+    fn encrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()>;
+
+    /// Decrypt the message in-place, returning an error in the event the
+    /// provided authentication tag does not match the given ciphertext.
+    ///
+    /// The buffer will be truncated to the length of the original plaintext
+    /// message upon success.
+    fn decrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()>;
+
+    /// Encrypt the given plaintext payload, and return the resulting
+    /// ciphertext as a vector of bytes.
+    ///
+    /// The [`Payload`] type can be used to provide Additional Associated Data
+    /// (AAD) along with the message: this is an optional bytestring which is
+    /// not encrypted, but *is* authenticated along with the message. Failure
+    /// to pass the same AAD that was used during encryption will cause
+    /// decryption to fail, which is useful if you would like to "bind" the
+    /// ciphertext to some other identifier, like a digital signature key
+    /// or other identifier.
+    ///
+    /// If you don't care about AAD and just want to encrypt a plaintext
+    /// message, `&[u8]` will automatically be coerced into a `Payload`:
+    ///
+    /// ```nobuild
+    /// let plaintext = b"Top secret message, handle with care";
+    /// let ciphertext = cipher.encrypt(nonce, plaintext);
+    /// ```
+    ///
+    /// The default implementation assumes a postfix tag (ala AES-GCM,
+    /// AES-GCM-SIV, ChaCha20Poly1305). [`Aead`] implementations which do not
+    /// use a postfix tag will need to override this to correctly assemble the
+    /// ciphertext message.
+    fn encrypt<'msg, 'aad>(
+        &self,
+        nonce: &Nonce<Self>,
+        plaintext: impl Into<Payload<'msg, 'aad>>,
+    ) -> Result<Vec<u8>>;
+
+    /// Decrypt the given ciphertext slice, and return the resulting plaintext
+    /// as a vector of bytes.
+    ///
+    /// See notes on [`Aead::encrypt()`] about allowable message payloads and
+    /// Associated Additional Data (AAD).
+    ///
+    /// If you have no AAD, you can call this as follows:
+    ///
+    /// ```nobuild
+    /// let ciphertext = b"...";
+    /// let plaintext = cipher.decrypt(nonce, ciphertext)?;
+    /// ```
+    ///
+    /// The default implementation assumes a postfix tag (ala AES-GCM,
+    /// AES-GCM-SIV, ChaCha20Poly1305). [`Aead`] implementations which do not
+    /// use a postfix tag will need to override this to correctly parse the
+    /// ciphertext message.
+    fn decrypt<'msg, 'aad>(
+        &self,
+        nonce: &Nonce<Self>,
+        ciphertext: impl Into<Payload<'msg, 'aad>>,
+    ) -> Result<Vec<u8>>;
+}
+
+#[cfg(feature = "alloc")]
+impl<T: AeadInOut> Aead for T {
     fn encrypt_in_place(
         &self,
         nonce: &Nonce<Self>,
@@ -213,11 +294,6 @@ pub trait Aead {
         Ok(())
     }
 
-    /// Decrypt the message in-place, returning an error in the event the
-    /// provided authentication tag does not match the given ciphertext.
-    ///
-    /// The buffer will be truncated to the length of the original plaintext
-    /// message upon success.
     fn decrypt_in_place(
         &self,
         nonce: &Nonce<Self>,
@@ -244,30 +320,6 @@ pub trait Aead {
         Ok(())
     }
 
-    /// Encrypt the given plaintext payload, and return the resulting
-    /// ciphertext as a vector of bytes.
-    ///
-    /// The [`Payload`] type can be used to provide Additional Associated Data
-    /// (AAD) along with the message: this is an optional bytestring which is
-    /// not encrypted, but *is* authenticated along with the message. Failure
-    /// to pass the same AAD that was used during encryption will cause
-    /// decryption to fail, which is useful if you would like to "bind" the
-    /// ciphertext to some other identifier, like a digital signature key
-    /// or other identifier.
-    ///
-    /// If you don't care about AAD and just want to encrypt a plaintext
-    /// message, `&[u8]` will automatically be coerced into a `Payload`:
-    ///
-    /// ```nobuild
-    /// let plaintext = b"Top secret message, handle with care";
-    /// let ciphertext = cipher.encrypt(nonce, plaintext);
-    /// ```
-    ///
-    /// The default implementation assumes a postfix tag (ala AES-GCM,
-    /// AES-GCM-SIV, ChaCha20Poly1305). [`Aead`] implementations which do not
-    /// use a postfix tag will need to override this to correctly assemble the
-    /// ciphertext message.
-    #[cfg(feature = "alloc")]
     fn encrypt<'msg, 'aad>(
         &self,
         nonce: &Nonce<Self>,
@@ -280,24 +332,6 @@ pub trait Aead {
         Ok(buffer)
     }
 
-    /// Decrypt the given ciphertext slice, and return the resulting plaintext
-    /// as a vector of bytes.
-    ///
-    /// See notes on [`Aead::encrypt()`] about allowable message payloads and
-    /// Associated Additional Data (AAD).
-    ///
-    /// If you have no AAD, you can call this as follows:
-    ///
-    /// ```nobuild
-    /// let ciphertext = b"...";
-    /// let plaintext = cipher.decrypt(nonce, ciphertext)?;
-    /// ```
-    ///
-    /// The default implementation assumes a postfix tag (ala AES-GCM,
-    /// AES-GCM-SIV, ChaCha20Poly1305). [`Aead`] implementations which do not
-    /// use a postfix tag will need to override this to correctly parse the
-    /// ciphertext message.
-    #[cfg(feature = "alloc")]
     fn decrypt<'msg, 'aad>(
         &self,
         nonce: &Nonce<Self>,
@@ -319,6 +353,7 @@ pub trait Aead {
 /// If you don't care about AAD, you can pass a `&[u8]` as the payload to
 /// `encrypt`/`decrypt` and it will automatically be coerced to this type.
 #[derive(Debug)]
+#[cfg(feature = "alloc")]
 pub struct Payload<'msg, 'aad> {
     /// Message to be encrypted/decrypted
     pub msg: &'msg [u8],
