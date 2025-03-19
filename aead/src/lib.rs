@@ -316,7 +316,7 @@ impl<T: AeadInOut> Aead for T {
 
         match Self::TAG_POSITION {
             TagPosition::Prefix => {
-                let (msg, tag) = buffer.as_mut().split_at_mut(tag_size);
+                let (tag, msg) = buffer.as_mut().split_at_mut(tag_size);
                 let tag = Tag::<Self>::try_from(&*tag).expect("tag length mismatch");
                 self.decrypt_inout_detached(nonce, associated_data, msg.into(), &tag)?;
                 buffer.as_mut().copy_within(tag_size.., 0);
