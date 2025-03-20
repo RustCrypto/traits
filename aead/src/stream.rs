@@ -6,7 +6,7 @@
 
 #![allow(clippy::upper_case_acronyms)]
 
-use crate::{AeadInOut, AeadCore, Buffer, Error, Key, KeyInit, Result};
+use crate::{AeadCore, AeadInOut, Buffer, Error, Key, KeyInit, Result};
 use core::ops::{AddAssign, Sub};
 use crypto_common::array::{Array, ArraySize};
 
