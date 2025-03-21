@@ -19,8 +19,6 @@ extern crate alloc;
 #[cfg(feature = "dev")]
 pub mod dev;
 
-pub mod stream;
-
 pub use crypto_common::{
     Key, KeyInit, KeySizeUser,
     array::{self, typenum::consts},
@@ -125,9 +123,10 @@ pub trait AeadCore {
     /// reach it should consider alternatives to purely random nonces, like
     /// a counter or a combination of a random nonce + counter.
     ///
-    /// See the [`stream`] module for a ready-made implementation of the latter.
+    /// See the [`aead-stream`] crate for a ready-made implementation of the latter.
     ///
     /// [NIST SP 800-38D]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
+    /// [`aead-stream`]: https://docs.rs/aead-stream
     #[cfg(feature = "os_rng")]
     fn generate_nonce() -> core::result::Result<Nonce<Self>, OsError> {
         let mut nonce = Nonce::<Self>::default();
