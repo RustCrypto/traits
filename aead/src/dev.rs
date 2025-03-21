@@ -5,7 +5,6 @@ use inout::InOutBuf;
 use crate::{Aead, AeadInOut, Nonce, Payload, Tag, TagPosition, array::typenum::Unsigned};
 
 /// Run AEAD test for the provided passing test vector
-#[allow(clippy::unwrap_used)]
 pub fn run_pass_test<C: AeadInOut>(
     cipher: &C,
     nonce: &Nonce<C>,
@@ -33,11 +32,11 @@ pub fn run_pass_test<C: AeadInOut>(
         }
         TagPosition::Postfix => ct.split_at(pt.len()),
     };
-    let tag: &Tag<C> = tag.try_into().unwrap();
+    let tag: &Tag<C> = tag.try_into().expect("tag has correct length");
 
     // Fill output buffer with "garbage" to test that its data does not get read during encryption
     let mut buf: alloc::vec::Vec<u8> = (0..pt.len()).map(|i| i as u8).collect();
-    let inout_buf = InOutBuf::new(pt, &mut buf).unwrap();
+    let inout_buf = InOutBuf::new(pt, &mut buf).expect("pt and buf have the same length");
 
     let calc_tag = cipher
         .encrypt_inout_detached(nonce, aad, inout_buf)
@@ -47,7 +46,7 @@ pub fn run_pass_test<C: AeadInOut>(
 
     buf.iter_mut().enumerate().for_each(|(i, v)| *v = i as u8);
 
-    let inout_buf = InOutBuf::new(pt, &mut buf).unwrap();
+    let inout_buf = InOutBuf::new(ct, &mut buf).expect("ct and buf have the same length");
     cipher
         .decrypt_inout_detached(nonce, aad, inout_buf, tag)
         .map_err(|_| "decryption failure")?;
