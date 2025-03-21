@@ -19,8 +19,6 @@ extern crate alloc;
 #[cfg(feature = "dev")]
 pub mod dev;
 
-pub mod stream;
-
 pub use crypto_common::{
     Key, KeyInit, KeySizeUser,
     array::{self, typenum::consts},
