@@ -90,12 +90,11 @@ macro_rules! new_test {
                 let nonce = nonce.try_into().map_err(|_| "wrong nonce size")?;
                 let cipher = $cipher::new(key);
 
-                let pass = match status {
+                let res = match status {
                     [0] => $crate::dev::run_fail_test(&cipher, nonce, aad, pt, ct),
                     [1] => $crate::dev::run_pass_test(&cipher, nonce, aad, pt, ct),
                     _ => panic!("invalid value for pass flag"),
                 };
-                let res = ;
                 if let Err(reason) = res {
                     panic!(
                         "\n\
