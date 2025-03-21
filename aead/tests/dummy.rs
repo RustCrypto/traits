@@ -1,3 +1,5 @@
+//! This module defines dummy (horribly insecure!) AEAD implementations
+//! to test implementation of the AEAD traits and helper macros in the `dev` module.
 use aead::{
     AeadCore, AeadInOut, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag, TagPosition,
     array::Array, consts::U8,
