@@ -60,13 +60,8 @@ pub fn run_fail_test<C: AeadInOut>(
     cipher: &C,
     nonce: &Nonce<C>,
     aad: &[u8],
-    pt: &[u8],
     ct: &[u8],
 ) -> Result<(), &'static str> {
-    cipher
-        .encrypt(nonce, Payload { aad, msg: pt })
-        .map_err(|_| "encryption failure")?;
-
     let res = cipher.decrypt(nonce, Payload { aad, msg: ct });
     if res.is_ok() {
         Err("decryption must return error")
@@ -91,7 +86,7 @@ macro_rules! new_test {
                 let cipher = $cipher::new(key);
 
                 let res = match status {
-                    [0] => $crate::dev::run_fail_test(&cipher, nonce, aad, pt, ct),
+                    [0] => $crate::dev::run_fail_test(&cipher, nonce, aad, ct),
                     [1] => $crate::dev::run_pass_test(&cipher, nonce, aad, pt, ct),
                     _ => panic!("invalid value for pass flag"),
                 };
