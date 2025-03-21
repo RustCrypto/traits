@@ -1,8 +1,8 @@
 //! Development-related functionality
+use crate::{
+    Aead, AeadInOut, Nonce, Payload, Tag, TagPosition, array::typenum::Unsigned, inout::InOutBuf,
+};
 pub use blobby;
-use inout::InOutBuf;
-
-use crate::{Aead, AeadInOut, Nonce, Payload, Tag, TagPosition, array::typenum::Unsigned};
 
 /// Run AEAD test for the provided passing test vector
 pub fn run_pass_test<C: AeadInOut>(
@@ -49,6 +49,7 @@ pub fn run_pass_test<C: AeadInOut>(
         return Err("encrypt_inout_detached: ciphertext mismatch");
     }
 
+    // Fill output buffer with "garbage"
     buf.iter_mut().enumerate().for_each(|(i, v)| *v = i as u8);
 
     let inout_buf = InOutBuf::new(ct, &mut buf).expect("ct and buf have the same length");
@@ -83,6 +84,7 @@ macro_rules! new_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
+            use $crate::KeyInit;
             use $crate::dev::blobby::Blob6Iterator;
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
@@ -90,7 +92,7 @@ macro_rules! new_test {
                 let [key, nonce, aad, pt, ct, status] = row.unwrap();
                 let key = key.try_into().expect("wrong key size");
                 let nonce = nonce.try_into().expect("wrong nonce size");
-                let cipher = <$cipher>::new(key);
+                let cipher = <$cipher as KeyInit>::new(key);
 
                 let res = match status {
                     [0] => $crate::dev::run_fail_test(&cipher, nonce, aad, ct),
