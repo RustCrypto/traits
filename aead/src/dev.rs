@@ -81,15 +81,16 @@ macro_rules! new_test {
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
             for (i, row) in Blob6Iterator::new(data).unwrap().enumerate() {
                 let [key, nonce, aad, pt, ct, status] = row.unwrap();
-                let key = key.try_into().map_err(|_| "wrong key size")?;
-                let nonce = nonce.try_into().map_err(|_| "wrong nonce size")?;
-                let cipher = $cipher::new(key);
+                let key = key.try_into().expect("wrong key size");
+                let nonce = nonce.try_into().expect("wrong nonce size");
+                let cipher = <$cipher>::new(key);
 
                 let res = match status {
                     [0] => $crate::dev::run_fail_test(&cipher, nonce, aad, ct),
                     [1] => $crate::dev::run_pass_test(&cipher, nonce, aad, pt, ct),
                     _ => panic!("invalid value for pass flag"),
                 };
+                let mut pass = status[0] == 1;
                 if let Err(reason) = res {
                     panic!(
                         "\n\
