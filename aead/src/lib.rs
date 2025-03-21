@@ -160,7 +160,7 @@ pub trait AeadCore {
     }
 }
 
-/// In-place AEAD trait which handles the authentication tag as a return value/separate parameter.
+/// In-place and inout AEAD trait which handles the authentication tag as a return value/separate parameter.
 pub trait AeadInOut: AeadCore {
     /// Encrypt the data in the provided [`InOutBuf`], returning the authentication tag.
     fn encrypt_inout_detached(
