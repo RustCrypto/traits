@@ -18,6 +18,7 @@ pub fn run_pass_test<C: AeadInOut>(
     if res != ct {
         return Err("encrypted data is different from target ciphertext");
     }
+
     let res = cipher
         .decrypt(nonce, Payload { aad, msg: ct })
         .map_err(|_| "decryption failure")?;
@@ -40,17 +41,23 @@ pub fn run_pass_test<C: AeadInOut>(
 
     let calc_tag = cipher
         .encrypt_inout_detached(nonce, aad, inout_buf)
-        .map_err(|_| "encryption failure")?;
-    assert_eq!(tag, &calc_tag, "tag mismatch");
-    assert_eq!(ct, &buf, "ciphertext mismatch");
+        .map_err(|_| "encrypt_inout_detached: encryption failure")?;
+    if tag != &calc_tag {
+        return Err("encrypt_inout_detached: tag mismatch");
+    }
+    if ct != buf {
+        return Err("encrypt_inout_detached: ciphertext mismatch");
+    }
 
     buf.iter_mut().enumerate().for_each(|(i, v)| *v = i as u8);
 
     let inout_buf = InOutBuf::new(ct, &mut buf).expect("ct and buf have the same length");
     cipher
         .decrypt_inout_detached(nonce, aad, inout_buf, tag)
-        .map_err(|_| "decryption failure")?;
-    assert_eq!(ct, &buf, "plaintext mismatch");
+        .map_err(|_| "decrypt_inout_detached: decryption failure")?;
+    if pt != buf {
+        return Err("decrypt_inout_detached: plaintext mismatch");
+    }
 
     Ok(())
 }
