@@ -139,7 +139,7 @@ pub trait AeadCore {
     /// See [`AeadCore::generate_nonce`] documentation for requirements for
     /// random nonces.
     #[cfg(feature = "rand_core")]
-    fn generate_nonce_with_rng<R: CryptoRng>(rng: &mut R) -> Nonce<Self> {
+    fn generate_nonce_with_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Nonce<Self> {
         let mut nonce = Nonce::<Self>::default();
         rng.fill_bytes(&mut nonce);
         nonce
@@ -150,7 +150,7 @@ pub trait AeadCore {
     /// See [`AeadCore::generate_nonce`] documentation for requirements for
     /// random nonces.
     #[cfg(feature = "rand_core")]
-    fn try_generate_nonce_with_rng<R: TryCryptoRng>(
+    fn try_generate_nonce_with_rng<R: TryCryptoRng + ?Sized>(
         rng: &mut R,
     ) -> core::result::Result<Nonce<Self>, R::Error> {
         let mut nonce = Nonce::<Self>::default();

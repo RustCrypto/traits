@@ -38,7 +38,7 @@ where
     C: CurveArithmetic,
 {
     /// Create a new [`BlindedScalar`] from a scalar and a [`CryptoRng`].
-    pub fn new<R: CryptoRng>(scalar: Scalar<C>, rng: &mut R) -> Self {
+    pub fn new<R: CryptoRng + ?Sized>(scalar: Scalar<C>, rng: &mut R) -> Self {
         Self {
             scalar,
             mask: Scalar::<C>::random(rng),
