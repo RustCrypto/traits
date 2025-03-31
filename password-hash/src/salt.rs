@@ -203,7 +203,7 @@ pub struct SaltString {
 impl SaltString {
     /// Generate a random B64-encoded [`SaltString`] from [`CryptoRng`].
     #[cfg(feature = "rand_core")]
-    pub fn from_rng<R: CryptoRng>(rng: &mut R) -> Self {
+    pub fn from_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
         let mut bytes = [0u8; Salt::RECOMMENDED_LENGTH];
         rng.fill_bytes(&mut bytes);
         Self::encode_b64(&bytes).expect(INVARIANT_VIOLATED_MSG)
@@ -211,7 +211,9 @@ impl SaltString {
 
     /// Generate a random B64-encoded [`SaltString`] from [`TryCryptoRng`].
     #[cfg(feature = "rand_core")]
-    pub fn try_from_rng<R: TryCryptoRng>(rng: &mut R) -> core::result::Result<Self, R::Error> {
+    pub fn try_from_rng<R: TryCryptoRng + ?Sized>(
+        rng: &mut R,
+    ) -> core::result::Result<Self, R::Error> {
         let mut bytes = [0u8; Salt::RECOMMENDED_LENGTH];
         rng.try_fill_bytes(&mut bytes)?;
         let salt = Self::encode_b64(&bytes).expect(INVARIANT_VIOLATED_MSG);

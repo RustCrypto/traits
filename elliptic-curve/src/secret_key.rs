@@ -94,7 +94,7 @@ where
 
     /// Generate a random [`SecretKey`].
     #[cfg(feature = "arithmetic")]
-    pub fn random<R: CryptoRng>(rng: &mut R) -> Self
+    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self
     where
         C: CurveArithmetic,
     {
