@@ -78,39 +78,64 @@ pub fn run_fail_test<C: AeadInOut>(
     }
 }
 
-/// Define AEAD test
+/// Define AEAD test for passing test vectors
 #[macro_export]
-macro_rules! new_test {
+macro_rules! new_pass_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
             use $crate::KeyInit;
-            use $crate::dev::blobby::Blob6Iterator;
+            use $crate::dev::blobby::Blob5Iterator;
 
             let data = include_bytes!(concat!("data/", $test_name, ".blb"));
-            for (i, row) in Blob6Iterator::new(data).unwrap().enumerate() {
-                let [key, nonce, aad, pt, ct, status] = row.unwrap();
+            for (i, row) in Blob5Iterator::new(data).unwrap().enumerate() {
+                let [key, nonce, aad, pt, ct] = row.unwrap();
                 let key = key.try_into().expect("wrong key size");
                 let nonce = nonce.try_into().expect("wrong nonce size");
                 let cipher = <$cipher as KeyInit>::new(key);
-
-                let res = match status {
-                    [0] => $crate::dev::run_fail_test(&cipher, nonce, aad, ct),
-                    [1] => $crate::dev::run_pass_test(&cipher, nonce, aad, pt, ct),
-                    _ => panic!("invalid value for pass flag"),
-                };
-                let mut pass = status[0] == 1;
+                let res = $crate::dev::run_pass_test(&cipher, nonce, aad, pt, ct);
                 if let Err(reason) = res {
                     panic!(
                         "\n\
-                        Failed test #{i}\n\
+                        Failed (pass) test #{i}\n\
                         reason:\t{reason:?}\n\
                         key:\t{key:?}\n\
                         nonce:\t{nonce:?}\n\
                         aad:\t{aad:?}\n\
                         plaintext:\t{pt:?}\n\
-                        ciphertext:\t{ct:?}\n\
-                        pass:\t{pass}\n"
+                        ciphertext:\t{ct:?}\n"
+                    );
+                }
+            }
+        }
+    };
+}
+
+/// Define AEAD test for failing test vectors
+#[macro_export]
+macro_rules! new_fail_test {
+    ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
+        #[test]
+        fn $name() {
+            use $crate::KeyInit;
+            use $crate::dev::blobby::Blob4Iterator;
+
+            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
+            for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
+                let [key, nonce, aad, ct] = row.unwrap();
+                let key = key.try_into().expect("wrong key size");
+                let nonce = nonce.try_into().expect("wrong nonce size");
+                let cipher = <$cipher as KeyInit>::new(key);
+                let res = $crate::dev::run_fail_test(&cipher, nonce, aad, ct);
+                if let Err(reason) = res {
+                    panic!(
+                        "\n\
+                        Failed (fail) test #{i}\n\
+                        reason:\t{reason:?}\n\
+                        key:\t{key:?}\n\
+                        nonce:\t{nonce:?}\n\
+                        aad:\t{aad:?}\n\
+                        ciphertext:\t{ct:?}\n"
                     );
                 }
             }
