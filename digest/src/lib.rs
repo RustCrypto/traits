@@ -18,9 +18,12 @@
 //!   Usually they should not be used in application-level code.
 //!
 //! Additionally hash functions implement traits from the standard library:
-//! [`Default`], [`Clone`], [`Write`][std::io::Write]. The latter is
-//! feature-gated behind `std` feature, which is usually enabled by default
-//! by hash implementation crates.
+//! [`Default`] and [`Clone`].
+//!
+//! This crate does not provide any implementations of the `io::Read/Write` traits,
+//! see the [`digest-io`] crate for `std::io`-compatibility wrappers.
+//!
+//! [`digest-io`]: https://docs.rs/digest-io
 
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
