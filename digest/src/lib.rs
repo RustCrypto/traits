@@ -35,9 +35,6 @@
 #[macro_use]
 extern crate alloc;
 
-#[cfg(feature = "std")]
-extern crate std;
-
 #[cfg(feature = "rand_core")]
 pub use crypto_common::rand_core;
 
@@ -303,12 +300,3 @@ impl fmt::Display for InvalidBufferSize {
 }
 
 impl core::error::Error for InvalidBufferSize {}
-
-#[cfg(feature = "std")]
-mod hashwriter;
-#[cfg(feature = "std")]
-pub use hashwriter::HashWriter;
-#[cfg(feature = "std")]
-mod hashreader;
-#[cfg(feature = "std")]
-pub use hashreader::HashReader;
