@@ -220,20 +220,6 @@ where
     }
 }
 
-#[cfg(feature = "std")]
-impl<T: BufferKindUser + UpdateCore> std::io::Write for CoreWrapper<T> {
-    #[inline]
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        Update::update(self, buf);
-        Ok(buf.len())
-    }
-
-    #[inline]
-    fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
-    }
-}
-
 /// A proxy trait to a core type implemented by [`CoreWrapper`]
 // TODO: replace with an inherent associated type on stabilization:
 // https://github.com/rust-lang/rust/issues/8995

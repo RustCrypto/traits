@@ -36,18 +36,6 @@ where
     }
 }
 
-#[cfg(feature = "std")]
-impl<T> std::io::Read for XofReaderCoreWrapper<T>
-where
-    T: XofReaderCore,
-{
-    #[inline]
-    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        XofReader::read(self, buf);
-        Ok(buf.len())
-    }
-}
-
 impl<T: XofReaderCore> Drop for XofReaderCoreWrapper<T> {
     #[inline]
     fn drop(&mut self) {
