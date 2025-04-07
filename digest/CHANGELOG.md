@@ -16,12 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - `Mac::new`, `Mac::new_from_slice`, and `Mac::generate_key` methods ([#1173])
 - `HashReader` and `HashWriter` are moved to the `digest-io` crate ([#1809])
-- Removed `io::Write/Read` implementations in favor of the `digest_io::IoWrapper` type ([#1809])
+- `io::Write/Read` implementations in favor of the `digest_io::IoWrapper` type ([#1809])
+- `AssociatedOid` blanket impls for `CoreWrapper` and `CtVariableCoreWrapper` ([#1810])
+- `impl_oid_carrier!` macro ([#1810])
 
 [#1173]: https://github.com/RustCrypto/traits/pull/1173
 [#1334]: https://github.com/RustCrypto/traits/pull/1334
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
 [#1809]: https://github.com/RustCrypto/traits/pull/1809
+[#1810]: https://github.com/RustCrypto/traits/pull/1810
 
 ## 0.10.7 (2023-05-19)
 ### Changed
