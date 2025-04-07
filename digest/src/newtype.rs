@@ -7,6 +7,7 @@ macro_rules! newtype {
         $v:vis struct $name:ident($wrapped_ty:ty);
         $(delegate_template: $template_name:ident)?
         $(delegate: $($trait_name:ident)*)?
+        $(oid: $oid:literal)?
     ) => {
         $(#[$attr])*
         $v struct $name($wrapped_ty);
@@ -17,6 +18,14 @@ macro_rules! newtype {
 
         $(
             $crate::newtype!(delegate_impls: $name($wrapped_ty) $($trait_name)*);
+        )?
+
+        $(
+            #[cfg(feature = "oid")]
+            impl $crate::const_oid::AssociatedOid for $name {
+                const OID: $crate::const_oid::ObjectIdentifier =
+                    $crate::const_oid::ObjectIdentifier::new_unwrap($oid);
+            }
         )?
     };
 
@@ -166,7 +175,7 @@ macro_rules! newtype {
     (delegate_impl: $name:ident($wrapped_ty:ty) FixedOutputReset) => {
         impl $crate::FixedOutputReset for $name {
             #[inline]
-            fn finalize_into_reset(&mut self, out: &mut Output<Self>) {
+            fn finalize_into_reset(&mut self, out: &mut $crate::Output<Self>) {
                 <$wrapped_ty as $crate::FixedOutputReset>::finalize_into_reset(&mut self.0, out);
             }
         }
