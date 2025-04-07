@@ -20,7 +20,7 @@ pub trait Encapsulate<EK, SS> {
     type Error: Debug;
 
     /// Encapsulates a fresh shared secret
-    fn encapsulate(&self, rng: &mut impl CryptoRng) -> Result<(EK, SS), Self::Error>;
+    fn encapsulate<R: CryptoRng + ?Sized>(&self, rng: &mut R) -> Result<(EK, SS), Self::Error>;
 }
 
 /// A value that can be used to decapsulate an encapsulated key.

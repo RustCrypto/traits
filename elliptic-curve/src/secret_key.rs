@@ -11,7 +11,7 @@ mod pkcs8;
 use crate::{Curve, Error, FieldBytes, Result, ScalarPrimitive};
 use core::fmt::{self, Debug};
 use hybrid_array::typenum::Unsigned;
-use subtle::{Choice, ConstantTimeEq};
+use subtle::{Choice, ConstantTimeEq, CtOption};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 #[cfg(feature = "arithmetic")]
@@ -94,7 +94,7 @@ where
 
     /// Generate a random [`SecretKey`].
     #[cfg(feature = "arithmetic")]
-    pub fn random<R: CryptoRng>(rng: &mut R) -> Self
+    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self
     where
         C: CurveArithmetic,
     {
@@ -117,8 +117,12 @@ where
     }
 
     /// Create a new secret key from a scalar value.
-    pub fn new(scalar: ScalarPrimitive<C>) -> Self {
-        Self { inner: scalar }
+    ///
+    /// # Returns
+    ///
+    /// This will return a none if the scalar is all-zero.
+    pub fn new(scalar: ScalarPrimitive<C>) -> CtOption<Self> {
+        CtOption::new(Self { inner: scalar }, !scalar.is_zero())
     }
 
     /// Borrow the inner secret [`ScalarPrimitive`] value.

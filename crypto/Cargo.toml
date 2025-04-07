@@ -26,7 +26,6 @@ universal-hash = { version = "0.6.0-rc.0", path = "../universal-hash", optional 
 
 [features]
 std = [
-    "digest/std",
     "elliptic-curve/std",
     "signature/std",
 ]

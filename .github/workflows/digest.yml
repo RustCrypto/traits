@@ -60,5 +60,4 @@ jobs:
       - run: cargo test
       - run: cargo test --features dev
       - run: cargo test --features alloc
-      - run: cargo test --features std
       - run: cargo test --all-features

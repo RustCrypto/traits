@@ -19,8 +19,6 @@ extern crate alloc;
 #[cfg(feature = "dev")]
 pub mod dev;
 
-pub mod stream;
-
 pub use crypto_common::{
     Key, KeyInit, KeySizeUser,
     array::{self, typenum::consts},
@@ -34,22 +32,18 @@ pub use bytes;
 pub use crypto_common::rand_core;
 #[cfg(feature = "heapless")]
 pub use heapless;
-#[cfg(feature = "inout")]
 pub use inout;
 
 use core::fmt;
-use crypto_common::array::{Array, ArraySize};
+use crypto_common::array::{Array, ArraySize, typenum::Unsigned};
+use inout::InOutBuf;
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 #[cfg(feature = "bytes")]
 use bytes::BytesMut;
-#[cfg(any(feature = "alloc", feature = "inout"))]
-use crypto_common::array::typenum::Unsigned;
 #[cfg(feature = "os_rng")]
 use crypto_common::rand_core::{OsError, OsRng, TryRngCore};
-#[cfg(feature = "inout")]
-use inout::InOutBuf;
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, TryCryptoRng};
 
@@ -77,16 +71,25 @@ pub type Nonce<A> = Array<u8, <A as AeadCore>::NonceSize>;
 /// Tag: authentication code which ensures ciphertexts are authentic
 pub type Tag<A> = Array<u8, <A as AeadCore>::TagSize>;
 
-/// Authenticated Encryption with Associated Data (AEAD) algorithm core trait.
-///
-/// Defines nonce, tag, and overhead sizes that are consumed by various other
-/// `Aead*` traits.
+/// Enum which specifies tag position used by an AEAD algorithm.
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum TagPosition {
+    /// Postfix tag
+    Postfix,
+    /// Prefix tag
+    Prefix,
+}
+
+/// Authenticated Encryption with Associated Data (AEAD) algorithm.
 pub trait AeadCore {
     /// The length of a nonce.
     type NonceSize: ArraySize;
 
     /// The maximum length of the tag.
     type TagSize: ArraySize;
+
+    /// The AEAD tag position.
+    const TAG_POSITION: TagPosition;
 
     /// Generate a random nonce for this AEAD algorithm.
     ///
@@ -120,9 +123,10 @@ pub trait AeadCore {
     /// reach it should consider alternatives to purely random nonces, like
     /// a counter or a combination of a random nonce + counter.
     ///
-    /// See the [`stream`] module for a ready-made implementation of the latter.
+    /// See the [`aead-stream`] crate for a ready-made implementation of the latter.
     ///
     /// [NIST SP 800-38D]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
+    /// [`aead-stream`]: https://docs.rs/aead-stream
     #[cfg(feature = "os_rng")]
     fn generate_nonce() -> core::result::Result<Nonce<Self>, OsError> {
         let mut nonce = Nonce::<Self>::default();
@@ -135,7 +139,7 @@ pub trait AeadCore {
     /// See [`AeadCore::generate_nonce`] documentation for requirements for
     /// random nonces.
     #[cfg(feature = "rand_core")]
-    fn generate_nonce_with_rng<R: CryptoRng>(rng: &mut R) -> Nonce<Self> {
+    fn generate_nonce_with_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Nonce<Self> {
         let mut nonce = Nonce::<Self>::default();
         rng.fill_bytes(&mut nonce);
         nonce
@@ -146,12 +150,100 @@ pub trait AeadCore {
     /// See [`AeadCore::generate_nonce`] documentation for requirements for
     /// random nonces.
     #[cfg(feature = "rand_core")]
-    fn try_generate_nonce_with_rng<R: TryCryptoRng>(
+    fn try_generate_nonce_with_rng<R: TryCryptoRng + ?Sized>(
         rng: &mut R,
     ) -> core::result::Result<Nonce<Self>, R::Error> {
         let mut nonce = Nonce::<Self>::default();
         rng.try_fill_bytes(&mut nonce)?;
         Ok(nonce)
+    }
+}
+
+/// In-place and inout AEAD trait which handles the authentication tag as a return value/separate parameter.
+pub trait AeadInOut: AeadCore {
+    /// Encrypt the data in the provided [`InOutBuf`], returning the authentication tag.
+    fn encrypt_inout_detached(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: InOutBuf<'_, '_, u8>,
+    ) -> Result<Tag<Self>>;
+
+    /// Decrypt the data in the provided [`InOutBuf`], returning an error in the event the
+    /// provided authentication tag is invalid for the given ciphertext (i.e. ciphertext
+    /// is modified/unauthentic)
+    fn decrypt_inout_detached(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: InOutBuf<'_, '_, u8>,
+        tag: &Tag<Self>,
+    ) -> Result<()>;
+
+    /// Encrypt the given buffer containing a plaintext message in-place.
+    ///
+    /// The buffer must have sufficient capacity to store the ciphertext
+    /// message, which will always be larger than the original plaintext.
+    /// The exact size needed is cipher-dependent, but generally includes
+    /// the size of an authentication tag.
+    ///
+    /// Returns an error if the buffer has insufficient capacity to store the
+    /// resulting ciphertext message.
+    fn encrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()> {
+        match Self::TAG_POSITION {
+            TagPosition::Prefix => {
+                let msg_len = buffer.len();
+                buffer.extend_from_slice(&Tag::<Self>::default())?;
+                let buffer = buffer.as_mut();
+                let tag_size = Self::TagSize::USIZE;
+                buffer.copy_within(..msg_len, tag_size);
+                let (tag_dst, msg) = buffer.split_at_mut(tag_size);
+                let tag = self.encrypt_inout_detached(nonce, associated_data, msg.into())?;
+                tag_dst.copy_from_slice(&tag);
+            }
+            TagPosition::Postfix => {
+                let tag =
+                    self.encrypt_inout_detached(nonce, associated_data, buffer.as_mut().into())?;
+                buffer.extend_from_slice(tag.as_slice())?;
+            }
+        }
+        Ok(())
+    }
+
+    /// Decrypt the message in-place, returning an error in the event the
+    /// provided authentication tag does not match the given ciphertext.
+    ///
+    /// The buffer will be truncated to the length of the original plaintext
+    /// message upon success.
+    fn decrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()> {
+        let tag_size = Self::TagSize::USIZE;
+        let tagless_len = buffer.len().checked_sub(tag_size).ok_or(Error)?;
+
+        match Self::TAG_POSITION {
+            TagPosition::Prefix => {
+                let (tag, msg) = buffer.as_mut().split_at_mut(tag_size);
+                let tag = Tag::<Self>::try_from(&*tag).expect("tag length mismatch");
+                self.decrypt_inout_detached(nonce, associated_data, msg.into(), &tag)?;
+                buffer.as_mut().copy_within(tag_size.., 0);
+            }
+            TagPosition::Postfix => {
+                let (msg, tag) = buffer.as_mut().split_at_mut(tagless_len);
+                let tag = Tag::<Self>::try_from(&*tag).expect("tag length mismatch");
+                self.decrypt_inout_detached(nonce, associated_data, msg.into(), &tag)?;
+            }
+        }
+        buffer.truncate(tagless_len);
+        Ok(())
     }
 }
 
@@ -211,70 +303,8 @@ pub trait Aead: AeadCore {
     ) -> Result<Vec<u8>>;
 }
 
-/// In-place AEAD trait.
-///
-/// This trait is both object safe and has no dependencies on `alloc` or `std`.
-pub trait AeadInPlace: AeadCore {
-    /// Encrypt the given buffer containing a plaintext message in-place.
-    ///
-    /// The buffer must have sufficient capacity to store the ciphertext
-    /// message, which will always be larger than the original plaintext.
-    /// The exact size needed is cipher-dependent, but generally includes
-    /// the size of an authentication tag.
-    ///
-    /// Returns an error if the buffer has insufficient capacity to store the
-    /// resulting ciphertext message.
-    fn encrypt_in_place(
-        &self,
-        nonce: &Nonce<Self>,
-        associated_data: &[u8],
-        buffer: &mut dyn Buffer,
-    ) -> Result<()>;
-
-    /// Decrypt the message in-place, returning an error in the event the
-    /// provided authentication tag does not match the given ciphertext.
-    ///
-    /// The buffer will be truncated to the length of the original plaintext
-    /// message upon success.
-    fn decrypt_in_place(
-        &self,
-        nonce: &Nonce<Self>,
-        associated_data: &[u8],
-        buffer: &mut dyn Buffer,
-    ) -> Result<()>;
-}
-
-/// In-place AEAD trait which handles the authentication tag as a return value/separate parameter.
-#[cfg(feature = "inout")]
-pub trait AeadInOut: AeadCore {
-    /// Encrypt the data in the provided [`InOutBuf`], returning the authentication tag.
-    fn encrypt_inout_detached(
-        &self,
-        nonce: &Nonce<Self>,
-        associated_data: &[u8],
-        buffer: InOutBuf<'_, '_, u8>,
-    ) -> Result<Tag<Self>>;
-
-    /// Decrypt the data in the provided [`InOutBuf`], returning an error in the event the
-    /// provided authentication tag is invalid for the given ciphertext (i.e. ciphertext
-    /// is modified/unauthentic)
-    fn decrypt_inout_detached(
-        &self,
-        nonce: &Nonce<Self>,
-        associated_data: &[u8],
-        buffer: InOutBuf<'_, '_, u8>,
-        tag: &Tag<Self>,
-    ) -> Result<()>;
-}
-
-/// Marker trait for AEAD algorithms which append the authentication tag to the end of the
-/// ciphertext message.
-///
-/// This is the common convention for AEAD algorithms.
-pub trait PostfixTagged {}
-
 #[cfg(feature = "alloc")]
-impl<Alg: AeadInPlace> Aead for Alg {
+impl<T: AeadInOut> Aead for T {
     fn encrypt<'msg, 'aad>(
         &self,
         nonce: &Nonce<Self>,
@@ -299,39 +329,6 @@ impl<Alg: AeadInPlace> Aead for Alg {
     }
 }
 
-#[cfg(feature = "inout")]
-impl<T: AeadInOut + PostfixTagged> AeadInPlace for T {
-    fn encrypt_in_place(
-        &self,
-        nonce: &Nonce<Self>,
-        associated_data: &[u8],
-        buffer: &mut dyn Buffer,
-    ) -> Result<()> {
-        let tag = self.encrypt_inout_detached(nonce, associated_data, buffer.as_mut().into())?;
-        buffer.extend_from_slice(tag.as_slice())?;
-        Ok(())
-    }
-
-    fn decrypt_in_place(
-        &self,
-        nonce: &Nonce<Self>,
-        associated_data: &[u8],
-        buffer: &mut dyn Buffer,
-    ) -> Result<()> {
-        let tag_pos = buffer
-            .len()
-            .checked_sub(Self::TagSize::to_usize())
-            .ok_or(Error)?;
-
-        let (msg, tag) = buffer.as_mut().split_at_mut(tag_pos);
-        let tag = Tag::<Self>::try_from(&*tag).expect("tag length mismatch");
-
-        self.decrypt_inout_detached(nonce, associated_data, msg.into(), &tag)?;
-        buffer.truncate(tag_pos);
-        Ok(())
-    }
-}
-
 /// AEAD payloads (message + AAD).
 ///
 /// Combination of a message (plaintext or ciphertext) and
@@ -340,7 +337,6 @@ impl<T: AeadInOut + PostfixTagged> AeadInPlace for T {
 ///
 /// If you don't care about AAD, you can pass a `&[u8]` as the payload to
 /// `encrypt`/`decrypt` and it will automatically be coerced to this type.
-#[cfg(feature = "alloc")]
 #[derive(Debug)]
 pub struct Payload<'msg, 'aad> {
     /// Message to be encrypted/decrypted
@@ -353,7 +349,6 @@ pub struct Payload<'msg, 'aad> {
     pub aad: &'aad [u8],
 }
 
-#[cfg(feature = "alloc")]
 impl<'msg> From<&'msg [u8]> for Payload<'msg, '_> {
     fn from(msg: &'msg [u8]) -> Self {
         Self { msg, aad: b"" }
@@ -436,11 +431,12 @@ impl<const N: usize> Buffer for heapless::Vec<u8, N> {
     }
 }
 
+#[cfg(feature = "alloc")]
 #[cfg(test)]
 mod tests {
     use super::*;
 
     /// Ensure that `AeadInPlace` is object-safe
     #[allow(dead_code)]
-    type DynAeadInPlace<N, T> = dyn AeadInPlace<NonceSize = N, TagSize = T>;
+    type DynAeadInPlace<N, T> = dyn Aead<NonceSize = N, TagSize = T>;
 }
