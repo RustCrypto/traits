@@ -4,24 +4,42 @@
 macro_rules! newtype {
     (
         $(#[$attr:meta])*
-        $name:ident($wrapped_ty:ty);
-        delegate: $($trait_name:ident)*
+        $v:vis struct $name:ident($wrapped_ty:ty);
+        $(delegate_template: $template_name:ident)?
+        $(delegate: $($trait_name:ident)*)?
     ) => {
         $(#[$attr])*
-        pub struct $name($wrapped_ty);
+        $v struct $name($wrapped_ty);
 
+        $(
+            $crate::newtype!(template_impl: $template_name $name($wrapped_ty));
+        )?
+
+        $(
+            $crate::newtype!(delegate_impls: $name($wrapped_ty) $($trait_name)*);
+        )?
+    };
+
+    (template_impl: FixedOutputHash $name:ident($wrapped_ty:ty)) => {
+        $crate::newtype!(
+            delegate_impls: $name($wrapped_ty)
+            Debug Clone Default
+            AlgorithmName SerializableState
+            BlockSizeUser OutputSizeUser
+            HashMarker Reset Update
+            FixedOutput FixedOutputReset
+        );
+    };
+
+    (delegate_impls: $name:ident($wrapped_ty:ty) $($trait_name:ident)*) => {
         $(
             $crate::newtype!(delegate_impl: $name($wrapped_ty) $trait_name);
         )*
-
-        // Clone, Default, BlockSizeUser, CoreProxy, ExtendableOutput, FixedOutput, KeyInit,
-        // OutputSizeUser, Update, HashMarker, MacMarker
-
-        // Write
     };
 
     (delegate_impl: $name:ident($wrapped_ty:ty) Debug) => {
         impl core::fmt::Debug for $name {
+            #[inline]
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 f.write_str(concat!(stringify!($name), " { ... }"))
             }
@@ -30,8 +48,9 @@ macro_rules! newtype {
 
     (delegate_impl: $name:ident($wrapped_ty:ty) AlgorithmName) => {
         impl $crate::crypto_common::AlgorithmName for $name {
+            #[inline]
             fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
-                f.write_str(stringify!($name))
+                <$wrapped_ty as $crate::crypto_common::AlgorithmName>::write_alg_name(f)
             }
         }
     };
@@ -40,7 +59,7 @@ macro_rules! newtype {
         impl Clone for $name {
             #[inline]
             fn clone(&self) -> Self {
-                Self(self.0.clone())
+                Self(<$wrapped_ty as Clone>::clone(&self.0))
             }
         }
     };
@@ -49,7 +68,7 @@ macro_rules! newtype {
         impl Default for $name {
             #[inline]
             fn default() -> Self {
-                Self(Default::default())
+                Self(<$wrapped_ty as Default>::default())
             }
         }
     };
@@ -58,7 +77,7 @@ macro_rules! newtype {
         impl $crate::InnerInit for $name {
             #[inline]
             fn new(inner: Self::Inner) -> Self {
-                self.0.new(inner)
+                Self(<$wrapped_ty as $crate::InnerInit>::new(inner))
             }
         }
     };
@@ -67,7 +86,7 @@ macro_rules! newtype {
         impl $crate::KeyInit for $name {
             #[inline]
             fn new(key: &$crate::Key<Self>) -> Self {
-                self.0.new(key)
+                Self(<$wrapped_ty as $crate::KeyInit>::new(key))
             }
         }
     };
@@ -76,16 +95,16 @@ macro_rules! newtype {
         impl $crate::CustomizedInit for $name {
             #[inline]
             fn new_customized(customization: &[u8]) -> Self {
-                $wrapped_ty::new_customized(customization)
+                <$wrapped_ty as $crate::CustomizedInit>::new_customized(customization)
             }
         }
     };
 
     (delegate_impl: $name:ident($wrapped_ty:ty) Reset) => {
-        impl Reset for $name {
+        impl $crate::Reset for $name {
             #[inline]
             fn reset(&mut self) {
-                self.0.reset()
+                <$wrapped_ty as $crate::Reset>::reset(&mut self.0);
             }
         }
     };
@@ -124,7 +143,7 @@ macro_rules! newtype {
         impl $crate::Update for $name {
             #[inline]
             fn update(&mut self, data: &[u8]) {
-                self.0.update(data)
+                <$wrapped_ty as $crate::Update>::update(&mut self.0, data)
             }
         }
     };
@@ -139,7 +158,7 @@ macro_rules! newtype {
         impl $crate::FixedOutput for $name {
             #[inline]
             fn finalize_into(self, out: &mut $crate::Output<Self>) {
-                self.0.finalize_into(out);
+                <$wrapped_ty as $crate::FixedOutput>::finalize_into(self.0, out)
             }
         }
     };
@@ -148,7 +167,7 @@ macro_rules! newtype {
         impl $crate::FixedOutputReset for $name {
             #[inline]
             fn finalize_into_reset(&mut self, out: &mut Output<Self>) {
-                self.0.finalize_into_reset(out);
+                <$wrapped_ty as $crate::FixedOutputReset>::finalize_into_reset(&mut self.0, out);
             }
         }
     };
@@ -159,17 +178,17 @@ macro_rules! newtype {
 
             #[inline]
             fn new(output_size: usize) -> Result<Self, $crate::InvalidOutputSize> {
-                $wrapped_ty::new(output_size)
+                <$wrapped_ty as $crate::VariableOutput>::new(output_size)
             }
 
             #[inline]
             fn output_size(&self) -> usize {
-                self.0.output_size()
+                <$wrapped_ty as $crate::VariableOutput>::output_size(&self.0)
             }
 
             #[inline]
             fn finalize_variable(self, out: &mut [u8]) -> Result<(), $crate::InvalidBufferSize> {
-                self.0.finalize_variable(out)
+                <$wrapped_ty as $crate::VariableOutput>::finalize_variable(self.0, out)
             }
         }
     };
@@ -181,7 +200,7 @@ macro_rules! newtype {
                 &mut self,
                 out: &mut [u8],
             ) -> Result<(), $crate::InvalidBufferSize> {
-                self.0.finalize_variable_reset(out)
+                <$wrapped_ty as $crate::VariableOutputReset>::finalize_variable_reset(&mut self.0, out)
             }
         }
     };
@@ -191,16 +210,36 @@ macro_rules! newtype {
             // TODO: use a newtype wrapper?
             type Reader = <$wrapped_ty as $crate::ExtendableOutput>::Reader;
 
+            #[inline]
             fn finalize_xof(self) -> Self::Reader {
-                self.0.finalize_xof()
+                <$wrapped_ty as $crate::ExtendanbleOutput>::finalize_xof(self.0)
             }
         }
     };
 
     (delegate_impl: $name:ident($wrapped_ty:ty) ExtendableOutputReset) => {
         impl $crate::ExtendableOutputReset for $name {
+            #[inline]
             fn finalize_xof_reset(&mut self) -> Self::Reader {
-                self.0.finalize_xof_reset()
+                <$wrapped_ty as $crate::ExtendableOutputReset>::finalize_xof_reset(&mut self.0)
+            }
+        }
+    };
+
+    (delegate_impl: $name:ident($wrapped_ty:ty) SerializableState) => {
+        impl $crate::crypto_common::hazmat::SerializableState for $name {
+            type SerializedStateSize = <$wrapped_ty as $crate::crypto_common::hazmat::SerializableState>::SerializedStateSize;
+
+            #[inline]
+            fn serialize(&self) -> $crate::crypto_common::hazmat::SerializedState<Self> {
+                <$wrapped_ty as $crate::crypto_common::hazmat::SerializableState>::serialize(&self.0)
+            }
+
+            #[inline]
+            fn deserialize(
+                serialized_state: &$crate::crypto_common::hazmat::SerializedState<Self>,
+            ) -> Result<Self, $crate::crypto_common::hazmat::DeserializeStateError> {
+                <$wrapped_ty as $crate::crypto_common::hazmat::SerializableState>::deserialize(serialized_state).map(Self)
             }
         }
     };

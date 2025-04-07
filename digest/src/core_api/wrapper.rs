@@ -145,6 +145,13 @@ impl<T: ExtendableOutputCore + Reset> ExtendableOutputReset for CoreWrapper<T> {
     }
 }
 
+impl<T: BufferKindUser + AlgorithmName> AlgorithmName for CoreWrapper<T> {
+    #[inline]
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        T::write_alg_name(f)
+    }
+}
+
 impl<T: BufferKindUser> Drop for CoreWrapper<T> {
     #[inline]
     fn drop(&mut self) {

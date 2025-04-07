@@ -1,17 +1,26 @@
 #![cfg(feature = "core-api")]
 
+use core::fmt;
 use digest::{
     HashMarker, Output, OutputSizeUser, Reset,
     consts::U8,
     core_api::{
-        Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore, UpdateCore,
+        AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore,
+        UpdateCore,
     },
+    crypto_common::hazmat::{DeserializeStateError, SerializableState, SerializedState},
 };
 
 /// Core of primitive XOR hasher for testing purposes
 #[derive(Clone, Default, Debug)]
 pub struct FixedHashCore {
     state: u64,
+}
+
+impl AlgorithmName for FixedHashCore {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("FixedHash")
+    }
 }
 
 impl BlockSizeUser for FixedHashCore {
@@ -50,12 +59,24 @@ impl FixedOutputCore for FixedHashCore {
     }
 }
 
+impl SerializableState for FixedHashCore {
+    type SerializedStateSize = U8;
+
+    fn serialize(&self) -> SerializedState<Self> {
+        self.state.to_le_bytes().into()
+    }
+
+    fn deserialize(
+        serialized_state: &SerializedState<Self>,
+    ) -> Result<Self, DeserializeStateError> {
+        Ok(Self {
+            state: u64::from_le_bytes(serialized_state.0),
+        })
+    }
+}
+
 digest::newtype!(
     /// Primitive XOR hasher for testing purposes
-    FixedHash(CoreWrapper<FixedHashCore>);
-    delegate:
-        Debug AlgorithmName
-        Clone Default Reset
-        BlockSizeUser OutputSizeUser HashMarker
-        Update FixedOutput FixedOutputReset
+    pub struct FixedHash(CoreWrapper<FixedHashCore>);
+    delegate_template: FixedOutputHash
 );
