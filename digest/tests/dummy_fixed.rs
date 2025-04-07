@@ -1,10 +1,11 @@
 #![cfg(feature = "core-api")]
 
 use digest::{
-    HashMarker,
+    HashMarker, Output, OutputSizeUser, Reset,
     consts::U8,
-    core_api::{Buffer, BufferKindUser, CoreWrapper, FixedOutputCore, UpdateCore},
-    crypto_common::{Block, BlockSizeUser, Output, OutputSizeUser, Reset},
+    core_api::{
+        Block, BlockSizeUser, Buffer, BufferKindUser, CoreWrapper, FixedOutputCore, UpdateCore,
+    },
 };
 
 /// Core of primitive XOR hasher for testing purposes
