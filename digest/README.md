@@ -64,25 +64,6 @@ let hash = Sha256::digest(b"my message");
 println!("Result: {:x}", hash);
 ```
 
-### Hashing `Read`-able objects
-
-If you want to hash data from [`Read`][3] trait (e.g. from file) you can rely on
-implementation of [`Write`][4] trait (requires enabled-by-default `std` feature):
-
-```rust
-use sha2::{Sha256, Digest};
-use std::{fs, io};
-
-let mut file = fs::File::open(&path)?;
-let mut hasher = Sha256::new();
-let n = io::copy(&mut file, &mut hasher)?;
-let hash = hasher.finalize();
-
-println!("Path: {}", path);
-println!("Bytes processed: {}", n);
-println!("Hash value: {:x}", hash);
-```
-
 ### Generic code
 
 You can write generic code over `Digest` (or other traits from `digest` crate)
