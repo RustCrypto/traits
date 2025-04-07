@@ -127,20 +127,6 @@ macro_rules! newtype {
                 self.0.update(data)
             }
         }
-
-        #[cfg(feature = "std")]
-        impl std::io::Write for $name {
-            #[inline]
-            fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
-                $crate::Update::update(&mut self.0, data);
-                Ok(data.len())
-            }
-
-            #[inline]
-            fn flush(&mut self) -> std::io::Result<()> {
-                Ok(())
-            }
-        }
     };
 
     (delegate_impl: $name:ident($wrapped_ty:ty) CoreProxy) => {
