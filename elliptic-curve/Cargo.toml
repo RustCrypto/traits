@@ -74,4 +74,3 @@ voprf = ["digest"]
 
 [package.metadata.docs.rs]
 features = ["bits", "ecdh", "hash2curve", "jwk", "pem", "std", "voprf"]
-rustdoc-args = ["--cfg", "docsrs"]
