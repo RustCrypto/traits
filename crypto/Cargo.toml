@@ -34,4 +34,3 @@ rand_core = ["crypto-common/rand_core"]
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
