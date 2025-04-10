@@ -45,7 +45,7 @@ macro_rules! newtype {
             delegate_impls: $name($wrapped_ty)
             Debug Clone Default
             AlgorithmName SerializableState
-            BlockSizeUser OutputSizeUser
+            BlockSizeUser
             HashMarker Reset Update
             ExtendableOutput ExtendableOutputReset
         );
@@ -115,7 +115,7 @@ macro_rules! newtype {
         impl $crate::CustomizedInit for $name {
             #[inline]
             fn new_customized(customization: &[u8]) -> Self {
-                <$wrapped_ty as $crate::CustomizedInit>::new_customized(customization)
+                Self(<$wrapped_ty as $crate::CustomizedInit>::new_customized(customization))
             }
         }
     };
