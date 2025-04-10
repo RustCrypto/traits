@@ -40,6 +40,17 @@ macro_rules! newtype {
         );
     };
 
+    (template_impl: ExtendableOutputHash $name:ident($wrapped_ty:ty)) => {
+        $crate::newtype!(
+            delegate_impls: $name($wrapped_ty)
+            Debug Clone Default
+            AlgorithmName SerializableState
+            BlockSizeUser OutputSizeUser
+            HashMarker Reset Update
+            ExtendableOutput ExtendableOutputReset
+        );
+    };
+
     (delegate_impls: $name:ident($wrapped_ty:ty) $($trait_name:ident)*) => {
         $(
             $crate::newtype!(delegate_impl: $name($wrapped_ty) $trait_name);
@@ -221,7 +232,7 @@ macro_rules! newtype {
 
             #[inline]
             fn finalize_xof(self) -> Self::Reader {
-                <$wrapped_ty as $crate::ExtendanbleOutput>::finalize_xof(self.0)
+                <$wrapped_ty as $crate::ExtendableOutput>::finalize_xof(self.0)
             }
         }
     };
