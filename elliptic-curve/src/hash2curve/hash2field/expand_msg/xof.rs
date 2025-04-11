@@ -2,26 +2,45 @@
 
 use super::{Domain, ExpandMsg, Expander};
 use crate::{Error, Result};
-use core::fmt;
-use digest::{ExtendableOutput, Update, XofReader};
-use hybrid_array::typenum::U32;
+use core::{
+    fmt,
+    marker::PhantomData,
+    num::NonZero,
+    ops::{Div, Mul},
+};
+use digest::{ExtendableOutput, HashMarker, Update, XofReader};
+use hybrid_array::{
+    ArraySize,
+    typenum::{IsLess, U2, U8, U256},
+};
 
-/// Placeholder type for implementing `expand_message_xof` based on an extendable output function
+/// Implements `expand_message_xof` via the [`ExpandMsg`] trait:
+/// <https://www.rfc-editor.org/rfc/rfc9380.html#name-expand_message_xof>
+///
+/// `K` is the target security level in bits:
+/// <https://www.rfc-editor.org/rfc/rfc9380.html#section-8.9-2.2>
+/// <https://www.rfc-editor.org/rfc/rfc9380.html#name-target-security-levels>
 ///
 /// # Errors
 /// - `dst.is_empty()`
-/// - `len_in_bytes == 0`
 /// - `len_in_bytes > u16::MAX`
-pub struct ExpandMsgXof<HashT>
+pub struct ExpandMsgXof<HashT, K>
 where
-    HashT: Default + ExtendableOutput + Update,
+    HashT: Default + ExtendableOutput + Update + HashMarker,
+    U2: Mul<K>,
+    <U2 as Mul<K>>::Output: Div<U8>,
+    HashSize<K>: ArraySize + IsLess<U256>,
 {
     reader: <HashT as ExtendableOutput>::Reader,
+    _k: PhantomData<K>,
 }
 
-impl<HashT> fmt::Debug for ExpandMsgXof<HashT>
+impl<HashT, K> fmt::Debug for ExpandMsgXof<HashT, K>
 where
-    HashT: Default + ExtendableOutput + Update,
+    HashT: Default + ExtendableOutput + Update + HashMarker,
+    U2: Mul<K>,
+    <U2 as Mul<K>>::Output: Div<U8>,
+    HashSize<K>: ArraySize + IsLess<U256>,
     <HashT as ExtendableOutput>::Reader: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -31,25 +50,28 @@ where
     }
 }
 
-/// ExpandMsgXof implements `expand_message_xof` for the [`ExpandMsg`] trait
-impl<'a, HashT> ExpandMsg<'a> for ExpandMsgXof<HashT>
+type HashSize<K> = <<U2 as Mul<K>>::Output as Div<U8>>::Output;
+
+impl<'a, HashT, K> ExpandMsg<'a> for ExpandMsgXof<HashT, K>
 where
-    HashT: Default + ExtendableOutput + Update,
+    HashT: Default + ExtendableOutput + Update + HashMarker,
+    // If DST is larger than 255 bytes, the length of the computed DST is calculated by
+    // `2 * k / 8`.
+    // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
+    U2: Mul<K>,
+    <U2 as Mul<K>>::Output: Div<U8>,
+    HashSize<K>: ArraySize + IsLess<U256>,
 {
     type Expander = Self;
 
     fn expand_message(
         msgs: &[&[u8]],
         dsts: &'a [&'a [u8]],
-        len_in_bytes: usize,
+        len_in_bytes: NonZero<usize>,
     ) -> Result<Self::Expander> {
-        if len_in_bytes == 0 {
-            return Err(Error);
-        }
+        let len_in_bytes = u16::try_from(len_in_bytes.get()).map_err(|_| Error)?;
 
-        let len_in_bytes = u16::try_from(len_in_bytes).map_err(|_| Error)?;
-
-        let domain = Domain::<U32>::xof::<HashT>(dsts)?;
+        let domain = Domain::<HashSize<K>>::xof::<HashT>(dsts)?;
         let mut reader = HashT::default();
 
         for msg in msgs {
@@ -60,13 +82,19 @@ where
         domain.update_hash(&mut reader);
         reader.update(&[domain.len()]);
         let reader = reader.finalize_xof();
-        Ok(Self { reader })
+        Ok(Self {
+            reader,
+            _k: PhantomData,
+        })
     }
 }
 
-impl<HashT> Expander for ExpandMsgXof<HashT>
+impl<HashT, K> Expander for ExpandMsgXof<HashT, K>
 where
-    HashT: Default + ExtendableOutput + Update,
+    HashT: Default + ExtendableOutput + Update + HashMarker,
+    U2: Mul<K>,
+    <U2 as Mul<K>>::Output: Div<U8>,
+    HashSize<K>: ArraySize + IsLess<U256>,
 {
     fn fill_bytes(&mut self, okm: &mut [u8]) {
         self.reader.read(okm);
@@ -78,7 +106,10 @@ mod test {
     use super::*;
     use core::mem::size_of;
     use hex_literal::hex;
-    use hybrid_array::{Array, ArraySize, typenum::U128};
+    use hybrid_array::{
+        Array, ArraySize,
+        typenum::{U32, U128},
+    };
     use sha3::Shake128;
 
     fn assert_message(msg: &[u8], domain: &Domain<'_, U32>, len_in_bytes: u16, bytes: &[u8]) {
@@ -110,13 +141,16 @@ mod test {
         #[allow(clippy::panic_in_result_fn)]
         fn assert<HashT, L>(&self, dst: &'static [u8], domain: &Domain<'_, U32>) -> Result<()>
         where
-            HashT: Default + ExtendableOutput + Update,
+            HashT: Default + ExtendableOutput + Update + HashMarker,
             L: ArraySize,
         {
             assert_message(self.msg, domain, L::to_u16(), self.msg_prime);
 
-            let mut expander =
-                ExpandMsgXof::<HashT>::expand_message(&[self.msg], &[dst], L::to_usize())?;
+            let mut expander = ExpandMsgXof::<HashT, U128>::expand_message(
+                &[self.msg],
+                &[dst],
+                NonZero::new(L::to_usize()).ok_or(Error)?,
+            )?;
 
             let mut uniform_bytes = Array::<u8, L>::default();
             expander.fill_bytes(&mut uniform_bytes);
