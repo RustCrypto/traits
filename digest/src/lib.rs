@@ -55,6 +55,7 @@ pub mod core_api;
 mod digest;
 #[cfg(feature = "mac")]
 mod mac;
+mod xof_fixed;
 
 #[cfg(feature = "core-api")]
 pub use block_buffer;
@@ -70,6 +71,7 @@ pub use crypto_common::{InnerInit, InvalidLength, Key, KeyInit};
 pub use crypto_common::{Output, OutputSizeUser, Reset, array, typenum, typenum::consts};
 #[cfg(feature = "mac")]
 pub use mac::{CtOutput, Mac, MacError, MacMarker};
+pub use xof_fixed::XofFixedWrapper;
 
 use core::fmt;
 
