@@ -246,7 +246,7 @@ pub trait Aead: AeadCore {
 
         let (nonce, ciphertext) = payload.msg.split_at(Self::NonceSize::to_usize());
         self.decrypt(
-            &nonce.try_into().unwrap(),
+            &nonce.try_into().expect("msg should at least nonce-length"),
             Payload {
                 msg: ciphertext,
                 aad: payload.aad,
