@@ -213,6 +213,46 @@ pub trait Aead: AeadCore {
         nonce: &Nonce<Self>,
         ciphertext: impl Into<Payload<'msg, 'aad>>,
     ) -> Result<Vec<u8>>;
+
+    /// Encrypt an AEAD message, explicitly prepending the nonce as a prefix to
+    /// the resulting AEAD message.
+    fn encrypt_with_explicit_nonce<'msg, 'aad>(
+        &self,
+        nonce: &Nonce<Self>,
+        plaintext: impl Into<Payload<'msg, 'aad>>,
+    ) -> Result<Vec<u8>> {
+        let payload = plaintext.into();
+        let mut out = Vec::with_capacity(
+            Self::NonceSize::to_usize() + payload.msg.len() + Self::TagSize::to_usize(),
+        );
+
+        let ciphertext = self.encrypt(nonce, payload)?;
+        out.extend_from_slice(nonce);
+        out.extend_from_slice(&ciphertext);
+        Ok(out)
+    }
+
+    /// Decrypt an AEAD message which has an explicit nonce prepended to the
+    /// AEAD message.
+    fn decrypt_with_explicit_nonce<'msg, 'aad>(
+        &self,
+        payload: impl Into<Payload<'msg, 'aad>>,
+    ) -> Result<Vec<u8>> {
+        let payload = payload.into();
+
+        if payload.msg.len() < Self::NonceSize::to_usize() {
+            return Err(Error);
+        }
+
+        let (nonce, ciphertext) = payload.msg.split_at(Self::NonceSize::to_usize());
+        self.decrypt(
+            &nonce.try_into().unwrap(),
+            Payload {
+                msg: ciphertext,
+                aad: payload.aad,
+            },
+        )
+    }
 }
 
 #[cfg(feature = "alloc")]
