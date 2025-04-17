@@ -4,7 +4,7 @@ use super::{
 };
 #[cfg(feature = "mac")]
 use crate::MacMarker;
-use crate::{CustomizedInit, HashMarker, VarOutputCustomized};
+use crate::{CollisionResistance, CustomizedInit, HashMarker, VarOutputCustomized};
 use core::{
     fmt,
     marker::PhantomData,
@@ -44,6 +44,15 @@ where
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
     LeEq<OutSize, T::OutputSize>: NonZero,
 {
+}
+
+impl<T, OutSize> CollisionResistance for CtVariableCoreWrapper<T, OutSize>
+where
+    T: VariableOutputCore + CollisionResistance,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
+    LeEq<OutSize, T::OutputSize>: NonZero,
+{
+    type CollisionResistance = T::CollisionResistance;
 }
 
 impl<T, OutSize> BlockSizeUser for CtVariableCoreWrapper<T, OutSize>
