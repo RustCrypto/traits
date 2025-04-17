@@ -248,8 +248,9 @@ dependencies = [
 
 [[package]]
 name = "ff"
-version = "0.13.0"
-source = "git+https://github.com/zkcrypto/ff.git?branch=release-0.14.0#1bb634588722b1b7ce986d239c263e332bedda7f"
+version = "0.14.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d42dd26f5790eda47c1a2158ea4120e32c35ddc9a7743c98a292accc01b54ef3"
 dependencies = [
  "bitvec",
  "ff_derive",
@@ -259,11 +260,11 @@ dependencies = [
 
 [[package]]
 name = "ff_derive"
-version = "0.13.0"
-source = "git+https://github.com/zkcrypto/ff.git?branch=release-0.14.0#1bb634588722b1b7ce986d239c263e332bedda7f"
+version = "0.14.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9266df7c7c72e5a865a447aca13bf480d7310eaa4f84de117c33e361d4da8888"
 dependencies = [
  "addchain",
- "cfg-if",
  "num-bigint",
  "num-integer",
  "num-traits",
@@ -292,8 +293,9 @@ dependencies = [
 
 [[package]]
 name = "group"
-version = "0.13.0"
-source = "git+https://github.com/baloo/group.git?branch=baloo%2Ftry_from_rng#b0d6ea48fe55327b11ea03f9a965d9e16bb83adc"
+version = "0.14.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ff6a0b2dd4b981b1ae9e3e6830ab146771f3660d31d57bafd9018805a91b0f1"
 dependencies = [
  "ff",
  "rand_core",
@@ -721,8 +723,3 @@ name = "zeroize"
 version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ced3678a2879b30306d323f4542626697a464a97c0a07c9aebf7ebca65cd4dde"
-
-[[patch.unused]]
-name = "hmac"
-version = "0.13.0-pre.4"
-source = "git+https://github.com/RustCrypto/MACs.git#c7cbed0bd3f7026cc01251cd4602d0db4d0495b9"
