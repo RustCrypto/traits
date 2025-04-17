@@ -3,8 +3,8 @@ use super::{
     UpdateCore, XofReaderCoreWrapper,
 };
 use crate::{
-    CustomizedInit, ExtendableOutput, ExtendableOutputReset, FixedOutput, FixedOutputReset,
-    HashMarker, Update,
+    CollisionResistance, CustomizedInit, ExtendableOutput, ExtendableOutputReset, FixedOutput,
+    FixedOutputReset, HashMarker, Update,
 };
 use block_buffer::BlockBuffer;
 use core::{
@@ -35,6 +35,10 @@ impl<T: BufferKindUser + HashMarker> HashMarker for CoreWrapper<T> {}
 
 #[cfg(feature = "mac")]
 impl<T: BufferKindUser + MacMarker> MacMarker for CoreWrapper<T> {}
+
+impl<T: BufferKindUser + CollisionResistance> CollisionResistance for CoreWrapper<T> {
+    type CollisionResistance = T::CollisionResistance;
+}
 
 // this blanket impl is needed for HMAC
 impl<T: BufferKindUser + HashMarker> BlockSizeUser for CoreWrapper<T> {

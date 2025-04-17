@@ -6,8 +6,8 @@ use crypto_common::hazmat::SerializableState;
 use crypto_common::{BlockSizeUser, KeyInit, KeySizeUser, OutputSizeUser, Reset};
 
 use crate::{
-    CustomizedInit, ExtendableOutput, ExtendableOutputReset, FixedOutput, FixedOutputReset,
-    HashMarker, Update,
+    CollisionResistance, CustomizedInit, ExtendableOutput, ExtendableOutputReset, FixedOutput,
+    FixedOutputReset, HashMarker, Update,
 };
 
 /// Wrapper around [`ExtendableOutput`] types adding [`OutputSizeUser`] with the given size of `S`.
@@ -49,6 +49,12 @@ impl<T: ExtendableOutput + HashMarker, S: ArraySize> HashMarker for XofFixedWrap
 impl<T: ExtendableOutput + crate::MacMarker, S: ArraySize> crate::MacMarker
     for XofFixedWrapper<T, S>
 {
+}
+
+impl<T: ExtendableOutput + CollisionResistance, S: ArraySize> CollisionResistance
+    for XofFixedWrapper<T, S>
+{
+    type CollisionResistance = T::CollisionResistance;
 }
 
 // this blanket impl is needed for HMAC
