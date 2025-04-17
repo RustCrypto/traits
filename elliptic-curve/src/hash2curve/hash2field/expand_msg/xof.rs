@@ -2,22 +2,17 @@
 
 use super::{Domain, ExpandMsg, Expander};
 use crate::{Error, Result};
-use core::{
-    fmt,
-    marker::PhantomData,
-    num::NonZero,
-    ops::{Div, Mul},
-};
+use core::{fmt, marker::PhantomData, num::NonZero, ops::Mul};
 use digest::{ExtendableOutput, HashMarker, Update, XofReader};
 use hybrid_array::{
     ArraySize,
-    typenum::{IsLess, U2, U8, U256},
+    typenum::{IsLess, U2, U256},
 };
 
 /// Implements `expand_message_xof` via the [`ExpandMsg`] trait:
 /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-expand_message_xof>
 ///
-/// `K` is the target security level in bits:
+/// `K` is the target security level in bytes:
 /// <https://www.rfc-editor.org/rfc/rfc9380.html#section-8.9-2.2>
 /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-target-security-levels>
 ///
@@ -27,9 +22,8 @@ use hybrid_array::{
 pub struct ExpandMsgXof<HashT, K>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
-    U2: Mul<K>,
-    <U2 as Mul<K>>::Output: Div<U8>,
-    HashSize<K>: ArraySize + IsLess<U256>,
+    K: Mul<U2>,
+    <K as Mul<U2>>::Output: ArraySize + IsLess<U256>,
 {
     reader: <HashT as ExtendableOutput>::Reader,
     _k: PhantomData<K>,
@@ -38,9 +32,8 @@ where
 impl<HashT, K> fmt::Debug for ExpandMsgXof<HashT, K>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
-    U2: Mul<K>,
-    <U2 as Mul<K>>::Output: Div<U8>,
-    HashSize<K>: ArraySize + IsLess<U256>,
+    K: Mul<U2>,
+    <K as Mul<U2>>::Output: ArraySize + IsLess<U256>,
     <HashT as ExtendableOutput>::Reader: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -50,17 +43,13 @@ where
     }
 }
 
-type HashSize<K> = <<U2 as Mul<K>>::Output as Div<U8>>::Output;
-
 impl<'a, HashT, K> ExpandMsg<'a> for ExpandMsgXof<HashT, K>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
-    // If DST is larger than 255 bytes, the length of the computed DST is calculated by
-    // `2 * k / 8`.
+    // If DST is larger than 255 bytes, the length of the computed DST is calculated by `K * 2`.
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
-    U2: Mul<K>,
-    <U2 as Mul<K>>::Output: Div<U8>,
-    HashSize<K>: ArraySize + IsLess<U256>,
+    K: Mul<U2>,
+    <K as Mul<U2>>::Output: ArraySize + IsLess<U256>,
 {
     type Expander = Self;
 
@@ -71,7 +60,7 @@ where
     ) -> Result<Self::Expander> {
         let len_in_bytes = u16::try_from(len_in_bytes.get()).map_err(|_| Error)?;
 
-        let domain = Domain::<HashSize<K>>::xof::<HashT>(dsts)?;
+        let domain = Domain::<<K as Mul<U2>>::Output>::xof::<HashT>(dsts)?;
         let mut reader = HashT::default();
 
         for msg in msgs {
@@ -92,9 +81,8 @@ where
 impl<HashT, K> Expander for ExpandMsgXof<HashT, K>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
-    U2: Mul<K>,
-    <U2 as Mul<K>>::Output: Div<U8>,
-    HashSize<K>: ArraySize + IsLess<U256>,
+    K: Mul<U2>,
+    <K as Mul<U2>>::Output: ArraySize + IsLess<U256>,
 {
     fn fill_bytes(&mut self, okm: &mut [u8]) {
         self.reader.read(okm);
@@ -108,7 +96,7 @@ mod test {
     use hex_literal::hex;
     use hybrid_array::{
         Array, ArraySize,
-        typenum::{U32, U128},
+        typenum::{U16, U32, U128},
     };
     use sha3::Shake128;
 
@@ -146,7 +134,7 @@ mod test {
         {
             assert_message(self.msg, domain, L::to_u16(), self.msg_prime);
 
-            let mut expander = ExpandMsgXof::<HashT, U128>::expand_message(
+            let mut expander = ExpandMsgXof::<HashT, U16>::expand_message(
                 &[self.msg],
                 &[dst],
                 NonZero::new(L::to_usize()).ok_or(Error)?,

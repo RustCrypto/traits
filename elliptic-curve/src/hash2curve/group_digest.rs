@@ -13,7 +13,7 @@ where
     /// The field element representation for a group value with multiple elements
     type FieldElement: FromOkm + MapToCurve<Output = ProjectivePoint<Self>> + Default + Copy;
 
-    /// The target security level in bits:
+    /// The target security level in bytes:
     /// <https://www.rfc-editor.org/rfc/rfc9380.html#section-8.9-2.2>
     /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-target-security-levels>
     type K: Unsigned;

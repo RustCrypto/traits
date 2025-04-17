@@ -8,7 +8,7 @@ use digest::{
     FixedOutput, HashMarker,
     array::{
         Array,
-        typenum::{IsGreaterOrEqual, IsLess, IsLessOrEqual, U2, U8, U256, Unsigned},
+        typenum::{IsGreaterOrEqual, IsLess, IsLessOrEqual, U2, U256, Unsigned},
     },
     core_api::BlockSizeUser,
 };
@@ -16,7 +16,7 @@ use digest::{
 /// Implements `expand_message_xof` via the [`ExpandMsg`] trait:
 /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-expand_message_xmd>
 ///
-/// `K` is the target security level in bits:
+/// `K` is the target security level in bytes:
 /// <https://www.rfc-editor.org/rfc/rfc9380.html#section-8.9-2.2>
 /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-target-security-levels>
 ///
@@ -30,9 +30,8 @@ where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
     HashT::OutputSize: IsLess<U256>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
-    HashT::OutputSize: Mul<U8>,
-    U2: Mul<K>,
-    <HashT::OutputSize as Mul<U8>>::Output: IsGreaterOrEqual<<U2 as Mul<K>>::Output>;
+    K: Mul<U2>,
+    HashT::OutputSize: IsGreaterOrEqual<<K as Mul<U2>>::Output>;
 
 impl<'a, HashT, K> ExpandMsg<'a> for ExpandMsgXmd<HashT, K>
 where
@@ -44,11 +43,10 @@ where
     // Constraint set by `expand_message_xmd`:
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-4
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
-    // The number of bits output by `HashT` MUST be larger or equal to `2 * K`:
+    // The number of bits output by `HashT` MUST be larger or equal to `K * 2`:
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
-    HashT::OutputSize: Mul<U8>,
-    U2: Mul<K>,
-    <HashT::OutputSize as Mul<U8>>::Output: IsGreaterOrEqual<<U2 as Mul<K>>::Output>,
+    K: Mul<U2>,
+    HashT::OutputSize: IsGreaterOrEqual<<K as Mul<U2>>::Output>,
 {
     type Expander = ExpanderXmd<'a, HashT>;
 
@@ -169,7 +167,7 @@ mod test {
     use hex_literal::hex;
     use hybrid_array::{
         ArraySize,
-        typenum::{U8, U32, U128},
+        typenum::{U4, U8, U32, U128},
     };
     use sha2::Sha256;
 
@@ -222,13 +220,12 @@ mod test {
         where
             HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
             HashT::OutputSize: IsLess<U256> + IsLessOrEqual<HashT::BlockSize> + Mul<U8>,
-            U2: Mul<U32>,
-            <HashT::OutputSize as Mul<U8>>::Output: IsGreaterOrEqual<<U2 as Mul<U32>>::Output>,
+            HashT::OutputSize: IsGreaterOrEqual<<U4 as Mul<U2>>::Output>,
         {
             assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
 
             let dst = [dst];
-            let mut expander = ExpandMsgXmd::<HashT, U32>::expand_message(
+            let mut expander = ExpandMsgXmd::<HashT, U4>::expand_message(
                 &[self.msg],
                 &dst,
                 NonZero::new(L::to_usize()).ok_or(Error)?,
