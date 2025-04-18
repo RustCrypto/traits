@@ -3,7 +3,6 @@
 pub use core::ops::{Add, AddAssign, Mul, Neg, Shr, ShrAssign, Sub, SubAssign};
 
 use crypto_bigint::Integer;
-use group::Group;
 use subtle::{Choice, ConditionallySelectable, CtOption};
 
 #[cfg(feature = "alloc")]
@@ -165,18 +164,6 @@ where
             .copied()
             .map(|(point, scalar)| point * scalar)
             .sum()
-    }
-}
-
-/// Multiplication by the generator.
-///
-/// May use optimizations (e.g. precomputed tables) when available.
-// TODO(tarcieri): replace this with `Group::mul_by_generator``? (see zkcrypto/group#44)
-pub trait MulByGenerator: Group {
-    /// Multiply by the generator of the prime-order subgroup.
-    #[must_use]
-    fn mul_by_generator(scalar: &Self::Scalar) -> Self {
-        Self::generator() * scalar
     }
 }
 

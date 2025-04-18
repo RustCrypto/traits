@@ -8,7 +8,7 @@ use crate::{
     array::typenum::U32,
     bigint::{Limb, U256},
     error::{Error, Result},
-    ops::{Invert, LinearCombination, MulByGenerator, Reduce, ShrAssign},
+    ops::{Invert, LinearCombination, Reduce, ShrAssign},
     point::AffineCoordinates,
     rand_core::TryRngCore,
     scalar::{FromUintUnchecked, IsHigh},
@@ -806,8 +806,6 @@ impl MulAssign<&Scalar> for ProjectivePoint {
         unimplemented!();
     }
 }
-
-impl MulByGenerator for ProjectivePoint {}
 
 impl Neg for ProjectivePoint {
     type Output = ProjectivePoint;
