@@ -106,8 +106,7 @@ impl fmt::Display for Error {
 impl core::error::Error for Error {
     fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         match self {
-            // TODO: restore after base64ct will migrate to core::error::Error
-            // Self::B64Encoding(err) => Some(err),
+            Self::B64Encoding(err) => Some(err),
             Self::ParamValueInvalid(err) => Some(err),
             Self::SaltInvalid(err) => Some(err),
             _ => None,

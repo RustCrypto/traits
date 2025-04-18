@@ -17,7 +17,7 @@ as well as a `no_std`-friendly implementation of the PHC string format
 """
 
 [dependencies]
-base64ct = "1.6"
+base64ct = "1.7"
 subtle = { version = "2", default-features = false }
 
 # optional dependencies
