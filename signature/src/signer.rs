@@ -3,7 +3,7 @@
 use crate::error::Error;
 
 #[cfg(feature = "digest")]
-use crate::digest::Digest;
+use crate::{PrehashSignature, digest::Digest};
 
 #[cfg(feature = "rand_core")]
 use crate::rand_core::{CryptoRng, TryCryptoRng};
@@ -80,6 +80,17 @@ pub trait DigestSigner<D: Digest, S> {
     /// Attempt to sign the given prehashed message [`Digest`], returning a
     /// digital signature on success, or an error if something went wrong.
     fn try_sign_digest(&self, digest: D) -> Result<S, Error>;
+}
+
+#[cfg(feature = "digest")]
+impl<S, T> Signer<S> for T
+where
+    S: PrehashSignature,
+    T: DigestSigner<S::Digest, S>,
+{
+    fn try_sign(&self, msg: &[u8]) -> Result<S, Error> {
+        self.try_sign_digest(S::Digest::new_with_prefix(msg))
+    }
 }
 
 /// Sign the given message using the provided external randomness source.
