@@ -17,7 +17,3 @@ members = [
 
 [patch.crates-io]
 signature = { path = "signature" }
-
-# https://github.com/RustCrypto/crypto-bigint/pull/762
-# https://github.com/RustCrypto/crypto-bigint/pull/765
-crypto-bigint = { git = "https://github.com/RustCrypto/crypto-bigint.git" }
