@@ -10,7 +10,6 @@ members = [
     "elliptic-curve",
     "kem",
     "password-hash",
-    "signature_derive",
     "universal-hash",
     "signature",
 ]

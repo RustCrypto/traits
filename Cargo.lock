@@ -35,7 +35,7 @@ checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 name = "async-signature"
 version = "0.6.0-pre.4"
 dependencies = [
- "signature",
+ "signature 2.3.0-pre.7",
 ]
 
 [[package]]
@@ -152,7 +152,7 @@ dependencies = [
  "digest 0.11.0-pre.10",
  "elliptic-curve",
  "password-hash",
- "signature",
+ "signature 3.0.0-pre",
  "universal-hash",
 ]
 
@@ -585,21 +585,21 @@ dependencies = [
 [[package]]
 name = "signature"
 version = "2.3.0-pre.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a6e22be6d22b655ff65ed5635383d63ac17a99c5c0a05a83a414d399056d4e1d"
+dependencies = [
+ "digest 0.11.0-pre.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand_core",
+]
+
+[[package]]
+name = "signature"
+version = "3.0.0-pre"
 dependencies = [
  "digest 0.11.0-pre.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex-literal",
  "rand_core",
  "sha2",
- "signature_derive",
-]
-
-[[package]]
-name = "signature_derive"
-version = "2.2.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.98",
 ]
 
 [[package]]
