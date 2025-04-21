@@ -135,6 +135,21 @@ pub trait RandomizedDigestSigner<D: Digest, S> {
     ) -> Result<S, Error>;
 }
 
+#[cfg(all(feature = "digest", feature = "rand_core"))]
+impl<S, T> RandomizedSigner<S> for T
+where
+    S: PrehashSignature,
+    T: RandomizedDigestSigner<S::Digest, S>,
+{
+    fn try_sign_with_rng<R: TryCryptoRng + ?Sized>(
+        &self,
+        rng: &mut R,
+        msg: &[u8],
+    ) -> Result<S, Error> {
+        self.try_sign_digest_with_rng(rng, S::Digest::new_with_prefix(msg))
+    }
+}
+
 /// Sign the provided message bytestring using `&mut Self` (e.g. an evolving
 /// cryptographic key such as a stateful hash-based signature), and a per-signature
 /// randomizer, returning a digital signature.

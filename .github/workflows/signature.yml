@@ -51,7 +51,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.85.0 # Minimum Rust version the tests pass on
+          - 1.85.0 # MSRV
           - stable
     steps:
       - uses: actions/checkout@v4
