@@ -25,10 +25,7 @@ signature = { version = "3.0.0-pre", path = "../signature", optional = true, def
 universal-hash = { version = "0.6.0-rc.0", path = "../universal-hash", optional = true }
 
 [features]
-std = [
-    "elliptic-curve/std",
-    "signature/std",
-]
+std = ["elliptic-curve/std"]
 os_rng = ["crypto-common/os_rng"]
 rand_core = ["crypto-common/rand_core"]
 
