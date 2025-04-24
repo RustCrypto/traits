@@ -214,7 +214,7 @@ impl<P: group::Group> Zeroize for NonIdentity<P> {
 #[cfg(all(test, feature = "dev"))]
 mod tests {
     use super::NonIdentity;
-    use crate::dev::{AffinePoint, ProjectivePoint};
+    use crate::dev::{AffinePoint, NonZeroScalar, ProjectivePoint, SecretKey};
     use group::GroupEncoding;
     use hex_literal::hex;
     use zeroize::Zeroize;
@@ -264,5 +264,19 @@ mod tests {
         point.zeroize();
 
         assert_eq!(point.to_point(), ProjectivePoint::Generator);
+    }
+
+    #[test]
+    fn mul_by_generator() {
+        let scalar = NonZeroScalar::from_repr(
+            hex!("c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721").into(),
+        )
+        .unwrap();
+        let point = NonIdentity::<ProjectivePoint>::mul_by_generator(scalar);
+
+        let sk = SecretKey::from(scalar);
+        let pk = sk.public_key();
+
+        assert_eq!(point.to_point(), pk.to_projective());
     }
 }
