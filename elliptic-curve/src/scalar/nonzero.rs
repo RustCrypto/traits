@@ -128,6 +128,8 @@ where
     }
 }
 
+impl<C> Eq for NonZeroScalar<C> where C: CurveArithmetic {}
+
 impl<C> From<NonZeroScalar<C>> for FieldBytes<C>
 where
     C: CurveArithmetic,
@@ -253,6 +255,15 @@ where
         let scalar = self.scalar * other.scalar;
         debug_assert!(!bool::from(scalar.is_zero()));
         NonZeroScalar { scalar }
+    }
+}
+
+impl<C> PartialEq for NonZeroScalar<C>
+where
+    C: CurveArithmetic,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.scalar.eq(&other.scalar)
     }
 }
 
