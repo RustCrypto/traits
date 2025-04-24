@@ -8,6 +8,7 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "serde")]
 use serdect::serde::{Deserialize, Serialize, de, ser};
+use zeroize::Zeroize;
 
 use crate::{CurveArithmetic, NonZeroScalar, Scalar};
 
@@ -194,12 +195,19 @@ where
     }
 }
 
+impl<P: group::Group> Zeroize for NonIdentity<P> {
+    fn zeroize(&mut self) {
+        self.point = P::generator();
+    }
+}
+
 #[cfg(all(test, feature = "dev"))]
 mod tests {
     use super::NonIdentity;
     use crate::dev::{AffinePoint, ProjectivePoint};
     use group::GroupEncoding;
     use hex_literal::hex;
+    use zeroize::Zeroize;
 
     #[test]
     fn new_success() {
@@ -234,5 +242,17 @@ mod tests {
         let bytes = hex!("02c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721");
         let point = NonIdentity::<AffinePoint>::from_repr(&bytes.into()).unwrap();
         assert_eq!(&bytes, point.to_bytes().as_slice());
+    }
+
+    #[test]
+    fn zeroize() {
+        let point = ProjectivePoint::from_bytes(
+            &hex!("02c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721").into(),
+        )
+        .unwrap();
+        let mut point = NonIdentity::new(point).unwrap();
+        point.zeroize();
+
+        assert_eq!(point.to_point(), ProjectivePoint::Generator);
     }
 }
