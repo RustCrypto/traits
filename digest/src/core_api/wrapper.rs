@@ -21,8 +21,6 @@ use crypto_common::{
 
 #[cfg(feature = "mac")]
 use crate::MacMarker;
-#[cfg(feature = "oid")]
-use const_oid::{AssociatedOid, ObjectIdentifier};
 
 /// Wrapper around [`BufferKindUser`].
 ///
@@ -171,14 +169,6 @@ where
     }
 }
 
-#[cfg(feature = "oid")]
-impl<T> AssociatedOid for CoreWrapper<T>
-where
-    T: BufferKindUser + AssociatedOid,
-{
-    const OID: ObjectIdentifier = T::OID;
-}
-
 type CoreWrapperSerializedStateSize<T> =
     Sum<Sum<<T as SerializableState>::SerializedStateSize, U1>, <T as BlockSizeUser>::BlockSize>;
 
@@ -217,20 +207,6 @@ where
             buffer: BlockBuffer::try_new(&serialized_data[..serialized_pos[0].into()])
                 .map_err(|_| DeserializeStateError)?,
         })
-    }
-}
-
-#[cfg(feature = "std")]
-impl<T: BufferKindUser + UpdateCore> std::io::Write for CoreWrapper<T> {
-    #[inline]
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        Update::update(self, buf);
-        Ok(buf.len())
-    }
-
-    #[inline]
-    fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
     }
 }
 

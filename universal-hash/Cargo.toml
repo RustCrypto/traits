@@ -18,4 +18,3 @@ subtle = { version = "2.4", default-features = false }
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]

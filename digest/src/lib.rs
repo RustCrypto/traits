@@ -18,9 +18,12 @@
 //!   Usually they should not be used in application-level code.
 //!
 //! Additionally hash functions implement traits from the standard library:
-//! [`Default`], [`Clone`], [`Write`][std::io::Write]. The latter is
-//! feature-gated behind `std` feature, which is usually enabled by default
-//! by hash implementation crates.
+//! [`Default`] and [`Clone`].
+//!
+//! This crate does not provide any implementations of the `io::Read/Write` traits,
+//! see the [`digest-io`] crate for `std::io`-compatibility wrappers.
+//!
+//! [`digest-io`]: https://docs.rs/digest-io
 
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
@@ -34,9 +37,6 @@
 #[cfg(feature = "alloc")]
 #[macro_use]
 extern crate alloc;
-
-#[cfg(feature = "std")]
-extern crate std;
 
 #[cfg(feature = "rand_core")]
 pub use crypto_common::rand_core;
@@ -55,6 +55,7 @@ pub mod core_api;
 mod digest;
 #[cfg(feature = "mac")]
 mod mac;
+mod xof_fixed;
 
 #[cfg(feature = "core-api")]
 pub use block_buffer;
@@ -62,7 +63,7 @@ pub use block_buffer;
 pub use const_oid;
 pub use crypto_common;
 
-#[cfg(feature = "const-oid")]
+#[cfg(feature = "oid")]
 pub use crate::digest::DynDigestWithOid;
 pub use crate::digest::{Digest, DynDigest, HashMarker};
 #[cfg(feature = "mac")]
@@ -70,6 +71,7 @@ pub use crypto_common::{InnerInit, InvalidLength, Key, KeyInit};
 pub use crypto_common::{Output, OutputSizeUser, Reset, array, typenum, typenum::consts};
 #[cfg(feature = "mac")]
 pub use mac::{CtOutput, Mac, MacError, MacMarker};
+pub use xof_fixed::XofFixedWrapper;
 
 use core::fmt;
 
@@ -303,12 +305,3 @@ impl fmt::Display for InvalidBufferSize {
 }
 
 impl core::error::Error for InvalidBufferSize {}
-
-#[cfg(feature = "std")]
-mod hashwriter;
-#[cfg(feature = "std")]
-pub use hashwriter::HashWriter;
-#[cfg(feature = "std")]
-mod hashreader;
-#[cfg(feature = "std")]
-pub use hashreader::HashReader;

@@ -10,7 +10,6 @@ members = [
     "elliptic-curve",
     "kem",
     "password-hash",
-    "signature_derive",
     "universal-hash",
     "signature",
     "vrf",
@@ -18,18 +17,3 @@ members = [
 
 [patch.crates-io]
 signature = { path = "signature" }
-
-# https://github.com/RustCrypto/MACs/pull/178
-hmac = { git = "https://github.com/RustCrypto/MACs.git" }
-
-# https://github.com/RustCrypto/crypto-bigint/pull/762
-# https://github.com/RustCrypto/crypto-bigint/pull/765
-crypto-bigint = { git = "https://github.com/RustCrypto/crypto-bigint.git" }
-
-# https://github.com/zkcrypto/ff/pull/122
-# https://github.com/zkcrypto/ff/pull/126
-# https://github.com/zkcrypto/ff/pull/127
-ff = { git = "https://github.com/zkcrypto/ff.git", branch = "release-0.14.0" }
-
-# https://github.com/zkcrypto/group/pull/56
-group = { git = "https://github.com/pinkforest/group.git", branch = "bump-rand-0.9" }

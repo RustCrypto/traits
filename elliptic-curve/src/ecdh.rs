@@ -108,7 +108,7 @@ where
     C: CurveArithmetic,
 {
     /// Generate a cryptographically random [`EphemeralSecret`].
-    pub fn random<R: CryptoRng>(rng: &mut R) -> Self {
+    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
         Self {
             scalar: NonZeroScalar::random(rng),
         }

@@ -184,17 +184,3 @@ where
         })
     }
 }
-
-#[cfg(feature = "std")]
-impl<T: VariableOutputCore> std::io::Write for RtVariableCoreWrapper<T> {
-    #[inline]
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        Update::update(self, buf);
-        Ok(buf.len())
-    }
-
-    #[inline]
-    fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
-    }
-}

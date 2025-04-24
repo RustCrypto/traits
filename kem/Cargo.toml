@@ -18,7 +18,6 @@ zeroize = { version = "1.7", default-features = false }
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
 
 [lib]
 doctest = false

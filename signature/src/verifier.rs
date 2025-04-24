@@ -3,7 +3,7 @@
 use crate::error::Error;
 
 #[cfg(feature = "digest")]
-use crate::digest::Digest;
+use crate::{PrehashSignature, digest::Digest};
 
 /// Verify the provided message bytestring using `Self` (e.g. a public key)
 pub trait Verifier<S> {
@@ -38,4 +38,15 @@ pub trait Verifier<S> {
 pub trait DigestVerifier<D: Digest, S> {
     /// Verify the signature against the given [`Digest`] output.
     fn verify_digest(&self, digest: D, signature: &S) -> Result<(), Error>;
+}
+
+#[cfg(feature = "digest")]
+impl<S, T> Verifier<S> for T
+where
+    S: PrehashSignature,
+    T: DigestVerifier<S::Digest, S>,
+{
+    fn verify(&self, msg: &[u8], signature: &S) -> Result<(), Error> {
+        self.verify_digest(S::Digest::new_with_prefix(msg), signature)
+    }
 }

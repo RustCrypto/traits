@@ -31,9 +31,7 @@ os_rng = ["crypto-common/rand_core", "rand_core"]
 oid = ["const-oid"]
 zeroize = ["dep:zeroize", "block-buffer?/zeroize"]
 alloc = []
-std = ["alloc"]
 dev = ["blobby"]
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]

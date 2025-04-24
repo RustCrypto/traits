@@ -6,6 +6,7 @@
 )]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![forbid(unsafe_code)]
+#![allow(async_fn_in_trait)]
 #![warn(
     clippy::mod_module_files,
     clippy::unwrap_used,
@@ -143,12 +144,6 @@ mod verifier;
 mod prehash_signature;
 
 pub use crate::{encoding::*, error::*, keypair::*, signer::*, verifier::*};
-
-#[cfg(feature = "derive")]
-pub use derive::{Signer, Verifier};
-
-#[cfg(all(feature = "derive", feature = "digest"))]
-pub use derive::{DigestSigner, DigestVerifier};
 
 #[cfg(feature = "digest")]
 pub use {crate::prehash_signature::*, digest};

@@ -3,7 +3,7 @@
 use crate::error::Error;
 
 #[cfg(feature = "digest")]
-use crate::digest::Digest;
+use crate::{PrehashSignature, digest::Digest};
 
 #[cfg(feature = "rand_core")]
 use crate::rand_core::{CryptoRng, TryCryptoRng};
@@ -82,6 +82,17 @@ pub trait DigestSigner<D: Digest, S> {
     fn try_sign_digest(&self, digest: D) -> Result<S, Error>;
 }
 
+#[cfg(feature = "digest")]
+impl<S, T> Signer<S> for T
+where
+    S: PrehashSignature,
+    T: DigestSigner<S::Digest, S>,
+{
+    fn try_sign(&self, msg: &[u8]) -> Result<S, Error> {
+        self.try_sign_digest(S::Digest::new_with_prefix(msg))
+    }
+}
+
 /// Sign the given message using the provided external randomness source.
 #[cfg(feature = "rand_core")]
 pub trait RandomizedSigner<S> {
@@ -124,6 +135,21 @@ pub trait RandomizedDigestSigner<D: Digest, S> {
     ) -> Result<S, Error>;
 }
 
+#[cfg(all(feature = "digest", feature = "rand_core"))]
+impl<S, T> RandomizedSigner<S> for T
+where
+    S: PrehashSignature,
+    T: RandomizedDigestSigner<S::Digest, S>,
+{
+    fn try_sign_with_rng<R: TryCryptoRng + ?Sized>(
+        &self,
+        rng: &mut R,
+        msg: &[u8],
+    ) -> Result<S, Error> {
+        self.try_sign_digest_with_rng(rng, S::Digest::new_with_prefix(msg))
+    }
+}
+
 /// Sign the provided message bytestring using `&mut Self` (e.g. an evolving
 /// cryptographic key such as a stateful hash-based signature), and a per-signature
 /// randomizer, returning a digital signature.
@@ -163,7 +189,6 @@ impl<S, T: RandomizedSigner<S>> RandomizedSignerMut<S> for T {
 /// (e.g. client for a Cloud KMS or HSM), returning a digital signature.
 ///
 /// This trait is an async equivalent of the [`Signer`] trait.
-#[allow(async_fn_in_trait)]
 pub trait AsyncSigner<S> {
     /// Attempt to sign the given message, returning a digital signature on
     /// success, or an error if something went wrong.
@@ -186,7 +211,6 @@ where
 ///
 /// This trait is an async equivalent of the [`DigestSigner`] trait.
 #[cfg(feature = "digest")]
-#[allow(async_fn_in_trait)]
 pub trait AsyncDigestSigner<D, S>
 where
     D: Digest,
@@ -198,7 +222,6 @@ where
 
 /// Sign the given message using the provided external randomness source.
 #[cfg(feature = "rand_core")]
-#[allow(async_fn_in_trait)]
 pub trait AsyncRandomizedSigner<S> {
     /// Sign the given message and return a digital signature
     async fn sign_with_rng_async<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[u8]) -> S {
