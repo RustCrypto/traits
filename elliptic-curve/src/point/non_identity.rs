@@ -73,6 +73,16 @@ where
             point: self.point.to_affine(),
         }
     }
+
+    /// Multiply by the generator of the prime-order subgroup.
+    pub fn mul_by_generator<C: CurveArithmetic>(scalar: NonZeroScalar<C>) -> Self
+    where
+        P: Copy + Mul<Scalar<C>, Output = P>,
+    {
+        Self {
+            point: P::generator() * *scalar.as_ref(),
+        }
+    }
 }
 
 impl<P> NonIdentity<P>
