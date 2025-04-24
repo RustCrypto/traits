@@ -1,5 +1,7 @@
 use digest::{Output, OutputSizeUser};
 
+pub use signature::Verifier;
+
 pub trait Proof<H>
 where
     H: OutputSizeUser,
@@ -14,13 +16,4 @@ where
     type Proof: Proof<H>;
 
     fn prove(&self, alpha: &[u8]) -> Self::Proof;
-}
-
-pub trait Verifier<H>
-where
-    H: OutputSizeUser,
-{
-    type Proof: Proof<H>;
-
-    fn verify(&self, alpha: &[u8], proof: Self::Proof) -> bool;
 }
