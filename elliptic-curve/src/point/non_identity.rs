@@ -2,7 +2,7 @@
 
 use core::ops::{Deref, Mul};
 
-use group::{Curve, GroupEncoding, prime::PrimeCurveAffine};
+use group::{Curve, Group, GroupEncoding, prime::PrimeCurveAffine};
 use rand_core::CryptoRng;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
@@ -75,12 +75,12 @@ where
     }
 
     /// Multiply by the generator of the prime-order subgroup.
-    pub fn mul_by_generator<C: CurveArithmetic>(scalar: NonZeroScalar<C>) -> Self
+    pub fn mul_by_generator<C: CurveArithmetic>(scalar: &NonZeroScalar<C>) -> Self
     where
-        P: Copy + Mul<Scalar<C>, Output = P>,
+        P: Group<Scalar = C::Scalar>,
     {
         Self {
-            point: P::generator() * *scalar.as_ref(),
+            point: P::mul_by_generator(scalar),
         }
     }
 }
@@ -205,7 +205,7 @@ where
     }
 }
 
-impl<P: group::Group> Zeroize for NonIdentity<P> {
+impl<P: Group> Zeroize for NonIdentity<P> {
     fn zeroize(&mut self) {
         self.point = P::generator();
     }
@@ -272,7 +272,7 @@ mod tests {
             hex!("c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721").into(),
         )
         .unwrap();
-        let point = NonIdentity::<ProjectivePoint>::mul_by_generator(scalar);
+        let point = NonIdentity::<ProjectivePoint>::mul_by_generator(&scalar);
 
         let sk = SecretKey::from(scalar);
         let pk = sk.public_key();
