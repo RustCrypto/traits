@@ -19,8 +19,9 @@ use crate::{
 /// This approach is relatively common in signature schemes based on the
 /// [Fiat-Shamir heuristic].
 ///
-/// For signature types that implement this trait, a blanket impl of the [`Signer`] trait is
-/// available for any types that impl [`DigestSigner`], and likewise for the [`Verifier`] for
+/// For signature types that implement this trait, when the `derive` crate
+/// feature is enabled a custom derive for [`Signer`] is available for any
+/// types that impl [`DigestSigner`], and likewise for deriving [`Verifier`] for
 /// types which impl [`DigestVerifier`].
 ///
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
