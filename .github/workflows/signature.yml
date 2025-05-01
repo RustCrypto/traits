@@ -37,8 +37,9 @@ jobs:
           toolchain: ${{ matrix.rust }}
           targets: ${{ matrix.target }}
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features digest
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features derive
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features rand_core
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features derive,rand_core
 
   minimal-versions:
     if: false # disabled until we stop using pre-releases
@@ -51,7 +52,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.85.0 # MSRV
+          - 1.85.0 # Minimum Rust version the tests pass on
           - stable
     steps:
       - uses: actions/checkout@v4
@@ -62,3 +63,19 @@ jobs:
       - run: cargo test --release --no-default-features
       - run: cargo test --release
       - run: cargo test --release --all-features
+
+  derive:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - 1.85.0 # MSRV
+          - stable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - run: cargo test --release
+        working-directory: signature_derive

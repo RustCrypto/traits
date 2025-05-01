@@ -3,7 +3,7 @@
 use crate::error::Error;
 
 #[cfg(feature = "digest")]
-use crate::{PrehashSignature, digest::Digest};
+use crate::digest::Digest;
 
 #[cfg(feature = "rand_core")]
 use crate::rand_core::{CryptoRng, TryCryptoRng};
@@ -82,17 +82,6 @@ pub trait DigestSigner<D: Digest, S> {
     fn try_sign_digest(&self, digest: D) -> Result<S, Error>;
 }
 
-#[cfg(feature = "digest")]
-impl<S, T> Signer<S> for T
-where
-    S: PrehashSignature,
-    T: DigestSigner<S::Digest, S>,
-{
-    fn try_sign(&self, msg: &[u8]) -> Result<S, Error> {
-        self.try_sign_digest(S::Digest::new_with_prefix(msg))
-    }
-}
-
 /// Sign the given message using the provided external randomness source.
 #[cfg(feature = "rand_core")]
 pub trait RandomizedSigner<S> {
@@ -133,21 +122,6 @@ pub trait RandomizedDigestSigner<D: Digest, S> {
         rng: &mut R,
         digest: D,
     ) -> Result<S, Error>;
-}
-
-#[cfg(all(feature = "digest", feature = "rand_core"))]
-impl<S, T> RandomizedSigner<S> for T
-where
-    S: PrehashSignature,
-    T: RandomizedDigestSigner<S::Digest, S>,
-{
-    fn try_sign_with_rng<R: TryCryptoRng + ?Sized>(
-        &self,
-        rng: &mut R,
-        msg: &[u8],
-    ) -> Result<S, Error> {
-        self.try_sign_digest_with_rng(rng, S::Digest::new_with_prefix(msg))
-    }
 }
 
 /// Sign the provided message bytestring using `&mut Self` (e.g. an evolving

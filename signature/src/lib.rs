@@ -145,6 +145,12 @@ mod prehash_signature;
 
 pub use crate::{encoding::*, error::*, keypair::*, signer::*, verifier::*};
 
+#[cfg(feature = "derive")]
+pub use derive::{Signer, Verifier};
+
+#[cfg(all(feature = "derive", feature = "digest"))]
+pub use derive::{DigestSigner, DigestVerifier};
+
 #[cfg(feature = "digest")]
 pub use {crate::prehash_signature::*, digest};
 
