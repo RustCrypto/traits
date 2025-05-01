@@ -3,6 +3,7 @@
 use super::{ExpandMsg, FromOkm, MapToCurve, hash_to_field};
 use crate::{CurveArithmetic, ProjectivePoint, Result};
 use group::cofactor::CofactorGroup;
+use hybrid_array::typenum::Unsigned;
 
 /// Adds hashing arbitrary byte sequences to a valid group element
 pub trait GroupDigest: CurveArithmetic
@@ -11,6 +12,11 @@ where
 {
     /// The field element representation for a group value with multiple elements
     type FieldElement: FromOkm + MapToCurve<Output = ProjectivePoint<Self>> + Default + Copy;
+
+    /// The target security level in bytes:
+    /// <https://www.rfc-editor.org/rfc/rfc9380.html#section-8.9-2.2>
+    /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-target-security-levels>
+    type K: Unsigned;
 
     /// Computes the hash to curve routine.
     ///
