@@ -3,8 +3,6 @@
 pub(super) mod xmd;
 pub(super) mod xof;
 
-use core::num::NonZero;
-
 use crate::{Error, Result};
 use digest::{Digest, ExtendableOutput, Update, XofReader};
 use hybrid_array::typenum::{IsLess, U256};
@@ -30,7 +28,7 @@ pub trait ExpandMsg<'a> {
     fn expand_message(
         msgs: &[&[u8]],
         dsts: &'a [&'a [u8]],
-        len_in_bytes: NonZero<usize>,
+        len_in_bytes: usize,
     ) -> Result<Self::Expander>;
 }
 

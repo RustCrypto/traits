@@ -1,6 +1,6 @@
 //! `expand_message_xmd` based on a hash function.
 
-use core::{marker::PhantomData, num::NonZero, ops::Mul};
+use core::marker::PhantomData;
 
 use super::{Domain, ExpandMsg, Expander};
 use crate::{Error, Result};
@@ -8,62 +8,52 @@ use digest::{
     FixedOutput, HashMarker,
     array::{
         Array,
-        typenum::{IsGreaterOrEqual, IsLess, IsLessOrEqual, U2, U256, Unsigned},
+        typenum::{IsLess, IsLessOrEqual, U256, Unsigned},
     },
     core_api::BlockSizeUser,
 };
 
-/// Implements `expand_message_xof` via the [`ExpandMsg`] trait:
-/// <https://www.rfc-editor.org/rfc/rfc9380.html#name-expand_message_xmd>
-///
-/// `K` is the target security level in bytes:
-/// <https://www.rfc-editor.org/rfc/rfc9380.html#section-8.9-2.2>
-/// <https://www.rfc-editor.org/rfc/rfc9380.html#name-target-security-levels>
+/// Placeholder type for implementing `expand_message_xmd` based on a hash function
 ///
 /// # Errors
 /// - `dst.is_empty()`
+/// - `len_in_bytes == 0`
 /// - `len_in_bytes > u16::MAX`
 /// - `len_in_bytes > 255 * HashT::OutputSize`
 #[derive(Debug)]
-pub struct ExpandMsgXmd<HashT, K>(PhantomData<(HashT, K)>)
+pub struct ExpandMsgXmd<HashT>(PhantomData<HashT>)
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
     HashT::OutputSize: IsLess<U256>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
-    K: Mul<U2>,
-    HashT::OutputSize: IsGreaterOrEqual<<K as Mul<U2>>::Output>;
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>;
 
-impl<'a, HashT, K> ExpandMsg<'a> for ExpandMsgXmd<HashT, K>
+/// ExpandMsgXmd implements expand_message_xmd for the ExpandMsg trait
+impl<'a, HashT> ExpandMsg<'a> for ExpandMsgXmd<HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-    // If DST is larger than 255 bytes, the length of the computed DST will depend on the output
-    // size of the hash, which is still not allowed to be larger than 256:
+    // If `len_in_bytes` is bigger then 256, length of the `DST` will depend on
+    // the output size of the hash, which is still not allowed to be bigger then 256:
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-6
     HashT::OutputSize: IsLess<U256>,
     // Constraint set by `expand_message_xmd`:
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-4
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
-    // The number of bits output by `HashT` MUST be larger or equal to `K * 2`:
-    // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
-    K: Mul<U2>,
-    HashT::OutputSize: IsGreaterOrEqual<<K as Mul<U2>>::Output>,
 {
     type Expander = ExpanderXmd<'a, HashT>;
 
     fn expand_message(
         msgs: &[&[u8]],
         dsts: &'a [&'a [u8]],
-        len_in_bytes: NonZero<usize>,
+        len_in_bytes: usize,
     ) -> Result<Self::Expander> {
-        let len_in_bytes_u16 = u16::try_from(len_in_bytes.get()).map_err(|_| Error)?;
-
-        // `255 * <b_in_bytes>` can not exceed `u16::MAX`
-        if len_in_bytes_u16 > 255 * HashT::OutputSize::to_u16() {
+        if len_in_bytes == 0 {
             return Err(Error);
         }
 
+        let len_in_bytes_u16 = u16::try_from(len_in_bytes).map_err(|_| Error)?;
+
         let b_in_bytes = HashT::OutputSize::to_usize();
-        let ell = u8::try_from(len_in_bytes.get().div_ceil(b_in_bytes)).map_err(|_| Error)?;
+        let ell = u8::try_from(len_in_bytes.div_ceil(b_in_bytes)).map_err(|_| Error)?;
 
         let domain = Domain::xmd::<HashT>(dsts)?;
         let mut b_0 = HashT::default();
@@ -167,7 +157,7 @@ mod test {
     use hex_literal::hex;
     use hybrid_array::{
         ArraySize,
-        typenum::{U4, U8, U32, U128},
+        typenum::{U32, U128},
     };
     use sha2::Sha256;
 
@@ -219,17 +209,13 @@ mod test {
         ) -> Result<()>
         where
             HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-            HashT::OutputSize: IsLess<U256> + IsLessOrEqual<HashT::BlockSize> + Mul<U8>,
-            HashT::OutputSize: IsGreaterOrEqual<<U4 as Mul<U2>>::Output>,
+            HashT::OutputSize: IsLess<U256> + IsLessOrEqual<HashT::BlockSize>,
         {
             assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
 
             let dst = [dst];
-            let mut expander = ExpandMsgXmd::<HashT, U4>::expand_message(
-                &[self.msg],
-                &dst,
-                NonZero::new(L::to_usize()).ok_or(Error)?,
-            )?;
+            let mut expander =
+                ExpandMsgXmd::<HashT>::expand_message(&[self.msg], &dst, L::to_usize())?;
 
             let mut uniform_bytes = Array::<u8, L>::default();
             expander.fill_bytes(&mut uniform_bytes);

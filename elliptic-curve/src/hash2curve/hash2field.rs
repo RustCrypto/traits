@@ -4,20 +4,15 @@
 
 mod expand_msg;
 
-use core::num::NonZeroUsize;
-
 pub use expand_msg::{xmd::*, xof::*, *};
 
 use crate::{Error, Result};
-use hybrid_array::{
-    Array, ArraySize,
-    typenum::{NonZero, Unsigned},
-};
+use hybrid_array::{Array, ArraySize, typenum::Unsigned};
 
 /// The trait for helping to convert to a field element.
 pub trait FromOkm {
     /// The number of bytes needed to convert to a field element.
-    type Length: ArraySize + NonZero;
+    type Length: ArraySize;
 
     /// Convert a byte sequence into a field element.
     fn from_okm(data: &Array<u8, Self::Length>) -> Self;
@@ -42,10 +37,7 @@ where
     E: ExpandMsg<'a>,
     T: FromOkm + Default,
 {
-    let len_in_bytes = T::Length::to_usize()
-        .checked_mul(out.len())
-        .and_then(NonZeroUsize::new)
-        .ok_or(Error)?;
+    let len_in_bytes = T::Length::to_usize().checked_mul(out.len()).ok_or(Error)?;
     let mut tmp = Array::<u8, <T as FromOkm>::Length>::default();
     let mut expander = E::expand_message(data, domain, len_in_bytes)?;
     for o in out.iter_mut() {
