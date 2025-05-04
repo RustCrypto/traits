@@ -60,6 +60,13 @@ macro_rules! newtype_fixed_hash {
 
         impl$(<$gp: $bound>)? $crate::HashMarker for $name$(<$gp>)? {}
 
+        // Verify that `$wrapped_ty` implements `HashMarker`
+        const _: () = {
+            fn check$(<$gp: $bound>)?(v: &$wrapped_ty) {
+                v as &dyn $crate::HashMarker;
+            }
+        };
+
         impl$(<$gp: $bound>)? $crate::core_api::CoreProxy for $name$(<$gp>)? {
             type Core = <$wrapped_ty as $crate::core_api::CoreProxy>::Core;
         }

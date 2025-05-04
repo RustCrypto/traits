@@ -59,6 +59,13 @@ macro_rules! newtype_xof_hash {
 
         impl $crate::HashMarker for $name {}
 
+        // Verify that `$wrapped_ty` implements `HashMarker`
+        const _: () = {
+            fn check(v: &$wrapped_ty) {
+                v as &dyn $crate::HashMarker;
+            }
+        };
+
         impl $crate::core_api::CoreProxy for $name {
             type Core = <$wrapped_ty as $crate::core_api::CoreProxy>::Core;
         }

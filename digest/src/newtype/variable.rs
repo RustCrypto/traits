@@ -100,6 +100,17 @@ macro_rules! newtype_variable_hash {
             $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
         {}
 
+        // Verify that `$wrapped_ty` implements `HashMarker`
+        const _: () = {
+            fn check<$out_size>(v: &$wrapped_ct)
+            where
+                $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+                $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            {
+                v as &dyn $crate::HashMarker;
+            }
+        };
+
         impl<$out_size> $crate::core_api::CoreProxy for $ct_name<$out_size>
         where
             $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
@@ -202,6 +213,13 @@ macro_rules! newtype_variable_hash {
         }
 
         impl $crate::HashMarker for $rt_name {}
+
+        // Verify that `$wrapped_ty` implements `HashMarker`
+        const _: () = {
+            fn check(v: &$wrapped_rt) {
+                v as &dyn $crate::HashMarker;
+            }
+        };
 
         impl $crate::Update for $rt_name {
             #[inline]
