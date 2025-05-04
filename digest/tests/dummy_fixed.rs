@@ -75,8 +75,7 @@ impl SerializableState for FixedHashCore {
     }
 }
 
-digest::newtype!(
+digest::newtype_fixed_hash!(
     /// Primitive XOR hasher for testing purposes
     pub struct FixedHash(CoreWrapper<FixedHashCore>);
-    delegate_template: FixedOutputHash
 );
