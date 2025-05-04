@@ -119,37 +119,4 @@ macro_rules! newtype_fixed_hash {
                 $crate::const_oid::ObjectIdentifier::new_unwrap($oid);
         }
     };
-
-    // (delegate_impl: $name:ident($wrapped_ty:ty) VariableOutput) => {
-    //     impl $crate::VariableOutput for $name {
-    //         const MAX_OUTPUT_SIZE: usize = <$wrapped_ty as $crate::VariableOutput>::MAX_OUTPUT_SIZE;
-
-    //         #[inline]
-    //         fn new(output_size: usize) -> Result<Self, $crate::InvalidOutputSize> {
-    //             <$wrapped_ty as $crate::VariableOutput>::new(output_size)
-    //         }
-
-    //         #[inline]
-    //         fn output_size(&self) -> usize {
-    //             <$wrapped_ty as $crate::VariableOutput>::output_size(&self.0)
-    //         }
-
-    //         #[inline]
-    //         fn finalize_variable(self, out: &mut [u8]) -> Result<(), $crate::InvalidBufferSize> {
-    //             <$wrapped_ty as $crate::VariableOutput>::finalize_variable(self.0, out)
-    //         }
-    //     }
-    // };
-
-    // (delegate_impl: $name:ident($wrapped_ty:ty) VariableOutputReset) => {
-    //     impl $crate::VariableOutputReset for $name {
-    //         #[inline]
-    //         fn finalize_variable_reset(
-    //             &mut self,
-    //             out: &mut [u8],
-    //         ) -> Result<(), $crate::InvalidBufferSize> {
-    //             <$wrapped_ty as $crate::VariableOutputReset>::finalize_variable_reset(&mut self.0, out)
-    //         }
-    //     }
-    // };
 }
