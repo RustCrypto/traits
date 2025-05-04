@@ -18,8 +18,7 @@ use crypto_common::{
 #[cfg(feature = "zeroize")]
 use zeroize::ZeroizeOnDrop;
 
-/// Wrapper around [`VariableOutputCore`] which selects output size
-/// at run time.
+/// Wrapper around [`VariableOutputCore`] which selects output size at run time.
 #[derive(Clone)]
 pub struct RtVariableCoreWrapper<T: VariableOutputCore> {
     core: T,
@@ -64,11 +63,19 @@ impl<T: VariableOutputCore> BlockSizeUser for RtVariableCoreWrapper<T> {
     type BlockSize = T::BlockSize;
 }
 
-impl<T: VariableOutputCore + Reset> Reset for RtVariableCoreWrapper<T> {
+// TODO: remove because the hasher may be customized?
+impl<T: VariableOutputCore> Reset for RtVariableCoreWrapper<T> {
     #[inline]
     fn reset(&mut self) {
         self.buffer.reset();
-        self.core.reset();
+        self.core = T::new(self.output_size as usize).unwrap();
+    }
+}
+
+impl<T: VariableOutputCore + AlgorithmName> AlgorithmName for RtVariableCoreWrapper<T> {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        T::write_alg_name(f)?;
+        f.write_str("Var")
     }
 }
 

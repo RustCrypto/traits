@@ -3,127 +3,258 @@
 #[macro_export]
 macro_rules! newtype_variable_hash {
     (
-        $(#[$attr:meta])*
-        $v:vis struct $name:ident($wrapped_ty:ty);
-        $(oid: $oid:literal)?
+        $(#[$ct_attr:meta])*
+        $ct_vis:vis struct $ct_name:ident<$out_size:ident>($wrapped_ct:ty);
+        $(#[$rt_attr:meta])*
+        $rt_vis:vis struct $rt_name:ident($wrapped_rt:ty);
+        // Ideally, we would use `$core_ty::OutputSize`, but unfortunately the compiler
+        // does not accept such code. The likely reason is this issue:
+        // https://github.com/rust-lang/rust/issues/79629
+        max_size: $max_size:ty;
     ) => {
-        $(#[$attr])*
-        $v struct $name {
-            inner: $wrapped_ty
+        $(#[$ct_attr])*
+        $ct_vis struct $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
+            inner: $wrapped_ct,
         }
 
-        impl core::fmt::Debug for $name {
+        impl<$out_size> core::fmt::Debug for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
             #[inline]
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                f.write_str(concat!(stringify!($name), " { ... }"))
+                f.write_str(concat!(stringify!($ct_name), " { ... }"))
             }
         }
 
-        impl $crate::crypto_common::AlgorithmName for $name {
+        impl<$out_size> $crate::crypto_common::AlgorithmName for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
             #[inline]
             fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
-                <$wrapped_ty as $crate::crypto_common::AlgorithmName>::write_alg_name(f)
+                <$wrapped_ct as $crate::crypto_common::AlgorithmName>::write_alg_name(f)
             }
         }
 
-        impl Clone for $name {
+        impl<$out_size> Clone for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
             #[inline]
             fn clone(&self) -> Self {
-                Self {
-                    inner: <$wrapped_ty as Clone>::clone(&self.inner),
-                }
+                let inner = <$wrapped_ct as Clone>::clone(&self.inner);
+                Self { inner }
             }
         }
 
-        impl Default for $name {
+        impl<$out_size> Default for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
             #[inline]
             fn default() -> Self {
-                Self {
-                    inner: <$wrapped_ty as Default>::default(),
-                }
+                let inner = <$wrapped_ct as Default>::default();
+                Self { inner }
             }
         }
 
-        impl $crate::Reset for $name {
+        impl<$out_size> $crate::Reset for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
             #[inline]
             fn reset(&mut self) {
-                <$wrapped_ty as $crate::Reset>::reset(&mut self.inner);
+                <$wrapped_ct as $crate::Reset>::reset(&mut self.inner);
             }
         }
 
-        impl $crate::core_api::BlockSizeUser for $name {
-            type BlockSize = <$wrapped_ty as $crate::crypto_common::BlockSizeUser>::BlockSize;
+        impl<$out_size> $crate::core_api::BlockSizeUser for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
+            type BlockSize = <$wrapped_ct as $crate::crypto_common::BlockSizeUser>::BlockSize;
         }
 
-        impl $crate::OutputSizeUser for $name {
-            type OutputSize = <$wrapped_ty as $crate::core_api::OutputSizeUser>::OutputSize;
+        impl<$out_size> $crate::OutputSizeUser for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
+            type OutputSize = <$wrapped_ct as $crate::crypto_common::OutputSizeUser>::OutputSize;
         }
 
-        impl $crate::HashMarker for $name {}
+        impl<$out_size> $crate::HashMarker for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {}
 
-        impl $crate::core_api::CoreProxy for $name {
-            type Core = <$wrapped_ty as $crate::core_api::CoreProxy>::Core;
+        impl<$out_size> $crate::core_api::CoreProxy for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
+            type Core = <$wrapped_ct as $crate::core_api::CoreProxy>::Core;
         }
 
-        impl $crate::Update for $name {
+        impl<$out_size> $crate::Update for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
             #[inline]
             fn update(&mut self, data: &[u8]) {
-                <$wrapped_ty as $crate::Update>::update(&mut self.inner, data)
+                <$wrapped_ct as $crate::Update>::update(&mut self.inner, data)
             }
         }
 
-        impl $crate::VariableOutput for $name {
-            const MAX_OUTPUT_SIZE: usize = <$wrapped_ty as $crate::VariableOutput>::MAX_OUTPUT_SIZE;
-
+        impl<$out_size> $crate::FixedOutput for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
             #[inline]
-            fn new(output_size: usize) -> Result<Self, $crate::InvalidOutputSize> {
-                <$wrapped_ty as $crate::VariableOutput>::new(output_size)
-            }
-
-            #[inline]
-            fn output_size(&self) -> usize {
-                <$wrapped_ty as $crate::VariableOutput>::output_size(&self.0)
-            }
-
-            #[inline]
-            fn finalize_variable(self, out: &mut [u8]) -> Result<(), $crate::InvalidBufferSize> {
-                <$wrapped_ty as $crate::VariableOutput>::finalize_variable(self.0, out)
+            fn finalize_into(self, out: &mut $crate::Output<Self>) {
+                <$wrapped_ct as $crate::FixedOutput>::finalize_into(self.inner, out)
             }
         }
 
-        impl $crate::VariableOutputReset for $name {
+        impl<$out_size> $crate::FixedOutputReset for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
             #[inline]
-            fn finalize_variable_reset(
-                &mut self,
-                out: &mut [u8],
-            ) -> Result<(), $crate::InvalidBufferSize> {
-                <$wrapped_ty as $crate::VariableOutputReset>::finalize_variable_reset(&mut self.0, out)
+            fn finalize_into_reset(&mut self, out: &mut $crate::Output<Self>) {
+                <$wrapped_ct  as $crate::FixedOutputReset>::finalize_into_reset(&mut self.inner, out);
             }
         }
 
-        impl $crate::crypto_common::hazmat::SerializableState for $name {
-            type SerializedStateSize = <$wrapped_ty as $crate::crypto_common::hazmat::SerializableState>::SerializedStateSize;
+        impl<$out_size> $crate::crypto_common::hazmat::SerializableState for $ct_name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
+            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+        {
+            type SerializedStateSize = <$wrapped_ct as $crate::crypto_common::hazmat::SerializableState>::SerializedStateSize;
 
             #[inline]
             fn serialize(&self) -> $crate::crypto_common::hazmat::SerializedState<Self> {
-                <$wrapped_ty as $crate::crypto_common::hazmat::SerializableState>::serialize(&self.inner)
+                <$wrapped_ct as $crate::crypto_common::hazmat::SerializableState>::serialize(&self.inner)
             }
 
             #[inline]
             fn deserialize(
                 serialized_state: &$crate::crypto_common::hazmat::SerializedState<Self>,
             ) -> Result<Self, $crate::crypto_common::hazmat::DeserializeStateError> {
-                let inner = <$wrapped_ty as $crate::crypto_common::hazmat::SerializableState>::deserialize(serialized_state)?;
+                let inner = <$wrapped_ct as $crate::crypto_common::hazmat::SerializableState>::deserialize(serialized_state)?;
                 Ok(Self { inner })
             }
         }
 
-        $(
-            #[cfg(feature = "oid")]
-            impl $crate::const_oid::AssociatedOid for $name {
-                const OID: $crate::const_oid::ObjectIdentifier =
-                    $crate::const_oid::ObjectIdentifier::new_unwrap($oid);
+        $(#[$rt_attr])*
+        $rt_vis struct $rt_name {
+            inner: $wrapped_rt,
+        }
+
+        impl core::fmt::Debug for $rt_name {
+            #[inline]
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                f.write_str(concat!(stringify!($rt_name), " { ... }"))
             }
-        )?
+        }
+
+        impl $crate::crypto_common::AlgorithmName for $rt_name {
+            #[inline]
+            fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
+                <$wrapped_rt as $crate::crypto_common::AlgorithmName>::write_alg_name(f)
+            }
+        }
+
+        impl Clone for $rt_name {
+            #[inline]
+            fn clone(&self) -> Self {
+                Self {
+                    inner: <$wrapped_rt as Clone>::clone(&self.inner),
+                }
+            }
+        }
+
+        impl $crate::Reset for $rt_name {
+            #[inline]
+            fn reset(&mut self) {
+                <$wrapped_rt as $crate::Reset>::reset(&mut self.inner);
+            }
+        }
+
+        impl $crate::core_api::BlockSizeUser for $rt_name {
+            type BlockSize = <$wrapped_rt as $crate::crypto_common::BlockSizeUser>::BlockSize;
+        }
+
+        impl $crate::HashMarker for $rt_name {}
+
+        impl $crate::Update for $rt_name {
+            #[inline]
+            fn update(&mut self, data: &[u8]) {
+                <$wrapped_rt as $crate::Update>::update(&mut self.inner, data)
+            }
+        }
+
+        impl $crate::VariableOutput for $rt_name {
+            const MAX_OUTPUT_SIZE: usize = <$wrapped_rt as $crate::VariableOutput>::MAX_OUTPUT_SIZE;
+
+            #[inline]
+            fn new(output_size: usize) -> Result<Self, $crate::InvalidOutputSize> {
+                let inner = <$wrapped_rt as $crate::VariableOutput>::new(output_size)?;
+                Ok(Self { inner })
+            }
+
+            #[inline]
+            fn output_size(&self) -> usize {
+                <$wrapped_rt as $crate::VariableOutput>::output_size(&self.inner)
+            }
+
+            #[inline]
+            fn finalize_variable(self, out: &mut [u8]) -> Result<(), $crate::InvalidBufferSize> {
+                <$wrapped_rt as $crate::VariableOutput>::finalize_variable(self.inner, out)
+            }
+        }
+
+        // impl $crate::VariableOutputReset for $rt_name {
+        //     #[inline]
+        //     fn finalize_variable_reset(
+        //         &mut self,
+        //         out: &mut [u8],
+        //     ) -> Result<(), $crate::InvalidBufferSize> {
+        //         <$wrapped_rt as $crate::VariableOutputReset>::finalize_variable_reset(&mut self.inner, out)
+        //     }
+        // }
+
+        impl $crate::crypto_common::hazmat::SerializableState for $rt_name {
+            type SerializedStateSize = <$wrapped_rt as $crate::crypto_common::hazmat::SerializableState>::SerializedStateSize;
+
+            #[inline]
+            fn serialize(&self) -> $crate::crypto_common::hazmat::SerializedState<Self> {
+                <$wrapped_rt as $crate::crypto_common::hazmat::SerializableState>::serialize(&self.inner)
+            }
+
+            #[inline]
+            fn deserialize(
+                serialized_state: &$crate::crypto_common::hazmat::SerializedState<Self>,
+            ) -> Result<Self, $crate::crypto_common::hazmat::DeserializeStateError> {
+                let inner = <$wrapped_rt as $crate::crypto_common::hazmat::SerializableState>::deserialize(serialized_state)?;
+                Ok(Self { inner })
+            }
+        }
     };
 }
