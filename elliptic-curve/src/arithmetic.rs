@@ -2,7 +2,7 @@
 
 use crate::{
     Curve, FieldBytes, PrimeCurve, ScalarPrimitive,
-    ops::{Invert, LinearCombination, MulByGenerator, Reduce, ShrAssign},
+    ops::{Invert, LinearCombination, Reduce, ShrAssign},
     point::AffineCoordinates,
     scalar::{FromUintUnchecked, IsHigh},
 };
@@ -46,7 +46,6 @@ pub trait CurveArithmetic: Curve {
         + Into<Self::AffinePoint>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar)]>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar); 2]>
-        + MulByGenerator
         + group::Curve<AffineRepr = Self::AffinePoint>
         + group::Group<Scalar = Self::Scalar>;
 

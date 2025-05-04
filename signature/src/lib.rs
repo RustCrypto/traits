@@ -6,6 +6,7 @@
 )]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![forbid(unsafe_code)]
+#![allow(async_fn_in_trait)]
 #![warn(
     clippy::mod_module_files,
     clippy::unwrap_used,

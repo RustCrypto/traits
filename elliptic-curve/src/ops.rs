@@ -1,33 +1,13 @@
 //! Traits for arithmetic operations on elliptic curve field elements.
 
 pub use core::ops::{Add, AddAssign, Mul, Neg, Shr, ShrAssign, Sub, SubAssign};
+pub use crypto_bigint::Invert;
 
 use crypto_bigint::Integer;
-use group::Group;
 use subtle::{Choice, ConditionallySelectable, CtOption};
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
-
-/// Perform an inversion on a field element (i.e. base field element or scalar)
-pub trait Invert {
-    /// Field element type
-    type Output;
-
-    /// Invert a field element.
-    fn invert(&self) -> Self::Output;
-
-    /// Invert a field element in variable time.
-    ///
-    /// ⚠️ WARNING!
-    ///
-    /// This method should not be used with secret values, as its variable-time
-    /// operation can potentially leak secrets through sidechannels.
-    fn invert_vartime(&self) -> Self::Output {
-        // Fall back on constant-time implementation by default.
-        self.invert()
-    }
-}
 
 /// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
 /// at an amortized cost that should be practically as efficient as a single inversion.
@@ -165,18 +145,6 @@ where
             .copied()
             .map(|(point, scalar)| point * scalar)
             .sum()
-    }
-}
-
-/// Multiplication by the generator.
-///
-/// May use optimizations (e.g. precomputed tables) when available.
-// TODO(tarcieri): replace this with `Group::mul_by_generator``? (see zkcrypto/group#44)
-pub trait MulByGenerator: Group {
-    /// Multiply by the generator of the prime-order subgroup.
-    #[must_use]
-    fn mul_by_generator(scalar: &Self::Scalar) -> Self {
-        Self::generator() * scalar
     }
 }
 

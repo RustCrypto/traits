@@ -1,7 +1,7 @@
 use super::{AlgorithmName, BlockSizeUser, TruncSide, VariableOutputCore};
 #[cfg(feature = "mac")]
 use crate::MacMarker;
-use crate::{HashMarker, InvalidBufferSize};
+use crate::{CollisionResistance, HashMarker, InvalidBufferSize};
 use crate::{InvalidOutputSize, Reset, Update, VariableOutput, VariableOutputReset};
 use block_buffer::BlockBuffer;
 use core::{
@@ -55,6 +55,10 @@ impl<T: VariableOutputCore + HashMarker> HashMarker for RtVariableCoreWrapper<T>
 
 #[cfg(feature = "mac")]
 impl<T: VariableOutputCore + MacMarker> MacMarker for RtVariableCoreWrapper<T> {}
+
+impl<T: VariableOutputCore + CollisionResistance> CollisionResistance for RtVariableCoreWrapper<T> {
+    type CollisionResistance = T::CollisionResistance;
+}
 
 impl<T: VariableOutputCore> BlockSizeUser for RtVariableCoreWrapper<T> {
     type BlockSize = T::BlockSize;

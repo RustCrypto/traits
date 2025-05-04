@@ -56,6 +56,7 @@ mod digest;
 #[cfg(feature = "mac")]
 mod mac;
 mod newtype;
+mod xof_fixed;
 
 #[cfg(feature = "core-api")]
 pub use block_buffer;
@@ -71,8 +72,10 @@ pub use crypto_common::{InnerInit, InvalidLength, Key, KeyInit};
 pub use crypto_common::{Output, OutputSizeUser, Reset, array, typenum, typenum::consts};
 #[cfg(feature = "mac")]
 pub use mac::{CtOutput, Mac, MacError, MacMarker};
+pub use xof_fixed::XofFixedWrapper;
 
 use core::fmt;
+use crypto_common::typenum::Unsigned;
 
 /// Types which consume data with byte granularity.
 pub trait Update {
@@ -279,6 +282,14 @@ pub trait CustomizedInit: Sized {
 pub trait VarOutputCustomized: Sized {
     /// Create new hasher instance with the given customization string and output size.
     fn new_customized(customization: &[u8], output_size: usize) -> Self;
+}
+
+/// Types with a certain collision resistance.
+pub trait CollisionResistance {
+    /// Collision resistance in bytes. This applies to an output size of `CollisionResistance * 2`.
+    /// The collision resistance with a smaller output size is not defined by this trait and is at
+    /// least the given collision resistance with a bigger output.
+    type CollisionResistance: Unsigned;
 }
 
 /// The error type used in variable hash traits.

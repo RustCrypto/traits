@@ -17,19 +17,3 @@ members = [
 
 [patch.crates-io]
 signature = { path = "signature" }
-
-# https://github.com/RustCrypto/MACs/pull/178
-hmac = { git = "https://github.com/RustCrypto/MACs.git" }
-
-# https://github.com/RustCrypto/crypto-bigint/pull/762
-# https://github.com/RustCrypto/crypto-bigint/pull/765
-crypto-bigint = { git = "https://github.com/RustCrypto/crypto-bigint.git" }
-
-# https://github.com/zkcrypto/ff/pull/122
-# https://github.com/zkcrypto/ff/pull/126
-# https://github.com/zkcrypto/ff/pull/127
-ff = { git = "https://github.com/zkcrypto/ff.git", branch = "release-0.14.0" }
-
-# https://github.com/zkcrypto/group/pull/56
-# https://github.com/zkcrypto/group/pull/57
-group = { git = "https://github.com/baloo/group.git", branch = "baloo/try_from_rng" }

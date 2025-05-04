@@ -13,13 +13,12 @@ categories = ["cryptography", "no-std"]
 description = "Traits for cryptographic signature algorithms (e.g. ECDSA, Ed25519)"
 
 [dependencies]
-signature = "=2.3.0-pre.6"
+signature = "=3.0.0-pre"
 
 [features]
 digest = ["signature/digest"]
-std = ["signature/std"]
+std = []
 rand_core = ["signature/rand_core"]
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
