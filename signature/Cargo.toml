@@ -13,7 +13,6 @@ categories = ["cryptography", "no-std"]
 description = "Traits for cryptographic signature algorithms (e.g. ECDSA, Ed25519)"
 
 [dependencies]
-derive = { package = "signature_derive", version = "2", optional = true, path = "../signature_derive" }
 digest = { version = "=0.11.0-pre.10", optional = true, default-features = false }
 rand_core = { version = "0.9", optional = true, default-features = false }
 

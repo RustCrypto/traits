@@ -19,11 +19,6 @@ use crate::{
 /// This approach is relatively common in signature schemes based on the
 /// [Fiat-Shamir heuristic].
 ///
-/// For signature types that implement this trait, when the `derive` crate
-/// feature is enabled a custom derive for [`Signer`] is available for any
-/// types that impl [`DigestSigner`], and likewise for deriving [`Verifier`] for
-/// types which impl [`DigestVerifier`].
-///
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 pub trait PrehashSignature {
     /// Preferred `Digest` algorithm to use when computing this signature type.

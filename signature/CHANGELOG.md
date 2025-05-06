@@ -9,15 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `RandomizedSignerMut` trait ([#1448])
 
 ### Changed
-- Replace `signature_derive` with blanket impls ([#1827])
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
 
 ### Removed
 - `std` feature - replaced with `core::error::Error`
+- `derive` feature
 
 [#1448]: https://github.com/RustCrypto/traits/pull/1448
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
-[#1827]: https://github.com/RustCrypto/traits/pull/1827
 
 ## 2.2.0 (2023-11-12)
 ### Changed
