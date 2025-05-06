@@ -33,8 +33,8 @@ macro_rules! newtype_fixed_hash {
             #[inline]
             fn clone(&self) -> Self {
                 Self {
-                    core: self.core.clone(),
-                    buffer: self.buffer.clone(),
+                    core: Clone::clone(&self.core),
+                    buffer: Clone::clone(&self.buffer),
                 }
             }
         }
@@ -52,7 +52,7 @@ macro_rules! newtype_fixed_hash {
         impl$(<$gp: $bound>)? $crate::Reset for $name$(<$gp>)? {
             #[inline]
             fn reset(&mut self) {
-                self.core.reset();
+                $crate::Reset::reset(&mut self.core);
                 self.buffer.reset();
             }
         }
@@ -101,8 +101,7 @@ macro_rules! newtype_fixed_hash {
             fn finalize_into_reset(&mut self, out: &mut $crate::Output<Self>) {
                 let Self { core, buffer } = self;
                 $crate::core_api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
-                $crate::Reset::reset(core);
-                buffer.reset();
+                $crate::Reset::reset(self);
             }
         }
 
