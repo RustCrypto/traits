@@ -18,7 +18,7 @@ use crate::{CurveArithmetic, NonZeroScalar, Scalar};
 ///
 /// In the context of ECC, it's useful for ensuring that certain arithmetic
 /// cannot result in the identity point.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct NonIdentity<P> {
     point: P,
 }
