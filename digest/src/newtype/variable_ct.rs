@@ -1,12 +1,10 @@
 /// Creates a newtype wrapper around another type and
 /// delegates implementation of `digest` traits to it.
 #[macro_export]
-macro_rules! newtype_variable_hash {
+macro_rules! newtype_ct_variable_hash {
     (
         $(#[$ct_attr:meta])*
         $ct_vis:vis struct $ct_name:ident<$out_size:ident>($wrapped_ct:ty);
-        $(#[$rt_attr:meta])*
-        $rt_vis:vis struct $rt_name:ident($wrapped_rt:ty);
         // Ideally, we would use `$core_ty::OutputSize`, but unfortunately the compiler
         // does not accept such code. The likely reason is this issue:
         // https://github.com/rust-lang/rust/issues/79629
@@ -169,108 +167,6 @@ macro_rules! newtype_variable_hash {
                 serialized_state: &$crate::crypto_common::hazmat::SerializedState<Self>,
             ) -> Result<Self, $crate::crypto_common::hazmat::DeserializeStateError> {
                 let inner = <$wrapped_ct as $crate::crypto_common::hazmat::SerializableState>::deserialize(serialized_state)?;
-                Ok(Self { inner })
-            }
-        }
-
-        $(#[$rt_attr])*
-        $rt_vis struct $rt_name {
-            inner: $wrapped_rt,
-        }
-
-        impl core::fmt::Debug for $rt_name {
-            #[inline]
-            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                f.write_str(concat!(stringify!($rt_name), " { ... }"))
-            }
-        }
-
-        impl $crate::crypto_common::AlgorithmName for $rt_name {
-            #[inline]
-            fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
-                <$wrapped_rt as $crate::crypto_common::AlgorithmName>::write_alg_name(f)
-            }
-        }
-
-        impl Clone for $rt_name {
-            #[inline]
-            fn clone(&self) -> Self {
-                Self {
-                    inner: <$wrapped_rt as Clone>::clone(&self.inner),
-                }
-            }
-        }
-
-        impl $crate::Reset for $rt_name {
-            #[inline]
-            fn reset(&mut self) {
-                <$wrapped_rt as $crate::Reset>::reset(&mut self.inner);
-            }
-        }
-
-        impl $crate::core_api::BlockSizeUser for $rt_name {
-            type BlockSize = <$wrapped_rt as $crate::crypto_common::BlockSizeUser>::BlockSize;
-        }
-
-        impl $crate::HashMarker for $rt_name {}
-
-        // Verify that `$wrapped_ty` implements `HashMarker`
-        const _: () = {
-            fn check(v: &$wrapped_rt) {
-                v as &dyn $crate::HashMarker;
-            }
-        };
-
-        impl $crate::Update for $rt_name {
-            #[inline]
-            fn update(&mut self, data: &[u8]) {
-                <$wrapped_rt as $crate::Update>::update(&mut self.inner, data)
-            }
-        }
-
-        impl $crate::VariableOutput for $rt_name {
-            const MAX_OUTPUT_SIZE: usize = <$wrapped_rt as $crate::VariableOutput>::MAX_OUTPUT_SIZE;
-
-            #[inline]
-            fn new(output_size: usize) -> Result<Self, $crate::InvalidOutputSize> {
-                let inner = <$wrapped_rt as $crate::VariableOutput>::new(output_size)?;
-                Ok(Self { inner })
-            }
-
-            #[inline]
-            fn output_size(&self) -> usize {
-                <$wrapped_rt as $crate::VariableOutput>::output_size(&self.inner)
-            }
-
-            #[inline]
-            fn finalize_variable(self, out: &mut [u8]) -> Result<(), $crate::InvalidBufferSize> {
-                <$wrapped_rt as $crate::VariableOutput>::finalize_variable(self.inner, out)
-            }
-        }
-
-        // impl $crate::VariableOutputReset for $rt_name {
-        //     #[inline]
-        //     fn finalize_variable_reset(
-        //         &mut self,
-        //         out: &mut [u8],
-        //     ) -> Result<(), $crate::InvalidBufferSize> {
-        //         <$wrapped_rt as $crate::VariableOutputReset>::finalize_variable_reset(&mut self.inner, out)
-        //     }
-        // }
-
-        impl $crate::crypto_common::hazmat::SerializableState for $rt_name {
-            type SerializedStateSize = <$wrapped_rt as $crate::crypto_common::hazmat::SerializableState>::SerializedStateSize;
-
-            #[inline]
-            fn serialize(&self) -> $crate::crypto_common::hazmat::SerializedState<Self> {
-                <$wrapped_rt as $crate::crypto_common::hazmat::SerializableState>::serialize(&self.inner)
-            }
-
-            #[inline]
-            fn deserialize(
-                serialized_state: &$crate::crypto_common::hazmat::SerializedState<Self>,
-            ) -> Result<Self, $crate::crypto_common::hazmat::DeserializeStateError> {
-                let inner = <$wrapped_rt as $crate::crypto_common::hazmat::SerializableState>::deserialize(serialized_state)?;
                 Ok(Self { inner })
             }
         }

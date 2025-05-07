@@ -9,10 +9,7 @@ macro_rules! newtype_fixed_hash {
         $(#[$attr])*
         $v struct $name$(<$gp: $bound>)? {
             core: $core_ty,
-            buffer: $crate::block_buffer::BlockBuffer<
-                <$core_ty as $crate::core_api::BlockSizeUser>::BlockSize,
-                <$core_ty as $crate::core_api::BufferKindUser>::BufferKind,
-            >
+            buffer: $crate::core_api::Buffer<$core_ty>,
         }
 
         impl$(<$gp: $bound>)? core::fmt::Debug for $name$(<$gp>)? {

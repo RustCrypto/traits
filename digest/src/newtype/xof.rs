@@ -12,10 +12,7 @@ macro_rules! newtype_xof_hash {
         $(#[$attr])*
         $hasher_vis struct $hasher_name {
             core: $hasher_core,
-            buffer: $crate::block_buffer::BlockBuffer<
-                <$hasher_core as $crate::core_api::BlockSizeUser>::BlockSize,
-                <$hasher_core as $crate::core_api::BufferKindUser>::BufferKind,
-            >
+            buffer: $crate::core_api::Buffer<$hasher_core>,
         }
 
         impl core::fmt::Debug for $hasher_name {

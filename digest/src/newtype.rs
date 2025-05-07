@@ -1,3 +1,4 @@
 mod fixed;
-mod variable;
+mod variable_ct;
+mod variable_rt;
 mod xof;
