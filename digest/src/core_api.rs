@@ -5,6 +5,7 @@
 //! higher-level traits.
 use crate::InvalidOutputSize;
 
+pub use block_buffer::{Eager, Lazy};
 pub use crypto_common::{AlgorithmName, Block, BlockSizeUser, OutputSizeUser, Reset};
 
 use block_buffer::{BlockBuffer, BufferKind};

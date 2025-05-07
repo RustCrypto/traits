@@ -149,6 +149,13 @@ impl<T: ExtendableOutputCore + Reset> ExtendableOutputReset for CoreWrapper<T> {
     }
 }
 
+impl<T: BufferKindUser + AlgorithmName> AlgorithmName for CoreWrapper<T> {
+    #[inline]
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        T::write_alg_name(f)
+    }
+}
+
 impl<T: BufferKindUser> Drop for CoreWrapper<T> {
     #[inline]
     fn drop(&mut self) {
@@ -214,19 +221,11 @@ where
     }
 }
 
-/// A proxy trait to a core type implemented by [`CoreWrapper`]
-// TODO: replace with an inherent associated type on stabilization:
-// https://github.com/rust-lang/rust/issues/8995
-pub trait CoreProxy: sealed::Sealed {
+/// A proxy trait to a core type.
+pub trait CoreProxy {
     /// Type wrapped by [`CoreWrapper`].
     type Core;
 }
-
-mod sealed {
-    pub trait Sealed {}
-}
-
-impl<T: BufferKindUser> sealed::Sealed for CoreWrapper<T> {}
 
 impl<T: BufferKindUser> CoreProxy for CoreWrapper<T> {
     type Core = T;
