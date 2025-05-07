@@ -16,6 +16,7 @@ use crypto_common::{
     hazmat::{DeserializeStateError, SerializableState, SerializedState, SubSerializedStateSize},
     typenum::{IsLess, IsLessOrEqual, Le, LeEq, NonZero, Sum, U1, U256},
 };
+
 /// Wrapper around [`VariableOutputCore`] which selects output size
 /// at compile time.
 #[derive(Clone)]
