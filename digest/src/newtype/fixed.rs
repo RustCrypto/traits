@@ -61,6 +61,10 @@ macro_rules! newtype_fixed_hash {
             type BlockSize = <$core_ty as $crate::crypto_common::BlockSizeUser>::BlockSize;
         }
 
+        impl$(<$gp: $bound>)? $crate::core_api::BufferKindUser for $name$(<$gp>)? {
+            type BufferKind = <$core_ty as $crate::core_api::BufferKindUser>::BufferKind;
+        }
+
         impl$(<$gp: $bound>)? $crate::OutputSizeUser for $name$(<$gp>)? {
             type OutputSize = <$core_ty as $crate::core_api::OutputSizeUser>::OutputSize;
         }
