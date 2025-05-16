@@ -16,7 +16,7 @@ macro_rules! newtype_ct_variable_hash {
             $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
             $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
         {
-            core: $crate::core_api::CtVariableCoreWrapper<$core_ty, $out_size>,
+            core: $crate::core_api::CtOutWrapper<$core_ty, $out_size>,
             buffer: $crate::core_api::Buffer<$core_ty>,
         }
 
@@ -120,7 +120,7 @@ macro_rules! newtype_ct_variable_hash {
             $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
             $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
         {
-            type Core = $crate::core_api::CtVariableCoreWrapper<$core_ty, $out_size>;
+            type Core = $crate::core_api::CtOutWrapper<$core_ty, $out_size>;
         }
 
         impl<$out_size> $crate::Update for $name<$out_size>
@@ -169,7 +169,7 @@ macro_rules! newtype_ct_variable_hash {
         {
             type SerializedStateSize = $crate::typenum::Add1<$crate::typenum::Sum<
                 <
-                    $crate::core_api::CtVariableCoreWrapper<$core_ty, $out_size>
+                    $crate::core_api::CtOutWrapper<$core_ty, $out_size>
                     as $crate::crypto_common::hazmat::SerializableState
                 >::SerializedStateSize,
                 <$core_ty as $crate::core_api::BlockSizeUser>::BlockSize,
@@ -201,13 +201,13 @@ macro_rules! newtype_ct_variable_hash {
                 use $crate::{
                     block_buffer::BlockBuffer,
                     consts::U1,
-                    core_api::CtVariableCoreWrapper,
+                    core_api::CtOutWrapper,
                     crypto_common::hazmat::{SerializableState, DeserializeStateError},
                 };
 
                 let (serialized_core, remaining_buffer) = serialized_state
                     .split_ref::<<
-                        CtVariableCoreWrapper<$core_ty, $out_size>
+                        CtOutWrapper<$core_ty, $out_size>
                         as SerializableState
                     >::SerializedStateSize>();
                 let (serialized_pos, serialized_data) = remaining_buffer.split_ref::<U1>();
