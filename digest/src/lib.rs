@@ -55,6 +55,7 @@ pub mod core_api;
 mod digest;
 #[cfg(feature = "mac")]
 mod mac;
+mod newtype;
 mod xof_fixed;
 
 #[cfg(feature = "core-api")]
