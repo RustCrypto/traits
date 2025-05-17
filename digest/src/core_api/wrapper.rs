@@ -16,7 +16,7 @@ use crypto_common::{
     BlockSizeUser, InvalidLength, Key, KeyInit, KeySizeUser, Output,
     array::{Array, ArraySize},
     hazmat::{DeserializeStateError, SerializableState, SerializedState, SubSerializedStateSize},
-    typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U256},
+    typenum::{Diff, IsLess, Sum, True, U1, U256},
 };
 
 #[cfg(feature = "mac")]
@@ -179,8 +179,7 @@ type CoreWrapperSerializedStateSize<T> =
 impl<T> SerializableState for CoreWrapper<T>
 where
     T: BufferKindUser + SerializableState,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
+    T::BlockSize: IsLess<U256, Output = True>,
     T::SerializedStateSize: Add<U1>,
     Sum<T::SerializedStateSize, U1>: Add<T::BlockSize> + ArraySize,
     CoreWrapperSerializedStateSize<T>: Sub<T::SerializedStateSize> + ArraySize,
