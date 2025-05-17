@@ -13,7 +13,7 @@ use crypto_common::{
     AddBlockSize, SubBlockSize,
     array::{Array, ArraySize},
     hazmat::{DeserializeStateError, SerializableState, SerializedState, SubSerializedStateSize},
-    typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U256, Unsigned},
+    typenum::{Diff, IsLess, Sum, True, U1, U256, Unsigned},
 };
 #[cfg(feature = "zeroize")]
 use zeroize::ZeroizeOnDrop;
@@ -143,8 +143,7 @@ type RtVariableCoreWrapperSerializedStateSize<T> =
 impl<T> SerializableState for RtVariableCoreWrapper<T>
 where
     T: VariableOutputCore + SerializableState,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
+    T::BlockSize: IsLess<U256, Output = True>,
     T::SerializedStateSize: Add<U1>,
     Sum<T::SerializedStateSize, U1>: Add<T::BlockSize> + ArraySize,
     AddBlockSize<Sum<T::SerializedStateSize, U1>, T>: Add<U1> + ArraySize,

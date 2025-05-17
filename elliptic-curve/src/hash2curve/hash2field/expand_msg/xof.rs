@@ -6,7 +6,7 @@ use core::{fmt, marker::PhantomData, num::NonZero, ops::Mul};
 use digest::{ExtendableOutput, HashMarker, Update, XofReader};
 use hybrid_array::{
     ArraySize,
-    typenum::{IsLess, U2, U256},
+    typenum::{IsLess, True, U2, U256},
 };
 
 /// Implements `expand_message_xof` via the [`ExpandMsg`] trait:
@@ -23,7 +23,7 @@ pub struct ExpandMsgXof<HashT, K>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
     K: Mul<U2>,
-    <K as Mul<U2>>::Output: ArraySize + IsLess<U256>,
+    <K as Mul<U2>>::Output: ArraySize + IsLess<U256, Output = True>,
 {
     reader: <HashT as ExtendableOutput>::Reader,
     _k: PhantomData<K>,
@@ -33,7 +33,7 @@ impl<HashT, K> fmt::Debug for ExpandMsgXof<HashT, K>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
     K: Mul<U2>,
-    <K as Mul<U2>>::Output: ArraySize + IsLess<U256>,
+    <K as Mul<U2>>::Output: ArraySize + IsLess<U256, Output = True>,
     <HashT as ExtendableOutput>::Reader: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -49,7 +49,7 @@ where
     // If DST is larger than 255 bytes, the length of the computed DST is calculated by `K * 2`.
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
     K: Mul<U2>,
-    <K as Mul<U2>>::Output: ArraySize + IsLess<U256>,
+    <K as Mul<U2>>::Output: ArraySize + IsLess<U256, Output = True>,
 {
     type Expander = Self;
 
@@ -82,7 +82,7 @@ impl<HashT, K> Expander for ExpandMsgXof<HashT, K>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
     K: Mul<U2>,
-    <K as Mul<U2>>::Output: ArraySize + IsLess<U256>,
+    <K as Mul<U2>>::Output: ArraySize + IsLess<U256, Output = True>,
 {
     fn fill_bytes(&mut self, okm: &mut [u8]) {
         self.reader.read(okm);
