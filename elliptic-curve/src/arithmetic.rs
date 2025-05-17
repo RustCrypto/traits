@@ -3,7 +3,7 @@
 use crate::{
     Curve, FieldBytes, PrimeCurve, ScalarPrimitive,
     ops::{Invert, LinearCombination, Reduce, ShrAssign},
-    point::AffineCoordinates,
+    point::{AffineCoordinates, NonIdentity},
     scalar::{FromUintUnchecked, IsHigh},
 };
 use core::fmt::Debug;
@@ -22,6 +22,7 @@ pub trait CurveArithmetic: Curve {
         + Default
         + DefaultIsZeroes
         + Eq
+        + From<NonIdentity<Self::AffinePoint>>
         + PartialEq
         + Sized
         + Send
@@ -43,6 +44,7 @@ pub trait CurveArithmetic: Curve {
         + Default
         + DefaultIsZeroes
         + From<Self::AffinePoint>
+        + From<NonIdentity<Self::ProjectivePoint>>
         + Into<Self::AffinePoint>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar)]>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar); 2]>
