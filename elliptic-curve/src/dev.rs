@@ -9,7 +9,7 @@ use crate::{
     bigint::{Limb, U256},
     error::{Error, Result},
     ops::{Invert, LinearCombination, Reduce, ShrAssign},
-    point::AffineCoordinates,
+    point::{AffineCoordinates, NonIdentity},
     rand_core::TryRngCore,
     scalar::{FromUintUnchecked, IsHigh},
     sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
@@ -460,6 +460,12 @@ impl Default for AffinePoint {
 
 impl DefaultIsZeroes for AffinePoint {}
 
+impl From<NonIdentity<AffinePoint>> for AffinePoint {
+    fn from(affine: NonIdentity<AffinePoint>) -> Self {
+        affine.to_point()
+    }
+}
+
 impl FromEncodedPoint<MockCurve> for AffinePoint {
     fn from_encoded_point(encoded_point: &EncodedPoint) -> CtOption<Self> {
         let point = if encoded_point.is_identity() {
@@ -551,6 +557,12 @@ impl From<AffinePoint> for ProjectivePoint {
             AffinePoint::Generator => ProjectivePoint::Generator,
             other => ProjectivePoint::Other(other),
         }
+    }
+}
+
+impl From<NonIdentity<ProjectivePoint>> for ProjectivePoint {
+    fn from(point: NonIdentity<ProjectivePoint>) -> Self {
+        point.to_point()
     }
 }
 
