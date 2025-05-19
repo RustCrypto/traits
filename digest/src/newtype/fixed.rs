@@ -25,22 +25,17 @@ macro_rules! newtype_fixed_hash {
         oid: $oid:literal;
         impl: $($trait_name:ident)*;
     ) => {
-        $(#[$attr])*
-        $v struct $name$(<$gp: $bound>)? {
-            core: $core_ty,
-            buffer: $crate::core_api::Buffer<$core_ty>,
-        }
+        $crate::newtype_fixed_hash!(
+            $(#[$attr])*
+            $v struct $name$(<$gp: $bound>)?($core_ty);
+            impl: $($trait_name)*;
+        );
 
         #[cfg(feature = "oid")]
         impl$(<$gp: $bound>)? $crate::const_oid::AssociatedOid for $name$(<$gp>)? {
             const OID: $crate::const_oid::ObjectIdentifier =
                 $crate::const_oid::ObjectIdentifier::new_unwrap($oid);
         }
-
-        $crate::newtype_fixed_hash!(
-            impl_inner: $name$(<$gp: $bound>)?($core_ty);
-            $($trait_name)*;
-        );
     };
 
     // Terminates `impl_inner` sequences.
@@ -183,6 +178,24 @@ macro_rules! newtype_fixed_hash {
             fn default() -> Self {
                 Self {
                     core: Default::default(),
+                    buffer: Default::default(),
+                }
+            }
+        }
+
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `CustomizedInit`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        CustomizedInit $($trait_name:ident)*;
+    ) => {
+        impl$(<$gp: $bound>)? $crate::CustomizedInit for $name$(<$gp>)? {
+            #[inline]
+            fn new_customized(customization: &[u8]) -> Self {
+                Self {
+                    core: $crate::CustomizedInit::new_customized(customization),
                     buffer: Default::default(),
                 }
             }
