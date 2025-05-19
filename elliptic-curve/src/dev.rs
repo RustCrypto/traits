@@ -352,6 +352,12 @@ impl From<u64> for Scalar {
     }
 }
 
+impl From<NonZeroScalar> for Scalar {
+    fn from(scalar: NonZeroScalar) -> Self {
+        scalar.0.into()
+    }
+}
+
 impl From<ScalarPrimitive> for Scalar {
     fn from(scalar: ScalarPrimitive) -> Scalar {
         Self(scalar)
