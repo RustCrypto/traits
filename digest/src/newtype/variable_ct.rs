@@ -3,18 +3,18 @@
 #[macro_export]
 macro_rules! newtype_ct_variable_hash {
     (
-        $(#[$ct_attr:meta])*
+        $(#[$attr:meta])*
         $vis:vis struct $name:ident<$out_size:ident>($core_ty:ty);
+        exclude: SerializableState;
         // Ideally, we would use `$core_ty::OutputSize`, but unfortunately the compiler
         // does not accept such code. The likely reason is this issue:
         // https://github.com/rust-lang/rust/issues/79629
         max_size: $max_size:ty;
     ) => {
-        $(#[$ct_attr])*
+        $(#[$attr])*
         $vis struct $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             core: $crate::core_api::CtOutWrapper<$core_ty, $out_size>,
             buffer: $crate::core_api::Buffer<$core_ty>,
@@ -22,8 +22,7 @@ macro_rules! newtype_ct_variable_hash {
 
         impl<$out_size> core::fmt::Debug for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             #[inline]
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -33,8 +32,7 @@ macro_rules! newtype_ct_variable_hash {
 
         impl<$out_size> $crate::crypto_common::AlgorithmName for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             #[inline]
             fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
@@ -44,8 +42,7 @@ macro_rules! newtype_ct_variable_hash {
 
         impl<$out_size> Clone for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             #[inline]
             fn clone(&self) -> Self {
@@ -58,8 +55,7 @@ macro_rules! newtype_ct_variable_hash {
 
         impl<$out_size> Default for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             #[inline]
             fn default() -> Self {
@@ -72,8 +68,7 @@ macro_rules! newtype_ct_variable_hash {
 
         impl<$out_size> $crate::Reset for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             #[inline]
             fn reset(&mut self) {
@@ -84,24 +79,21 @@ macro_rules! newtype_ct_variable_hash {
 
         impl<$out_size> $crate::core_api::BlockSizeUser for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             type BlockSize = <$core_ty as $crate::crypto_common::BlockSizeUser>::BlockSize;
         }
 
         impl<$out_size> $crate::OutputSizeUser for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             type OutputSize = $out_size;
         }
 
         impl<$out_size> $crate::HashMarker for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {}
 
         // Verify that `$wrapped_ty` implements `HashMarker`
@@ -117,16 +109,14 @@ macro_rules! newtype_ct_variable_hash {
 
         impl<$out_size> $crate::core_api::CoreProxy for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             type Core = $crate::core_api::CtOutWrapper<$core_ty, $out_size>;
         }
 
         impl<$out_size> $crate::Update for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             #[inline]
             fn update(&mut self, data: &[u8]) {
@@ -139,8 +129,7 @@ macro_rules! newtype_ct_variable_hash {
 
         impl<$out_size> $crate::FixedOutput for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             #[inline]
             fn finalize_into(mut self, out: &mut $crate::Output<Self>) {
@@ -151,8 +140,7 @@ macro_rules! newtype_ct_variable_hash {
 
         impl<$out_size> $crate::FixedOutputReset for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             #[inline]
             fn finalize_into_reset(&mut self, out: &mut $crate::Output<Self>) {
@@ -161,11 +149,25 @@ macro_rules! newtype_ct_variable_hash {
                 $crate::Reset::reset(self);
             }
         }
+    };
+    (
+        $(#[$attr:meta])*
+        $vis:vis struct $name:ident<$out_size:ident>($core_ty:ty);
+        // Ideally, we would use `$core_ty::OutputSize`, but unfortunately the compiler
+        // does not accept such code. The likely reason is this issue:
+        // https://github.com/rust-lang/rust/issues/79629
+        max_size: $max_size:ty;
+    ) => {
+        $crate::newtype_ct_variable_hash!(
+            $(#[$attr])*
+            $vis struct $name<$out_size>($core_ty);
+            exclude: SerializableState;
+            max_size: $max_size;
+        );
 
         impl<$out_size> $crate::crypto_common::hazmat::SerializableState for $name<$out_size>
         where
-            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size>,
-            $crate::typenum::LeEq<$out_size, $max_size>: $crate::typenum::NonZero,
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             type SerializedStateSize = $crate::typenum::Add1<$crate::typenum::Sum<
                 <

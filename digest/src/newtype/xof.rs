@@ -7,7 +7,7 @@ macro_rules! newtype_xof_hash {
         $hasher_vis:vis struct $hasher_name:ident($hasher_core:ty);
         $(#[$reader_attr:meta])*
         $reader_vis:vis struct $reader_name:ident($reader_core:ty);
-        $(oid: $oid:literal)?
+        $(oid: $oid:literal;)?
     ) => {
         $(#[$attr])*
         $hasher_vis struct $hasher_name {

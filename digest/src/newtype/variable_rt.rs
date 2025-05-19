@@ -2,11 +2,12 @@
 #[macro_export]
 macro_rules! newtype_rt_variable_hash {
     (
-        $(#[$rt_attr:meta])*
-        $rt_vis:vis struct $name:ident($core_ty:ty);
+        $(#[$attr:meta])*
+        $vis:vis struct $name:ident($core_ty:ty);
+        exclude: SerializableState;
     ) => {
-        $(#[$rt_attr])*
-        $rt_vis struct $name {
+        $(#[$attr])*
+        $vis struct $name {
             core: $core_ty,
             buffer: $crate::core_api::Buffer<$core_ty>,
             output_size: u8,
@@ -152,6 +153,17 @@ macro_rules! newtype_rt_variable_hash {
 
         #[cfg(feature = "zeroize")]
         impl $crate::zeroize::ZeroizeOnDrop for $name {}
+    };
+
+    (
+        $(#[$attr:meta])*
+        $vis:vis struct $name:ident($core_ty:ty);
+    ) => {
+        $crate::newtype_rt_variable_hash!(
+            $(#[$attr])*
+            $vis struct $name($core_ty);
+            exclude: SerializableState;
+        );
 
         impl $crate::crypto_common::hazmat::SerializableState for $name {
             type SerializedStateSize = $crate::typenum::Add1<$crate::typenum::Sum<

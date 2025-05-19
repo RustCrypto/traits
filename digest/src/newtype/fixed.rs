@@ -5,6 +5,7 @@ macro_rules! newtype_fixed_hash {
     (
         $(#[$attr:meta])*
         $v:vis struct $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl: $($trait_name:ident)*;
     ) => {
         $(#[$attr])*
         $v struct $name$(<$gp: $bound>)? {
@@ -12,6 +13,71 @@ macro_rules! newtype_fixed_hash {
             buffer: $crate::core_api::Buffer<$core_ty>,
         }
 
+        $crate::newtype_fixed_hash!(
+            impl_inner: $name$(<$gp: $bound>)?($core_ty);
+            $($trait_name)*;
+        );
+    };
+
+    (
+        $(#[$attr:meta])*
+        $v:vis struct $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        oid: $oid:literal;
+        impl: $($trait_name:ident)*;
+    ) => {
+        $(#[$attr])*
+        $v struct $name$(<$gp: $bound>)? {
+            core: $core_ty,
+            buffer: $crate::core_api::Buffer<$core_ty>,
+        }
+
+        #[cfg(feature = "oid")]
+        impl$(<$gp: $bound>)? $crate::const_oid::AssociatedOid for $name$(<$gp>)? {
+            const OID: $crate::const_oid::ObjectIdentifier =
+                $crate::const_oid::ObjectIdentifier::new_unwrap($oid);
+        }
+
+        $crate::newtype_fixed_hash!(
+            impl_inner: $name$(<$gp: $bound>)?($core_ty);
+            $($trait_name)*;
+        );
+    };
+
+    // Terminates `impl_inner` sequences.
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty); ;
+    ) => {};
+
+    // Implements the set of traits common for fixed output hashes:
+    // `Default`, `Clone`, `HashMarker`, `Reset`, `FixedOutputReset`, `SerializableState`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        FixedHashTraits $($trait_name:ident)*;
+    ) => {
+        $crate::newtype_fixed_hash!(
+            impl_inner: $name$(<$gp: $bound>)?($core_ty);
+            BaseFixedTraits Default Clone HashMarker Reset FixedOutputReset SerializableState $($trait_name)*;
+        );
+    };
+
+    // Implements basic fixed traits:
+    // `Debug`, `AlgorithmName`, `BlockSizeUser`, `OutputSizeUser`,
+    // `CoreProxy`, `Update`, and `FixedOutput`.
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        BaseFixedTraits $($trait_name:ident)*;
+    ) => {
+        $crate::newtype_fixed_hash!(
+            impl_inner: $name$(<$gp: $bound>)?($core_ty);
+            Debug AlgorithmName BlockSizeUser OutputSizeUser CoreProxy Update FixedOutput $($trait_name)*;
+        );
+    };
+
+    // Implements `Debug`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        Debug $($trait_name:ident)*;
+    ) => {
         impl$(<$gp: $bound>)? core::fmt::Debug for $name$(<$gp>)? {
             #[inline]
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -19,6 +85,14 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `AlgorithmName`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        AlgorithmName $($trait_name:ident)*;
+    ) => {
         impl$(<$gp: $bound>)? $crate::crypto_common::AlgorithmName for $name$(<$gp>)? {
             #[inline]
             fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
@@ -26,55 +100,50 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
-        impl$(<$gp: $bound>)? Clone for $name$(<$gp>)? {
-            #[inline]
-            fn clone(&self) -> Self {
-                Self {
-                    core: Clone::clone(&self.core),
-                    buffer: Clone::clone(&self.buffer),
-                }
-            }
-        }
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
 
-        impl$(<$gp: $bound>)? Default for $name$(<$gp>)? {
-            #[inline]
-            fn default() -> Self {
-                Self {
-                    core: Default::default(),
-                    buffer: Default::default(),
-                }
-            }
-        }
-
-        impl$(<$gp: $bound>)? $crate::Reset for $name$(<$gp>)? {
-            #[inline]
-            fn reset(&mut self) {
-                $crate::Reset::reset(&mut self.core);
-                self.buffer.reset();
-            }
-        }
-
+    // Implements `BlockSizeUser`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        BlockSizeUser $($trait_name:ident)*;
+    ) => {
         impl$(<$gp: $bound>)? $crate::core_api::BlockSizeUser for $name$(<$gp>)? {
             type BlockSize = <$core_ty as $crate::crypto_common::BlockSizeUser>::BlockSize;
         }
 
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `OutputSizeUser`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        OutputSizeUser $($trait_name:ident)*;
+    ) => {
         impl$(<$gp: $bound>)? $crate::OutputSizeUser for $name$(<$gp>)? {
             type OutputSize = <$core_ty as $crate::core_api::OutputSizeUser>::OutputSize;
         }
 
-        impl$(<$gp: $bound>)? $crate::HashMarker for $name$(<$gp>)? {}
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
 
-        // Verify that `$core_ty` implements `HashMarker`
-        const _: () = {
-            fn check$(<$gp: $bound>)?(v: &$core_ty) {
-                v as &dyn $crate::HashMarker;
-            }
-        };
-
+    // Implements `CoreProxy`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        CoreProxy $($trait_name:ident)*;
+    ) => {
         impl$(<$gp: $bound>)? $crate::core_api::CoreProxy for $name$(<$gp>)? {
             type Core = $core_ty;
         }
 
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `Update`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        Update $($trait_name:ident)*;
+    ) => {
         impl$(<$gp: $bound>)? $crate::Update for $name$(<$gp>)? {
             #[inline]
             fn update(&mut self, data: &[u8]) {
@@ -85,6 +154,14 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `FixedOutput`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        FixedOutput $($trait_name:ident)*;
+    ) => {
         impl$(<$gp: $bound>)? $crate::FixedOutput for $name$(<$gp>)? {
             #[inline]
             fn finalize_into(mut self, out: &mut $crate::Output<Self>) {
@@ -93,6 +170,83 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `Default`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        Default $($trait_name:ident)*;
+    ) => {
+        impl$(<$gp: $bound>)? Default for $name$(<$gp>)? {
+            #[inline]
+            fn default() -> Self {
+                Self {
+                    core: Default::default(),
+                    buffer: Default::default(),
+                }
+            }
+        }
+
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `Clone`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        Clone $($trait_name:ident)*;
+    ) => {
+        impl$(<$gp: $bound>)? Clone for $name$(<$gp>)? {
+            #[inline]
+            fn clone(&self) -> Self {
+                Self {
+                    core: Clone::clone(&self.core),
+                    buffer: Clone::clone(&self.buffer),
+                }
+            }
+        }
+
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `HashMarker` and asserts that `$core_ty` implements it
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        HashMarker $($trait_name:ident)*;
+    ) => {
+        impl$(<$gp: $bound>)? $crate::HashMarker for $name$(<$gp>)? {}
+
+        // Verify that `$core_ty` implements `HashMarker`
+        const _: () = {
+            fn check$(<$gp: $bound>)?(v: &$core_ty) {
+                v as &dyn $crate::HashMarker;
+            }
+        };
+
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `Reset`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        Reset $($trait_name:ident)*;
+    ) => {
+        impl$(<$gp: $bound>)? $crate::Reset for $name$(<$gp>)? {
+            #[inline]
+            fn reset(&mut self) {
+                $crate::Reset::reset(&mut self.core);
+                self.buffer.reset();
+            }
+        }
+
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `FixedOutputReset`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        FixedOutputReset $($trait_name:ident)*;
+    ) => {
         impl$(<$gp: $bound>)? $crate::FixedOutputReset for $name$(<$gp>)? {
             #[inline]
             fn finalize_into_reset(&mut self, out: &mut $crate::Output<Self>) {
@@ -102,6 +256,14 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `SerializableState`
+    (
+        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        SerializableState $($trait_name:ident)*;
+    ) => {
         impl$(<$gp: $bound>)? $crate::crypto_common::hazmat::SerializableState for $name$(<$gp>)? {
             type SerializedStateSize = $crate::typenum::Sum<
                 <$core_ty as $crate::crypto_common::hazmat::SerializableState>::SerializedStateSize,
@@ -150,22 +312,7 @@ macro_rules! newtype_fixed_hash {
                 })
             }
         }
-    };
 
-    (
-        $(#[$attr:meta])*
-        $v:vis struct $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
-        oid: $oid:literal
-    ) => {
-        $crate::newtype_fixed_hash!(
-            $(#[$attr])*
-            $v struct $name$(<$gp: $bound>)?($core_ty);
-        );
-
-        #[cfg(feature = "oid")]
-        impl$(<$gp: $bound>)? $crate::const_oid::AssociatedOid for $name$(<$gp>)? {
-            const OID: $crate::const_oid::ObjectIdentifier =
-                $crate::const_oid::ObjectIdentifier::new_unwrap($oid);
-        }
-    };
+        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+    }
 }
