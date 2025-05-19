@@ -1,6 +1,7 @@
-/// Wrap
+/// Creates a buffered wrapper around block-level "core" type which implements variable output size traits
+/// with output size selected at run time.
 #[macro_export]
-macro_rules! newtype_rt_variable_hash {
+macro_rules! buffer_rt_variable {
     (
         $(#[$attr:meta])*
         $vis:vis struct $name:ident($core_ty:ty);
@@ -159,7 +160,7 @@ macro_rules! newtype_rt_variable_hash {
         $(#[$attr:meta])*
         $vis:vis struct $name:ident($core_ty:ty);
     ) => {
-        $crate::newtype_rt_variable_hash!(
+        $crate::buffer_rt_variable!(
             $(#[$attr])*
             $vis struct $name($core_ty);
             exclude: SerializableState;

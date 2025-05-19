@@ -1,7 +1,6 @@
-/// Creates a newtype wrapper around another type and
-/// delegates implementation of `digest` traits to it.
+/// Creates a buffered wrapper around block-level "core" type which implements extendable output size traits.
 #[macro_export]
-macro_rules! newtype_xof_hash {
+macro_rules! buffer_xof {
     (
         $(#[$hasher_attr:meta])*
         $hasher_vis:vis struct $hasher_name:ident($hasher_core:ty);
@@ -38,7 +37,7 @@ macro_rules! newtype_xof_hash {
             }
         )?
 
-        $crate::newtype_xof_hash!(
+        $crate::buffer_xof!(
             impl_inner: $hasher_name($hasher_core);
             $($hasher_trait_name)*;
         );
@@ -59,7 +58,7 @@ macro_rules! newtype_xof_hash {
             }
         }
 
-        $crate::newtype_xof_hash!(
+        $crate::buffer_xof!(
             impl_inner: $reader_name($reader_core);
             $($reader_trait_name)*;
         );
@@ -75,7 +74,7 @@ macro_rules! newtype_xof_hash {
         impl_inner: $name:ident($core_ty:ty);
         XofHasherTraits $($trait_name:ident)*;
     ) => {
-        $crate::newtype_xof_hash!(
+        $crate::buffer_xof!(
             impl_inner: $name($core_ty);
             Debug AlgorithmName Clone Default BlockSizeUser CoreProxy HashMarker Update SerializableState Reset ExtendableOutputReset $($trait_name)* ;
         );
@@ -86,7 +85,7 @@ macro_rules! newtype_xof_hash {
         impl_inner: $name:ident($core_ty:ty);
         XofReaderTraits $($trait_name:ident)*;
     ) => {
-        $crate::newtype_xof_hash!(
+        $crate::buffer_xof!(
             impl_inner: $name($core_ty);
             Debug Clone BlockSizeUser CoreProxy
             $($trait_name)*;);
@@ -104,7 +103,7 @@ macro_rules! newtype_xof_hash {
             }
         }
 
-        $crate::newtype_xof_hash!(impl_inner: $name($core_ty); $($trait_name)*;);
+        $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
     };
 
     // Implements `AlgorithmName`
@@ -119,7 +118,7 @@ macro_rules! newtype_xof_hash {
             }
         }
 
-        $crate::newtype_xof_hash!(impl_inner: $name($core_ty); $($trait_name)*;);
+        $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
     };
 
     // Implements `Default`
@@ -137,7 +136,7 @@ macro_rules! newtype_xof_hash {
             }
         }
 
-        $crate::newtype_xof_hash!(impl_inner: $name($core_ty); $($trait_name)*;);
+        $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
     };
 
     // Implements `CustomizedInit`
@@ -155,7 +154,7 @@ macro_rules! newtype_xof_hash {
             }
         }
 
-        $crate::newtype_xof_hash!(impl_inner: $name($core_ty); $($trait_name)*;);
+        $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
     };
 
     // Implements `Clone`
@@ -173,7 +172,7 @@ macro_rules! newtype_xof_hash {
             }
         }
 
-        $crate::newtype_xof_hash!(impl_inner: $name($core_ty); $($trait_name)*;);
+        $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
     };
 
     // Implements `BlockSizeUser`
@@ -185,7 +184,7 @@ macro_rules! newtype_xof_hash {
             type BlockSize = <$core_ty as $crate::crypto_common::BlockSizeUser>::BlockSize;
         }
 
-        $crate::newtype_xof_hash!(impl_inner: $name($core_ty); $($trait_name)*;);
+        $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
     };
 
     // Implements `CoreProxy`
@@ -197,7 +196,7 @@ macro_rules! newtype_xof_hash {
             type Core = $core_ty;
         }
 
-        $crate::newtype_xof_hash!(impl_inner: $name($core_ty); $($trait_name)*;);
+        $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
     };
 
     // Implements `HashMarker`
@@ -214,7 +213,7 @@ macro_rules! newtype_xof_hash {
             }
         };
 
-        $crate::newtype_xof_hash!(impl_inner: $name($core_ty); $($trait_name)*;);
+        $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
     };
 
     // Implements `Update`
@@ -232,7 +231,7 @@ macro_rules! newtype_xof_hash {
             }
         }
 
-        $crate::newtype_xof_hash!(impl_inner: $name($core_ty); $($trait_name)*;);
+        $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
     };
 
     // Implements `Reset`
@@ -248,7 +247,7 @@ macro_rules! newtype_xof_hash {
             }
         }
 
-        $crate::newtype_xof_hash!(impl_inner: $name($core_ty); $($trait_name)*;);
+        $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
     };
 
     // Implements `ExtendableOutputReset`
@@ -267,7 +266,7 @@ macro_rules! newtype_xof_hash {
             }
         }
 
-        $crate::newtype_xof_hash!(impl_inner: $name($core_ty); $($trait_name)*;);
+        $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
     };
 
     // Implements `SerializableState`
@@ -324,6 +323,6 @@ macro_rules! newtype_xof_hash {
             }
         }
 
-        $crate::newtype_xof_hash!(impl_inner: $name($core_ty); $($trait_name)*;);
+        $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
     };
 }

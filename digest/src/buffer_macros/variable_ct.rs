@@ -1,7 +1,7 @@
-/// Creates a newtype wrapper around another type and
-/// delegates implementation of `digest` traits to it.
+/// Creates a buffered wrapper around block-level "core" type which implements variable output size traits
+/// with output size selected at compile time.
 #[macro_export]
-macro_rules! newtype_ct_variable_hash {
+macro_rules! buffer_ct_variable {
     (
         $(#[$attr:meta])*
         $vis:vis struct $name:ident<$out_size:ident>($core_ty:ty);
@@ -158,7 +158,7 @@ macro_rules! newtype_ct_variable_hash {
         // https://github.com/rust-lang/rust/issues/79629
         max_size: $max_size:ty;
     ) => {
-        $crate::newtype_ct_variable_hash!(
+        $crate::buffer_ct_variable!(
             $(#[$attr])*
             $vis struct $name<$out_size>($core_ty);
             exclude: SerializableState;

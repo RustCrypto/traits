@@ -77,23 +77,23 @@ mod block_api {
     }
 }
 
-digest::newtype_fixed_hash!(
+digest::buffer_fixed!(
     /// Primitive XOR hasher for testing purposes
     pub struct FixedHash(block_api::FixedHashCore);
     impl: BaseFixedTraits Default Clone HashMarker Reset FixedOutputReset;
 );
-digest::newtype_fixed_hash!(
+digest::buffer_fixed!(
     /// Primitive XOR hasher for testing purposes
     pub struct FixedHashWithSer(block_api::FixedHashCore);
     impl: FixedHashTraits;
 );
-digest::newtype_fixed_hash!(
+digest::buffer_fixed!(
     /// Primitive XOR hasher for testing purposes
     pub struct FixedHashWithOid(block_api::FixedHashCore);
     oid: "0.1.2.3.4.5";
     impl: BaseFixedTraits Default Clone HashMarker Reset FixedOutputReset;
 );
-digest::newtype_fixed_hash!(
+digest::buffer_fixed!(
     /// Primitive XOR hasher for testing purposes
     pub struct FixedHashWithOidSer(block_api::FixedHashCore);
     oid: "0.1.2.3.4.5";

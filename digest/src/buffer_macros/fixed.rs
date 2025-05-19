@@ -1,7 +1,6 @@
-/// Creates a newtype wrapper around another type and
-/// delegates implementation of `digest` traits to it.
+/// Creates a buffered wrapper around block-level "core" type which implements fixed output size traits.
 #[macro_export]
-macro_rules! newtype_fixed_hash {
+macro_rules! buffer_fixed {
     (
         $(#[$attr:meta])*
         $v:vis struct $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
@@ -13,7 +12,7 @@ macro_rules! newtype_fixed_hash {
             buffer: $crate::core_api::Buffer<$core_ty>,
         }
 
-        $crate::newtype_fixed_hash!(
+        $crate::buffer_fixed!(
             impl_inner: $name$(<$gp: $bound>)?($core_ty);
             $($trait_name)*;
         );
@@ -25,7 +24,7 @@ macro_rules! newtype_fixed_hash {
         oid: $oid:literal;
         impl: $($trait_name:ident)*;
     ) => {
-        $crate::newtype_fixed_hash!(
+        $crate::buffer_fixed!(
             $(#[$attr])*
             $v struct $name$(<$gp: $bound>)?($core_ty);
             impl: $($trait_name)*;
@@ -49,7 +48,7 @@ macro_rules! newtype_fixed_hash {
         impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
         FixedHashTraits $($trait_name:ident)*;
     ) => {
-        $crate::newtype_fixed_hash!(
+        $crate::buffer_fixed!(
             impl_inner: $name$(<$gp: $bound>)?($core_ty);
             BaseFixedTraits Default Clone HashMarker Reset FixedOutputReset SerializableState $($trait_name)*;
         );
@@ -62,7 +61,7 @@ macro_rules! newtype_fixed_hash {
         impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
         BaseFixedTraits $($trait_name:ident)*;
     ) => {
-        $crate::newtype_fixed_hash!(
+        $crate::buffer_fixed!(
             impl_inner: $name$(<$gp: $bound>)?($core_ty);
             Debug AlgorithmName BlockSizeUser OutputSizeUser CoreProxy Update FixedOutput $($trait_name)*;
         );
@@ -80,7 +79,7 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `AlgorithmName`
@@ -95,7 +94,7 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `BlockSizeUser`
@@ -107,7 +106,7 @@ macro_rules! newtype_fixed_hash {
             type BlockSize = <$core_ty as $crate::crypto_common::BlockSizeUser>::BlockSize;
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `OutputSizeUser`
@@ -119,7 +118,7 @@ macro_rules! newtype_fixed_hash {
             type OutputSize = <$core_ty as $crate::core_api::OutputSizeUser>::OutputSize;
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `CoreProxy`
@@ -131,7 +130,7 @@ macro_rules! newtype_fixed_hash {
             type Core = $core_ty;
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `Update`
@@ -149,7 +148,7 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `FixedOutput`
@@ -165,7 +164,7 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `Default`
@@ -183,7 +182,7 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `CustomizedInit`
@@ -201,7 +200,7 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `Clone`
@@ -219,7 +218,7 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `HashMarker` and asserts that `$core_ty` implements it
@@ -236,7 +235,7 @@ macro_rules! newtype_fixed_hash {
             }
         };
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `Reset`
@@ -252,7 +251,7 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `FixedOutputReset`
@@ -269,7 +268,7 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `SerializableState`
@@ -326,6 +325,6 @@ macro_rules! newtype_fixed_hash {
             }
         }
 
-        $crate::newtype_fixed_hash!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
     }
 }
