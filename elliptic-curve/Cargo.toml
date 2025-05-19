@@ -69,7 +69,7 @@ jwk = ["dep:base64ct", "dep:serde_json", "alloc", "serde", "zeroize/alloc"]
 pkcs8 = ["dep:pkcs8", "sec1"]
 pem = ["dep:pem-rfc7468", "alloc", "arithmetic", "pkcs8", "sec1/pem"]
 serde = ["dep:serdect", "alloc", "pkcs8", "sec1/serde"]
-voprf = ["digest"]
+voprf = ["digest", "hash2curve"]
 
 [package.metadata.docs.rs]
 features = ["bits", "ecdh", "hash2curve", "jwk", "pem", "std", "voprf"]
