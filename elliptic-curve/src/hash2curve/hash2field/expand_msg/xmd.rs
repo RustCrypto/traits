@@ -8,7 +8,7 @@ use digest::{
     FixedOutput, HashMarker,
     array::{
         Array,
-        typenum::{IsGreaterOrEqual, IsLess, IsLessOrEqual, U2, U256, Unsigned},
+        typenum::{IsGreaterOrEqual, IsLess, IsLessOrEqual, True, U2, U256, Unsigned},
     },
     core_api::BlockSizeUser,
 };
@@ -28,10 +28,10 @@ use digest::{
 pub struct ExpandMsgXmd<HashT, K>(PhantomData<(HashT, K)>)
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-    HashT::OutputSize: IsLess<U256>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
+    HashT::OutputSize: IsLess<U256, Output = True>,
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
     K: Mul<U2>,
-    HashT::OutputSize: IsGreaterOrEqual<<K as Mul<U2>>::Output>;
+    HashT::OutputSize: IsGreaterOrEqual<<K as Mul<U2>>::Output, Output = True>;
 
 impl<'a, HashT, K> ExpandMsg<'a> for ExpandMsgXmd<HashT, K>
 where
@@ -39,14 +39,14 @@ where
     // If DST is larger than 255 bytes, the length of the computed DST will depend on the output
     // size of the hash, which is still not allowed to be larger than 256:
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-6
-    HashT::OutputSize: IsLess<U256>,
+    HashT::OutputSize: IsLess<U256, Output = True>,
     // Constraint set by `expand_message_xmd`:
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-4
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
     // The number of bits output by `HashT` MUST be larger or equal to `K * 2`:
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
     K: Mul<U2>,
-    HashT::OutputSize: IsGreaterOrEqual<<K as Mul<U2>>::Output>,
+    HashT::OutputSize: IsGreaterOrEqual<<K as Mul<U2>>::Output, Output = True>,
 {
     type Expander = ExpanderXmd<'a, HashT>;
 
@@ -102,8 +102,8 @@ where
 pub struct ExpanderXmd<'a, HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-    HashT::OutputSize: IsLess<U256>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
+    HashT::OutputSize: IsLess<U256, Output = True>,
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
 {
     b_0: Array<u8, HashT::OutputSize>,
     b_vals: Array<u8, HashT::OutputSize>,
@@ -116,8 +116,8 @@ where
 impl<HashT> ExpanderXmd<'_, HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-    HashT::OutputSize: IsLess<U256>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
+    HashT::OutputSize: IsLess<U256, Output = True>,
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
 {
     fn next(&mut self) -> bool {
         if self.index < self.ell {
@@ -146,8 +146,8 @@ where
 impl<HashT> Expander for ExpanderXmd<'_, HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-    HashT::OutputSize: IsLess<U256>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize>,
+    HashT::OutputSize: IsLess<U256, Output = True>,
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
 {
     fn fill_bytes(&mut self, okm: &mut [u8]) {
         for b in okm {
@@ -178,7 +178,7 @@ mod test {
         bytes: &[u8],
     ) where
         HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-        HashT::OutputSize: IsLess<U256>,
+        HashT::OutputSize: IsLess<U256, Output = True>,
     {
         let block = HashT::BlockSize::to_usize();
         assert_eq!(
@@ -219,8 +219,10 @@ mod test {
         ) -> Result<()>
         where
             HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-            HashT::OutputSize: IsLess<U256> + IsLessOrEqual<HashT::BlockSize> + Mul<U8>,
-            HashT::OutputSize: IsGreaterOrEqual<<U4 as Mul<U2>>::Output>,
+            HashT::OutputSize: IsLess<U256, Output = True>
+                + IsLessOrEqual<HashT::BlockSize, Output = True>
+                + Mul<U8>,
+            HashT::OutputSize: IsGreaterOrEqual<<U4 as Mul<U2>>::Output, Output = True>,
         {
             assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
 
