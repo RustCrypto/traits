@@ -163,6 +163,18 @@ where
     }
 }
 
+impl<C, P> Mul<&NonZeroScalar<C>> for NonIdentity<P>
+where
+    C: CurveArithmetic,
+    P: Copy + Mul<Scalar<C>, Output = P>,
+{
+    type Output = NonIdentity<P>;
+
+    fn mul(self, rhs: &NonZeroScalar<C>) -> Self::Output {
+        self * *rhs
+    }
+}
+
 impl<C, P> Mul<&NonZeroScalar<C>> for &NonIdentity<P>
 where
     C: CurveArithmetic,
