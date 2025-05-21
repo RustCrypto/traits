@@ -408,6 +408,14 @@ impl From<Scalar> for U256 {
     }
 }
 
+impl TryFrom<Scalar> for NonZeroScalar {
+    type Error = Error;
+
+    fn try_from(scalar: Scalar) -> Result<Self> {
+        NonZeroScalar::new(scalar).into_option().ok_or(Error)
+    }
+}
+
 impl TryFrom<U256> for Scalar {
     type Error = Error;
 
@@ -544,6 +552,14 @@ impl Mul<NonZeroScalar> for AffinePoint {
     }
 }
 
+impl TryFrom<AffinePoint> for NonIdentity<AffinePoint> {
+    type Error = Error;
+
+    fn try_from(affine: AffinePoint) -> Result<Self> {
+        NonIdentity::new(affine).into_option().ok_or(Error)
+    }
+}
+
 /// Example projective point type
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ProjectivePoint {
@@ -619,6 +635,14 @@ impl FromEncodedPoint<MockCurve> for ProjectivePoint {
 impl ToEncodedPoint<MockCurve> for ProjectivePoint {
     fn to_encoded_point(&self, _compress: bool) -> EncodedPoint {
         unimplemented!();
+    }
+}
+
+impl TryFrom<ProjectivePoint> for NonIdentity<ProjectivePoint> {
+    type Error = Error;
+
+    fn try_from(point: ProjectivePoint) -> Result<Self> {
+        NonIdentity::new(point).into_option().ok_or(Error)
     }
 }
 
