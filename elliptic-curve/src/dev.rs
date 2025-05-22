@@ -271,6 +271,38 @@ impl Mul<&Scalar> for Scalar {
     }
 }
 
+impl Mul<AffinePoint> for Scalar {
+    type Output = ProjectivePoint;
+
+    fn mul(self, _other: AffinePoint) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
+impl Mul<&AffinePoint> for Scalar {
+    type Output = ProjectivePoint;
+
+    fn mul(self, _other: &AffinePoint) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
+impl Mul<ProjectivePoint> for Scalar {
+    type Output = ProjectivePoint;
+
+    fn mul(self, _other: ProjectivePoint) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
+impl Mul<&ProjectivePoint> for Scalar {
+    type Output = ProjectivePoint;
+
+    fn mul(self, _other: &ProjectivePoint) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
 impl MulAssign<Scalar> for Scalar {
     fn mul_assign(&mut self, _rhs: Scalar) {
         unimplemented!();
