@@ -1,7 +1,7 @@
 //! Elliptic curve arithmetic traits.
 
 use crate::{
-    Curve, FieldBytes, NonZeroScalar, PrimeCurve, ScalarPrimitive,
+    Curve, Error, FieldBytes, NonZeroScalar, PrimeCurve, ScalarPrimitive,
     ops::{Invert, LinearCombination, Mul, Reduce, ShrAssign},
     point::{AffineCoordinates, NonIdentity},
     scalar::{FromUintUnchecked, IsHigh},
@@ -26,7 +26,8 @@ pub trait CurveArithmetic: Curve {
         + PartialEq
         + Sized
         + Send
-        + Sync;
+        + Sync
+        + TryInto<NonIdentity<Self::AffinePoint>, Error = Error>;
 
     /// Elliptic curve point in projective coordinates.
     ///
@@ -48,6 +49,7 @@ pub trait CurveArithmetic: Curve {
         + Into<Self::AffinePoint>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar)]>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar); 2]>
+        + TryInto<NonIdentity<Self::ProjectivePoint>, Error = Error>
         + group::Curve<AffineRepr = Self::AffinePoint>
         + group::Group<Scalar = Self::Scalar>;
 
@@ -80,6 +82,7 @@ pub trait CurveArithmetic: Curve {
         + PartialOrd
         + Reduce<Self::Uint, Bytes = FieldBytes<Self>>
         + ShrAssign<usize>
+        + TryInto<NonZeroScalar<Self>, Error = Error>
         + ff::Field
         + ff::PrimeField<Repr = FieldBytes<Self>>;
 }
