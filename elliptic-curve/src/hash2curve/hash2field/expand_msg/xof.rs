@@ -6,7 +6,7 @@ use core::{fmt, marker::PhantomData, num::NonZero, ops::Mul};
 use digest::{ExtendableOutput, HashMarker, Update, XofReader};
 use hybrid_array::{
     ArraySize,
-    typenum::{IsLess, True, U2, U256},
+    typenum::{IsLess, Prod, True, U2, U256},
 };
 
 /// Implements `expand_message_xof` via the [`ExpandMsg`] trait:
@@ -22,8 +22,7 @@ use hybrid_array::{
 pub struct ExpandMsgXof<HashT, K>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
-    K: Mul<U2>,
-    <K as Mul<U2>>::Output: ArraySize + IsLess<U256, Output = True>,
+    K: Mul<U2, Output: ArraySize + IsLess<U256, Output = True>>,
 {
     reader: <HashT as ExtendableOutput>::Reader,
     _k: PhantomData<K>,
@@ -32,8 +31,7 @@ where
 impl<HashT, K> fmt::Debug for ExpandMsgXof<HashT, K>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
-    K: Mul<U2>,
-    <K as Mul<U2>>::Output: ArraySize + IsLess<U256, Output = True>,
+    K: Mul<U2, Output: ArraySize + IsLess<U256, Output = True>>,
     <HashT as ExtendableOutput>::Reader: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -49,7 +47,7 @@ where
     // If DST is larger than 255 bytes, the length of the computed DST is calculated by `K * 2`.
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
     K: Mul<U2>,
-    <K as Mul<U2>>::Output: ArraySize + IsLess<U256, Output = True>,
+    K: Mul<U2, Output: ArraySize + IsLess<U256, Output = True>>,
 {
     type Expander = Self;
 
@@ -60,7 +58,7 @@ where
     ) -> Result<Self::Expander> {
         let len_in_bytes = u16::try_from(len_in_bytes.get()).map_err(|_| Error)?;
 
-        let domain = Domain::<<K as Mul<U2>>::Output>::xof::<HashT>(dsts)?;
+        let domain = Domain::<Prod<K, U2>>::xof::<HashT>(dsts)?;
         let mut reader = HashT::default();
 
         for msg in msgs {
@@ -81,8 +79,7 @@ where
 impl<HashT, K> Expander for ExpandMsgXof<HashT, K>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
-    K: Mul<U2>,
-    <K as Mul<U2>>::Output: ArraySize + IsLess<U256, Output = True>,
+    K: Mul<U2, Output: ArraySize + IsLess<U256, Output = True>>,
 {
     fn fill_bytes(&mut self, okm: &mut [u8]) {
         self.reader.read(okm);

@@ -8,7 +8,7 @@ use digest::{
     FixedOutput, HashMarker,
     array::{
         Array,
-        typenum::{IsGreaterOrEqual, IsLess, IsLessOrEqual, True, U2, U256, Unsigned},
+        typenum::{IsGreaterOrEqual, IsLess, IsLessOrEqual, Prod, True, U2, U256, Unsigned},
     },
     block_api::BlockSizeUser,
 };
@@ -31,7 +31,7 @@ where
     HashT::OutputSize: IsLess<U256, Output = True>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
     K: Mul<U2>,
-    HashT::OutputSize: IsGreaterOrEqual<<K as Mul<U2>>::Output, Output = True>;
+    HashT::OutputSize: IsGreaterOrEqual<Prod<K, U2>, Output = True>;
 
 impl<'a, HashT, K> ExpandMsg<'a> for ExpandMsgXmd<HashT, K>
 where
@@ -46,7 +46,7 @@ where
     // The number of bits output by `HashT` MUST be larger or equal to `K * 2`:
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
     K: Mul<U2>,
-    HashT::OutputSize: IsGreaterOrEqual<<K as Mul<U2>>::Output, Output = True>,
+    HashT::OutputSize: IsGreaterOrEqual<Prod<K, U2>, Output = True>,
 {
     type Expander = ExpanderXmd<'a, HashT>;
 
@@ -222,7 +222,7 @@ mod test {
             HashT::OutputSize: IsLess<U256, Output = True>
                 + IsLessOrEqual<HashT::BlockSize, Output = True>
                 + Mul<U8>,
-            HashT::OutputSize: IsGreaterOrEqual<<U4 as Mul<U2>>::Output, Output = True>,
+            HashT::OutputSize: IsGreaterOrEqual<U8, Output = True>,
         {
             assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
 

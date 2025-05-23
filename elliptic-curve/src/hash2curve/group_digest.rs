@@ -1,6 +1,6 @@
 //! Traits for handling hash to curve.
 
-use super::{ExpandMsg, FromOkm, MapToCurve, hash_to_field};
+use super::{ExpandMsg, MapToCurve, hash_to_field};
 use crate::{ProjectivePoint, Result};
 use hybrid_array::typenum::Unsigned;
 
@@ -101,10 +101,7 @@ pub trait GroupDigest: MapToCurve {
     fn hash_to_scalar<'a, X: ExpandMsg<'a>>(
         msgs: &[&[u8]],
         dsts: &'a [&'a [u8]],
-    ) -> Result<Self::Scalar>
-    where
-        Self::Scalar: FromOkm,
-    {
+    ) -> Result<Self::Scalar> {
         let mut u = [Self::Scalar::default()];
         hash_to_field::<X, _>(msgs, dsts, &mut u)?;
         Ok(u[0])
