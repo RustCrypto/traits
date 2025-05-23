@@ -16,24 +16,18 @@ use digest::{
 /// Implements `expand_message_xof` via the [`ExpandMsg`] trait:
 /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-expand_message_xmd>
 ///
-/// `K` is the target security level in bytes:
-/// <https://www.rfc-editor.org/rfc/rfc9380.html#section-8.9-2.2>
-/// <https://www.rfc-editor.org/rfc/rfc9380.html#name-target-security-levels>
-///
 /// # Errors
 /// - `dst.is_empty()`
 /// - `len_in_bytes > u16::MAX`
 /// - `len_in_bytes > 255 * HashT::OutputSize`
 #[derive(Debug)]
-pub struct ExpandMsgXmd<HashT, K>(PhantomData<(HashT, K)>)
+pub struct ExpandMsgXmd<HashT>(PhantomData<HashT>)
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
     HashT::OutputSize: IsLess<U256, Output = True>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
-    K: Mul<U2>,
-    HashT::OutputSize: IsGreaterOrEqual<Prod<K, U2>, Output = True>;
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>;
 
-impl<'a, HashT, K> ExpandMsg<'a> for ExpandMsgXmd<HashT, K>
+impl<'a, HashT, K> ExpandMsg<'a, K> for ExpandMsgXmd<HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
     // If DST is larger than 255 bytes, the length of the computed DST will depend on the output
@@ -227,7 +221,7 @@ mod test {
             assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
 
             let dst = [dst];
-            let mut expander = ExpandMsgXmd::<HashT, U4>::expand_message(
+            let mut expander = <ExpandMsgXmd<HashT> as ExpandMsg<'_, U4>>::expand_message(
                 &[self.msg],
                 &dst,
                 NonZero::new(L::to_usize()).ok_or(Error)?,

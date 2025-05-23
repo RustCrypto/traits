@@ -45,12 +45,12 @@ pub trait GroupDigest: MapToCurve {
     ///
     /// [`ExpandMsgXmd`]: crate::hash2curve::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2curve::ExpandMsgXof
-    fn hash_from_bytes<'a, X: ExpandMsg<'a>>(
-        msgs: &[&[u8]],
-        dsts: &'a [&'a [u8]],
-    ) -> Result<ProjectivePoint<Self>> {
+    fn hash_from_bytes<'a, X>(msgs: &[&[u8]], dsts: &'a [&'a [u8]]) -> Result<ProjectivePoint<Self>>
+    where
+        X: ExpandMsg<'a, Self::K>,
+    {
         let mut u = [Self::FieldElement::default(), Self::FieldElement::default()];
-        hash_to_field::<X, _>(msgs, dsts, &mut u)?;
+        hash_to_field::<X, _, _>(msgs, dsts, &mut u)?;
         let q0 = Self::map_to_curve(u[0]);
         let q1 = Self::map_to_curve(u[1]);
         Ok(Self::add_and_map_to_subgroup(q0, q1))
@@ -75,12 +75,15 @@ pub trait GroupDigest: MapToCurve {
     ///
     /// [`ExpandMsgXmd`]: crate::hash2curve::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2curve::ExpandMsgXof
-    fn encode_from_bytes<'a, X: ExpandMsg<'a>>(
+    fn encode_from_bytes<'a, X>(
         msgs: &[&[u8]],
         dsts: &'a [&'a [u8]],
-    ) -> Result<ProjectivePoint<Self>> {
+    ) -> Result<ProjectivePoint<Self>>
+    where
+        X: ExpandMsg<'a, Self::K>,
+    {
         let mut u = [Self::FieldElement::default()];
-        hash_to_field::<X, _>(msgs, dsts, &mut u)?;
+        hash_to_field::<X, _, _>(msgs, dsts, &mut u)?;
         let q0 = Self::map_to_curve(u[0]);
         Ok(Self::map_to_subgroup(q0))
     }
@@ -98,12 +101,12 @@ pub trait GroupDigest: MapToCurve {
     ///
     /// [`ExpandMsgXmd`]: crate::hash2curve::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2curve::ExpandMsgXof
-    fn hash_to_scalar<'a, X: ExpandMsg<'a>>(
-        msgs: &[&[u8]],
-        dsts: &'a [&'a [u8]],
-    ) -> Result<Self::Scalar> {
+    fn hash_to_scalar<'a, X>(msgs: &[&[u8]], dsts: &'a [&'a [u8]]) -> Result<Self::Scalar>
+    where
+        X: ExpandMsg<'a, Self::K>,
+    {
         let mut u = [Self::Scalar::default()];
-        hash_to_field::<X, _>(msgs, dsts, &mut u)?;
+        hash_to_field::<X, _, _>(msgs, dsts, &mut u)?;
         Ok(u[0])
     }
 }

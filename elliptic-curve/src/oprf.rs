@@ -6,10 +6,10 @@ use digest::{FixedOutput, Update};
 use hybrid_array::typenum::{IsLess, True, U65536};
 
 use crate::PrimeCurve;
-use crate::hash2curve::ExpandMsg;
+use crate::hash2curve::{ExpandMsg, GroupDigest};
 
 /// Elliptic curve parameters used by OPRF.
-pub trait OprfParameters: PrimeCurve {
+pub trait OprfParameters: GroupDigest + PrimeCurve {
     /// The `ID` parameter which identifies a particular elliptic curve
     /// as defined in [section 4 of RFC9497][oprf].
     ///
@@ -26,5 +26,5 @@ pub trait OprfParameters: PrimeCurve {
     /// and `HashToScalar` as defined in [section 4 of RFC9497][oprf].
     ///
     /// [oprf]: https://www.rfc-editor.org/rfc/rfc9497.html#name-ciphersuites
-    type ExpandMsg: for<'a> ExpandMsg<'a>;
+    type ExpandMsg: for<'a> ExpandMsg<'a, <Self as GroupDigest>::K>;
 }

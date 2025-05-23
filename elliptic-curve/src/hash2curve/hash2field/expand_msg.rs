@@ -17,9 +17,13 @@ const MAX_DST_LEN: usize = 255;
 
 /// Trait for types implementing expand_message interface for `hash_to_field`.
 ///
+/// `K` is the target security level in bytes:
+/// <https://www.rfc-editor.org/rfc/rfc9380.html#section-8.9-2.2>
+/// <https://www.rfc-editor.org/rfc/rfc9380.html#name-target-security-levels>
+///
 /// # Errors
 /// See implementors of [`ExpandMsg`] for errors.
-pub trait ExpandMsg<'a> {
+pub trait ExpandMsg<'a, K> {
     /// Type holding data for the [`Expander`].
     type Expander: Expander + Sized;
 
