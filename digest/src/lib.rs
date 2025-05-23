@@ -50,6 +50,7 @@ use alloc::boxed::Box;
 #[cfg(feature = "dev")]
 pub mod dev;
 
+mod buffer_macros;
 #[cfg(feature = "core-api")]
 pub mod core_api;
 mod digest;

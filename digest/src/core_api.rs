@@ -5,6 +5,7 @@
 //! higher-level traits.
 use crate::InvalidOutputSize;
 
+pub use block_buffer::{Eager, Lazy};
 pub use crypto_common::{AlgorithmName, Block, BlockSizeUser, OutputSizeUser, Reset};
 
 use block_buffer::{BlockBuffer, BufferKind};
@@ -15,7 +16,7 @@ mod rt_variable;
 mod wrapper;
 mod xof_reader;
 
-pub use ct_variable::CtVariableCoreWrapper;
+pub use ct_variable::CtOutWrapper;
 pub use rt_variable::RtVariableCoreWrapper;
 pub use wrapper::{CoreProxy, CoreWrapper};
 pub use xof_reader::XofReaderCoreWrapper;
