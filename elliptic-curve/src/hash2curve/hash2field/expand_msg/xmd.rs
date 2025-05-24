@@ -17,7 +17,7 @@ use digest::{
 /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-expand_message_xmd>
 ///
 /// # Errors
-/// - `dst.is_empty()`
+/// - `dst` contains no bytes
 /// - `len_in_bytes > u16::MAX`
 /// - `len_in_bytes > 255 * HashT::OutputSize`
 #[derive(Debug)]
@@ -31,13 +31,13 @@ impl<'a, HashT, K> ExpandMsg<'a, K> for ExpandMsgXmd<HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
     // If DST is larger than 255 bytes, the length of the computed DST will depend on the output
-    // size of the hash, which is still not allowed to be larger than 256:
+    // size of the hash, which is still not allowed to be larger than 255.
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-6
     HashT::OutputSize: IsLess<U256, Output = True>,
-    // Constraint set by `expand_message_xmd`:
+    // The number of bits output by `HashT` MUST be at most `HashT::BlockSize`.
     // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-4
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
-    // The number of bits output by `HashT` MUST be larger or equal to `K * 2`:
+    // The number of bits output by `HashT` MUST be at least `K * 2`.
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
     K: Mul<U2>,
     HashT::OutputSize: IsGreaterOrEqual<Prod<K, U2>, Output = True>,
@@ -45,8 +45,8 @@ where
     type Expander = ExpanderXmd<'a, HashT>;
 
     fn expand_message(
-        msgs: &[&[u8]],
-        dsts: &'a [&'a [u8]],
+        msg: &[&[u8]],
+        dst: &'a [&'a [u8]],
         len_in_bytes: NonZero<usize>,
     ) -> Result<Self::Expander> {
         let len_in_bytes_u16 = u16::try_from(len_in_bytes.get()).map_err(|_| Error)?;
@@ -59,11 +59,11 @@ where
         let b_in_bytes = HashT::OutputSize::to_usize();
         let ell = u8::try_from(len_in_bytes.get().div_ceil(b_in_bytes)).map_err(|_| Error)?;
 
-        let domain = Domain::xmd::<HashT>(dsts)?;
+        let domain = Domain::xmd::<HashT>(dst)?;
         let mut b_0 = HashT::default();
         b_0.update(&Array::<u8, HashT::BlockSize>::default());
 
-        for msg in msgs {
+        for msg in msg {
             b_0.update(msg);
         }
 

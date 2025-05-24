@@ -22,20 +22,6 @@ pub trait GroupDigest: MapToCurve {
     /// > oracle returning points in G assuming a cryptographically secure
     /// > hash function is used.
     ///
-    /// # Examples
-    ///
-    /// ## Using a fixed size hash function
-    ///
-    /// ```ignore
-    /// let pt = ProjectivePoint::hash_from_bytes::<ExpandMsgXmd<sha2::Sha256>>(b"test data", b"CURVE_XMD:SHA-256_SSWU_RO_");
-    /// ```
-    ///
-    /// ## Using an extendable output function
-    ///
-    /// ```ignore
-    /// let pt = ProjectivePoint::hash_from_bytes::<ExpandMsgXof<sha3::Shake256>>(b"test data", b"CURVE_XOF:SHAKE-256_SSWU_RO_");
-    /// ```
-    ///
     /// # Errors
     /// See implementors of [`ExpandMsg`] for errors:
     /// - [`ExpandMsgXmd`]
@@ -45,12 +31,12 @@ pub trait GroupDigest: MapToCurve {
     ///
     /// [`ExpandMsgXmd`]: crate::hash2curve::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2curve::ExpandMsgXof
-    fn hash_from_bytes<'a, X>(msgs: &[&[u8]], dsts: &'a [&'a [u8]]) -> Result<ProjectivePoint<Self>>
+    fn hash_from_bytes<'a, X>(msg: &[&[u8]], dst: &'a [&'a [u8]]) -> Result<ProjectivePoint<Self>>
     where
         X: ExpandMsg<'a, Self::K>,
     {
         let mut u = [Self::FieldElement::default(), Self::FieldElement::default()];
-        hash_to_field::<X, _, _>(msgs, dsts, &mut u)?;
+        hash_to_field::<X, _, _>(msg, dst, &mut u)?;
         let q0 = Self::map_to_curve(u[0]);
         let q1 = Self::map_to_curve(u[1]);
         Ok(Self::add_and_map_to_subgroup(q0, q1))
@@ -75,15 +61,12 @@ pub trait GroupDigest: MapToCurve {
     ///
     /// [`ExpandMsgXmd`]: crate::hash2curve::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2curve::ExpandMsgXof
-    fn encode_from_bytes<'a, X>(
-        msgs: &[&[u8]],
-        dsts: &'a [&'a [u8]],
-    ) -> Result<ProjectivePoint<Self>>
+    fn encode_from_bytes<'a, X>(msg: &[&[u8]], dst: &'a [&'a [u8]]) -> Result<ProjectivePoint<Self>>
     where
         X: ExpandMsg<'a, Self::K>,
     {
         let mut u = [Self::FieldElement::default()];
-        hash_to_field::<X, _, _>(msgs, dsts, &mut u)?;
+        hash_to_field::<X, _, _>(msg, dst, &mut u)?;
         let q0 = Self::map_to_curve(u[0]);
         Ok(Self::map_to_subgroup(q0))
     }
@@ -101,12 +84,12 @@ pub trait GroupDigest: MapToCurve {
     ///
     /// [`ExpandMsgXmd`]: crate::hash2curve::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2curve::ExpandMsgXof
-    fn hash_to_scalar<'a, X>(msgs: &[&[u8]], dsts: &'a [&'a [u8]]) -> Result<Self::Scalar>
+    fn hash_to_scalar<'a, X>(msg: &[&[u8]], dst: &'a [&'a [u8]]) -> Result<Self::Scalar>
     where
         X: ExpandMsg<'a, Self::K>,
     {
         let mut u = [Self::Scalar::default()];
-        hash_to_field::<X, _, _>(msgs, dsts, &mut u)?;
+        hash_to_field::<X, _, _>(msg, dst, &mut u)?;
         Ok(u[0])
     }
 }

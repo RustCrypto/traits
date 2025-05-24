@@ -13,7 +13,7 @@ use hybrid_array::{
 /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-expand_message_xof>
 ///
 /// # Errors
-/// - `dst.is_empty()`
+/// - `dst` contains no bytes
 /// - `len_in_bytes > u16::MAX`
 pub struct ExpandMsgXof<HashT>
 where
@@ -44,16 +44,16 @@ where
     type Expander = Self;
 
     fn expand_message(
-        msgs: &[&[u8]],
-        dsts: &'a [&'a [u8]],
+        msg: &[&[u8]],
+        dst: &'a [&'a [u8]],
         len_in_bytes: NonZero<usize>,
     ) -> Result<Self::Expander> {
         let len_in_bytes = u16::try_from(len_in_bytes.get()).map_err(|_| Error)?;
 
-        let domain = Domain::<Prod<K, U2>>::xof::<HashT>(dsts)?;
+        let domain = Domain::<Prod<K, U2>>::xof::<HashT>(dst)?;
         let mut reader = HashT::default();
 
-        for msg in msgs {
+        for msg in msg {
             reader = reader.chain(msg);
         }
 
