@@ -99,6 +99,6 @@ pub enum TruncSide {
 
 /// A proxy trait to a core type.
 pub trait CoreProxy {
-    /// Type wrapped by [`CoreWrapper`].
+    /// Wrapped block-level type.
     type Core;
 }
