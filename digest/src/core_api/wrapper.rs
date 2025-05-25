@@ -21,6 +21,8 @@ use crypto_common::{
 
 #[cfg(feature = "mac")]
 use crate::MacMarker;
+#[cfg(feature = "oid")]
+use const_oid::{AssociatedOid, ObjectIdentifier};
 
 /// Wrapper around [`BufferKindUser`].
 ///
@@ -171,6 +173,14 @@ where
     fn new_customized(customization: &[u8]) -> Self {
         Self::from_core(T::new_customized(customization))
     }
+}
+
+#[cfg(feature = "oid")]
+impl<T> AssociatedOid for CoreWrapper<T>
+where
+    T: BufferKindUser + AssociatedOid,
+{
+    const OID: ObjectIdentifier = T::OID;
 }
 
 type CoreWrapperSerializedStateSize<T> =
