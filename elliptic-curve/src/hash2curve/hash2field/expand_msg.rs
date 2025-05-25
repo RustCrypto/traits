@@ -23,19 +23,19 @@ const MAX_DST_LEN: usize = 255;
 ///
 /// # Errors
 /// See implementors of [`ExpandMsg`] for errors.
-pub trait ExpandMsg<'a, K> {
+pub trait ExpandMsg<K> {
     /// Type holding data for the [`Expander`].
-    type Expander: Expander + Sized;
+    type Expander<'dst>: Expander + Sized;
 
     /// Expands `msg` to the required number of bytes.
     ///
     /// Returns an expander that can be used to call `read` until enough
     /// bytes have been consumed
-    fn expand_message(
+    fn expand_message<'dst>(
         msg: &[&[u8]],
-        dst: &'a [&'a [u8]],
+        dst: &'dst [&[u8]],
         len_in_bytes: NonZero<usize>,
-    ) -> Result<Self::Expander>;
+    ) -> Result<Self::Expander<'dst>>;
 }
 
 /// Expander that, call `read` until enough bytes have been consumed.

@@ -34,20 +34,20 @@ where
     }
 }
 
-impl<'a, HashT, K> ExpandMsg<'a, K> for ExpandMsgXof<HashT>
+impl<HashT, K> ExpandMsg<K> for ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
     // If DST is larger than 255 bytes, the length of the computed DST is calculated by `K * 2`.
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
     K: Mul<U2, Output: ArraySize + IsLess<U256, Output = True>>,
 {
-    type Expander = Self;
+    type Expander<'dst> = Self;
 
-    fn expand_message(
+    fn expand_message<'dst>(
         msg: &[&[u8]],
-        dst: &'a [&'a [u8]],
+        dst: &'dst [&[u8]],
         len_in_bytes: NonZero<usize>,
-    ) -> Result<Self::Expander> {
+    ) -> Result<Self::Expander<'dst>> {
         let len_in_bytes = u16::try_from(len_in_bytes.get()).map_err(|_| Error)?;
 
         let domain = Domain::<Prod<K, U2>>::xof::<HashT>(dst)?;
@@ -119,7 +119,7 @@ mod test {
         {
             assert_message(self.msg, domain, L::to_u16(), self.msg_prime);
 
-            let mut expander = <ExpandMsgXof<HashT> as ExpandMsg<'_, U16>>::expand_message(
+            let mut expander = <ExpandMsgXof<HashT> as ExpandMsg<U16>>::expand_message(
                 &[self.msg],
                 &[dst],
                 NonZero::new(L::to_usize()).ok_or(Error)?,

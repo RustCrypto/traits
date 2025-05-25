@@ -27,7 +27,7 @@ where
     HashT::OutputSize: IsLess<U256, Output = True>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>;
 
-impl<'a, HashT, K> ExpandMsg<'a, K> for ExpandMsgXmd<HashT>
+impl<HashT, K> ExpandMsg<K> for ExpandMsgXmd<HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
     // If DST is larger than 255 bytes, the length of the computed DST will depend on the output
@@ -42,13 +42,13 @@ where
     K: Mul<U2>,
     HashT::OutputSize: IsGreaterOrEqual<Prod<K, U2>, Output = True>,
 {
-    type Expander = ExpanderXmd<'a, HashT>;
+    type Expander<'dst> = ExpanderXmd<'dst, HashT>;
 
-    fn expand_message(
+    fn expand_message<'dst>(
         msg: &[&[u8]],
-        dst: &'a [&'a [u8]],
+        dst: &'dst [&[u8]],
         len_in_bytes: NonZero<usize>,
-    ) -> Result<Self::Expander> {
+    ) -> Result<Self::Expander<'dst>> {
         let len_in_bytes_u16 = u16::try_from(len_in_bytes.get()).map_err(|_| Error)?;
 
         // `255 * <b_in_bytes>` can not exceed `u16::MAX`
@@ -221,7 +221,7 @@ mod test {
             assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
 
             let dst = [dst];
-            let mut expander = <ExpandMsgXmd<HashT> as ExpandMsg<'_, U4>>::expand_message(
+            let mut expander = <ExpandMsgXmd<HashT> as ExpandMsg<U4>>::expand_message(
                 &[self.msg],
                 &dst,
                 NonZero::new(L::to_usize()).ok_or(Error)?,
