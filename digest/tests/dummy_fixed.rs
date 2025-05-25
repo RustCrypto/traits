@@ -1,14 +1,14 @@
-#![cfg(feature = "core-api")]
+#![cfg(feature = "block-api")]
 
 mod block_api {
     use core::fmt;
     use digest::{
         HashMarker, Output, OutputSizeUser, Reset,
-        consts::U8,
-        core_api::{
+        block_api::{
             AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, FixedOutputCore,
             UpdateCore,
         },
+        consts::U8,
         crypto_common::hazmat::{DeserializeStateError, SerializableState, SerializedState},
     };
 

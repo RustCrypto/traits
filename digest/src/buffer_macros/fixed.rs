@@ -11,7 +11,7 @@ macro_rules! buffer_fixed {
         $(#[$attr])*
         $v struct $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? {
             core: $core_ty,
-            buffer: $crate::core_api::Buffer<$core_ty>,
+            buffer: $crate::block_api::Buffer<$core_ty>,
         }
 
         $crate::buffer_fixed!(
@@ -148,7 +148,7 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         BlockSizeUser $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::core_api::BlockSizeUser for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::block_api::BlockSizeUser for $name$(< $( $lt ),+ >)? {
             type BlockSize = <$core_ty as $crate::crypto_common::BlockSizeUser>::BlockSize;
         }
 
@@ -163,7 +163,7 @@ macro_rules! buffer_fixed {
         OutputSizeUser $($trait_name:ident)*;
     ) => {
         impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::OutputSizeUser for $name$(< $( $lt ),+ >)? {
-            type OutputSize = <$core_ty as $crate::core_api::OutputSizeUser>::OutputSize;
+            type OutputSize = <$core_ty as $crate::block_api::OutputSizeUser>::OutputSize;
         }
 
         $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
@@ -176,7 +176,7 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         CoreProxy $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::core_api::CoreProxy for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::block_api::CoreProxy for $name$(< $( $lt ),+ >)? {
             type Core = $core_ty;
         }
 
@@ -195,7 +195,7 @@ macro_rules! buffer_fixed {
             fn update(&mut self, data: &[u8]) {
                 let Self { core, buffer } = self;
                 buffer.digest_blocks(data, |blocks| {
-                    $crate::core_api::UpdateCore::update_blocks(core, blocks)
+                    $crate::block_api::UpdateCore::update_blocks(core, blocks)
                 });
             }
         }
@@ -214,7 +214,7 @@ macro_rules! buffer_fixed {
             #[inline]
             fn finalize_into(mut self, out: &mut $crate::Output<Self>) {
                 let Self { core, buffer } = &mut self;
-                $crate::core_api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
+                $crate::block_api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
             }
         }
 
@@ -403,7 +403,7 @@ macro_rules! buffer_fixed {
             #[inline]
             fn finalize_into_reset(&mut self, out: &mut $crate::Output<Self>) {
                 let Self { core, buffer } = self;
-                $crate::core_api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
+                $crate::block_api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
                 $crate::Reset::reset(self);
             }
         }
@@ -422,7 +422,7 @@ macro_rules! buffer_fixed {
             type SerializedStateSize = $crate::typenum::Sum<
                 <$core_ty as $crate::crypto_common::hazmat::SerializableState>::SerializedStateSize,
                 $crate::typenum::Add1<
-                    <$core_ty as $crate::core_api::BlockSizeUser>::BlockSize
+                    <$core_ty as $crate::block_api::BlockSizeUser>::BlockSize
                 >
             >;
 

@@ -10,7 +10,7 @@ macro_rules! buffer_rt_variable {
         $(#[$attr])*
         $vis struct $name {
             core: $core_ty,
-            buffer: $crate::core_api::Buffer<$core_ty>,
+            buffer: $crate::block_api::Buffer<$core_ty>,
             output_size: u8,
         }
 
@@ -43,12 +43,12 @@ macro_rules! buffer_rt_variable {
             #[inline]
             fn reset(&mut self) {
                 let size = self.output_size.into();
-                self.core = <$core_ty as $crate::core_api::VariableOutputCore>::new(size).unwrap();
+                self.core = <$core_ty as $crate::block_api::VariableOutputCore>::new(size).unwrap();
                 self.buffer.reset();
             }
         }
 
-        impl $crate::core_api::BlockSizeUser for $name {
+        impl $crate::block_api::BlockSizeUser for $name {
             type BlockSize = <$core_ty as $crate::crypto_common::BlockSizeUser>::BlockSize;
         }
 
@@ -66,7 +66,7 @@ macro_rules! buffer_rt_variable {
             fn update(&mut self, data: &[u8]) {
                 let Self { core, buffer, .. } = self;
                 buffer.digest_blocks(data, |blocks| {
-                    $crate::core_api::UpdateCore::update_blocks(core, blocks);
+                    $crate::block_api::UpdateCore::update_blocks(core, blocks);
                 });
             }
         }
@@ -86,11 +86,11 @@ macro_rules! buffer_rt_variable {
                     return Err($crate::InvalidBufferSize);
                 }
                 let mut full_res = Default::default();
-                $crate::core_api::VariableOutputCore::finalize_variable_core(core, buffer, &mut full_res);
+                $crate::block_api::VariableOutputCore::finalize_variable_core(core, buffer, &mut full_res);
                 let n = out.len();
                 let m = full_res.len() - n;
-                use $crate::core_api::TruncSide::{Left, Right};
-                let side = <$core_ty as $crate::core_api::VariableOutputCore>::TRUNC_SIDE;
+                use $crate::block_api::TruncSide::{Left, Right};
+                let side = <$core_ty as $crate::block_api::VariableOutputCore>::TRUNC_SIDE;
                 match side {
                     Left => out.copy_from_slice(&full_res[..n]),
                     Right => out.copy_from_slice(&full_res[m..]),
@@ -101,7 +101,7 @@ macro_rules! buffer_rt_variable {
 
         impl $crate::VariableOutput for $name {
             const MAX_OUTPUT_SIZE: usize = <
-                <$core_ty as $crate::core_api::OutputSizeUser>::OutputSize
+                <$core_ty as $crate::block_api::OutputSizeUser>::OutputSize
                 as $crate::typenum::Unsigned
             >::USIZE;
 
@@ -109,7 +109,7 @@ macro_rules! buffer_rt_variable {
             fn new(output_size: usize) -> Result<Self, $crate::InvalidOutputSize> {
                 let output_size = u8::try_from(output_size).map_err(|_| $crate::InvalidOutputSize)?;
                 let buffer = Default::default();
-                let core = <$core_ty as $crate::core_api::VariableOutputCore>::new(output_size.into())?;
+                let core = <$core_ty as $crate::block_api::VariableOutputCore>::new(output_size.into())?;
                 Ok(Self {
                     core,
                     buffer,
@@ -169,7 +169,7 @@ macro_rules! buffer_rt_variable {
         impl $crate::crypto_common::hazmat::SerializableState for $name {
             type SerializedStateSize = $crate::typenum::Add1<$crate::typenum::Sum<
                 <$core_ty as $crate::crypto_common::hazmat::SerializableState>::SerializedStateSize,
-                <$core_ty as $crate::core_api::BlockSizeUser>::BlockSize,
+                <$core_ty as $crate::block_api::BlockSizeUser>::BlockSize,
             >>;
 
             #[inline]

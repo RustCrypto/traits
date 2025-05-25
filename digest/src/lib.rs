@@ -50,15 +50,15 @@ use alloc::boxed::Box;
 #[cfg(feature = "dev")]
 pub mod dev;
 
+#[cfg(feature = "block-api")]
+pub mod block_api;
 mod buffer_macros;
-#[cfg(feature = "core-api")]
-pub mod core_api;
 mod digest;
 #[cfg(feature = "mac")]
 mod mac;
 mod xof_fixed;
 
-#[cfg(feature = "core-api")]
+#[cfg(feature = "block-api")]
 pub use block_buffer;
 #[cfg(feature = "oid")]
 pub use const_oid;

@@ -16,8 +16,8 @@ macro_rules! buffer_ct_variable {
         where
             $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
-            core: $crate::core_api::CtOutWrapper<$core_ty, $out_size>,
-            buffer: $crate::core_api::Buffer<$core_ty>,
+            core: $crate::block_api::CtOutWrapper<$core_ty, $out_size>,
+            buffer: $crate::block_api::Buffer<$core_ty>,
         }
 
         impl<$out_size> core::fmt::Debug for $name<$out_size>
@@ -77,7 +77,7 @@ macro_rules! buffer_ct_variable {
             }
         }
 
-        impl<$out_size> $crate::core_api::BlockSizeUser for $name<$out_size>
+        impl<$out_size> $crate::block_api::BlockSizeUser for $name<$out_size>
         where
             $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
@@ -107,11 +107,11 @@ macro_rules! buffer_ct_variable {
             }
         };
 
-        impl<$out_size> $crate::core_api::CoreProxy for $name<$out_size>
+        impl<$out_size> $crate::block_api::CoreProxy for $name<$out_size>
         where
             $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
-            type Core = $crate::core_api::CtOutWrapper<$core_ty, $out_size>;
+            type Core = $crate::block_api::CtOutWrapper<$core_ty, $out_size>;
         }
 
         impl<$out_size> $crate::Update for $name<$out_size>
@@ -122,7 +122,7 @@ macro_rules! buffer_ct_variable {
             fn update(&mut self, data: &[u8]) {
                 let Self { core, buffer } = self;
                 buffer.digest_blocks(data, |blocks| {
-                    $crate::core_api::UpdateCore::update_blocks(core, blocks)
+                    $crate::block_api::UpdateCore::update_blocks(core, blocks)
                 });
             }
         }
@@ -134,7 +134,7 @@ macro_rules! buffer_ct_variable {
             #[inline]
             fn finalize_into(mut self, out: &mut $crate::Output<Self>) {
                 let Self { core, buffer } = &mut self;
-                $crate::core_api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
+                $crate::block_api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
             }
         }
 
@@ -145,7 +145,7 @@ macro_rules! buffer_ct_variable {
             #[inline]
             fn finalize_into_reset(&mut self, out: &mut $crate::Output<Self>) {
                 let Self { core, buffer } = self;
-                $crate::core_api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
+                $crate::block_api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
                 $crate::Reset::reset(self);
             }
         }
@@ -171,10 +171,10 @@ macro_rules! buffer_ct_variable {
         {
             type SerializedStateSize = $crate::typenum::Add1<$crate::typenum::Sum<
                 <
-                    $crate::core_api::CtOutWrapper<$core_ty, $out_size>
+                    $crate::block_api::CtOutWrapper<$core_ty, $out_size>
                     as $crate::crypto_common::hazmat::SerializableState
                 >::SerializedStateSize,
-                <$core_ty as $crate::core_api::BlockSizeUser>::BlockSize,
+                <$core_ty as $crate::block_api::BlockSizeUser>::BlockSize,
             >>;
 
             #[inline]
@@ -203,7 +203,7 @@ macro_rules! buffer_ct_variable {
                 use $crate::{
                     block_buffer::BlockBuffer,
                     consts::U1,
-                    core_api::CtOutWrapper,
+                    block_api::CtOutWrapper,
                     crypto_common::hazmat::{SerializableState, DeserializeStateError},
                 };
 
