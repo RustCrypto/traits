@@ -3,35 +3,39 @@
 macro_rules! buffer_fixed {
     (
         $(#[$attr:meta])*
-        $v:vis struct $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        $v:vis struct $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         impl: $($trait_name:ident)*;
     ) => {
         $(#[$attr])*
-        $v struct $name$(<$gp: $bound>)? {
+        $v struct $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? {
             core: $core_ty,
             buffer: $crate::core_api::Buffer<$core_ty>,
         }
 
         $crate::buffer_fixed!(
-            impl_inner: $name$(<$gp: $bound>)?($core_ty);
+            impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty);
             $($trait_name)*;
         );
     };
 
     (
         $(#[$attr:meta])*
-        $v:vis struct $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        $v:vis struct $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         oid: $oid:literal;
         impl: $($trait_name:ident)*;
     ) => {
         $crate::buffer_fixed!(
             $(#[$attr])*
-            $v struct $name$(<$gp: $bound>)?($core_ty);
+            $v struct $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty);
             impl: $($trait_name)*;
         );
 
         #[cfg(feature = "oid")]
-        impl$(<$gp: $bound>)? $crate::const_oid::AssociatedOid for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::const_oid::AssociatedOid for $name$(< $( $lt ),+ >)? {
             const OID: $crate::const_oid::ObjectIdentifier =
                 $crate::const_oid::ObjectIdentifier::new_unwrap($oid);
         }
@@ -39,18 +43,52 @@ macro_rules! buffer_fixed {
 
     // Terminates `impl_inner` sequences.
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty); ;
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
+        ;
     ) => {};
 
     // Implements the set of traits common for fixed output hashes:
     // `Default`, `Clone`, `HashMarker`, `Reset`, `FixedOutputReset`, `SerializableState`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         FixedHashTraits $($trait_name:ident)*;
     ) => {
         $crate::buffer_fixed!(
-            impl_inner: $name$(<$gp: $bound>)?($core_ty);
+            impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty);
             BaseFixedTraits Default Clone HashMarker Reset FixedOutputReset SerializableState $($trait_name)*;
+        );
+    };
+
+    // Implements the set of traits common for MAC functions:
+    // `Debug`, `OutputSizeUser`, `CoreProxy`, `Update`, `FixedOutput`, `Clone`, `MacMarker`.
+    (
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
+        MacTraits $($trait_name:ident)*;
+    ) => {
+        $crate::buffer_fixed!(
+            impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty);
+            Debug OutputSizeUser CoreProxy Update FixedOutput Clone MacMarker $($trait_name)*;
+        );
+    };
+
+    // Implements the set of traits common for resettable MAC functions:
+    // `Debug`, `OutputSizeUser`, `CoreProxy`, `Update`, `FixedOutput`, `Clone`, `MacMarker`,
+    // `Reset`, `FixedOutputReset`.
+    (
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
+        ResetMacTraits $($trait_name:ident)*;
+    ) => {
+        $crate::buffer_fixed!(
+            impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty);
+            MacTraits Reset FixedOutputReset $($trait_name)*;
         );
     };
 
@@ -58,87 +96,101 @@ macro_rules! buffer_fixed {
     // `Debug`, `AlgorithmName`, `BlockSizeUser`, `OutputSizeUser`,
     // `CoreProxy`, `Update`, and `FixedOutput`.
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         BaseFixedTraits $($trait_name:ident)*;
     ) => {
         $crate::buffer_fixed!(
-            impl_inner: $name$(<$gp: $bound>)?($core_ty);
+            impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty);
             Debug AlgorithmName BlockSizeUser OutputSizeUser CoreProxy Update FixedOutput $($trait_name)*;
         );
     };
 
     // Implements `Debug`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         Debug $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? core::fmt::Debug for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? core::fmt::Debug for $name$(< $( $lt ),+ >)? {
             #[inline]
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 f.write_str(concat!(stringify!($name), " { ... }"))
             }
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `AlgorithmName`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         AlgorithmName $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? $crate::crypto_common::AlgorithmName for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::crypto_common::AlgorithmName for $name$(< $( $lt ),+ >)? {
             #[inline]
             fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
                 <$core_ty as $crate::crypto_common::AlgorithmName>::write_alg_name(f)
             }
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `BlockSizeUser`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         BlockSizeUser $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? $crate::core_api::BlockSizeUser for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::core_api::BlockSizeUser for $name$(< $( $lt ),+ >)? {
             type BlockSize = <$core_ty as $crate::crypto_common::BlockSizeUser>::BlockSize;
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `OutputSizeUser`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         OutputSizeUser $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? $crate::OutputSizeUser for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::OutputSizeUser for $name$(< $( $lt ),+ >)? {
             type OutputSize = <$core_ty as $crate::core_api::OutputSizeUser>::OutputSize;
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `CoreProxy`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         CoreProxy $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? $crate::core_api::CoreProxy for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::core_api::CoreProxy for $name$(< $( $lt ),+ >)? {
             type Core = $core_ty;
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `Update`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         Update $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? $crate::Update for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::Update for $name$(< $( $lt ),+ >)? {
             #[inline]
             fn update(&mut self, data: &[u8]) {
                 let Self { core, buffer } = self;
@@ -148,15 +200,17 @@ macro_rules! buffer_fixed {
             }
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `FixedOutput`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         FixedOutput $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? $crate::FixedOutput for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::FixedOutput for $name$(< $( $lt ),+ >)? {
             #[inline]
             fn finalize_into(mut self, out: &mut $crate::Output<Self>) {
                 let Self { core, buffer } = &mut self;
@@ -164,15 +218,17 @@ macro_rules! buffer_fixed {
             }
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `Default`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         Default $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? Default for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? Default for $name$(< $( $lt ),+ >)? {
             #[inline]
             fn default() -> Self {
                 Self {
@@ -182,15 +238,17 @@ macro_rules! buffer_fixed {
             }
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `CustomizedInit`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         CustomizedInit $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? $crate::CustomizedInit for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::CustomizedInit for $name$(< $( $lt ),+ >)? {
             #[inline]
             fn new_customized(customization: &[u8]) -> Self {
                 Self {
@@ -200,15 +258,17 @@ macro_rules! buffer_fixed {
             }
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `Clone`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         Clone $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? Clone for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? Clone for $name$(< $( $lt ),+ >)? {
             #[inline]
             fn clone(&self) -> Self {
                 Self {
@@ -218,32 +278,110 @@ macro_rules! buffer_fixed {
             }
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `HashMarker` and asserts that `$core_ty` implements it
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         HashMarker $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? $crate::HashMarker for $name$(<$gp>)? {}
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::HashMarker for $name$(< $( $lt ),+ >)? {}
 
         // Verify that `$core_ty` implements `HashMarker`
         const _: () = {
-            fn check$(<$gp: $bound>)?(v: &$core_ty) {
+            fn check$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?(v: &$core_ty) {
                 v as &dyn $crate::HashMarker;
             }
         };
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `MacMarker` and asserts that `$core_ty` implements it
+    (
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
+        MacMarker $($trait_name:ident)*;
+    ) => {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::MacMarker for $name$(< $( $lt ),+ >)? {}
+
+        // Verify that `$core_ty` implements `MacMarker`
+        const _: () = {
+            fn check$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?(v: &$core_ty) {
+                v as &dyn $crate::MacMarker;
+            }
+        };
+
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `InnerUser` and `InnerInit`
+    (
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
+        InnerInit $($trait_name:ident)*;
+    ) => {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::crypto_common::InnerUser for $name$(< $( $lt ),+ >)? {
+            type Inner = <$core_ty as $crate::crypto_common::InnerUser>::Inner;
+        }
+
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::crypto_common::InnerInit for $name$(< $( $lt ),+ >)? {
+            #[inline]
+            fn inner_init(inner: Self::Inner) -> Self {
+                Self {
+                    core: <$core_ty as $crate::crypto_common::InnerInit>::inner_init(inner),
+                    buffer: Default::default(),
+                }
+            }
+        }
+
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
+    };
+
+    // Implements `KeySizeUser` and `KeyInit`
+    (
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
+        KeyInit $($trait_name:ident)*;
+    ) => {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::crypto_common::KeySizeUser for $name$(< $( $lt ),+ >)? {
+            type KeySize = <$core_ty as $crate::crypto_common::KeySizeUser>::KeySize;
+        }
+
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::KeyInit for $name$(< $( $lt ),+ >)? {
+            #[inline]
+            fn new(key: &$crate::Key<Self>) -> Self {
+                Self {
+                    core: <$core_ty as $crate::KeyInit>::new(key),
+                    buffer: Default::default(),
+                }
+            }
+
+            #[inline]
+            fn new_from_slice(key: &[u8]) -> Result<Self, $crate::InvalidLength> {
+                <$core_ty as $crate::KeyInit>::new_from_slice(key).map(|core|
+                    Self { core, buffer: Default::default() }
+                )
+            }
+        }
+
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `Reset`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         Reset $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? $crate::Reset for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::Reset for $name$(< $( $lt ),+ >)? {
             #[inline]
             fn reset(&mut self) {
                 $crate::Reset::reset(&mut self.core);
@@ -251,15 +389,17 @@ macro_rules! buffer_fixed {
             }
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `FixedOutputReset`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         FixedOutputReset $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? $crate::FixedOutputReset for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::FixedOutputReset for $name$(< $( $lt ),+ >)? {
             #[inline]
             fn finalize_into_reset(&mut self, out: &mut $crate::Output<Self>) {
                 let Self { core, buffer } = self;
@@ -268,15 +408,17 @@ macro_rules! buffer_fixed {
             }
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     };
 
     // Implements `SerializableState`
     (
-        impl_inner: $name:ident$(<$gp:ident: $bound:ident>)?($core_ty:ty);
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
         SerializableState $($trait_name:ident)*;
     ) => {
-        impl$(<$gp: $bound>)? $crate::crypto_common::hazmat::SerializableState for $name$(<$gp>)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::crypto_common::hazmat::SerializableState for $name$(< $( $lt ),+ >)? {
             type SerializedStateSize = $crate::typenum::Sum<
                 <$core_ty as $crate::crypto_common::hazmat::SerializableState>::SerializedStateSize,
                 $crate::typenum::Add1<
@@ -325,6 +467,6 @@ macro_rules! buffer_fixed {
             }
         }
 
-        $crate::buffer_fixed!(impl_inner: $name$(<$gp: $bound>)?($core_ty); $($trait_name)*;);
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
     }
 }
