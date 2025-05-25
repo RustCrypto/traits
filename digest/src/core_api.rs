@@ -12,14 +12,7 @@ use block_buffer::{BlockBuffer, BufferKind};
 use crypto_common::Output;
 
 mod ct_variable;
-mod rt_variable;
-mod wrapper;
-mod xof_reader;
-
 pub use ct_variable::CtOutWrapper;
-pub use rt_variable::RtVariableCoreWrapper;
-pub use wrapper::{CoreProxy, CoreWrapper};
-pub use xof_reader::XofReaderCoreWrapper;
 
 /// Buffer type used by type which implements [`BufferKindUser`].
 pub type Buffer<S> =
@@ -102,4 +95,10 @@ pub enum TruncSide {
     Left,
     /// Truncate right side, i.e. `&out[m..]`.
     Right,
+}
+
+/// A proxy trait to a core type.
+pub trait CoreProxy {
+    /// Type wrapped by [`CoreWrapper`].
+    type Core;
 }
