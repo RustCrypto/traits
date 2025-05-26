@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `CustomizedInit` trait ([#1334])
 - `buffer_fixed`, `buffer_ct_variable`, `buffer_rt_variable`, and `buffer_xof` macros ([#1799])
+- `CollisionResistance` trait ([#1820])
 
 ### Changed
 - `crypto-common` dependency bumped to v0.2 ([#1173])
@@ -27,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
 [#1799]: https://github.com/RustCrypto/traits/pull/1799
 [#1809]: https://github.com/RustCrypto/traits/pull/1809
+[#1820]: https://github.com/RustCrypto/traits/pull/1820
 
 ## 0.10.7 (2023-05-19)
 ### Changed
