@@ -59,12 +59,14 @@ macro_rules! buffer_fixed {
     ) => {
         $crate::buffer_fixed!(
             impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty);
-            BaseFixedTraits Default Clone HashMarker Reset FixedOutputReset SerializableState $($trait_name)*;
+            BaseFixedTraits AlgorithmName Default Clone HashMarker
+            Reset FixedOutputReset SerializableState $($trait_name)*;
         );
     };
 
     // Implements the set of traits common for MAC functions:
-    // `Debug`, `OutputSizeUser`, `CoreProxy`, `Update`, `FixedOutput`, `Clone`, `MacMarker`.
+    // `Debug`, `BlockSizeUser`, `OutputSizeUser`, `CoreProxy`, `Update`, `FixedOutput`,
+    // `Clone`, `MacMarker`.
     (
         impl_inner: $name:ident
         $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
@@ -73,13 +75,13 @@ macro_rules! buffer_fixed {
     ) => {
         $crate::buffer_fixed!(
             impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty);
-            Debug OutputSizeUser CoreProxy Update FixedOutput Clone MacMarker $($trait_name)*;
+            BaseFixedTraits Clone MacMarker $($trait_name)*;
         );
     };
 
     // Implements the set of traits common for resettable MAC functions:
-    // `Debug`, `OutputSizeUser`, `CoreProxy`, `Update`, `FixedOutput`, `Clone`, `MacMarker`,
-    // `Reset`, `FixedOutputReset`.
+    // `Debug`, `BlockSizeUser`, `OutputSizeUser`, `CoreProxy`, `Update`, `FixedOutput`,
+    // `Clone`, `MacMarker`, `Reset`, `FixedOutputReset`.
     (
         impl_inner: $name:ident
         $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
@@ -93,8 +95,7 @@ macro_rules! buffer_fixed {
     };
 
     // Implements basic fixed traits:
-    // `Debug`, `AlgorithmName`, `BlockSizeUser`, `OutputSizeUser`,
-    // `CoreProxy`, `Update`, and `FixedOutput`.
+    // `Debug`, `BlockSizeUser`, `OutputSizeUser`, `CoreProxy`, `Update`, and `FixedOutput`.
     (
         impl_inner: $name:ident
         $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
@@ -103,7 +104,7 @@ macro_rules! buffer_fixed {
     ) => {
         $crate::buffer_fixed!(
             impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty);
-            Debug AlgorithmName BlockSizeUser OutputSizeUser CoreProxy Update FixedOutput $($trait_name)*;
+            Debug BlockSizeUser OutputSizeUser CoreProxy Update FixedOutput $($trait_name)*;
         );
     };
 
