@@ -68,15 +68,16 @@ where
     where
         X: Default + ExtendableOutput + Update,
     {
-        if dst.is_empty() {
+        // https://www.rfc-editor.org/rfc/rfc9380.html#section-3.1-4.2
+        if dst.iter().map(|slice| slice.len()).sum::<usize>() == 0 {
             Err(Error)
-        } else if dst.iter().map(|dst| dst.len()).sum::<usize>() > MAX_DST_LEN {
+        } else if dst.iter().map(|slice| slice.len()).sum::<usize>() > MAX_DST_LEN {
             let mut data = Array::<u8, L>::default();
             let mut hash = X::default();
             hash.update(OVERSIZE_DST_SALT);
 
-            for dst in dst {
-                hash.update(dst);
+            for slice in dst {
+                hash.update(slice);
             }
 
             hash.finalize_xof().read(&mut data);
@@ -91,15 +92,16 @@ where
     where
         X: Digest<OutputSize = L>,
     {
-        if dst.is_empty() {
+        // https://www.rfc-editor.org/rfc/rfc9380.html#section-3.1-4.2
+        if dst.iter().map(|slice| slice.len()).sum::<usize>() == 0 {
             Err(Error)
-        } else if dst.iter().map(|dst| dst.len()).sum::<usize>() > MAX_DST_LEN {
+        } else if dst.iter().map(|slice| slice.len()).sum::<usize>() > MAX_DST_LEN {
             Ok(Self::Hashed({
                 let mut hash = X::new();
                 hash.update(OVERSIZE_DST_SALT);
 
-                for dst in dst {
-                    hash.update(dst);
+                for slice in dst {
+                    hash.update(slice);
                 }
 
                 hash.finalize()
