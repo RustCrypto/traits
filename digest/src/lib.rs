@@ -12,7 +12,7 @@
 //!   traits atomically describe available functionality of an algorithm.
 //! - **Marker traits**: [`HashMarker`], [`MacMarker`]. Used to distinguish
 //!   different algorithm classes.
-//! - **Low-level traits** defined in the [`core_api`] module. These traits
+//! - **Low-level traits** defined in the [`block_api`] module. These traits
 //!   operate at a block-level and do not contain any built-in buffering.
 //!   They are intended to be implemented by low-level algorithm providers only.
 //!   Usually they should not be used in application-level code.
@@ -50,14 +50,15 @@ use alloc::boxed::Box;
 #[cfg(feature = "dev")]
 pub mod dev;
 
-#[cfg(feature = "core-api")]
-pub mod core_api;
+#[cfg(feature = "block-api")]
+pub mod block_api;
+mod buffer_macros;
 mod digest;
 #[cfg(feature = "mac")]
 mod mac;
 mod xof_fixed;
 
-#[cfg(feature = "core-api")]
+#[cfg(feature = "block-api")]
 pub use block_buffer;
 #[cfg(feature = "oid")]
 pub use const_oid;

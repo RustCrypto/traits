@@ -5,20 +5,14 @@
 //! higher-level traits.
 use crate::InvalidOutputSize;
 
+pub use block_buffer::{Eager, Lazy};
 pub use crypto_common::{AlgorithmName, Block, BlockSizeUser, OutputSizeUser, Reset};
 
 use block_buffer::{BlockBuffer, BufferKind};
 use crypto_common::Output;
 
 mod ct_variable;
-mod rt_variable;
-mod wrapper;
-mod xof_reader;
-
-pub use ct_variable::CtVariableCoreWrapper;
-pub use rt_variable::RtVariableCoreWrapper;
-pub use wrapper::{CoreProxy, CoreWrapper};
-pub use xof_reader::XofReaderCoreWrapper;
+pub use ct_variable::CtOutWrapper;
 
 /// Buffer type used by type which implements [`BufferKindUser`].
 pub type Buffer<S> =
@@ -101,4 +95,10 @@ pub enum TruncSide {
     Left,
     /// Truncate right side, i.e. `&out[m..]`.
     Right,
+}
+
+/// A proxy trait to a core type.
+pub trait CoreProxy {
+    /// Wrapped block-level type.
+    type Core;
 }

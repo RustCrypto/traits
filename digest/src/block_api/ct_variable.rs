@@ -5,8 +5,6 @@ use super::{
 #[cfg(feature = "mac")]
 use crate::MacMarker;
 use crate::{CollisionResistance, CustomizedInit, HashMarker, VarOutputCustomized};
-#[cfg(feature = "oid")]
-use const_oid::{AssociatedOid, ObjectIdentifier};
 use core::{
     fmt,
     marker::PhantomData,
@@ -16,67 +14,55 @@ use crypto_common::{
     Block, BlockSizeUser, OutputSizeUser,
     array::{Array, ArraySize},
     hazmat::{DeserializeStateError, SerializableState, SerializedState, SubSerializedStateSize},
-    typenum::{IsLess, IsLessOrEqual, Le, LeEq, NonZero, Sum, U1, U256},
+    typenum::{IsLess, IsLessOrEqual, Le, NonZero, Sum, True, U1, U256},
 };
 
-/// Dummy type used with [`CtVariableCoreWrapper`] in cases when
-/// resulting hash does not have a known OID.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub struct NoOid;
-
-/// Wrapper around [`VariableOutputCore`] which selects output size
-/// at compile time.
+/// Wrapper around [`VariableOutputCore`] which selects output size at compile time.
 #[derive(Clone)]
-pub struct CtVariableCoreWrapper<T, OutSize, O = NoOid>
+pub struct CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     inner: T,
-    _out: PhantomData<(OutSize, O)>,
+    _out: PhantomData<OutSize>,
 }
 
-impl<T, OutSize, O> HashMarker for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> HashMarker for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + HashMarker,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
 }
 
 #[cfg(feature = "mac")]
-impl<T, OutSize, O> MacMarker for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> MacMarker for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + MacMarker,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
 }
 
-impl<T, OutSize> CollisionResistance for CtVariableCoreWrapper<T, OutSize>
+impl<T, OutSize> CollisionResistance for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + CollisionResistance,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     type CollisionResistance = T::CollisionResistance;
 }
 
-impl<T, OutSize, O> BlockSizeUser for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> BlockSizeUser for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     type BlockSize = T::BlockSize;
 }
 
-impl<T, OutSize, O> UpdateCore for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> UpdateCore for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     #[inline]
     fn update_blocks(&mut self, blocks: &[Block<Self>]) {
@@ -84,29 +70,26 @@ where
     }
 }
 
-impl<T, OutSize, O> OutputSizeUser for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> OutputSizeUser for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     type OutputSize = OutSize;
 }
 
-impl<T, OutSize, O> BufferKindUser for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> BufferKindUser for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     type BufferKind = T::BufferKind;
 }
 
-impl<T, OutSize, O> FixedOutputCore for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> FixedOutputCore for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     #[inline]
     fn finalize_fixed_core(
@@ -125,11 +108,10 @@ where
     }
 }
 
-impl<T, OutSize, O> Default for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> Default for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     #[inline]
     fn default() -> Self {
@@ -140,11 +122,10 @@ where
     }
 }
 
-impl<T, OutSize, O> CustomizedInit for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> CustomizedInit for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + VarOutputCustomized,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     #[inline]
     fn new_customized(customization: &[u8]) -> Self {
@@ -155,11 +136,10 @@ where
     }
 }
 
-impl<T, OutSize, O> Reset for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> Reset for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     #[inline]
     fn reset(&mut self) {
@@ -167,11 +147,10 @@ where
     }
 }
 
-impl<T, OutSize, O> AlgorithmName for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> AlgorithmName for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + AlgorithmName,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         T::write_alg_name(f)?;
@@ -180,61 +159,31 @@ where
     }
 }
 
-#[cfg(feature = "oid")]
-impl<T, OutSize, O> AssociatedOid for CtVariableCoreWrapper<T, OutSize, O>
-where
-    T: VariableOutputCore,
-    O: AssociatedOid,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
-{
-    const OID: ObjectIdentifier = O::OID;
-}
-
 #[cfg(feature = "zeroize")]
-impl<T, OutSize, O> zeroize::ZeroizeOnDrop for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> zeroize::ZeroizeOnDrop for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + zeroize::ZeroizeOnDrop,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
 }
 
-impl<T, OutSize, O> fmt::Debug for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> fmt::Debug for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + AlgorithmName,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         Self::write_alg_name(f)
     }
 }
 
-/// Implement dummy type with hidden docs which is used to "carry" hasher
-/// OID for [`CtVariableCoreWrapper`].
-#[macro_export]
-macro_rules! impl_oid_carrier {
-    ($name:ident, $oid:literal) => {
-        #[doc(hidden)]
-        #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-        pub struct $name;
-
-        #[cfg(feature = "oid")]
-        impl AssociatedOid for $name {
-            const OID: ObjectIdentifier = ObjectIdentifier::new_unwrap($oid);
-        }
-    };
-}
-
 type CtVariableCoreWrapperSerializedStateSize<T> =
     Sum<<T as SerializableState>::SerializedStateSize, U1>;
 
-impl<T, OutSize, O> SerializableState for CtVariableCoreWrapper<T, OutSize, O>
+impl<T, OutSize> SerializableState for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + SerializableState,
-    OutSize: ArraySize + IsLessOrEqual<T::OutputSize>,
-    LeEq<OutSize, T::OutputSize>: NonZero,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
     T::BlockSize: IsLess<U256>,
     Le<T::BlockSize, U256>: NonZero,
     T::SerializedStateSize: Add<U1>,
