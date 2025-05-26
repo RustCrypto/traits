@@ -253,7 +253,7 @@ impl fmt::Display for PasswordHash<'_> {
         write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, self.algorithm)?;
 
         if let Some(version) = self.version {
-            write!(f, "{}v={}", PASSWORD_HASH_SEPARATOR, version)?;
+            write!(f, "{PASSWORD_HASH_SEPARATOR}v={version}")?;
         }
 
         if !self.params.is_empty() {
@@ -261,10 +261,10 @@ impl fmt::Display for PasswordHash<'_> {
         }
 
         if let Some(salt) = &self.salt {
-            write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, salt)?;
+            write!(f, "{PASSWORD_HASH_SEPARATOR}{salt}")?;
 
             if let Some(hash) = &self.hash {
-                write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, hash)?;
+                write!(f, "{PASSWORD_HASH_SEPARATOR}{hash}")?;
             }
         }
 
