@@ -3,6 +3,7 @@
 use crate::{
     CurveArithmetic, Error, FieldBytes, PrimeCurve, Scalar, ScalarPrimitive, SecretKey,
     ops::{Invert, Reduce, ReduceNonZero},
+    point::NonIdentity,
     scalar::IsHigh,
 };
 use base16ct::HexDisplay;
@@ -127,6 +128,8 @@ where
         &self.scalar
     }
 }
+
+impl<C> Eq for NonZeroScalar<C> where C: CurveArithmetic {}
 
 impl<C> From<NonZeroScalar<C>> for FieldBytes<C>
 where
@@ -253,6 +256,63 @@ where
         let scalar = self.scalar * other.scalar;
         debug_assert!(!bool::from(scalar.is_zero()));
         NonZeroScalar { scalar }
+    }
+}
+
+impl<C, P> Mul<NonIdentity<P>> for NonZeroScalar<C>
+where
+    C: CurveArithmetic,
+    NonIdentity<P>: Mul<NonZeroScalar<C>, Output = NonIdentity<P>>,
+{
+    type Output = NonIdentity<P>;
+
+    fn mul(self, rhs: NonIdentity<P>) -> Self::Output {
+        rhs * self
+    }
+}
+
+impl<C, P> Mul<&NonIdentity<P>> for NonZeroScalar<C>
+where
+    C: CurveArithmetic,
+    for<'a> &'a NonIdentity<P>: Mul<NonZeroScalar<C>, Output = NonIdentity<P>>,
+{
+    type Output = NonIdentity<P>;
+
+    fn mul(self, rhs: &NonIdentity<P>) -> Self::Output {
+        rhs * self
+    }
+}
+
+impl<C, P> Mul<NonIdentity<P>> for &NonZeroScalar<C>
+where
+    C: CurveArithmetic,
+    for<'a> NonIdentity<P>: Mul<&'a NonZeroScalar<C>, Output = NonIdentity<P>>,
+{
+    type Output = NonIdentity<P>;
+
+    fn mul(self, rhs: NonIdentity<P>) -> Self::Output {
+        rhs * self
+    }
+}
+
+impl<C, P> Mul<&NonIdentity<P>> for &NonZeroScalar<C>
+where
+    C: CurveArithmetic,
+    for<'a> &'a NonIdentity<P>: Mul<&'a NonZeroScalar<C>, Output = NonIdentity<P>>,
+{
+    type Output = NonIdentity<P>;
+
+    fn mul(self, rhs: &NonIdentity<P>) -> Self::Output {
+        rhs * self
+    }
+}
+
+impl<C> PartialEq for NonZeroScalar<C>
+where
+    C: CurveArithmetic,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.scalar.eq(&other.scalar)
     }
 }
 

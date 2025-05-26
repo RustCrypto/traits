@@ -18,7 +18,7 @@ use crate::{CurveArithmetic, NonZeroScalar, Scalar};
 ///
 /// In the context of ECC, it's useful for ensuring that certain arithmetic
 /// cannot result in the identity point.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct NonIdentity<P> {
     point: P,
 }
@@ -163,6 +163,32 @@ where
     }
 }
 
+impl<C, P> Mul<&NonZeroScalar<C>> for NonIdentity<P>
+where
+    C: CurveArithmetic,
+    P: Copy + Mul<Scalar<C>, Output = P>,
+{
+    type Output = NonIdentity<P>;
+
+    fn mul(self, rhs: &NonZeroScalar<C>) -> Self::Output {
+        self * *rhs
+    }
+}
+
+impl<C, P> Mul<NonZeroScalar<C>> for &NonIdentity<P>
+where
+    C: CurveArithmetic,
+    P: Copy + Mul<Scalar<C>, Output = P>,
+{
+    type Output = NonIdentity<P>;
+
+    fn mul(self, rhs: NonZeroScalar<C>) -> Self::Output {
+        NonIdentity {
+            point: self.point * *rhs.as_ref(),
+        }
+    }
+}
+
 impl<C, P> Mul<&NonZeroScalar<C>> for &NonIdentity<P>
 where
     C: CurveArithmetic,
@@ -171,9 +197,7 @@ where
     type Output = NonIdentity<P>;
 
     fn mul(self, rhs: &NonZeroScalar<C>) -> Self::Output {
-        NonIdentity {
-            point: self.point * *rhs.as_ref(),
-        }
+        self * *rhs
     }
 }
 

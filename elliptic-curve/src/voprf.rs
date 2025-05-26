@@ -3,6 +3,7 @@
 //! <https://datatracker.ietf.org/doc/draft-irtf-cfrg-voprf/>
 
 use crate::PrimeCurve;
+use crate::hash2curve::ExpandMsg;
 
 /// Elliptic curve parameters used by VOPRF.
 pub trait VoprfParameters: PrimeCurve {
@@ -17,4 +18,10 @@ pub trait VoprfParameters: PrimeCurve {
     ///
     /// [voprf]: https://www.ietf.org/archive/id/draft-irtf-cfrg-voprf-19.html#name-ciphersuites-2
     type Hash: digest::Digest;
+
+    /// The `expand_message` parameter which assigns a particular algorithm for `HashToGroup`
+    /// and `HashToScalar` as defined in [section 4 of `draft-irtf-cfrg-voprf-19`][voprf].
+    ///
+    /// [voprf]: https://www.rfc-editor.org/rfc/rfc9497#name-ciphersuites
+    type ExpandMsg: for<'a> ExpandMsg<'a>;
 }

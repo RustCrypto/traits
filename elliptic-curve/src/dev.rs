@@ -9,7 +9,7 @@ use crate::{
     bigint::{Limb, U256},
     error::{Error, Result},
     ops::{Invert, LinearCombination, Reduce, ShrAssign},
-    point::AffineCoordinates,
+    point::{AffineCoordinates, NonIdentity},
     rand_core::TryRngCore,
     scalar::{FromUintUnchecked, IsHigh},
     sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
@@ -271,6 +271,38 @@ impl Mul<&Scalar> for Scalar {
     }
 }
 
+impl Mul<AffinePoint> for Scalar {
+    type Output = ProjectivePoint;
+
+    fn mul(self, _other: AffinePoint) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
+impl Mul<&AffinePoint> for Scalar {
+    type Output = ProjectivePoint;
+
+    fn mul(self, _other: &AffinePoint) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
+impl Mul<ProjectivePoint> for Scalar {
+    type Output = ProjectivePoint;
+
+    fn mul(self, _other: ProjectivePoint) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
+impl Mul<&ProjectivePoint> for Scalar {
+    type Output = ProjectivePoint;
+
+    fn mul(self, _other: &ProjectivePoint) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
 impl MulAssign<Scalar> for Scalar {
     fn mul_assign(&mut self, _rhs: Scalar) {
         unimplemented!();
@@ -333,7 +365,7 @@ impl Reduce<U256> for Scalar {
     type Bytes = FieldBytes;
 
     fn reduce(w: U256) -> Self {
-        let (r, underflow) = w.sbb(&MockCurve::ORDER, Limb::ZERO);
+        let (r, underflow) = w.borrowing_sub(&MockCurve::ORDER, Limb::ZERO);
         let underflow = Choice::from((underflow.0 >> (Limb::BITS - 1)) as u8);
         let reduced = U256::conditional_select(&w, &r, !underflow);
         Self(ScalarPrimitive::new(reduced).unwrap())
@@ -352,6 +384,12 @@ impl From<u64> for Scalar {
     }
 }
 
+impl From<NonZeroScalar> for Scalar {
+    fn from(scalar: NonZeroScalar) -> Self {
+        scalar.0.into()
+    }
+}
+
 impl From<ScalarPrimitive> for Scalar {
     fn from(scalar: ScalarPrimitive) -> Scalar {
         Self(scalar)
@@ -367,6 +405,14 @@ impl From<Scalar> for ScalarPrimitive {
 impl From<Scalar> for U256 {
     fn from(scalar: Scalar) -> U256 {
         scalar.0.to_uint()
+    }
+}
+
+impl TryFrom<Scalar> for NonZeroScalar {
+    type Error = Error;
+
+    fn try_from(scalar: Scalar) -> Result<Self> {
+        NonZeroScalar::new(scalar).into_option().ok_or(Error)
     }
 }
 
@@ -460,6 +506,12 @@ impl Default for AffinePoint {
 
 impl DefaultIsZeroes for AffinePoint {}
 
+impl From<NonIdentity<AffinePoint>> for AffinePoint {
+    fn from(affine: NonIdentity<AffinePoint>) -> Self {
+        affine.to_point()
+    }
+}
+
 impl FromEncodedPoint<MockCurve> for AffinePoint {
     fn from_encoded_point(encoded_point: &EncodedPoint) -> CtOption<Self> {
         let point = if encoded_point.is_identity() {
@@ -497,6 +549,14 @@ impl Mul<NonZeroScalar> for AffinePoint {
 
     fn mul(self, _scalar: NonZeroScalar) -> Self {
         unimplemented!();
+    }
+}
+
+impl TryFrom<AffinePoint> for NonIdentity<AffinePoint> {
+    type Error = Error;
+
+    fn try_from(affine: AffinePoint) -> Result<Self> {
+        NonIdentity::new(affine).into_option().ok_or(Error)
     }
 }
 
@@ -554,6 +614,12 @@ impl From<AffinePoint> for ProjectivePoint {
     }
 }
 
+impl From<NonIdentity<ProjectivePoint>> for ProjectivePoint {
+    fn from(point: NonIdentity<ProjectivePoint>) -> Self {
+        point.to_point()
+    }
+}
+
 impl From<ProjectivePoint> for AffinePoint {
     fn from(point: ProjectivePoint) -> AffinePoint {
         group::Curve::to_affine(&point)
@@ -569,6 +635,14 @@ impl FromEncodedPoint<MockCurve> for ProjectivePoint {
 impl ToEncodedPoint<MockCurve> for ProjectivePoint {
     fn to_encoded_point(&self, _compress: bool) -> EncodedPoint {
         unimplemented!();
+    }
+}
+
+impl TryFrom<ProjectivePoint> for NonIdentity<ProjectivePoint> {
+    type Error = Error;
+
+    fn try_from(point: ProjectivePoint) -> Result<Self> {
+        NonIdentity::new(point).into_option().ok_or(Error)
     }
 }
 

@@ -7,7 +7,7 @@ use core::num::NonZero;
 
 use crate::{Error, Result};
 use digest::{Digest, ExtendableOutput, Update, XofReader};
-use hybrid_array::typenum::{IsLess, U256};
+use hybrid_array::typenum::{IsLess, True, U256};
 use hybrid_array::{Array, ArraySize};
 
 /// Salt when the DST is too long
@@ -48,7 +48,7 @@ pub trait Expander {
 #[derive(Debug)]
 pub(crate) enum Domain<'a, L>
 where
-    L: ArraySize + IsLess<U256>,
+    L: ArraySize + IsLess<U256, Output = True>,
 {
     /// > 255
     Hashed(Array<u8, L>),
@@ -58,7 +58,7 @@ where
 
 impl<'a, L> Domain<'a, L>
 where
-    L: ArraySize + IsLess<U256>,
+    L: ArraySize + IsLess<U256, Output = True>,
 {
     pub fn xof<X>(dsts: &'a [&'a [u8]]) -> Result<Self>
     where

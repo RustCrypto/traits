@@ -1,9 +1,9 @@
 //! Elliptic curve arithmetic traits.
 
 use crate::{
-    Curve, FieldBytes, PrimeCurve, ScalarPrimitive,
-    ops::{Invert, LinearCombination, Reduce, ShrAssign},
-    point::AffineCoordinates,
+    Curve, Error, FieldBytes, NonZeroScalar, PrimeCurve, ScalarPrimitive,
+    ops::{Invert, LinearCombination, Mul, Reduce, ShrAssign},
+    point::{AffineCoordinates, NonIdentity},
     scalar::{FromUintUnchecked, IsHigh},
 };
 use core::fmt::Debug;
@@ -22,10 +22,12 @@ pub trait CurveArithmetic: Curve {
         + Default
         + DefaultIsZeroes
         + Eq
+        + From<NonIdentity<Self::AffinePoint>>
         + PartialEq
         + Sized
         + Send
-        + Sync;
+        + Sync
+        + TryInto<NonIdentity<Self::AffinePoint>, Error = Error>;
 
     /// Elliptic curve point in projective coordinates.
     ///
@@ -43,9 +45,11 @@ pub trait CurveArithmetic: Curve {
         + Default
         + DefaultIsZeroes
         + From<Self::AffinePoint>
+        + From<NonIdentity<Self::ProjectivePoint>>
         + Into<Self::AffinePoint>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar)]>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar); 2]>
+        + TryInto<NonIdentity<Self::ProjectivePoint>, Error = Error>
         + group::Curve<AffineRepr = Self::AffinePoint>
         + group::Group<Scalar = Self::Scalar>;
 
@@ -63,6 +67,7 @@ pub trait CurveArithmetic: Curve {
     /// - [`Sync`]
     type Scalar: AsRef<Self::Scalar>
         + DefaultIsZeroes
+        + From<NonZeroScalar<Self>>
         + From<ScalarPrimitive<Self>>
         + FromUintUnchecked<Uint = Self::Uint>
         + Into<FieldBytes<Self>>
@@ -70,9 +75,14 @@ pub trait CurveArithmetic: Curve {
         + Into<Self::Uint>
         + Invert<Output = CtOption<Self::Scalar>>
         + IsHigh
+        + Mul<Self::AffinePoint, Output = Self::ProjectivePoint>
+        + for<'a> Mul<&'a Self::AffinePoint, Output = Self::ProjectivePoint>
+        + Mul<Self::ProjectivePoint, Output = Self::ProjectivePoint>
+        + for<'a> Mul<&'a Self::ProjectivePoint, Output = Self::ProjectivePoint>
         + PartialOrd
         + Reduce<Self::Uint, Bytes = FieldBytes<Self>>
         + ShrAssign<usize>
+        + TryInto<NonZeroScalar<Self>, Error = Error>
         + ff::Field
         + ff::PrimeField<Repr = FieldBytes<Self>>;
 }
