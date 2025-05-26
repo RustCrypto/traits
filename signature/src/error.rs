@@ -61,7 +61,7 @@ impl Debug for Error {
         f.write_str("signature::Error { source: ")?;
 
         if let Some(source) = &self.source {
-            write!(f, "Some({})", source)?;
+            write!(f, "Some({source})")?;
         } else {
             f.write_str("None")?;
         }

@@ -60,7 +60,7 @@ impl ParamsString {
 
         // Add param name
         let offset = self.0.length;
-        if write!(self.0, "{}=", name).is_err() {
+        if write!(self.0, "{name}=").is_err() {
             self.0.length = offset;
             return Err(Error::ParamsMaxExceeded);
         }
@@ -160,7 +160,7 @@ impl ParamsString {
                 .map_err(|_| Error::ParamsMaxExceeded)?
         }
 
-        if write!(self.0, "{}={}", name, value).is_err() {
+        if write!(self.0, "{name}={value}").is_err() {
             self.0.length = orig_len;
             return Err(Error::ParamsMaxExceeded);
         }

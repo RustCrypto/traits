@@ -272,7 +272,7 @@ impl fmt::Display for Output {
 
 impl fmt::Debug for Output {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Output(\"{}\")", self)
+        write!(f, "Output(\"{self}\")")
     }
 }
 
