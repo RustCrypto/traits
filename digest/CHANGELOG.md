@@ -7,20 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.11.0 (UNRELEASED)
 ### Added
-- `CustomizedInit` trait ([#1334]).
+- `CustomizedInit` trait ([#1334])
+- `buffer_fixed`, `buffer_ct_variable`, `buffer_rt_variable`, and `buffer_xof` macros ([#1799])
 
 ### Changed
 - `crypto-common` dependency bumped to v0.2 ([#1173])
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
+- `CtVariableCoreWrapper` renamed to `CtOutWrapper` ([#1799])
+- Removed the OID type parameter from `CtOutWrapper` ([#1799])
 
 ### Removed
 - `Mac::new`, `Mac::new_from_slice`, and `Mac::generate_key` methods ([#1173])
+- `CoreWrapper`, `RtVariableCoreWrapper`, and `XofReaderCoreWrapper` types ([#1799])
 - `HashReader` and `HashWriter` are moved to the `digest-io` crate ([#1809])
 - `io::Write/Read` implementations in favor of the `digest_io::IoWrapper` type ([#1809])
 
 [#1173]: https://github.com/RustCrypto/traits/pull/1173
 [#1334]: https://github.com/RustCrypto/traits/pull/1334
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
+[#1799]: https://github.com/RustCrypto/traits/pull/1799
 [#1809]: https://github.com/RustCrypto/traits/pull/1809
 
 ## 0.10.7 (2023-05-19)
