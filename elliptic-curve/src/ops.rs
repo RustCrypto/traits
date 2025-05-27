@@ -71,10 +71,7 @@ where
             field_elements_inverses.as_mut(),
         );
 
-        CtOption::new(
-            field_elements_inverses.into_iter().collect(),
-            inversion_succeeded,
-        )
+        CtOption::new(field_elements_inverses, inversion_succeeded)
     }
 }
 
