@@ -32,10 +32,10 @@ where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
     // If DST is larger than 255 bytes, the length of the computed DST will depend on the output
     // size of the hash, which is still not allowed to be larger than 255.
-    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-6
+    // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-6
     HashT::OutputSize: IsLess<U256, Output = True>,
     // The number of bits output by `HashT` MUST be at most `HashT::BlockSize`.
-    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-4
+    // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-4
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
     // The number of bits output by `HashT` MUST be at least `K * 2`.
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1

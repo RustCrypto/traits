@@ -1,6 +1,6 @@
 //! Optimized simplified Shallue-van de Woestijne-Ulas methods.
 //!
-//! <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-16.html#straightline-sswu>
+//! <hhttps://www.rfc-editor.org/rfc/rfc9380.html#name-simplified-swu-method>
 
 use ff::Field;
 use subtle::Choice;

@@ -1,6 +1,6 @@
 //! Traits for hashing to field elements.
 //!
-//! <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve>
+//! <https://www.rfc-editor.org/rfc/rfc9380.html>
 
 mod expand_msg;
 
@@ -25,7 +25,7 @@ pub trait FromOkm {
 
 /// Convert an arbitrary byte sequence into a field element.
 ///
-/// <https://tools.ietf.org/html/draft-irtf-cfrg-hash-to-curve-11#section-5.3>
+/// <https://www.rfc-editor.org/rfc/rfc9380.html#name-hash_to_field-implementatio>
 ///
 /// # Errors
 /// See implementors of [`ExpandMsg`] for errors:

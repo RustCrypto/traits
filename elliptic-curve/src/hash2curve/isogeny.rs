@@ -1,6 +1,6 @@
 //! Traits for mapping an isogeny to another curve
 //!
-//! <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve>
+//! <https://www.rfc-editor.org/rfc/rfc9380.html>
 
 use core::ops::{AddAssign, Mul};
 use ff::Field;

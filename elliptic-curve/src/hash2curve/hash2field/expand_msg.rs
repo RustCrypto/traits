@@ -46,9 +46,9 @@ pub trait Expander {
 
 /// The domain separation tag
 ///
-/// Implements [section 5.4.3 of `draft-irtf-cfrg-hash-to-curve-13`][dst].
+/// Implements [section 5.3.3 of RFC9380][dst].
 ///
-/// [dst]: https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-5.4.3
+/// [dst]: https://www.rfc-editor.org/rfc/rfc9380.html#name-using-dsts-longer-than-255-
 #[derive(Debug)]
 pub(crate) enum Domain<'a, L>
 where

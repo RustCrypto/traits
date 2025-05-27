@@ -13,7 +13,7 @@ pub trait GroupDigest: MapToCurve {
 
     /// Computes the hash to curve routine.
     ///
-    /// From <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html>:
+    /// From <https://www.rfc-editor.org/rfc/rfc9380.html>:
     ///
     /// > Uniform encoding from byte strings to points in G.
     /// > That is, the distribution of its output is statistically close
@@ -44,7 +44,7 @@ pub trait GroupDigest: MapToCurve {
 
     /// Computes the encode to curve routine.
     ///
-    /// From <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html>:
+    /// From <https://www.rfc-editor.org/rfc/rfc9380.html>:
     ///
     /// > Nonuniform encoding from byte strings to
     /// > points in G. That is, the distribution of its output is not
@@ -72,7 +72,7 @@ pub trait GroupDigest: MapToCurve {
     }
 
     /// Computes the hash to field routine according to
-    /// <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5>
+    /// <https://www.rfc-editor.org/rfc/rfc9380.html#section-5-4>
     /// and returns a scalar.
     ///
     /// # Errors
