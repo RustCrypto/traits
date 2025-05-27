@@ -10,7 +10,7 @@ use digest::{
         Array,
         typenum::{IsGreaterOrEqual, IsLess, IsLessOrEqual, True, U2, U256, Unsigned},
     },
-    core_api::BlockSizeUser,
+    block_api::BlockSizeUser,
 };
 
 /// Implements `expand_message_xof` via the [`ExpandMsg`] trait:
