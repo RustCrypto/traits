@@ -15,4 +15,9 @@ members = [
 ]
 
 [patch.crates-io]
+digest = { path = "digest" }
+hkdf = { git = "https://github.com/RustCrypto/KDFs.git" }
+hmac = { git = "https://github.com/RustCrypto/MACs.git" }
+sha2 = { git = "https://github.com/RustCrypto/hashes.git" }
+sha3 = { git = "https://github.com/RustCrypto/hashes.git" }
 signature = { path = "signature" }
