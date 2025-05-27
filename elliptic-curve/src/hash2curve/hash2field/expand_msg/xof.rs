@@ -3,7 +3,9 @@
 use super::{Domain, ExpandMsg, Expander};
 use crate::{Error, Result};
 use core::{fmt, num::NonZero, ops::Mul};
-use digest::{ExtendableOutput, HashMarker, Update, XofReader};
+use digest::{
+    CollisionResistance, ExtendableOutput, HashMarker, Update, XofReader, typenum::IsGreaterOrEqual,
+};
 use hybrid_array::{
     ArraySize,
     typenum::{IsLess, Prod, True, U2, U256},
@@ -40,6 +42,9 @@ where
     // If DST is larger than 255 bytes, the length of the computed DST is calculated by `K * 2`.
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
     K: Mul<U2, Output: ArraySize + IsLess<U256, Output = True>>,
+    // The collision resistance of `HashT` MUST be at least `K` bits.
+    // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.2-2.1
+    HashT: CollisionResistance<CollisionResistance: IsGreaterOrEqual<K, Output = True>>,
 {
     type Expander<'dst> = Self;
 
@@ -114,7 +119,11 @@ mod test {
         #[allow(clippy::panic_in_result_fn)]
         fn assert<HashT, L>(&self, dst: &'static [u8], domain: &Domain<'_, U32>) -> Result<()>
         where
-            HashT: Default + ExtendableOutput + Update + HashMarker,
+            HashT: Default
+                + ExtendableOutput
+                + Update
+                + HashMarker
+                + CollisionResistance<CollisionResistance: IsGreaterOrEqual<U16, Output = True>>,
             L: ArraySize,
         {
             assert_message(self.msg, domain, L::to_u16(), self.msg_prime);
