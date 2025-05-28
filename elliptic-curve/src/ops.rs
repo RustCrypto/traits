@@ -1,5 +1,6 @@
 //! Traits for arithmetic operations on elliptic curve field elements.
 
+use core::iter;
 pub use core::ops::{Add, AddAssign, Mul, Neg, Shr, ShrAssign, Sub, SubAssign};
 pub use crypto_bigint::Invert;
 
@@ -7,7 +8,7 @@ use crypto_bigint::Integer;
 use subtle::{Choice, ConditionallySelectable, CtOption};
 
 #[cfg(feature = "alloc")]
-use alloc::vec::Vec;
+use alloc::{borrow::ToOwned, vec::Vec};
 
 /// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
 /// at an amortized cost that should be practically as efficient as a single inversion.
@@ -32,16 +33,11 @@ where
     type Output = [Self; N];
 
     fn batch_invert(field_elements: &[Self; N]) -> CtOption<[Self; N]> {
-        let mut field_elements_multiples = [Self::default(); N];
-        let mut field_elements_multiples_inverses = [Self::default(); N];
-        let mut field_elements_inverses = [Self::default(); N];
+        let mut field_elements_inverses = *field_elements;
+        let mut field_elements_pad = [Self::default(); N];
 
-        let inversion_succeeded = invert_batch_internal(
-            field_elements,
-            &mut field_elements_multiples,
-            &mut field_elements_multiples_inverses,
-            &mut field_elements_inverses,
-        );
+        let inversion_succeeded =
+            invert_batch_internal(&mut field_elements_inverses, field_elements_pad.as_mut());
 
         CtOption::new(field_elements_inverses, inversion_succeeded)
     }
@@ -59,17 +55,11 @@ where
     type Output = Vec<Self>;
 
     fn batch_invert(field_elements: &[Self]) -> CtOption<Vec<Self>> {
-        let mut field_elements_multiples: Vec<Self> = vec![Self::default(); field_elements.len()];
-        let mut field_elements_multiples_inverses: Vec<Self> =
-            vec![Self::default(); field_elements.len()];
-        let mut field_elements_inverses: Vec<Self> = vec![Self::default(); field_elements.len()];
+        let mut field_elements_inverses: Vec<Self> = field_elements.to_owned();
+        let mut field_elements_pad: Vec<Self> = vec![Self::default(); field_elements.len()];
 
-        let inversion_succeeded = invert_batch_internal(
-            field_elements,
-            field_elements_multiples.as_mut(),
-            field_elements_multiples_inverses.as_mut(),
-            field_elements_inverses.as_mut(),
-        );
+        let inversion_succeeded =
+            invert_batch_internal(&mut field_elements_inverses, field_elements_pad.as_mut());
 
         CtOption::new(field_elements_inverses, inversion_succeeded)
     }
@@ -84,41 +74,50 @@ where
 fn invert_batch_internal<
     T: Invert<Output = CtOption<T>> + Mul<T, Output = T> + Default + ConditionallySelectable,
 >(
-    field_elements: &[T],
-    field_elements_multiples: &mut [T],
-    field_elements_multiples_inverses: &mut [T],
-    field_elements_inverses: &mut [T],
+    field_elements: &mut [T],
+    field_elements_pad: &mut [T],
 ) -> Choice {
     let batch_size = field_elements.len();
-    if batch_size == 0
-        || batch_size != field_elements_multiples.len()
-        || batch_size != field_elements_multiples_inverses.len()
-    {
+    if batch_size == 0 || batch_size != field_elements_pad.len() {
         return Choice::from(0);
     }
 
-    field_elements_multiples[0] = field_elements[0];
-    for i in 1..batch_size {
+    let mut acc = field_elements[0];
+    field_elements_pad[0] = acc;
+
+    for (field_element, field_element_pad) in field_elements
+        .iter_mut()
+        .zip(field_elements_pad.iter_mut())
+        .skip(1)
+    {
         // $ a_n = a_{n-1}*x_n $
-        field_elements_multiples[i] = field_elements_multiples[i - 1] * field_elements[i];
+        acc = acc * *field_element;
+        *field_element_pad = acc;
     }
 
-    field_elements_multiples[batch_size - 1]
-        .invert()
-        .map(|multiple_of_inverses_of_all_field_elements| {
-            field_elements_multiples_inverses[batch_size - 1] =
-                multiple_of_inverses_of_all_field_elements;
-            for i in (1..batch_size).rev() {
-                // $ a_{n-1} = {a_n}^{-1}*x_n $
-                field_elements_multiples_inverses[i - 1] =
-                    field_elements_multiples_inverses[i] * field_elements[i];
-            }
+    acc.invert()
+        .map(|mut acc| {
+            // Shift the iterator by one element back. The one we are skipping is served in `acc`.
+            let field_elements_pad = field_elements_pad
+                .iter()
+                .rev()
+                .skip(1)
+                .map(Some)
+                .chain(iter::once(None));
 
-            field_elements_inverses[0] = field_elements_multiples_inverses[0];
-            for i in 1..batch_size {
-                // $ {x_n}^{-1} = a_{n}^{-1}*a_{n-1} $
-                field_elements_inverses[i] =
-                    field_elements_multiples_inverses[i] * field_elements_multiples[i - 1];
+            for (field_element, field_element_pad) in
+                field_elements.iter_mut().rev().zip(field_elements_pad)
+            {
+                if let Some(field_element_pad) = field_element_pad {
+                    // Store in a temporary so we can overwrite `field_element`.
+                    // $ a_{n-1} = {a_n}^{-1}*x_n $
+                    let tmp = acc * *field_element;
+                    // $ {x_n}^{-1} = a_{n}^{-1}*a_{n-1} $
+                    *field_element = acc * *field_element_pad;
+                    acc = tmp;
+                } else {
+                    *field_element = acc;
+                }
             }
         })
         .is_some()
