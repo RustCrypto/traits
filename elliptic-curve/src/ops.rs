@@ -5,14 +5,15 @@ pub use core::ops::{Add, AddAssign, Mul, Neg, Shr, ShrAssign, Sub, SubAssign};
 pub use crypto_bigint::Invert;
 
 use crypto_bigint::Integer;
-use subtle::{Choice, ConditionallySelectable, CtOption};
+use ff::Field;
+use subtle::{Choice, CtOption};
 
 #[cfg(feature = "alloc")]
 use alloc::{borrow::ToOwned, vec::Vec};
 
 /// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
 /// at an amortized cost that should be practically as efficient as a single inversion.
-pub trait BatchInvert<FieldElements: ?Sized>: Invert + Sized {
+pub trait BatchInvert<FieldElements: ?Sized>: Field + Sized {
     /// The output of batch inversion. A container of field elements.
     type Output: AsRef<[Self]>;
 
@@ -24,11 +25,7 @@ pub trait BatchInvert<FieldElements: ?Sized>: Invert + Sized {
 
 impl<const N: usize, T> BatchInvert<[T; N]> for T
 where
-    T: Invert<Output = CtOption<Self>>
-        + Mul<Self, Output = Self>
-        + Copy
-        + Default
-        + ConditionallySelectable,
+    T: Field,
 {
     type Output = [Self; N];
 
@@ -46,11 +43,7 @@ where
 #[cfg(feature = "alloc")]
 impl<T> BatchInvert<[T]> for T
 where
-    T: Invert<Output = CtOption<Self>>
-        + Mul<Self, Output = Self>
-        + Copy
-        + Default
-        + ConditionallySelectable,
+    T: Field,
 {
     type Output = Vec<Self>;
 
@@ -71,9 +64,7 @@ where
 /// to computing a single inversion, plus some storage and `O(n)` extra multiplications.
 ///
 /// See: https://iacr.org/archive/pkc2004/29470042/29470042.pdf section 2.2.
-fn invert_batch_internal<
-    T: Invert<Output = CtOption<T>> + Mul<T, Output = T> + Default + ConditionallySelectable,
->(
+fn invert_batch_internal<T: Field>(
     field_elements: &mut [T],
     field_elements_pad: &mut [T],
 ) -> Choice {
@@ -91,7 +82,7 @@ fn invert_batch_internal<
         .skip(1)
     {
         // $ a_n = a_{n-1}*x_n $
-        acc = acc * *field_element;
+        acc *= *field_element;
         *field_element_pad = acc;
     }
 
