@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Traits for describing block ciphers and stream ciphers"
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.2", path = "../crypto-common" }
+crypto-common = { version = "0.2.0-rc.3", path = "../crypto-common" }
 inout = "0.2.0-rc.4"
 
 # optional dependencies
