@@ -9,7 +9,7 @@ use ff::Field;
 use subtle::{Choice, CtOption};
 
 #[cfg(feature = "alloc")]
-use alloc::vec::Vec;
+use alloc::{borrow::ToOwned, vec::Vec};
 
 /// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
 /// at an amortized cost that should be practically as efficient as a single inversion.
@@ -31,6 +31,38 @@ where
 
     fn batch_invert(mut field_elements: [Self; N]) -> CtOption<[Self; N]> {
         let mut field_elements_pad = [Self::default(); N];
+        let inversion_succeeded =
+            invert_batch_internal(&mut field_elements, &mut field_elements_pad);
+
+        CtOption::new(field_elements, inversion_succeeded)
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<'this, T> BatchInvert<&'this mut [Self]> for T
+where
+    T: Field,
+{
+    type Output = &'this mut [Self];
+
+    fn batch_invert(field_elements: &'this mut [Self]) -> CtOption<&'this mut [Self]> {
+        let mut field_elements_pad: Vec<Self> = vec![Self::default(); field_elements.len()];
+        let inversion_succeeded = invert_batch_internal(field_elements, &mut field_elements_pad);
+
+        CtOption::new(field_elements, inversion_succeeded)
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<T> BatchInvert<&[Self]> for T
+where
+    T: Field,
+{
+    type Output = Vec<Self>;
+
+    fn batch_invert(field_elements: &[Self]) -> CtOption<Vec<Self>> {
+        let mut field_elements: Vec<Self> = field_elements.to_owned();
+        let mut field_elements_pad: Vec<Self> = vec![Self::default(); field_elements.len()];
         let inversion_succeeded =
             invert_batch_internal(&mut field_elements, &mut field_elements_pad);
 
