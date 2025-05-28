@@ -16,7 +16,7 @@ such as AES-GCM as ChaCha20Poly1305, which provide a high-level API
 """
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.1", path = "../crypto-common" }
+crypto-common = { version = "0.2.0-rc.3", path = "../crypto-common" }
 inout = "0.2.0-rc.4"
 
 # optional dependencies
