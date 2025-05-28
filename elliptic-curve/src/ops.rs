@@ -21,6 +21,16 @@ pub trait BatchInvert<FieldElements: ?Sized>: Field + Sized {
     fn batch_invert(
         field_elements: &FieldElements,
     ) -> CtOption<<Self as BatchInvert<FieldElements>>::Output>;
+
+    /// Invert a batch of field elements in-place.
+    ///
+    /// # ⚠️ Warning
+    ///
+    /// Even though `field_elements` is modified regardless of success, on failure it does not
+    /// contain correctly inverted scalars and should be discarded instead.
+    ///
+    /// Consider using [`Self::batch_invert()`] instead.
+    fn batch_invert_mut(field_elements: &mut FieldElements) -> Choice;
 }
 
 impl<const N: usize, T> BatchInvert<[T; N]> for T
@@ -31,12 +41,15 @@ where
 
     fn batch_invert(field_elements: &[Self; N]) -> CtOption<[Self; N]> {
         let mut field_elements_inverses = *field_elements;
-        let mut field_elements_pad = [Self::default(); N];
-
-        let inversion_succeeded =
-            invert_batch_internal(&mut field_elements_inverses, field_elements_pad.as_mut());
+        let inversion_succeeded = Self::batch_invert_mut(&mut field_elements_inverses);
 
         CtOption::new(field_elements_inverses, inversion_succeeded)
+    }
+
+    fn batch_invert_mut(field_elements: &mut [T; N]) -> Choice {
+        let mut field_elements_pad = [Self::default(); N];
+
+        invert_batch_internal(field_elements, &mut field_elements_pad)
     }
 }
 
@@ -49,12 +62,15 @@ where
 
     fn batch_invert(field_elements: &[Self]) -> CtOption<Vec<Self>> {
         let mut field_elements_inverses: Vec<Self> = field_elements.to_owned();
-        let mut field_elements_pad: Vec<Self> = vec![Self::default(); field_elements.len()];
-
-        let inversion_succeeded =
-            invert_batch_internal(&mut field_elements_inverses, field_elements_pad.as_mut());
+        let inversion_succeeded = Self::batch_invert_mut(field_elements_inverses.as_mut_slice());
 
         CtOption::new(field_elements_inverses, inversion_succeeded)
+    }
+
+    fn batch_invert_mut(field_elements: &mut [T]) -> Choice {
+        let mut field_elements_pad: Vec<Self> = vec![Self::default(); field_elements.len()];
+
+        invert_batch_internal(field_elements, field_elements_pad.as_mut())
     }
 }
 
