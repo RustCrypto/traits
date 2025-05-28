@@ -1,18 +1,11 @@
 //! Traits for handling hash to curve.
 
 use super::{ExpandMsg, FromOkm, MapToCurve, hash_to_field};
-use crate::{CurveArithmetic, ProjectivePoint, Result};
-use group::cofactor::CofactorGroup;
+use crate::{ProjectivePoint, Result};
 use hybrid_array::typenum::Unsigned;
 
-/// Adds hashing arbitrary byte sequences to a valid group element
-pub trait GroupDigest: CurveArithmetic
-where
-    ProjectivePoint<Self>: CofactorGroup,
-{
-    /// The field element representation for a group value with multiple elements
-    type FieldElement: FromOkm + MapToCurve<Output = ProjectivePoint<Self>> + Default + Copy;
-
+/// Hash arbitrary byte sequences to a valid group element.
+pub trait GroupDigest: MapToCurve {
     /// The target security level in bytes:
     /// <https://www.rfc-editor.org/rfc/rfc9380.html#section-8.9-2.2>
     /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-target-security-levels>
@@ -58,19 +51,9 @@ where
     ) -> Result<ProjectivePoint<Self>> {
         let mut u = [Self::FieldElement::default(), Self::FieldElement::default()];
         hash_to_field::<X, _>(msgs, dsts, &mut u)?;
-        let q0 = u[0].map_to_curve();
-        let q1 = u[1].map_to_curve();
-        // Ideally we could add and then clear cofactor once
-        // thus saving a call but the field elements may not
-        // add properly due to the underlying implementation
-        // which could result in an incorrect subgroup.
-        // This is caused curve coefficients being different than
-        // what is usually implemented.
-        // FieldElement expects the `a` and `b` to be the original values
-        // isogenies are different with curves like k256 and bls12-381.
-        // This problem doesn't manifest for curves with no isogeny like p256.
-        // For k256 and p256 clear_cofactor doesn't do anything anyway so it will be a no-op.
-        Ok(q0.clear_cofactor().into() + q1.clear_cofactor())
+        let q0 = Self::map_to_curve(u[0]);
+        let q1 = Self::map_to_curve(u[1]);
+        Ok(Self::add_and_map_to_subgroup(q0, q1))
     }
 
     /// Computes the encode to curve routine.
@@ -98,8 +81,8 @@ where
     ) -> Result<ProjectivePoint<Self>> {
         let mut u = [Self::FieldElement::default()];
         hash_to_field::<X, _>(msgs, dsts, &mut u)?;
-        let q0 = u[0].map_to_curve();
-        Ok(q0.clear_cofactor().into())
+        let q0 = Self::map_to_curve(u[0]);
+        Ok(Self::map_to_subgroup(q0))
     }
 
     /// Computes the hash to field routine according to
