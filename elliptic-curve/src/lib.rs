@@ -112,8 +112,8 @@ mod public_key;
 #[cfg(feature = "jwk")]
 mod jwk;
 
-#[cfg(feature = "voprf")]
-mod voprf;
+#[cfg(feature = "oprf")]
+mod oprf;
 
 pub use crate::{
     error::{Error, Result},
@@ -146,8 +146,8 @@ pub use crate::jwk::{JwkEcKey, JwkParameters};
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;
 
-#[cfg(feature = "voprf")]
-pub use crate::voprf::VoprfParameters;
+#[cfg(feature = "oprf")]
+pub use crate::oprf::OprfParameters;
 
 use core::{
     fmt::Debug,

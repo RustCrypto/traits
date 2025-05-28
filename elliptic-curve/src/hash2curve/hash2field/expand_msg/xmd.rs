@@ -8,7 +8,7 @@ use digest::{
     FixedOutput, HashMarker,
     array::{
         Array,
-        typenum::{IsGreaterOrEqual, IsLess, IsLessOrEqual, True, U2, U256, Unsigned},
+        typenum::{IsGreaterOrEqual, IsLess, IsLessOrEqual, Prod, True, U2, U256, Unsigned},
     },
     block_api::BlockSizeUser,
 };
@@ -16,45 +16,39 @@ use digest::{
 /// Implements `expand_message_xof` via the [`ExpandMsg`] trait:
 /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-expand_message_xmd>
 ///
-/// `K` is the target security level in bytes:
-/// <https://www.rfc-editor.org/rfc/rfc9380.html#section-8.9-2.2>
-/// <https://www.rfc-editor.org/rfc/rfc9380.html#name-target-security-levels>
-///
 /// # Errors
-/// - `dst.is_empty()`
+/// - `dst` contains no bytes
 /// - `len_in_bytes > u16::MAX`
 /// - `len_in_bytes > 255 * HashT::OutputSize`
 #[derive(Debug)]
-pub struct ExpandMsgXmd<HashT, K>(PhantomData<(HashT, K)>)
+pub struct ExpandMsgXmd<HashT>(PhantomData<HashT>)
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
     HashT::OutputSize: IsLess<U256, Output = True>,
-    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
-    K: Mul<U2>,
-    HashT::OutputSize: IsGreaterOrEqual<<K as Mul<U2>>::Output, Output = True>;
+    HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>;
 
-impl<'a, HashT, K> ExpandMsg<'a> for ExpandMsgXmd<HashT, K>
+impl<HashT, K> ExpandMsg<K> for ExpandMsgXmd<HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
     // If DST is larger than 255 bytes, the length of the computed DST will depend on the output
-    // size of the hash, which is still not allowed to be larger than 256:
-    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-6
+    // size of the hash, which is still not allowed to be larger than 255.
+    // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-6
     HashT::OutputSize: IsLess<U256, Output = True>,
-    // Constraint set by `expand_message_xmd`:
-    // https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5.4.1-4
+    // The number of bits output by `HashT` MUST be at most `HashT::BlockSize`.
+    // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-4
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
-    // The number of bits output by `HashT` MUST be larger or equal to `K * 2`:
+    // The number of bits output by `HashT` MUST be at least `K * 2`.
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
     K: Mul<U2>,
-    HashT::OutputSize: IsGreaterOrEqual<<K as Mul<U2>>::Output, Output = True>,
+    HashT::OutputSize: IsGreaterOrEqual<Prod<K, U2>, Output = True>,
 {
-    type Expander = ExpanderXmd<'a, HashT>;
+    type Expander<'dst> = ExpanderXmd<'dst, HashT>;
 
-    fn expand_message(
-        msgs: &[&[u8]],
-        dsts: &'a [&'a [u8]],
+    fn expand_message<'dst>(
+        msg: &[&[u8]],
+        dst: &'dst [&[u8]],
         len_in_bytes: NonZero<usize>,
-    ) -> Result<Self::Expander> {
+    ) -> Result<Self::Expander<'dst>> {
         let len_in_bytes_u16 = u16::try_from(len_in_bytes.get()).map_err(|_| Error)?;
 
         // `255 * <b_in_bytes>` can not exceed `u16::MAX`
@@ -65,11 +59,11 @@ where
         let b_in_bytes = HashT::OutputSize::to_usize();
         let ell = u8::try_from(len_in_bytes.get().div_ceil(b_in_bytes)).map_err(|_| Error)?;
 
-        let domain = Domain::xmd::<HashT>(dsts)?;
+        let domain = Domain::xmd::<HashT>(dst)?;
         let mut b_0 = HashT::default();
         b_0.update(&Array::<u8, HashT::BlockSize>::default());
 
-        for msg in msgs {
+        for msg in msg {
             b_0.update(msg);
         }
 
@@ -222,12 +216,12 @@ mod test {
             HashT::OutputSize: IsLess<U256, Output = True>
                 + IsLessOrEqual<HashT::BlockSize, Output = True>
                 + Mul<U8>,
-            HashT::OutputSize: IsGreaterOrEqual<<U4 as Mul<U2>>::Output, Output = True>,
+            HashT::OutputSize: IsGreaterOrEqual<U8, Output = True>,
         {
             assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
 
             let dst = [dst];
-            let mut expander = ExpandMsgXmd::<HashT, U4>::expand_message(
+            let mut expander = <ExpandMsgXmd<HashT> as ExpandMsg<U4>>::expand_message(
                 &[self.msg],
                 &dst,
                 NonZero::new(L::to_usize()).ok_or(Error)?,

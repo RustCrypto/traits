@@ -2,38 +2,31 @@
 
 use super::{Domain, ExpandMsg, Expander};
 use crate::{Error, Result};
-use core::{fmt, marker::PhantomData, num::NonZero, ops::Mul};
-use digest::{ExtendableOutput, HashMarker, Update, XofReader};
+use core::{fmt, num::NonZero, ops::Mul};
+use digest::{
+    CollisionResistance, ExtendableOutput, HashMarker, Update, XofReader, typenum::IsGreaterOrEqual,
+};
 use hybrid_array::{
     ArraySize,
-    typenum::{IsLess, True, U2, U256},
+    typenum::{IsLess, Prod, True, U2, U256},
 };
 
 /// Implements `expand_message_xof` via the [`ExpandMsg`] trait:
 /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-expand_message_xof>
 ///
-/// `K` is the target security level in bytes:
-/// <https://www.rfc-editor.org/rfc/rfc9380.html#section-8.9-2.2>
-/// <https://www.rfc-editor.org/rfc/rfc9380.html#name-target-security-levels>
-///
 /// # Errors
-/// - `dst.is_empty()`
+/// - `dst` contains no bytes
 /// - `len_in_bytes > u16::MAX`
-pub struct ExpandMsgXof<HashT, K>
+pub struct ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
-    K: Mul<U2>,
-    <K as Mul<U2>>::Output: ArraySize + IsLess<U256, Output = True>,
 {
     reader: <HashT as ExtendableOutput>::Reader,
-    _k: PhantomData<K>,
 }
 
-impl<HashT, K> fmt::Debug for ExpandMsgXof<HashT, K>
+impl<HashT> fmt::Debug for ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
-    K: Mul<U2>,
-    <K as Mul<U2>>::Output: ArraySize + IsLess<U256, Output = True>,
     <HashT as ExtendableOutput>::Reader: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -43,27 +36,29 @@ where
     }
 }
 
-impl<'a, HashT, K> ExpandMsg<'a> for ExpandMsgXof<HashT, K>
+impl<HashT, K> ExpandMsg<K> for ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
     // If DST is larger than 255 bytes, the length of the computed DST is calculated by `K * 2`.
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
-    K: Mul<U2>,
-    <K as Mul<U2>>::Output: ArraySize + IsLess<U256, Output = True>,
+    K: Mul<U2, Output: ArraySize + IsLess<U256, Output = True>>,
+    // The collision resistance of `HashT` MUST be at least `K` bits.
+    // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.2-2.1
+    HashT: CollisionResistance<CollisionResistance: IsGreaterOrEqual<K, Output = True>>,
 {
-    type Expander = Self;
+    type Expander<'dst> = Self;
 
-    fn expand_message(
-        msgs: &[&[u8]],
-        dsts: &'a [&'a [u8]],
+    fn expand_message<'dst>(
+        msg: &[&[u8]],
+        dst: &'dst [&[u8]],
         len_in_bytes: NonZero<usize>,
-    ) -> Result<Self::Expander> {
+    ) -> Result<Self::Expander<'dst>> {
         let len_in_bytes = u16::try_from(len_in_bytes.get()).map_err(|_| Error)?;
 
-        let domain = Domain::<<K as Mul<U2>>::Output>::xof::<HashT>(dsts)?;
+        let domain = Domain::<Prod<K, U2>>::xof::<HashT>(dst)?;
         let mut reader = HashT::default();
 
-        for msg in msgs {
+        for msg in msg {
             reader = reader.chain(msg);
         }
 
@@ -71,18 +66,13 @@ where
         domain.update_hash(&mut reader);
         reader.update(&[domain.len()]);
         let reader = reader.finalize_xof();
-        Ok(Self {
-            reader,
-            _k: PhantomData,
-        })
+        Ok(Self { reader })
     }
 }
 
-impl<HashT, K> Expander for ExpandMsgXof<HashT, K>
+impl<HashT> Expander for ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
-    K: Mul<U2>,
-    <K as Mul<U2>>::Output: ArraySize + IsLess<U256, Output = True>,
 {
     fn fill_bytes(&mut self, okm: &mut [u8]) {
         self.reader.read(okm);
@@ -129,12 +119,16 @@ mod test {
         #[allow(clippy::panic_in_result_fn)]
         fn assert<HashT, L>(&self, dst: &'static [u8], domain: &Domain<'_, U32>) -> Result<()>
         where
-            HashT: Default + ExtendableOutput + Update + HashMarker,
+            HashT: Default
+                + ExtendableOutput
+                + Update
+                + HashMarker
+                + CollisionResistance<CollisionResistance: IsGreaterOrEqual<U16, Output = True>>,
             L: ArraySize,
         {
             assert_message(self.msg, domain, L::to_u16(), self.msg_prime);
 
-            let mut expander = ExpandMsgXof::<HashT, U16>::expand_message(
+            let mut expander = <ExpandMsgXof<HashT> as ExpandMsg<U16>>::expand_message(
                 &[self.msg],
                 &[dst],
                 NonZero::new(L::to_usize()).ok_or(Error)?,

@@ -1,6 +1,6 @@
 //! Traits for hashing to field elements.
 //!
-//! <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve>
+//! <https://www.rfc-editor.org/rfc/rfc9380.html>
 
 mod expand_msg;
 
@@ -25,7 +25,7 @@ pub trait FromOkm {
 
 /// Convert an arbitrary byte sequence into a field element.
 ///
-/// <https://tools.ietf.org/html/draft-irtf-cfrg-hash-to-curve-11#section-5.3>
+/// <https://www.rfc-editor.org/rfc/rfc9380.html#name-hash_to_field-implementatio>
 ///
 /// # Errors
 /// See implementors of [`ExpandMsg`] for errors:
@@ -37,9 +37,9 @@ pub trait FromOkm {
 /// [`ExpandMsgXmd`]: crate::hash2field::ExpandMsgXmd
 /// [`ExpandMsgXof`]: crate::hash2field::ExpandMsgXof
 #[doc(hidden)]
-pub fn hash_to_field<'a, E, T>(data: &[&[u8]], domain: &'a [&'a [u8]], out: &mut [T]) -> Result<()>
+pub fn hash_to_field<E, K, T>(data: &[&[u8]], domain: &[&[u8]], out: &mut [T]) -> Result<()>
 where
-    E: ExpandMsg<'a>,
+    E: ExpandMsg<K>,
     T: FromOkm + Default,
 {
     let len_in_bytes = T::Length::to_usize()

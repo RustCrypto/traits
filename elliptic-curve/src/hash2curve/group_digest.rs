@@ -1,6 +1,6 @@
 //! Traits for handling hash to curve.
 
-use super::{ExpandMsg, FromOkm, MapToCurve, hash_to_field};
+use super::{ExpandMsg, MapToCurve, hash_to_field};
 use crate::{ProjectivePoint, Result};
 use hybrid_array::typenum::Unsigned;
 
@@ -13,7 +13,7 @@ pub trait GroupDigest: MapToCurve {
 
     /// Computes the hash to curve routine.
     ///
-    /// From <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html>:
+    /// From <https://www.rfc-editor.org/rfc/rfc9380.html>:
     ///
     /// > Uniform encoding from byte strings to points in G.
     /// > That is, the distribution of its output is statistically close
@@ -21,20 +21,6 @@ pub trait GroupDigest: MapToCurve {
     /// > This function is suitable for most applications requiring a random
     /// > oracle returning points in G assuming a cryptographically secure
     /// > hash function is used.
-    ///
-    /// # Examples
-    ///
-    /// ## Using a fixed size hash function
-    ///
-    /// ```ignore
-    /// let pt = ProjectivePoint::hash_from_bytes::<ExpandMsgXmd<sha2::Sha256>>(b"test data", b"CURVE_XMD:SHA-256_SSWU_RO_");
-    /// ```
-    ///
-    /// ## Using an extendable output function
-    ///
-    /// ```ignore
-    /// let pt = ProjectivePoint::hash_from_bytes::<ExpandMsgXof<sha3::Shake256>>(b"test data", b"CURVE_XOF:SHAKE-256_SSWU_RO_");
-    /// ```
     ///
     /// # Errors
     /// See implementors of [`ExpandMsg`] for errors:
@@ -45,12 +31,12 @@ pub trait GroupDigest: MapToCurve {
     ///
     /// [`ExpandMsgXmd`]: crate::hash2curve::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2curve::ExpandMsgXof
-    fn hash_from_bytes<'a, X: ExpandMsg<'a>>(
-        msgs: &[&[u8]],
-        dsts: &'a [&'a [u8]],
-    ) -> Result<ProjectivePoint<Self>> {
+    fn hash_from_bytes<X>(msg: &[&[u8]], dst: &[&[u8]]) -> Result<ProjectivePoint<Self>>
+    where
+        X: ExpandMsg<Self::K>,
+    {
         let mut u = [Self::FieldElement::default(), Self::FieldElement::default()];
-        hash_to_field::<X, _>(msgs, dsts, &mut u)?;
+        hash_to_field::<X, _, _>(msg, dst, &mut u)?;
         let q0 = Self::map_to_curve(u[0]);
         let q1 = Self::map_to_curve(u[1]);
         Ok(Self::add_and_map_to_subgroup(q0, q1))
@@ -58,7 +44,7 @@ pub trait GroupDigest: MapToCurve {
 
     /// Computes the encode to curve routine.
     ///
-    /// From <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html>:
+    /// From <https://www.rfc-editor.org/rfc/rfc9380.html>:
     ///
     /// > Nonuniform encoding from byte strings to
     /// > points in G. That is, the distribution of its output is not
@@ -75,18 +61,18 @@ pub trait GroupDigest: MapToCurve {
     ///
     /// [`ExpandMsgXmd`]: crate::hash2curve::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2curve::ExpandMsgXof
-    fn encode_from_bytes<'a, X: ExpandMsg<'a>>(
-        msgs: &[&[u8]],
-        dsts: &'a [&'a [u8]],
-    ) -> Result<ProjectivePoint<Self>> {
+    fn encode_from_bytes<X>(msg: &[&[u8]], dst: &[&[u8]]) -> Result<ProjectivePoint<Self>>
+    where
+        X: ExpandMsg<Self::K>,
+    {
         let mut u = [Self::FieldElement::default()];
-        hash_to_field::<X, _>(msgs, dsts, &mut u)?;
+        hash_to_field::<X, _, _>(msg, dst, &mut u)?;
         let q0 = Self::map_to_curve(u[0]);
         Ok(Self::map_to_subgroup(q0))
     }
 
     /// Computes the hash to field routine according to
-    /// <https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-13.html#section-5>
+    /// <https://www.rfc-editor.org/rfc/rfc9380.html#section-5-4>
     /// and returns a scalar.
     ///
     /// # Errors
@@ -98,15 +84,12 @@ pub trait GroupDigest: MapToCurve {
     ///
     /// [`ExpandMsgXmd`]: crate::hash2curve::ExpandMsgXmd
     /// [`ExpandMsgXof`]: crate::hash2curve::ExpandMsgXof
-    fn hash_to_scalar<'a, X: ExpandMsg<'a>>(
-        msgs: &[&[u8]],
-        dsts: &'a [&'a [u8]],
-    ) -> Result<Self::Scalar>
+    fn hash_to_scalar<X>(msg: &[&[u8]], dst: &[&[u8]]) -> Result<Self::Scalar>
     where
-        Self::Scalar: FromOkm,
+        X: ExpandMsg<Self::K>,
     {
         let mut u = [Self::Scalar::default()];
-        hash_to_field::<X, _>(msgs, dsts, &mut u)?;
+        hash_to_field::<X, _, _>(msg, dst, &mut u)?;
         Ok(u[0])
     }
 }

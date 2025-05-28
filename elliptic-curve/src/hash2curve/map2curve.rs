@@ -6,7 +6,7 @@ use super::FromOkm;
 
 /// Trait for converting field elements into a point via a mapping method like
 /// Simplified Shallue-van de Woestijne-Ulas or Elligator.
-pub trait MapToCurve: CurveArithmetic {
+pub trait MapToCurve: CurveArithmetic<Scalar: FromOkm> {
     /// The intermediate representation, an element of the curve which may or may not
     /// be in the curve subgroup.
     type CurvePoint;

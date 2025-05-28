@@ -17,21 +17,25 @@ const MAX_DST_LEN: usize = 255;
 
 /// Trait for types implementing expand_message interface for `hash_to_field`.
 ///
+/// `K` is the target security level in bytes:
+/// <https://www.rfc-editor.org/rfc/rfc9380.html#section-8.9-2.2>
+/// <https://www.rfc-editor.org/rfc/rfc9380.html#name-target-security-levels>
+///
 /// # Errors
 /// See implementors of [`ExpandMsg`] for errors.
-pub trait ExpandMsg<'a> {
+pub trait ExpandMsg<K> {
     /// Type holding data for the [`Expander`].
-    type Expander: Expander + Sized;
+    type Expander<'dst>: Expander + Sized;
 
     /// Expands `msg` to the required number of bytes.
     ///
     /// Returns an expander that can be used to call `read` until enough
     /// bytes have been consumed
-    fn expand_message(
-        msgs: &[&[u8]],
-        dsts: &'a [&'a [u8]],
+    fn expand_message<'dst>(
+        msg: &[&[u8]],
+        dst: &'dst [&[u8]],
         len_in_bytes: NonZero<usize>,
-    ) -> Result<Self::Expander>;
+    ) -> Result<Self::Expander<'dst>>;
 }
 
 /// Expander that, call `read` until enough bytes have been consumed.
@@ -42,9 +46,9 @@ pub trait Expander {
 
 /// The domain separation tag
 ///
-/// Implements [section 5.4.3 of `draft-irtf-cfrg-hash-to-curve-13`][dst].
+/// Implements [section 5.3.3 of RFC9380][dst].
 ///
-/// [dst]: https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-13#section-5.4.3
+/// [dst]: https://www.rfc-editor.org/rfc/rfc9380.html#name-using-dsts-longer-than-255-
 #[derive(Debug)]
 pub(crate) enum Domain<'a, L>
 where
@@ -60,48 +64,50 @@ impl<'a, L> Domain<'a, L>
 where
     L: ArraySize + IsLess<U256, Output = True>,
 {
-    pub fn xof<X>(dsts: &'a [&'a [u8]]) -> Result<Self>
+    pub fn xof<X>(dst: &'a [&'a [u8]]) -> Result<Self>
     where
         X: Default + ExtendableOutput + Update,
     {
-        if dsts.is_empty() {
+        // https://www.rfc-editor.org/rfc/rfc9380.html#section-3.1-4.2
+        if dst.iter().map(|slice| slice.len()).sum::<usize>() == 0 {
             Err(Error)
-        } else if dsts.iter().map(|dst| dst.len()).sum::<usize>() > MAX_DST_LEN {
+        } else if dst.iter().map(|slice| slice.len()).sum::<usize>() > MAX_DST_LEN {
             let mut data = Array::<u8, L>::default();
             let mut hash = X::default();
             hash.update(OVERSIZE_DST_SALT);
 
-            for dst in dsts {
-                hash.update(dst);
+            for slice in dst {
+                hash.update(slice);
             }
 
             hash.finalize_xof().read(&mut data);
 
             Ok(Self::Hashed(data))
         } else {
-            Ok(Self::Array(dsts))
+            Ok(Self::Array(dst))
         }
     }
 
-    pub fn xmd<X>(dsts: &'a [&'a [u8]]) -> Result<Self>
+    pub fn xmd<X>(dst: &'a [&'a [u8]]) -> Result<Self>
     where
         X: Digest<OutputSize = L>,
     {
-        if dsts.is_empty() {
+        // https://www.rfc-editor.org/rfc/rfc9380.html#section-3.1-4.2
+        if dst.iter().map(|slice| slice.len()).sum::<usize>() == 0 {
             Err(Error)
-        } else if dsts.iter().map(|dst| dst.len()).sum::<usize>() > MAX_DST_LEN {
+        } else if dst.iter().map(|slice| slice.len()).sum::<usize>() > MAX_DST_LEN {
             Ok(Self::Hashed({
                 let mut hash = X::new();
                 hash.update(OVERSIZE_DST_SALT);
 
-                for dst in dsts {
-                    hash.update(dst);
+                for slice in dst {
+                    hash.update(slice);
                 }
 
                 hash.finalize()
             }))
         } else {
-            Ok(Self::Array(dsts))
+            Ok(Self::Array(dst))
         }
     }
 

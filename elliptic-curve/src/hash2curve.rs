@@ -1,6 +1,6 @@
 //! Traits for hashing byte sequences to curve points.
 //!
-//! <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve>
+//! <https://www.rfc-editor.org/rfc/rfc9380.html>
 
 mod group_digest;
 mod hash2field;
