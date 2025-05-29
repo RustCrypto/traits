@@ -104,7 +104,7 @@ impl Field for Scalar {
 
         loop {
             rng.try_fill_bytes(&mut bytes)?;
-            if let Some(scalar) = Self::from_repr(bytes).into() {
+            if let Some(scalar) = Self::from_repr(&bytes).into() {
                 return Ok(scalar);
             }
         }
@@ -149,8 +149,8 @@ impl PrimeField for Scalar {
     const ROOT_OF_UNITY_INV: Self = Self::ZERO; // BOGUS!
     const DELTA: Self = Self::ZERO; // BOGUS!
 
-    fn from_repr(bytes: FieldBytes) -> CtOption<Self> {
-        ScalarPrimitive::from_bytes(&bytes).map(Self)
+    fn from_repr(bytes: &FieldBytes) -> CtOption<Self> {
+        ScalarPrimitive::from_bytes(bytes).map(Self)
     }
 
     fn to_repr(&self) -> FieldBytes {
@@ -898,7 +898,7 @@ mod tests {
     #[test]
     fn round_trip() {
         let bytes = hex!("c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721");
-        let scalar = Scalar::from_repr(bytes.into()).unwrap();
+        let scalar = Scalar::from_repr(&bytes.into()).unwrap();
         assert_eq!(&bytes, scalar.to_repr().as_slice());
     }
 }
