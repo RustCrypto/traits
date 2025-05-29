@@ -293,7 +293,7 @@ mod tests {
     #[test]
     fn mul_by_generator() {
         let scalar = NonZeroScalar::from_repr(
-            hex!("c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721").into(),
+            &hex!("c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721").into(),
         )
         .unwrap();
         let point = NonIdentity::<ProjectivePoint>::mul_by_generator(&scalar);
