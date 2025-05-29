@@ -22,7 +22,7 @@ digest = { version = "0.11.0-rc.0", path = "../digest", optional = true, feature
 elliptic-curve = { version = "0.14.0-rc.2", path = "../elliptic-curve", optional = true }
 password-hash = { version = "0.6.0-rc.0", path = "../password-hash", optional = true }
 signature = { version = "3.0.0-rc.0", path = "../signature", optional = true, default-features = false }
-universal-hash = { version = "0.6.0-rc.0", path = "../universal-hash", optional = true }
+universal-hash = { version = "0.6.0-rc.1", path = "../universal-hash", optional = true }
 
 [features]
 std = ["elliptic-curve/std"]
