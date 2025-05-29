@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Traits for cryptographic signature algorithms (e.g. ECDSA, Ed25519)"
 
 [dependencies]
-signature = "=3.0.0-pre"
+signature = "3.0.0-rc.0"
 
 [features]
 digest = ["signature/digest"]
