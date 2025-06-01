@@ -25,15 +25,17 @@ pub trait Signer<S> {
 }
 
 /// Equivalent of [`Signer`] but the message is provided in non-contiguous byte slices.
-pub trait MultiPartSigner<S> {
-    /// See [`Signer::sign()`].
-    fn multi_part_sign(&self, msg: &[&[u8]]) -> S {
-        self.try_multi_part_sign(msg)
+pub trait MultipartSigner<S> {
+    /// Equivalent of [`Signer::sign()`] but the message
+    /// is provided in non-contiguous byte slices.
+    fn multipart_sign(&self, msg: &[&[u8]]) -> S {
+        self.try_multipart_sign(msg)
             .expect("signature operation failed")
     }
 
-    /// See [`Signer::try_sign()`].
-    fn try_multi_part_sign(&self, msg: &[&[u8]]) -> Result<S, Error>;
+    /// Equivalent of [`Signer::try_sign()`] but the
+    /// message is provided in non-contiguous byte slices.
+    fn try_multipart_sign(&self, msg: &[&[u8]]) -> Result<S, Error>;
 }
 
 /// Sign the provided message bytestring using `&mut Self` (e.g. an evolving
@@ -117,15 +119,17 @@ pub trait RandomizedSigner<S> {
 
 /// Equivalent of [`RandomizedSigner`] but the message is provided in non-contiguous byte slices.
 #[cfg(feature = "rand_core")]
-pub trait RandomizedMultiPartSigner<S> {
-    /// See [`RandomizedSigner::sign_with_rng()`].
-    fn multi_part_sign_with_rng<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[&[u8]]) -> S {
-        self.try_multi_part_sign_with_rng(rng, msg)
+pub trait RandomizedMultipartSigner<S> {
+    /// Equivalent of [`RandomizedSigner::sign_with_rng()`] but
+    /// the message is provided in non-contiguous byte slices.
+    fn multipart_sign_with_rng<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[&[u8]]) -> S {
+        self.try_multipart_sign_with_rng(rng, msg)
             .expect("signature operation failed")
     }
 
-    /// See [`RandomizedSigner::try_sign_with_rng()`].
-    fn try_multi_part_sign_with_rng<R: TryCryptoRng + ?Sized>(
+    /// Equivalent of [`RandomizedSigner::try_sign_with_rng()`] but
+    /// the message is provided in non-contiguous byte slices.
+    fn try_multipart_sign_with_rng<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
         msg: &[&[u8]],
