@@ -11,6 +11,12 @@ pub trait Verifier<S> {
     /// bytestring is authentic.
     ///
     /// Returns `Error` if it is inauthentic, or otherwise returns `()`.
+    fn verify(&self, msg: &[u8], signature: &S) -> Result<(), Error>;
+}
+
+/// Equivalent of [`Verifier`] but the message is provided in non-contiguous byte slices.
+pub trait MultiPartVerifier<S> {
+    /// See [`Verifier::verify()`].
     fn verify(&self, msg: &[&[u8]], signature: &S) -> Result<(), Error>;
 }
 

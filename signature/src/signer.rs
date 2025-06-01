@@ -12,7 +12,7 @@ use crate::rand_core::{CryptoRng, TryCryptoRng};
 /// or connection to an HSM), returning a digital signature.
 pub trait Signer<S> {
     /// Sign the given message and return a digital signature
-    fn sign(&self, msg: &[&[u8]]) -> S {
+    fn sign(&self, msg: &[u8]) -> S {
         self.try_sign(msg).expect("signature operation failed")
     }
 
@@ -21,6 +21,17 @@ pub trait Signer<S> {
     ///
     /// The main intended use case for signing errors is when communicating
     /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
+    fn try_sign(&self, msg: &[u8]) -> Result<S, Error>;
+}
+
+/// Equivalent of [`Signer`] but the message is provided in non-contiguous byte slices.
+pub trait MultiPartSigner<S> {
+    /// See [`Signer::sign()`].
+    fn sign(&self, msg: &[&[u8]]) -> S {
+        self.try_sign(msg).expect("signature operation failed")
+    }
+
+    /// See [`Signer::try_sign()`].
     fn try_sign(&self, msg: &[&[u8]]) -> Result<S, Error>;
 }
 
@@ -29,7 +40,7 @@ pub trait Signer<S> {
 /// digital signature.
 pub trait SignerMut<S> {
     /// Sign the given message, update the state, and return a digital signature.
-    fn sign(&mut self, msg: &[&[u8]]) -> S {
+    fn sign(&mut self, msg: &[u8]) -> S {
         self.try_sign(msg).expect("signature operation failed")
     }
 
@@ -38,14 +49,25 @@ pub trait SignerMut<S> {
     ///
     /// Signing can fail, e.g., if the number of time periods allowed by the
     /// current key is exceeded.
-    fn try_sign(&mut self, msg: &[&[u8]]) -> Result<S, Error>;
+    fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error>;
 }
 
 /// Blanket impl of [`SignerMut`] for all [`Signer`] types.
 impl<S, T: Signer<S>> SignerMut<S> for T {
-    fn try_sign(&mut self, msg: &[&[u8]]) -> Result<S, Error> {
+    fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error> {
         T::try_sign(self, msg)
     }
+}
+
+/// Equivalent of [`SignerMut`] but the message is provided in non-contiguous byte slices.
+pub trait MultiPartSignerMut<S> {
+    /// See [`SignerMut::sign()`].
+    fn sign(&mut self, msg: &[&[u8]]) -> S {
+        self.try_sign(msg).expect("signature operation failed")
+    }
+
+    /// See [`SignerMut::try_sign()`].
+    fn try_sign(&mut self, msg: &[&[u8]]) -> Result<S, Error>;
 }
 
 /// Sign the given prehashed message [`Digest`] using `Self`.
@@ -86,7 +108,7 @@ pub trait DigestSigner<D: Digest, S> {
 #[cfg(feature = "rand_core")]
 pub trait RandomizedSigner<S> {
     /// Sign the given message and return a digital signature
-    fn sign_with_rng<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[&[u8]]) -> S {
+    fn sign_with_rng<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[u8]) -> S {
         self.try_sign_with_rng(rng, msg)
             .expect("signature operation failed")
     }
@@ -96,6 +118,23 @@ pub trait RandomizedSigner<S> {
     ///
     /// The main intended use case for signing errors is when communicating
     /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
+    fn try_sign_with_rng<R: TryCryptoRng + ?Sized>(
+        &self,
+        rng: &mut R,
+        msg: &[u8],
+    ) -> Result<S, Error>;
+}
+
+/// Equivalent of [`RandomizedSigner`] but the message is provided in non-contiguous byte slices.
+#[cfg(feature = "rand_core")]
+pub trait RandomizedMultiPartSigner<S> {
+    /// See [`RandomizedSigner::sign_with_rng()`].
+    fn sign_with_rng<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[&[u8]]) -> S {
+        self.try_sign_with_rng(rng, msg)
+            .expect("signature operation failed")
+    }
+
+    /// See [`RandomizedSigner::try_sign_with_rng()`].
     fn try_sign_with_rng<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
@@ -130,7 +169,7 @@ pub trait RandomizedDigestSigner<D: Digest, S> {
 #[cfg(feature = "rand_core")]
 pub trait RandomizedSignerMut<S> {
     /// Sign the given message, update the state, and return a digital signature.
-    fn sign_with_rng<R: CryptoRng + ?Sized>(&mut self, rng: &mut R, msg: &[&[u8]]) -> S {
+    fn sign_with_rng<R: CryptoRng + ?Sized>(&mut self, rng: &mut R, msg: &[u8]) -> S {
         self.try_sign_with_rng(rng, msg)
             .expect("signature operation failed")
     }
@@ -143,7 +182,7 @@ pub trait RandomizedSignerMut<S> {
     fn try_sign_with_rng<R: TryCryptoRng + ?Sized>(
         &mut self,
         rng: &mut R,
-        msg: &[&[u8]],
+        msg: &[u8],
     ) -> Result<S, Error>;
 }
 
@@ -153,10 +192,27 @@ impl<S, T: RandomizedSigner<S>> RandomizedSignerMut<S> for T {
     fn try_sign_with_rng<R: TryCryptoRng + ?Sized>(
         &mut self,
         rng: &mut R,
-        msg: &[&[u8]],
+        msg: &[u8],
     ) -> Result<S, Error> {
         T::try_sign_with_rng(self, rng, msg)
     }
+}
+
+/// Equivalent of [`RandomizedSignerMut`] but the message is provided in non-contiguous byte slices.
+#[cfg(feature = "rand_core")]
+pub trait RandomizedMultiPartSignerMut<S> {
+    /// See [`RandomizedSignerMut::sign_with_rng()`].
+    fn sign_with_rng<R: CryptoRng + ?Sized>(&mut self, rng: &mut R, msg: &[u8]) -> S {
+        self.try_sign_with_rng(rng, msg)
+            .expect("signature operation failed")
+    }
+
+    /// See [`RandomizedSignerMut::try_sign_with_rng()`].
+    fn try_sign_with_rng<R: TryCryptoRng + ?Sized>(
+        &mut self,
+        rng: &mut R,
+        msg: &[u8],
+    ) -> Result<S, Error>;
 }
 
 /// Asynchronously sign the provided message bytestring using `Self`
@@ -169,16 +225,22 @@ pub trait AsyncSigner<S> {
     ///
     /// The main intended use case for signing errors is when communicating
     /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
-    async fn sign_async(&self, msg: &[&[u8]]) -> Result<S, Error>;
+    async fn sign_async(&self, msg: &[u8]) -> Result<S, Error>;
 }
 
 impl<S, T> AsyncSigner<S> for T
 where
     T: Signer<S>,
 {
-    async fn sign_async(&self, msg: &[&[u8]]) -> Result<S, Error> {
+    async fn sign_async(&self, msg: &[u8]) -> Result<S, Error> {
         self.try_sign(msg)
     }
+}
+
+/// Equivalent of [`AsyncSigner`] but the message is provided in non-contiguous byte slices.
+pub trait AsyncMultiPartSigner<S> {
+    /// See [`AsyncSigner::sign_async()`].
+    async fn sign_async(&self, msg: &[&[u8]]) -> Result<S, Error>;
 }
 
 /// Asynchronously sign the given prehashed message [`Digest`] using `Self`.
@@ -198,7 +260,7 @@ where
 #[cfg(feature = "rand_core")]
 pub trait AsyncRandomizedSigner<S> {
     /// Sign the given message and return a digital signature
-    async fn sign_with_rng_async<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[&[u8]]) -> S {
+    async fn sign_with_rng_async<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[u8]) -> S {
         self.try_sign_with_rng_async(rng, msg)
             .await
             .expect("signature operation failed")
@@ -212,7 +274,7 @@ pub trait AsyncRandomizedSigner<S> {
     async fn try_sign_with_rng_async<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
-        msg: &[&[u8]],
+        msg: &[u8],
     ) -> Result<S, Error>;
 }
 
@@ -224,8 +286,26 @@ where
     async fn try_sign_with_rng_async<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
-        msg: &[&[u8]],
+        msg: &[u8],
     ) -> Result<S, Error> {
         self.try_sign_with_rng(rng, msg)
     }
+}
+
+/// Equivalent of [`AsyncRandomizedSigner`] but the message is provided in non-contiguous byte slices.
+#[cfg(feature = "rand_core")]
+pub trait AsyncRandomizedMultiPartSigner<S> {
+    /// See [`AsyncRandomizedSigner::sign_with_rng_async()`].
+    async fn sign_with_rng_async<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[&[u8]]) -> S {
+        self.try_sign_with_rng_async(rng, msg)
+            .await
+            .expect("signature operation failed")
+    }
+
+    /// See [`AsyncRandomizedSigner::try_sign_with_rng_async()`].
+    async fn try_sign_with_rng_async<R: TryCryptoRng + ?Sized>(
+        &self,
+        rng: &mut R,
+        msg: &[&[u8]],
+    ) -> Result<S, Error>;
 }
