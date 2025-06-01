@@ -27,12 +27,13 @@ pub trait Signer<S> {
 /// Equivalent of [`Signer`] but the message is provided in non-contiguous byte slices.
 pub trait MultiPartSigner<S> {
     /// See [`Signer::sign()`].
-    fn sign(&self, msg: &[&[u8]]) -> S {
-        self.try_sign(msg).expect("signature operation failed")
+    fn multi_part_sign(&self, msg: &[&[u8]]) -> S {
+        self.try_multi_part_sign(msg)
+            .expect("signature operation failed")
     }
 
     /// See [`Signer::try_sign()`].
-    fn try_sign(&self, msg: &[&[u8]]) -> Result<S, Error>;
+    fn try_multi_part_sign(&self, msg: &[&[u8]]) -> Result<S, Error>;
 }
 
 /// Sign the provided message bytestring using `&mut Self` (e.g. an evolving
@@ -57,17 +58,6 @@ impl<S, T: Signer<S>> SignerMut<S> for T {
     fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error> {
         T::try_sign(self, msg)
     }
-}
-
-/// Equivalent of [`SignerMut`] but the message is provided in non-contiguous byte slices.
-pub trait MultiPartSignerMut<S> {
-    /// See [`SignerMut::sign()`].
-    fn sign(&mut self, msg: &[&[u8]]) -> S {
-        self.try_sign(msg).expect("signature operation failed")
-    }
-
-    /// See [`SignerMut::try_sign()`].
-    fn try_sign(&mut self, msg: &[&[u8]]) -> Result<S, Error>;
 }
 
 /// Sign the given prehashed message [`Digest`] using `Self`.
@@ -129,13 +119,13 @@ pub trait RandomizedSigner<S> {
 #[cfg(feature = "rand_core")]
 pub trait RandomizedMultiPartSigner<S> {
     /// See [`RandomizedSigner::sign_with_rng()`].
-    fn sign_with_rng<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[&[u8]]) -> S {
-        self.try_sign_with_rng(rng, msg)
+    fn multi_part_sign_with_rng<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[&[u8]]) -> S {
+        self.try_multi_part_sign_with_rng(rng, msg)
             .expect("signature operation failed")
     }
 
     /// See [`RandomizedSigner::try_sign_with_rng()`].
-    fn try_sign_with_rng<R: TryCryptoRng + ?Sized>(
+    fn try_multi_part_sign_with_rng<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
         msg: &[&[u8]],
@@ -198,23 +188,6 @@ impl<S, T: RandomizedSigner<S>> RandomizedSignerMut<S> for T {
     }
 }
 
-/// Equivalent of [`RandomizedSignerMut`] but the message is provided in non-contiguous byte slices.
-#[cfg(feature = "rand_core")]
-pub trait RandomizedMultiPartSignerMut<S> {
-    /// See [`RandomizedSignerMut::sign_with_rng()`].
-    fn sign_with_rng<R: CryptoRng + ?Sized>(&mut self, rng: &mut R, msg: &[u8]) -> S {
-        self.try_sign_with_rng(rng, msg)
-            .expect("signature operation failed")
-    }
-
-    /// See [`RandomizedSignerMut::try_sign_with_rng()`].
-    fn try_sign_with_rng<R: TryCryptoRng + ?Sized>(
-        &mut self,
-        rng: &mut R,
-        msg: &[u8],
-    ) -> Result<S, Error>;
-}
-
 /// Asynchronously sign the provided message bytestring using `Self`
 /// (e.g. client for a Cloud KMS or HSM), returning a digital signature.
 ///
@@ -235,12 +208,6 @@ where
     async fn sign_async(&self, msg: &[u8]) -> Result<S, Error> {
         self.try_sign(msg)
     }
-}
-
-/// Equivalent of [`AsyncSigner`] but the message is provided in non-contiguous byte slices.
-pub trait AsyncMultiPartSigner<S> {
-    /// See [`AsyncSigner::sign_async()`].
-    async fn sign_async(&self, msg: &[&[u8]]) -> Result<S, Error>;
 }
 
 /// Asynchronously sign the given prehashed message [`Digest`] using `Self`.
@@ -290,22 +257,4 @@ where
     ) -> Result<S, Error> {
         self.try_sign_with_rng(rng, msg)
     }
-}
-
-/// Equivalent of [`AsyncRandomizedSigner`] but the message is provided in non-contiguous byte slices.
-#[cfg(feature = "rand_core")]
-pub trait AsyncRandomizedMultiPartSigner<S> {
-    /// See [`AsyncRandomizedSigner::sign_with_rng_async()`].
-    async fn sign_with_rng_async<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[&[u8]]) -> S {
-        self.try_sign_with_rng_async(rng, msg)
-            .await
-            .expect("signature operation failed")
-    }
-
-    /// See [`AsyncRandomizedSigner::try_sign_with_rng_async()`].
-    async fn try_sign_with_rng_async<R: TryCryptoRng + ?Sized>(
-        &self,
-        rng: &mut R,
-        msg: &[&[u8]],
-    ) -> Result<S, Error>;
 }

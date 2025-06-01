@@ -17,7 +17,7 @@ pub trait Verifier<S> {
 /// Equivalent of [`Verifier`] but the message is provided in non-contiguous byte slices.
 pub trait MultiPartVerifier<S> {
     /// See [`Verifier::verify()`].
-    fn verify(&self, msg: &[&[u8]], signature: &S) -> Result<(), Error>;
+    fn multi_part_verify(&self, msg: &[&[u8]], signature: &S) -> Result<(), Error>;
 }
 
 /// Verify the provided signature for the given prehashed message [`Digest`]
