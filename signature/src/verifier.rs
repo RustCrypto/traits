@@ -11,7 +11,7 @@ pub trait Verifier<S> {
     /// bytestring is authentic.
     ///
     /// Returns `Error` if it is inauthentic, or otherwise returns `()`.
-    fn verify(&self, msg: &[u8], signature: &S) -> Result<(), Error>;
+    fn verify(&self, msg: &[&[u8]], signature: &S) -> Result<(), Error>;
 }
 
 /// Verify the provided signature for the given prehashed message [`Digest`]

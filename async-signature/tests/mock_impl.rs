@@ -11,7 +11,7 @@ struct Signature;
 struct MockSigner;
 
 impl AsyncSigner<Signature> for MockSigner {
-    async fn sign_async(&self, _msg: &[u8]) -> Result<Signature, Error> {
+    async fn sign_async(&self, _msg: &[&[u8]]) -> Result<Signature, Error> {
         unimplemented!("just meant to check compilation")
     }
 }
@@ -33,7 +33,7 @@ impl async_signature::AsyncRandomizedSigner<Signature> for MockSigner {
     >(
         &self,
         _rng: &mut R,
-        _msg: &[u8],
+        _msg: &[&[u8]],
     ) -> Result<Signature, Error> {
         unimplemented!("just meant to check compilation")
     }
