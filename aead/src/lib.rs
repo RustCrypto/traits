@@ -329,6 +329,98 @@ pub trait AeadInOut: AeadCore {
     }
 }
 
+/// Legacy in-place stateless AEAD trait.
+///
+/// NOTE: deprecated! Please migrate to [`AeadInOut`].
+#[deprecated(since = "0.6.0", note = "use `AeadInOut` instead")]
+pub trait AeadInPlace: AeadCore {
+    /// Encrypt the given buffer containing a plaintext message in-place.
+    #[deprecated(since = "0.6.0", note = "use `AeadInOut::encrypt_in_place` instead")]
+    fn encrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()>;
+
+    /// Encrypt the data in-place, returning the authentication tag
+    #[deprecated(
+        since = "0.6.0",
+        note = "use `AeadInOut::encrypt_inout_detached` instead"
+    )]
+    fn encrypt_in_place_detached(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+    ) -> Result<Tag<Self>>;
+
+    /// Decrypt the message in-place, returning an error in the event the
+    /// provided authentication tag does not match the given ciphertext.
+    #[deprecated(since = "0.6.0", note = "use `AeadInOut::decrypt_in_place` instead")]
+    fn decrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()>;
+
+    /// Decrypt the message in-place, returning an error in the event the provided
+    /// authentication tag does not match the given ciphertext (i.e. ciphertext
+    /// is modified/unauthentic)
+    #[deprecated(
+        since = "0.6.0",
+        note = "use `AeadInOut::decrypt_inout_detached` instead"
+    )]
+    fn decrypt_in_place_detached(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+        tag: &Tag<Self>,
+    ) -> Result<()>;
+}
+
+#[allow(deprecated)]
+impl<T: AeadInOut> AeadInPlace for T {
+    fn encrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()> {
+        <Self as AeadInOut>::encrypt_in_place(self, nonce, associated_data, buffer)
+    }
+
+    fn encrypt_in_place_detached(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+    ) -> Result<Tag<Self>> {
+        self.encrypt_inout_detached(nonce, associated_data, buffer.into())
+    }
+
+    fn decrypt_in_place(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut dyn Buffer,
+    ) -> Result<()> {
+        <Self as AeadInOut>::decrypt_in_place(self, nonce, associated_data, buffer)
+    }
+
+    fn decrypt_in_place_detached(
+        &self,
+        nonce: &Nonce<Self>,
+        associated_data: &[u8],
+        buffer: &mut [u8],
+        tag: &Tag<Self>,
+    ) -> Result<()> {
+        self.decrypt_inout_detached(nonce, associated_data, buffer.into(), tag)
+    }
+}
+
 /// AEAD payloads (message + AAD).
 ///
 /// Combination of a message (plaintext or ciphertext) and
