@@ -431,12 +431,16 @@ impl<const N: usize> Buffer for heapless::Vec<u8, N> {
     }
 }
 
-#[cfg(feature = "alloc")]
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    /// Ensure that `AeadInPlace` is object-safe
+    /// Ensure that `Aead` is `dyn`-compatible
+    #[cfg(feature = "alloc")]
     #[allow(dead_code)]
-    type DynAeadInPlace<N, T> = dyn Aead<NonceSize = N, TagSize = T>;
+    type DynAead<N, T> = dyn Aead<NonceSize = N, TagSize = T>;
+
+    /// Ensure that `AeadInOut` is `dyn`-compatible
+    #[allow(dead_code)]
+    type DynAeadInOut<N, T> = dyn AeadInOut<NonceSize = N, TagSize = T>;
 }
