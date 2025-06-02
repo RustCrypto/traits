@@ -180,6 +180,25 @@ pub trait RandomizedSignerMut<S> {
     ) -> Result<S, Error>;
 }
 
+/// Equivalent of [`RandomizedSignerMut`] but the message is provided in non-contiguous byte slices.
+#[cfg(feature = "rand_core")]
+pub trait RandomizedMultipartSignerMut<S> {
+    /// Equivalent of [`RandomizedSignerMut::sign_with_rng()`] but
+    /// the message is provided in non-contiguous byte slices.
+    fn multipart_sign_with_rng<R: CryptoRng + ?Sized>(&mut self, rng: &mut R, msg: &[&[u8]]) -> S {
+        self.try_multipart_sign_with_rng(rng, msg)
+            .expect("signature operation failed")
+    }
+
+    /// Equivalent of [`RandomizedSignerMut::try_sign_with_rng()`]
+    /// but the message is provided in non-contiguous byte slices.
+    fn try_multipart_sign_with_rng<R: TryCryptoRng + ?Sized>(
+        &mut self,
+        rng: &mut R,
+        msg: &[&[u8]],
+    ) -> Result<S, Error>;
+}
+
 /// Blanket impl of [`RandomizedSignerMut`] for all [`RandomizedSigner`] types.
 #[cfg(feature = "rand_core")]
 impl<S, T: RandomizedSigner<S>> RandomizedSignerMut<S> for T {
