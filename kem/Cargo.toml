@@ -1,16 +1,16 @@
 [package]
-description = "Traits for key encapsulation mechanisms"
+name = "kem"
 version = "0.3.0-pre.0"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
+description = "Traits for key encapsulation mechanisms"
 documentation = "https://docs.rs/kem"
 readme = "README.md"
 repository = "https://github.com/RustCrypto/traits"
 license = "Apache-2.0 OR MIT"
 keywords = ["crypto"]
 categories = ["cryptography", "no-std"]
-name = "kem"
 
 [dependencies]
 rand_core = "0.9"
