@@ -97,8 +97,11 @@ fn invert_batch_internal<T: Field>(
     field_elements_pad: &mut [T],
 ) -> Choice {
     let batch_size = field_elements.len();
-    if batch_size == 0 || batch_size != field_elements_pad.len() {
+    if batch_size != field_elements_pad.len() {
         return Choice::from(0);
+    }
+    if batch_size == 0 {
+        return Choice::from(1);
     }
 
     let mut acc = field_elements[0];
