@@ -179,9 +179,9 @@ dependencies = [
 
 [[package]]
 name = "der"
-version = "0.8.0-rc.2"
+version = "0.8.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a348a791b3df164315b6733835b128f52f99bd76bc3b19adbd574bde4a1be2e7"
+checksum = "b00a9651bf9c00a38b7c383073cb22fb42f20a5f978c9f97ad5c7128cbd3c1bd"
 dependencies = [
  "const-oid",
  "pem-rfc7468",
@@ -336,9 +336,9 @@ dependencies = [
 
 [[package]]
 name = "inout"
-version = "0.2.0-rc.4"
+version = "0.2.0-rc.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac5e145e8ade9f74c0a5efc60ccb4e714b0144f7e2220b7ca64254feee71c57f"
+checksum = "c774c86bce20ea04abe1c37cf0051c5690079a3a28ef5fdac2a5a0412b3d7d74"
 dependencies = [
  "block-padding",
  "hybrid-array",
@@ -419,18 +419,18 @@ dependencies = [
 
 [[package]]
 name = "pem-rfc7468"
-version = "1.0.0-rc.2"
+version = "1.0.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2dfbfa5c6f0906884269722c5478e72fd4d6c0e24fe600332c6d62359567ce1"
+checksum = "a8e58fab693c712c0d4e88f8eb3087b6521d060bcaf76aeb20cb192d809115ba"
 dependencies = [
  "base64ct",
 ]
 
 [[package]]
 name = "pkcs8"
-version = "0.11.0-rc.3"
+version = "0.11.0-rc.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb59d311663eb310da092cb3b4525dac863f3fff825898db1a5a2f46420c5e84"
+checksum = "3f1843d4345dfe1a55e487db747a04c01af50415b03e937410e0a41d8cc24ec7"
 dependencies = [
  "der",
  "spki",
@@ -484,9 +484,9 @@ checksum = "28d3b2b1366ec20994f1fd18c3c594f05c5dd4bc44d8bb0c1c632c8d6829481f"
 
 [[package]]
 name = "sec1"
-version = "0.8.0-rc.4"
+version = "0.8.0-rc.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a017a4aa8f0bd51e9d0184d98042dfe9285218fec098493f47d9a8aa0f1a3f27"
+checksum = "e4855dd9b15e8e469fad23529698f7f7b7a6b250a81c88b1f9d7efe1abca7717"
 dependencies = [
  "base16ct",
  "der",
@@ -570,9 +570,9 @@ dependencies = [
 
 [[package]]
 name = "spki"
-version = "0.8.0-rc.1"
+version = "0.8.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37ac66481418fd7afdc584adcf3be9aa572cf6c2858814494dc2a01755f050bc"
+checksum = "c2f0e2bdca9b00f5be6dd3bb6647d50fd0f24a508a95f78e3bb2fe98d0403c85"
 dependencies = [
  "base64ct",
  "der",
