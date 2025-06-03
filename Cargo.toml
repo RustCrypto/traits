@@ -2,7 +2,6 @@
 resolver = "3"
 members = [
     "aead",
-    "async-signature",
     "cipher",
     "crypto",
     "crypto-common",
