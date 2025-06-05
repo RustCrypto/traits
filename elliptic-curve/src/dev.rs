@@ -476,6 +476,10 @@ impl AffineCoordinates for AffinePoint {
     fn y(&self) -> FieldBytes {
         unimplemented!();
     }
+
+    fn y_is_odd(&self) -> Choice {
+        unimplemented!();
+    }
 }
 
 impl ConstantTimeEq for AffinePoint {
