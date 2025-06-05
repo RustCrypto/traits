@@ -22,11 +22,17 @@ pub type ProjectivePoint<C> = <C as CurveArithmetic>::ProjectivePoint;
 /// Access to the affine coordinates of an elliptic curve point.
 // TODO: use zkcrypto/group#30 coordinate API when available
 pub trait AffineCoordinates {
-    /// Field element representation.
+    /// Field element representation with curve-specific serialization/endianness.
     type FieldRepr: AsRef<[u8]>;
 
     /// Get the affine x-coordinate as a serialized field element.
     fn x(&self) -> Self::FieldRepr;
+
+    /// Get the affine y-coordinate as a serialized field element.
+    fn y(&self) -> Self::FieldRepr;
+
+    /// Is the affine x-coordinate odd?
+    fn x_is_odd(&self) -> Choice;
 
     /// Is the affine y-coordinate odd?
     fn y_is_odd(&self) -> Choice;
