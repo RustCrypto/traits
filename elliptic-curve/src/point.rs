@@ -31,6 +31,9 @@ pub trait AffineCoordinates {
     /// Get the affine y-coordinate as a serialized field element.
     fn y(&self) -> Self::FieldRepr;
 
+    /// Is the affine x-coordinate odd?
+    fn x_is_odd(&self) -> Choice;
+
     /// Is the affine y-coordinate odd?
     fn y_is_odd(&self) -> Choice;
 }
