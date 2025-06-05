@@ -28,8 +28,8 @@ pub trait AffineCoordinates {
     /// Get the affine x-coordinate as a serialized field element.
     fn x(&self) -> Self::FieldRepr;
 
-    /// Is the affine y-coordinate odd?
-    fn y_is_odd(&self) -> Choice;
+    /// Get the affine y-coordinate as a serialized field element.
+    fn y(&self) -> Self::FieldRepr;
 }
 
 /// Normalize point(s) in projective representation by converting them to their affine ones.

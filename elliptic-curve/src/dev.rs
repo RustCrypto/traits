@@ -473,7 +473,7 @@ impl AffineCoordinates for AffinePoint {
         unimplemented!();
     }
 
-    fn y_is_odd(&self) -> Choice {
+    fn y(&self) -> FieldBytes {
         unimplemented!();
     }
 }
