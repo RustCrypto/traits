@@ -121,8 +121,9 @@ where
     /// # Returns
     ///
     /// This will return a none if the scalar is all-zero.
-    pub fn new(scalar: ScalarPrimitive<C>) -> CtOption<Self> {
-        CtOption::new(Self { inner: scalar }, !scalar.is_zero())
+    pub fn from_scalar(scalar: impl Into<ScalarPrimitive<C>>) -> CtOption<Self> {
+        let inner = scalar.into();
+        CtOption::new(Self { inner }, !inner.is_zero())
     }
 
     /// Borrow the inner secret [`ScalarPrimitive`] value.
