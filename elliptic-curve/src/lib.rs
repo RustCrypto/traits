@@ -102,6 +102,7 @@ pub mod weierstrass;
 
 mod error;
 mod field;
+mod macros;
 mod secret_key;
 
 #[cfg(feature = "arithmetic")]
