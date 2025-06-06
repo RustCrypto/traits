@@ -2,14 +2,14 @@
 
 use crate::{
     CurveArithmetic, Error, FieldBytes, PrimeCurve, Scalar, ScalarPrimitive, SecretKey,
-    ops::{Invert, Reduce, ReduceNonZero},
+    ops::{self, BatchInvert, Invert, Reduce, ReduceNonZero},
     point::NonIdentity,
     scalar::IsHigh,
 };
 use base16ct::HexDisplay;
 use core::{
     fmt,
-    ops::{Deref, Mul, Neg},
+    ops::{Deref, Mul, MulAssign, Neg},
     str,
 };
 use crypto_bigint::{ArrayEncoding, Integer};
@@ -17,6 +17,9 @@ use ff::{Field, PrimeField};
 use rand_core::{CryptoRng, TryCryptoRng};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
+
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
 
 #[cfg(feature = "serde")]
 use serdect::serde::{Deserialize, Serialize, de, ser};
@@ -93,6 +96,47 @@ where
 {
     fn as_ref(&self) -> &Scalar<C> {
         &self.scalar
+    }
+}
+
+impl<const N: usize, C> BatchInvert<[Self; N]> for NonZeroScalar<C>
+where
+    C: CurveArithmetic + PrimeCurve,
+{
+    type Output = [Self; N];
+
+    fn batch_invert(mut field_elements: [Self; N]) -> [Self; N] {
+        let mut field_elements_pad = [Self {
+            scalar: Scalar::<C>::ONE,
+        }; N];
+        ops::invert_batch_internal(&mut field_elements, &mut field_elements_pad, |scalar| {
+            (scalar.invert(), Choice::from(1))
+        });
+
+        field_elements
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<C> BatchInvert<Vec<Self>> for NonZeroScalar<C>
+where
+    C: CurveArithmetic + PrimeCurve,
+{
+    type Output = Vec<Self>;
+
+    fn batch_invert(mut field_elements: Vec<Self>) -> Vec<Self> {
+        let mut field_elements_pad: Vec<Self> = vec![
+            Self {
+                scalar: Scalar::<C>::ONE,
+            };
+            field_elements.len()
+        ];
+
+        ops::invert_batch_internal(&mut field_elements, &mut field_elements_pad, |scalar| {
+            (scalar.invert(), Choice::from(1))
+        });
+
+        field_elements
     }
 }
 
@@ -304,6 +348,15 @@ where
 
     fn mul(self, rhs: &NonIdentity<P>) -> Self::Output {
         rhs * self
+    }
+}
+
+impl<C> MulAssign for NonZeroScalar<C>
+where
+    C: PrimeCurve + CurveArithmetic,
+{
+    fn mul_assign(&mut self, rhs: Self) {
+        *self = *self * rhs;
     }
 }
 
