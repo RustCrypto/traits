@@ -1,9 +1,11 @@
 # [RustCrypto]: Verifiable Random Functions
 
+Traits which provide generic, object-safe APIs for [verifiable random functions].
+
 ## SemVer Policy
 
 - All on-by-default features of this library are covered by SemVer
-- MSRV is considered exempt from SemVer as noted above
+- MSRV is considered exempt from SemVer
 
 ## License
 
@@ -20,3 +22,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
 
+[//]: # (links)
+
+[verifiable random functions]: https://en.wikipedia.org/wiki/Verifiable_random_function
+[RustCrypto]: https://github.com/RustCrypto/
