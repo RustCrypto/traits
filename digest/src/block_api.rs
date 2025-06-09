@@ -97,8 +97,13 @@ pub enum TruncSide {
     Right,
 }
 
-/// A proxy trait to a core type.
+/// A proxy trait to the core block-level type.
 pub trait CoreProxy {
-    /// Wrapped block-level type.
-    type Core;
+    /// Core block-level type.
+    type Core: BufferKindUser;
+
+    /// Create `Self` from core and buffer.
+    fn compose(core: Self::Core, buffer: Buffer<Self::Core>) -> Self;
+    /// Decompose `self` into core and buffer.
+    fn decompose(self) -> (Self::Core, Buffer<Self::Core>);
 }

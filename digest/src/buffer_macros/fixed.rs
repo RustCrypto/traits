@@ -179,6 +179,13 @@ macro_rules! buffer_fixed {
     ) => {
         impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::block_api::CoreProxy for $name$(< $( $lt ),+ >)? {
             type Core = $core_ty;
+            fn compose(core: Self::Core, buffer: $crate::block_api::Buffer<Self::Core>) -> Self {
+                Self { core, buffer }
+            }
+            fn decompose(self) -> (Self::Core, $crate::block_api::Buffer<Self::Core>) {
+                let Self { core, buffer } = self;
+                (core, buffer)
+            }
         }
 
         $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);

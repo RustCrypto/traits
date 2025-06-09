@@ -112,6 +112,13 @@ macro_rules! buffer_ct_variable {
             $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
             type Core = $crate::block_api::CtOutWrapper<$core_ty, $out_size>;
+            fn compose(core: Self::Core, buffer: $crate::block_api::Buffer<Self::Core>) -> Self {
+                Self { core, buffer }
+            }
+            fn decompose(self) -> (Self::Core, $crate::block_api::Buffer<Self::Core>) {
+                let Self { core, buffer } = self;
+                (core, buffer)
+            }
         }
 
         impl<$out_size> $crate::Update for $name<$out_size>
