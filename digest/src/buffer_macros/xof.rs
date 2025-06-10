@@ -87,7 +87,7 @@ macro_rules! buffer_xof {
     ) => {
         $crate::buffer_xof!(
             impl_inner: $name($core_ty);
-            Debug Clone BlockSizeUser CoreProxy
+            Debug Clone BlockSizeUser
             $($trait_name)*;);
     };
 
@@ -194,6 +194,13 @@ macro_rules! buffer_xof {
     ) => {
         impl $crate::block_api::CoreProxy for $name {
             type Core = $core_ty;
+            fn compose(core: Self::Core, buffer: $crate::block_api::Buffer<Self::Core>) -> Self {
+                Self { core, buffer }
+            }
+            fn decompose(self) -> (Self::Core, $crate::block_api::Buffer<Self::Core>) {
+                let Self { core, buffer } = self;
+                (core, buffer)
+            }
         }
 
         $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
