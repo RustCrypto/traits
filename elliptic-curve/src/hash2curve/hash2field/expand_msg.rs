@@ -7,7 +7,6 @@ use core::num::NonZero;
 
 use crate::{Error, Result};
 use digest::{Digest, ExtendableOutput, Update, XofReader};
-use hybrid_array::typenum::{IsLess, True, U256};
 use hybrid_array::{Array, ArraySize};
 
 /// Salt when the DST is too long
@@ -34,7 +33,7 @@ pub trait ExpandMsg<K> {
     fn expand_message<'dst>(
         msg: &[&[u8]],
         dst: &'dst [&[u8]],
-        len_in_bytes: NonZero<usize>,
+        len_in_bytes: NonZero<u16>,
     ) -> Result<Self::Expander<'dst>>;
 }
 
@@ -50,20 +49,14 @@ pub trait Expander {
 ///
 /// [dst]: https://www.rfc-editor.org/rfc/rfc9380.html#name-using-dsts-longer-than-255-
 #[derive(Debug)]
-pub(crate) enum Domain<'a, L>
-where
-    L: ArraySize + IsLess<U256, Output = True>,
-{
+pub(crate) enum Domain<'a, L: ArraySize> {
     /// > 255
     Hashed(Array<u8, L>),
     /// <= 255
     Array(&'a [&'a [u8]]),
 }
 
-impl<'a, L> Domain<'a, L>
-where
-    L: ArraySize + IsLess<U256, Output = True>,
-{
+impl<'a, L: ArraySize> Domain<'a, L> {
     pub fn xof<X>(dst: &'a [&'a [u8]]) -> Result<Self>
     where
         X: Default + ExtendableOutput + Update,
@@ -72,6 +65,10 @@ where
         if dst.iter().map(|slice| slice.len()).sum::<usize>() == 0 {
             Err(Error)
         } else if dst.iter().map(|slice| slice.len()).sum::<usize>() > MAX_DST_LEN {
+            if L::USIZE > u8::MAX.into() {
+                return Err(Error);
+            }
+
             let mut data = Array::<u8, L>::default();
             let mut hash = X::default();
             hash.update(OVERSIZE_DST_SALT);
@@ -96,6 +93,10 @@ where
         if dst.iter().map(|slice| slice.len()).sum::<usize>() == 0 {
             Err(Error)
         } else if dst.iter().map(|slice| slice.len()).sum::<usize>() > MAX_DST_LEN {
+            if L::USIZE > u8::MAX.into() {
+                return Err(Error);
+            }
+
             Ok(Self::Hashed({
                 let mut hash = X::new();
                 hash.update(OVERSIZE_DST_SALT);
@@ -124,8 +125,8 @@ where
 
     pub fn len(&self) -> u8 {
         match self {
-            // Can't overflow because it's enforced on a type level.
-            Self::Hashed(_) => L::to_u8(),
+            // Can't overflow because it's checked on creation.
+            Self::Hashed(_) => L::U8,
             // Can't overflow because it's checked on creation.
             Self::Array(d) => {
                 u8::try_from(d.iter().map(|d| d.len()).sum::<usize>()).expect("length overflow")

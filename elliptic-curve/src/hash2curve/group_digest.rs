@@ -23,9 +23,10 @@ pub trait GroupDigest: MapToCurve {
     /// > hash function is used.
     ///
     /// # Errors
-    /// See implementors of [`ExpandMsg`] for errors:
-    /// - [`ExpandMsgXmd`]
-    /// - [`ExpandMsgXof`]
+    /// - `len_in_bytes > u16::MAX`
+    /// - See implementors of [`ExpandMsg`] for additional errors:
+    ///   - [`ExpandMsgXmd`]
+    ///   - [`ExpandMsgXof`]
     ///
     /// `len_in_bytes = <Self::FieldElement as FromOkm>::Length * 2`
     ///
@@ -53,9 +54,10 @@ pub trait GroupDigest: MapToCurve {
     /// > points in this set are more likely to be output than others.
     ///
     /// # Errors
-    /// See implementors of [`ExpandMsg`] for errors:
-    /// - [`ExpandMsgXmd`]
-    /// - [`ExpandMsgXof`]
+    /// - `len_in_bytes > u16::MAX`
+    /// - See implementors of [`ExpandMsg`] for additional errors:
+    ///   - [`ExpandMsgXmd`]
+    ///   - [`ExpandMsgXof`]
     ///
     /// `len_in_bytes = <Self::FieldElement as FromOkm>::Length`
     ///
@@ -76,9 +78,10 @@ pub trait GroupDigest: MapToCurve {
     /// and returns a scalar.
     ///
     /// # Errors
-    /// See implementors of [`ExpandMsg`] for errors:
-    /// - [`ExpandMsgXmd`]
-    /// - [`ExpandMsgXof`]
+    /// - `len_in_bytes > u16::MAX`
+    /// - See implementors of [`ExpandMsg`] for additional errors:
+    ///   - [`ExpandMsgXmd`]
+    ///   - [`ExpandMsgXof`]
     ///
     /// `len_in_bytes = <Self::Scalar as FromOkm>::Length`
     ///

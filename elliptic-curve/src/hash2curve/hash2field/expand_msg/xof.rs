@@ -1,14 +1,14 @@
 //! `expand_message_xof` for the `ExpandMsg` trait
 
 use super::{Domain, ExpandMsg, Expander};
-use crate::{Error, Result};
+use crate::Result;
 use core::{fmt, num::NonZero, ops::Mul};
 use digest::{
     CollisionResistance, ExtendableOutput, HashMarker, Update, XofReader, typenum::IsGreaterOrEqual,
 };
 use hybrid_array::{
     ArraySize,
-    typenum::{IsLess, Prod, True, U2, U256},
+    typenum::{Prod, True, U2},
 };
 
 /// Implements `expand_message_xof` via the [`ExpandMsg`] trait:
@@ -16,7 +16,7 @@ use hybrid_array::{
 ///
 /// # Errors
 /// - `dst` contains no bytes
-/// - `len_in_bytes > u16::MAX`
+/// - `dst > 255 && K * 2 > 255`
 pub struct ExpandMsgXof<HashT>
 where
     HashT: Default + ExtendableOutput + Update + HashMarker,
@@ -41,7 +41,7 @@ where
     HashT: Default + ExtendableOutput + Update + HashMarker,
     // If DST is larger than 255 bytes, the length of the computed DST is calculated by `K * 2`.
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-2.1
-    K: Mul<U2, Output: ArraySize + IsLess<U256, Output = True>>,
+    K: Mul<U2, Output: ArraySize>,
     // The collision resistance of `HashT` MUST be at least `K` bits.
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.2-2.1
     HashT: CollisionResistance<CollisionResistance: IsGreaterOrEqual<K, Output = True>>,
@@ -51,9 +51,9 @@ where
     fn expand_message<'dst>(
         msg: &[&[u8]],
         dst: &'dst [&[u8]],
-        len_in_bytes: NonZero<usize>,
+        len_in_bytes: NonZero<u16>,
     ) -> Result<Self::Expander<'dst>> {
-        let len_in_bytes = u16::try_from(len_in_bytes.get()).map_err(|_| Error)?;
+        let len_in_bytes = len_in_bytes.get();
 
         let domain = Domain::<Prod<K, U2>>::xof::<HashT>(dst)?;
         let mut reader = HashT::default();
@@ -81,12 +81,14 @@ where
 
 #[cfg(test)]
 mod test {
+    use crate::Error;
+
     use super::*;
     use core::mem::size_of;
     use hex_literal::hex;
     use hybrid_array::{
         Array, ArraySize,
-        typenum::{U16, U32, U128},
+        typenum::{IsLess, U16, U32, U128, U65536},
     };
     use sha3::Shake128;
 
@@ -124,14 +126,14 @@ mod test {
                 + Update
                 + HashMarker
                 + CollisionResistance<CollisionResistance: IsGreaterOrEqual<U16, Output = True>>,
-            L: ArraySize,
+            L: ArraySize + IsLess<U65536, Output = True>,
         {
             assert_message(self.msg, domain, L::to_u16(), self.msg_prime);
 
             let mut expander = <ExpandMsgXof<HashT> as ExpandMsg<U16>>::expand_message(
                 &[self.msg],
                 &[dst],
-                NonZero::new(L::to_usize()).ok_or(Error)?,
+                NonZero::new(L::U16).ok_or(Error)?,
             )?;
 
             let mut uniform_bytes = Array::<u8, L>::default();

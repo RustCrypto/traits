@@ -4,7 +4,7 @@
 
 mod expand_msg;
 
-use core::num::NonZeroUsize;
+use core::num::NonZeroU16;
 
 pub use expand_msg::{xmd::*, xof::*, *};
 
@@ -28,9 +28,10 @@ pub trait FromOkm {
 /// <https://www.rfc-editor.org/rfc/rfc9380.html#name-hash_to_field-implementatio>
 ///
 /// # Errors
-/// See implementors of [`ExpandMsg`] for errors:
-/// - [`ExpandMsgXmd`]
-/// - [`ExpandMsgXof`]
+/// - `len_in_bytes > u16::MAX`
+/// - See implementors of [`ExpandMsg`] for additional errors:
+///   - [`ExpandMsgXmd`]
+///   - [`ExpandMsgXof`]
 ///
 /// `len_in_bytes = T::Length * out.len()`
 ///
@@ -42,9 +43,10 @@ where
     E: ExpandMsg<K>,
     T: FromOkm + Default,
 {
-    let len_in_bytes = T::Length::to_usize()
+    let len_in_bytes = T::Length::USIZE
         .checked_mul(out.len())
-        .and_then(NonZeroUsize::new)
+        .and_then(|len| len.try_into().ok())
+        .and_then(NonZeroU16::new)
         .ok_or(Error)?;
     let mut tmp = Array::<u8, <T as FromOkm>::Length>::default();
     let mut expander = E::expand_message(data, domain, len_in_bytes)?;
