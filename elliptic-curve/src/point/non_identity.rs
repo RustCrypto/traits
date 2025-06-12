@@ -1,7 +1,6 @@
 //! Non-identity point type.
 
 use core::ops::{Deref, Mul};
-use core::slice;
 
 use group::{Curve, Group, GroupEncoding, prime::PrimeCurveAffine};
 use rand_core::CryptoRng;
@@ -122,8 +121,7 @@ where
 
         #[allow(unsafe_code)]
         // SAFETY: `NonIdentity` is `repr(transparent)`.
-        let points: &[P] = unsafe { slice::from_raw_parts(points.as_ptr().cast(), N) };
-        let points = points.try_into().expect("slice should be size `N`");
+        let points: &[P; N] = unsafe { &*points.as_ptr().cast() };
         let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
 
         // Ensure `array::map()` can be optimized to a `memcpy`.
@@ -155,7 +153,8 @@ where
 
         #[allow(unsafe_code)]
         // SAFETY: `NonIdentity` is `repr(transparent)`.
-        let points: &[P] = unsafe { slice::from_raw_parts(points.as_ptr().cast(), points.len()) };
+        let points: &[P] =
+            unsafe { core::slice::from_raw_parts(points.as_ptr().cast(), points.len()) };
         let mut affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
 
         // Ensure casting is safe.
