@@ -126,11 +126,13 @@ where
             align_of::<NonIdentity<P::AffineRepr>>()
         );
 
-        #[expect(unsafe_code, reason = "`NonIdentity` is `repr(transparent)`")]
+        #[allow(unsafe_code)]
+        // SAFETY: `NonIdentity` is `repr(transparent)`.
         let points: &[P; N] = unsafe { mem::transmute(points) };
         let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
 
-        #[expect(unsafe_code, reason = "`NonIdentity` is `repr(transparent)`")]
+        #[allow(unsafe_code)]
+        // SAFETY: `NonIdentity` is `repr(transparent)`.
         unsafe {
             mem::transmute_copy(&ManuallyDrop::new(affine_points))
         }
@@ -156,12 +158,14 @@ where
             align_of::<NonIdentity<P::AffineRepr>>()
         );
 
-        #[expect(unsafe_code, reason = "`NonIdentity` is `repr(transparent)`")]
+        #[allow(unsafe_code)]
+        // SAFETY: `NonIdentity` is `repr(transparent)`.
         let points: &[P] = unsafe { mem::transmute(points) };
         let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
 
-        #[expect(unsafe_code, reason = "`NonIdentity` is `repr(transparent)`")]
         // `Vec::into_raw_parts()` is not stable yet.
+        #[allow(unsafe_code)]
+        // SAFETY: `NonIdentity` is `repr(transparent)`.
         unsafe {
             mem::transmute_copy(&ManuallyDrop::new(affine_points))
         }
