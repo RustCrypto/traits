@@ -1,7 +1,7 @@
 //! Non-identity point type.
 
-use core::mem::{self, ManuallyDrop};
 use core::ops::{Deref, Mul};
+use core::slice;
 
 use group::{Curve, Group, GroupEncoding, prime::PrimeCurveAffine};
 use rand_core::CryptoRng;
@@ -115,8 +115,18 @@ where
     type Output = [NonIdentity<P::AffineRepr>; N];
 
     fn batch_normalize(points: &[Self; N]) -> [NonIdentity<P::AffineRepr>; N] {
+        // Ensure casting is safe.
+        // This always succeeds because `NonIdentity` is `repr(transparent)`.
         debug_assert_eq!(size_of::<P>(), size_of::<NonIdentity<P>>());
         debug_assert_eq!(align_of::<P>(), align_of::<NonIdentity<P>>());
+
+        #[allow(unsafe_code)]
+        // SAFETY: `NonIdentity` is `repr(transparent)`.
+        let points: &[P] = unsafe { slice::from_raw_parts(points.as_ptr().cast(), N) };
+        let points = points.try_into().expect("slice should be size `N`");
+        let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
+
+        // Ensure `array::map()` can be optimized to a `memcpy`.
         debug_assert_eq!(
             size_of::<P::AffineRepr>(),
             size_of::<NonIdentity<P::AffineRepr>>()
@@ -126,16 +136,7 @@ where
             align_of::<NonIdentity<P::AffineRepr>>()
         );
 
-        #[allow(unsafe_code)]
-        // SAFETY: `NonIdentity` is `repr(transparent)`.
-        let points: &[P; N] = unsafe { mem::transmute(points) };
-        let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
-
-        #[allow(unsafe_code)]
-        // SAFETY: `NonIdentity` is `repr(transparent)`.
-        unsafe {
-            mem::transmute_copy(&ManuallyDrop::new(affine_points))
-        }
+        affine_points.map(|point| NonIdentity { point })
     }
 }
 
@@ -147,8 +148,18 @@ where
     type Output = Vec<NonIdentity<P::AffineRepr>>;
 
     fn batch_normalize(points: &[Self]) -> Vec<NonIdentity<P::AffineRepr>> {
+        // Ensure casting is safe.
+        // This always succeeds because `NonIdentity` is `repr(transparent)`.
         debug_assert_eq!(size_of::<P>(), size_of::<NonIdentity<P>>());
         debug_assert_eq!(align_of::<P>(), align_of::<NonIdentity<P>>());
+
+        #[allow(unsafe_code)]
+        // SAFETY: `NonIdentity` is `repr(transparent)`.
+        let points: &[P] = unsafe { slice::from_raw_parts(points.as_ptr().cast(), points.len()) };
+        let mut affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
+
+        // Ensure casting is safe.
+        // This always succeeds because `NonIdentity` is `repr(transparent)`.
         debug_assert_eq!(
             size_of::<P::AffineRepr>(),
             size_of::<NonIdentity<P::AffineRepr>>()
@@ -158,16 +169,16 @@ where
             align_of::<NonIdentity<P::AffineRepr>>()
         );
 
-        #[allow(unsafe_code)]
-        // SAFETY: `NonIdentity` is `repr(transparent)`.
-        let points: &[P] = unsafe { mem::transmute(points) };
-        let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
-
         // `Vec::into_raw_parts()` is not stable yet.
+        let ptr = affine_points.as_mut_ptr();
+        let length = affine_points.len();
+        let capacity = affine_points.capacity();
+        core::mem::forget(affine_points);
+
         #[allow(unsafe_code)]
         // SAFETY: `NonIdentity` is `repr(transparent)`.
         unsafe {
-            mem::transmute_copy(&ManuallyDrop::new(affine_points))
+            Vec::from_raw_parts(ptr.cast(), length, capacity)
         }
     }
 }
