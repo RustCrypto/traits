@@ -4,7 +4,7 @@
 //! the traits in this crate.
 
 use crate::{
-    Curve, CurveArithmetic, FieldBytesEncoding, PrimeCurve,
+    BatchNormalize, Curve, CurveArithmetic, FieldBytesEncoding, PrimeCurve,
     array::typenum::U32,
     bigint::{Limb, U256},
     error::{Error, Result},
@@ -17,12 +17,16 @@ use crate::{
     zeroize::DefaultIsZeroes,
 };
 use core::{
+    array,
     iter::{Product, Sum},
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 use ff::{Field, PrimeField};
 use hex_literal::hex;
 use pkcs8::AssociatedOid;
+
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
 
 #[cfg(feature = "bits")]
 use ff::PrimeFieldBits;
@@ -582,6 +586,23 @@ pub enum ProjectivePoint {
 
     /// Is this point a different point corresponding to a given [`AffinePoint`]
     Other(AffinePoint),
+}
+
+impl<const N: usize> BatchNormalize<[ProjectivePoint; N]> for ProjectivePoint {
+    type Output = [AffinePoint; N];
+
+    fn batch_normalize(points: &[ProjectivePoint; N]) -> [AffinePoint; N] {
+        array::from_fn(|index| points[index].into())
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl BatchNormalize<[ProjectivePoint]> for ProjectivePoint {
+    type Output = Vec<AffinePoint>;
+
+    fn batch_normalize(points: &[ProjectivePoint]) -> Vec<AffinePoint> {
+        points.iter().copied().map(AffinePoint::from).collect()
+    }
 }
 
 impl ConstantTimeEq for ProjectivePoint {

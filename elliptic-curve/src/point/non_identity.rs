@@ -308,6 +308,7 @@ impl<P: Group> Zeroize for NonIdentity<P> {
 #[cfg(all(test, feature = "dev"))]
 mod tests {
     use super::NonIdentity;
+    use crate::BatchNormalize;
     use crate::dev::{AffinePoint, NonZeroScalar, ProjectivePoint, SecretKey};
     use group::GroupEncoding;
     use hex_literal::hex;
@@ -372,5 +373,39 @@ mod tests {
         let pk = sk.public_key();
 
         assert_eq!(point.to_point(), pk.to_projective());
+    }
+
+    #[test]
+    fn batch_normalize() {
+        let point = ProjectivePoint::from_bytes(
+            &hex!("02c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721").into(),
+        )
+        .unwrap();
+        let point = NonIdentity::new(point).unwrap();
+        let points = [point, point];
+
+        for (point, affine_point) in points
+            .into_iter()
+            .zip(NonIdentity::batch_normalize(&points))
+        {
+            assert_eq!(point.to_affine(), affine_point);
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "alloc")]
+    fn batch_normalize_alloc() {
+        let point = ProjectivePoint::from_bytes(
+            &hex!("02c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721").into(),
+        )
+        .unwrap();
+        let point = NonIdentity::new(point).unwrap();
+        let points = vec![point, point];
+
+        let affine_points = NonIdentity::batch_normalize(points.as_slice());
+
+        for (point, affine_point) in points.into_iter().zip(affine_points) {
+            assert_eq!(point.to_affine(), affine_point);
+        }
     }
 }
