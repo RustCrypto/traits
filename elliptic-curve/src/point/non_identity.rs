@@ -153,9 +153,8 @@ where
 
         #[allow(unsafe_code)]
         // SAFETY: `NonIdentity` is `repr(transparent)`.
-        let points: &[P] =
-            unsafe { core::slice::from_raw_parts(points.as_ptr().cast(), points.len()) };
-        let mut affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
+        let points: &[P] = unsafe { &*(points as *const [NonIdentity<P>] as *const [P]) };
+        let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
 
         // Ensure casting is safe.
         // This always succeeds because `NonIdentity` is `repr(transparent)`.
@@ -168,17 +167,16 @@ where
             align_of::<NonIdentity<P::AffineRepr>>()
         );
 
-        // `Vec::into_raw_parts()` is not stable yet.
-        let ptr = affine_points.as_mut_ptr();
-        let length = affine_points.len();
-        let capacity = affine_points.capacity();
-        core::mem::forget(affine_points);
-
         #[allow(unsafe_code)]
         // SAFETY: `NonIdentity` is `repr(transparent)`.
-        unsafe {
-            Vec::from_raw_parts(ptr.cast(), length, capacity)
-        }
+        let result: Vec<NonIdentity<P::AffineRepr>> = unsafe {
+            (&affine_points as *const Vec<P::AffineRepr>)
+                .cast::<Vec<NonIdentity<P::AffineRepr>>>()
+                .read()
+        };
+        core::mem::forget(affine_points);
+
+        result
     }
 }
 
