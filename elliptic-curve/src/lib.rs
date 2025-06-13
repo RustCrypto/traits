@@ -139,7 +139,7 @@ pub use {
         scalar::{NonZeroScalar, Scalar},
     },
     ff::{self, Field, PrimeField},
-    group::{self, Group},
+    group::{self, Curve as CurveGroup, Group},
 };
 
 #[cfg(feature = "jwk")]

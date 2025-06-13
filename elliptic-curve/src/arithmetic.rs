@@ -1,7 +1,7 @@
 //! Elliptic curve arithmetic traits.
 
 use crate::{
-    Curve, Error, FieldBytes, NonZeroScalar, PrimeCurve, ScalarPrimitive,
+    Curve, CurveGroup, Error, FieldBytes, Group, NonZeroScalar, PrimeCurve, ScalarPrimitive,
     ops::{Invert, LinearCombination, Mul, Reduce, ShrAssign},
     point::{AffineCoordinates, NonIdentity},
     scalar::{FromUintUnchecked, IsHigh},
@@ -50,8 +50,8 @@ pub trait CurveArithmetic: Curve {
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar)]>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar); 2]>
         + TryInto<NonIdentity<Self::ProjectivePoint>, Error = Error>
-        + group::Curve<AffineRepr = Self::AffinePoint>
-        + group::Group<Scalar = Self::Scalar>;
+        + CurveGroup<AffineRepr = Self::AffinePoint>
+        + Group<Scalar = Self::Scalar>;
 
     /// Scalar field modulo this curve's order.
     ///
