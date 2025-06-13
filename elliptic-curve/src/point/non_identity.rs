@@ -156,8 +156,7 @@ where
         let points: &[P] = unsafe { &*(points as *const [NonIdentity<P>] as *const [P]) };
         let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
 
-        // Ensure casting is safe.
-        // This always succeeds because `NonIdentity` is `repr(transparent)`.
+        // Ensure `into_iter()` + `collect()` can be optimized away.
         debug_assert_eq!(
             size_of::<P::AffineRepr>(),
             size_of::<NonIdentity<P::AffineRepr>>()
@@ -167,16 +166,10 @@ where
             align_of::<NonIdentity<P::AffineRepr>>()
         );
 
-        #[allow(unsafe_code)]
-        // SAFETY: `NonIdentity` is `repr(transparent)`.
-        let result: Vec<NonIdentity<P::AffineRepr>> = unsafe {
-            (&affine_points as *const Vec<P::AffineRepr>)
-                .cast::<Vec<NonIdentity<P::AffineRepr>>>()
-                .read()
-        };
-        core::mem::forget(affine_points);
-
-        result
+        affine_points
+            .into_iter()
+            .map(|point| NonIdentity { point })
+            .collect()
     }
 }
 
