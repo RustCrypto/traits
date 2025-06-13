@@ -1,9 +1,10 @@
 //! Traits for arithmetic operations on elliptic curve field elements.
 
-use core::iter;
 pub use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Shr, ShrAssign, Sub, SubAssign};
 pub use crypto_bigint::Invert;
 
+use crate::CurveGroup;
+use core::iter;
 use crypto_bigint::Integer;
 use ff::Field;
 use subtle::{Choice, CtOption};
@@ -159,7 +160,7 @@ pub(crate) fn invert_batch_internal<T: Copy + Mul<Output = T> + MulAssign>(
 ///
 /// It's generic around `PointsAndScalars` to allow overlapping impls. For example, const generic
 /// impls can use the input size to determine the size needed to store temporary variables.
-pub trait LinearCombination<PointsAndScalars>: group::Curve
+pub trait LinearCombination<PointsAndScalars>: CurveGroup
 where
     PointsAndScalars: AsRef<[(Self, Self::Scalar)]> + ?Sized,
 {

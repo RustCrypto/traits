@@ -4,7 +4,7 @@
 //! the traits in this crate.
 
 use crate::{
-    BatchNormalize, Curve, CurveArithmetic, FieldBytesEncoding, PrimeCurve,
+    BatchNormalize, Curve, CurveArithmetic, CurveGroup, FieldBytesEncoding, PrimeCurve,
     array::typenum::U32,
     bigint::{Limb, U256},
     error::{Error, Result},
@@ -651,7 +651,7 @@ impl From<NonIdentity<ProjectivePoint>> for ProjectivePoint {
 
 impl From<ProjectivePoint> for AffinePoint {
     fn from(point: ProjectivePoint) -> AffinePoint {
-        group::Curve::to_affine(&point)
+        CurveGroup::to_affine(&point)
     }
 }
 
@@ -736,11 +736,11 @@ impl group::GroupEncoding for ProjectivePoint {
     }
 
     fn to_bytes(&self) -> Self::Repr {
-        group::Curve::to_affine(self).to_bytes()
+        CurveGroup::to_affine(self).to_bytes()
     }
 }
 
-impl group::Curve for ProjectivePoint {
+impl CurveGroup for ProjectivePoint {
     type AffineRepr = AffinePoint;
 
     fn to_affine(&self) -> AffinePoint {

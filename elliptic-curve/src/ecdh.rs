@@ -27,12 +27,11 @@
 //! [SIGMA]: https://webee.technion.ac.il/~hugo/sigma-pdf.pdf
 
 use crate::{
-    AffinePoint, Curve, CurveArithmetic, FieldBytes, NonZeroScalar, ProjectivePoint, PublicKey,
-    point::AffineCoordinates,
+    AffinePoint, Curve, CurveArithmetic, CurveGroup, FieldBytes, NonZeroScalar, ProjectivePoint,
+    PublicKey, point::AffineCoordinates,
 };
 use core::{borrow::Borrow, fmt};
 use digest::{Digest, crypto_common::BlockSizeUser};
-use group::Curve as _;
 use hkdf::{Hkdf, hmac::SimpleHmac};
 use rand_core::{CryptoRng, TryCryptoRng};
 use zeroize::{Zeroize, ZeroizeOnDrop};
