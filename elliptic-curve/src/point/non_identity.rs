@@ -6,11 +6,14 @@ use group::{Curve, Group, GroupEncoding, prime::PrimeCurveAffine};
 use rand_core::CryptoRng;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
+#[cfg(feature = "alloc")]
+use alloc::vec::Vec;
+
 #[cfg(feature = "serde")]
 use serdect::serde::{Deserialize, Serialize, de, ser};
 use zeroize::Zeroize;
 
-use crate::{CurveArithmetic, NonZeroScalar, Scalar};
+use crate::{BatchNormalize, CurveArithmetic, NonZeroScalar, Scalar};
 
 /// Non-identity point type.
 ///
@@ -19,6 +22,7 @@ use crate::{CurveArithmetic, NonZeroScalar, Scalar};
 /// In the context of ECC, it's useful for ensuring that certain arithmetic
 /// cannot result in the identity point.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(transparent)]
 pub struct NonIdentity<P> {
     point: P,
 }
@@ -100,6 +104,72 @@ where
 impl<P> AsRef<P> for NonIdentity<P> {
     fn as_ref(&self) -> &P {
         &self.point
+    }
+}
+
+impl<const N: usize, P> BatchNormalize<[Self; N]> for NonIdentity<P>
+where
+    P: Curve + BatchNormalize<[P; N], Output = [P::AffineRepr; N]>,
+{
+    type Output = [NonIdentity<P::AffineRepr>; N];
+
+    fn batch_normalize(points: &[Self; N]) -> [NonIdentity<P::AffineRepr>; N] {
+        // Ensure casting is safe.
+        // This always succeeds because `NonIdentity` is `repr(transparent)`.
+        debug_assert_eq!(size_of::<P>(), size_of::<NonIdentity<P>>());
+        debug_assert_eq!(align_of::<P>(), align_of::<NonIdentity<P>>());
+
+        #[allow(unsafe_code)]
+        // SAFETY: `NonIdentity` is `repr(transparent)`.
+        let points: &[P; N] = unsafe { &*points.as_ptr().cast() };
+        let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
+
+        // Ensure `array::map()` can be optimized to a `memcpy`.
+        debug_assert_eq!(
+            size_of::<P::AffineRepr>(),
+            size_of::<NonIdentity<P::AffineRepr>>()
+        );
+        debug_assert_eq!(
+            align_of::<P::AffineRepr>(),
+            align_of::<NonIdentity<P::AffineRepr>>()
+        );
+
+        affine_points.map(|point| NonIdentity { point })
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<P> BatchNormalize<[Self]> for NonIdentity<P>
+where
+    P: Curve + BatchNormalize<[P], Output = Vec<P::AffineRepr>>,
+{
+    type Output = Vec<NonIdentity<P::AffineRepr>>;
+
+    fn batch_normalize(points: &[Self]) -> Vec<NonIdentity<P::AffineRepr>> {
+        // Ensure casting is safe.
+        // This always succeeds because `NonIdentity` is `repr(transparent)`.
+        debug_assert_eq!(size_of::<P>(), size_of::<NonIdentity<P>>());
+        debug_assert_eq!(align_of::<P>(), align_of::<NonIdentity<P>>());
+
+        #[allow(unsafe_code)]
+        // SAFETY: `NonIdentity` is `repr(transparent)`.
+        let points: &[P] = unsafe { &*(points as *const [NonIdentity<P>] as *const [P]) };
+        let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
+
+        // Ensure `into_iter()` + `collect()` can be optimized away.
+        debug_assert_eq!(
+            size_of::<P::AffineRepr>(),
+            size_of::<NonIdentity<P::AffineRepr>>()
+        );
+        debug_assert_eq!(
+            align_of::<P::AffineRepr>(),
+            align_of::<NonIdentity<P::AffineRepr>>()
+        );
+
+        affine_points
+            .into_iter()
+            .map(|point| NonIdentity { point })
+            .collect()
     }
 }
 
@@ -238,6 +308,7 @@ impl<P: Group> Zeroize for NonIdentity<P> {
 #[cfg(all(test, feature = "dev"))]
 mod tests {
     use super::NonIdentity;
+    use crate::BatchNormalize;
     use crate::dev::{AffinePoint, NonZeroScalar, ProjectivePoint, SecretKey};
     use group::GroupEncoding;
     use hex_literal::hex;
@@ -302,5 +373,39 @@ mod tests {
         let pk = sk.public_key();
 
         assert_eq!(point.to_point(), pk.to_projective());
+    }
+
+    #[test]
+    fn batch_normalize() {
+        let point = ProjectivePoint::from_bytes(
+            &hex!("02c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721").into(),
+        )
+        .unwrap();
+        let point = NonIdentity::new(point).unwrap();
+        let points = [point, point];
+
+        for (point, affine_point) in points
+            .into_iter()
+            .zip(NonIdentity::batch_normalize(&points))
+        {
+            assert_eq!(point.to_affine(), affine_point);
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "alloc")]
+    fn batch_normalize_alloc() {
+        let point = ProjectivePoint::from_bytes(
+            &hex!("02c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721").into(),
+        )
+        .unwrap();
+        let point = NonIdentity::new(point).unwrap();
+        let points = vec![point, point];
+
+        let affine_points = NonIdentity::batch_normalize(points.as_slice());
+
+        for (point, affine_point) in points.into_iter().zip(affine_points) {
+            assert_eq!(point.to_affine(), affine_point);
+        }
     }
 }
