@@ -8,7 +8,7 @@ use digest::{
     FixedOutput, HashMarker,
     array::{
         Array,
-        typenum::{IsGreaterOrEqual, IsLess, IsLessOrEqual, Prod, True, U2, U256, Unsigned},
+        typenum::{IsGreaterOrEqual, IsLessOrEqual, Prod, True, U2, Unsigned},
     },
     block_api::BlockSizeUser,
 };
@@ -18,22 +18,17 @@ use digest::{
 ///
 /// # Errors
 /// - `dst` contains no bytes
-/// - `len_in_bytes > u16::MAX`
+/// - `dst > 255 && HashT::OutputSize > 255`
 /// - `len_in_bytes > 255 * HashT::OutputSize`
 #[derive(Debug)]
 pub struct ExpandMsgXmd<HashT>(PhantomData<HashT>)
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-    HashT::OutputSize: IsLess<U256, Output = True>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>;
 
 impl<HashT, K> ExpandMsg<K> for ExpandMsgXmd<HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-    // If DST is larger than 255 bytes, the length of the computed DST will depend on the output
-    // size of the hash, which is still not allowed to be larger than 255.
-    // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-6
-    HashT::OutputSize: IsLess<U256, Output = True>,
     // The number of bits output by `HashT` MUST be at most `HashT::BlockSize`.
     // https://www.rfc-editor.org/rfc/rfc9380.html#section-5.3.1-4
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
@@ -47,17 +42,17 @@ where
     fn expand_message<'dst>(
         msg: &[&[u8]],
         dst: &'dst [&[u8]],
-        len_in_bytes: NonZero<usize>,
+        len_in_bytes: NonZero<u16>,
     ) -> Result<Self::Expander<'dst>> {
-        let len_in_bytes_u16 = u16::try_from(len_in_bytes.get()).map_err(|_| Error)?;
+        let b_in_bytes = HashT::OutputSize::USIZE;
 
         // `255 * <b_in_bytes>` can not exceed `u16::MAX`
-        if len_in_bytes_u16 > 255 * HashT::OutputSize::to_u16() {
+        if usize::from(len_in_bytes.get()) > 255 * b_in_bytes {
             return Err(Error);
         }
 
-        let b_in_bytes = HashT::OutputSize::to_usize();
-        let ell = u8::try_from(len_in_bytes.get().div_ceil(b_in_bytes)).map_err(|_| Error)?;
+        let ell = u8::try_from(usize::from(len_in_bytes.get()).div_ceil(b_in_bytes))
+            .expect("should never pass the previous check");
 
         let domain = Domain::xmd::<HashT>(dst)?;
         let mut b_0 = HashT::default();
@@ -67,7 +62,7 @@ where
             b_0.update(msg);
         }
 
-        b_0.update(&len_in_bytes_u16.to_be_bytes());
+        b_0.update(&len_in_bytes.get().to_be_bytes());
         b_0.update(&[0]);
         domain.update_hash(&mut b_0);
         b_0.update(&[domain.len()]);
@@ -96,7 +91,6 @@ where
 pub struct ExpanderXmd<'a, HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-    HashT::OutputSize: IsLess<U256, Output = True>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
 {
     b_0: Array<u8, HashT::OutputSize>,
@@ -110,7 +104,6 @@ where
 impl<HashT> ExpanderXmd<'_, HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-    HashT::OutputSize: IsLess<U256, Output = True>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
 {
     fn next(&mut self) -> bool {
@@ -140,7 +133,6 @@ where
 impl<HashT> Expander for ExpanderXmd<'_, HashT>
 where
     HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-    HashT::OutputSize: IsLess<U256, Output = True>,
     HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
 {
     fn fill_bytes(&mut self, okm: &mut [u8]) {
@@ -157,11 +149,10 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use core::mem::size_of;
     use hex_literal::hex;
     use hybrid_array::{
         ArraySize,
-        typenum::{U4, U8, U32, U128},
+        typenum::{IsLess, U4, U8, U32, U128, U65536},
     };
     use sha2::Sha256;
 
@@ -172,9 +163,8 @@ mod test {
         bytes: &[u8],
     ) where
         HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-        HashT::OutputSize: IsLess<U256, Output = True>,
     {
-        let block = HashT::BlockSize::to_usize();
+        let block = HashT::BlockSize::USIZE;
         assert_eq!(
             Array::<u8, HashT::BlockSize>::default().as_slice(),
             &bytes[..block]
@@ -206,25 +196,24 @@ mod test {
 
     impl TestVector {
         #[allow(clippy::panic_in_result_fn)]
-        fn assert<HashT, L: ArraySize>(
+        fn assert<HashT, L>(
             &self,
             dst: &'static [u8],
             domain: &Domain<'_, HashT::OutputSize>,
         ) -> Result<()>
         where
             HashT: BlockSizeUser + Default + FixedOutput + HashMarker,
-            HashT::OutputSize: IsLess<U256, Output = True>
-                + IsLessOrEqual<HashT::BlockSize, Output = True>
-                + Mul<U8>,
+            HashT::OutputSize: IsLessOrEqual<HashT::BlockSize, Output = True>,
             HashT::OutputSize: IsGreaterOrEqual<U8, Output = True>,
+            L: ArraySize + IsLess<U65536, Output = True>,
         {
-            assert_message::<HashT>(self.msg, domain, L::to_u16(), self.msg_prime);
+            assert_message::<HashT>(self.msg, domain, L::U16, self.msg_prime);
 
             let dst = [dst];
             let mut expander = <ExpandMsgXmd<HashT> as ExpandMsg<U4>>::expand_message(
                 &[self.msg],
                 &dst,
-                NonZero::new(L::to_usize()).ok_or(Error)?,
+                NonZero::new(L::U16).ok_or(Error)?,
             )?;
 
             let mut uniform_bytes = Array::<u8, L>::default();
