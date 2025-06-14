@@ -33,6 +33,7 @@ use serdect::serde::{Deserialize, Serialize, de, ser};
 /// In the context of ECC, it's useful for ensuring that scalar multiplication
 /// cannot result in the point at infinity.
 #[derive(Clone)]
+#[repr(transparent)] // SAFETY: needed for `unsafe` safety invariants below
 pub struct NonZeroScalar<C>
 where
     C: CurveArithmetic,
@@ -87,6 +88,27 @@ where
     /// Create a [`NonZeroScalar`] from a `C::Uint`.
     pub fn from_uint(uint: C::Uint) -> CtOption<Self> {
         ScalarPrimitive::new(uint).and_then(|scalar| Self::new(scalar.into()))
+    }
+
+    /// Transform array reference containing [`NonZeroScalar`]s to an array reference to the inner
+    /// scalar type.
+    pub fn cast_array_as_inner<const N: usize>(scalars: &[Self; N]) -> &[Scalar<C>; N] {
+        // SAFETY: `NonZeroScalar` is a `repr(transparent)` newtype for `Scalar<C>` so it's safe to
+        // cast to the inner scalar type.
+        #[allow(unsafe_code)]
+        unsafe {
+            &*scalars.as_ptr().cast()
+        }
+    }
+
+    /// Transform slice containing [`NonZeroScalar`]s to a slice of the inner scalar type.
+    pub fn cast_slice_as_inner(scalars: &[Self]) -> &[Scalar<C>] {
+        // SAFETY: `NonZeroScalar` is a `repr(transparent)` newtype for `Scalar<C>` so it's safe to
+        // cast to the inner scalar type.
+        #[allow(unsafe_code)]
+        unsafe {
+            &*(scalars as *const [NonZeroScalar<C>] as *const [Scalar<C>])
+        }
     }
 }
 

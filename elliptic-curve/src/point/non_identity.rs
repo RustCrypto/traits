@@ -22,7 +22,7 @@ use crate::{BatchNormalize, CurveArithmetic, NonZeroScalar, Scalar};
 /// In the context of ECC, it's useful for ensuring that certain arithmetic
 /// cannot result in the identity point.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[repr(transparent)]
+#[repr(transparent)] // SAFETY: needed for `unsafe` safety invariants below
 pub struct NonIdentity<P> {
     point: P,
 }
@@ -55,11 +55,6 @@ impl<P> NonIdentity<P> {
     /// Transform array reference containing [`NonIdentity`] points to an array reference to the
     /// inner point type.
     pub fn cast_array_as_inner<const N: usize>(points: &[Self; N]) -> &[P; N] {
-        // Ensure casting is safe.
-        // This always succeeds because `NonIdentity` is `repr(transparent)`.
-        debug_assert_eq!(size_of::<P>(), size_of::<NonIdentity<P>>());
-        debug_assert_eq!(align_of::<P>(), align_of::<NonIdentity<P>>());
-
         // SAFETY: `NonIdentity` is a `repr(transparent)` newtype for `P` so it's safe to cast to
         // the inner `P` type.
         #[allow(unsafe_code)]
@@ -70,11 +65,6 @@ impl<P> NonIdentity<P> {
 
     /// Transform slice containing [`NonIdentity`] points to a slice of the inner point type.
     pub fn cast_slice_as_inner(points: &[Self]) -> &[P] {
-        // Ensure casting is safe.
-        // This always succeeds because `NonIdentity` is `repr(transparent)`.
-        debug_assert_eq!(size_of::<P>(), size_of::<NonIdentity<P>>());
-        debug_assert_eq!(align_of::<P>(), align_of::<NonIdentity<P>>());
-
         // SAFETY: `NonIdentity` is a `repr(transparent)` newtype for `P` so it's safe to cast to
         // the inner `P` type.
         #[allow(unsafe_code)]
