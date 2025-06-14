@@ -22,7 +22,7 @@ use crate::{BatchNormalize, CurveArithmetic, NonZeroScalar, Scalar};
 /// In the context of ECC, it's useful for ensuring that certain arithmetic
 /// cannot result in the identity point.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[repr(transparent)]
+#[repr(transparent)] // SAFETY: needed for `unsafe` safety invariants below
 pub struct NonIdentity<P> {
     point: P,
 }
@@ -48,6 +48,29 @@ where
     /// Decode a [`NonIdentity`] from its encoding.
     pub fn from_repr(repr: &P::Repr) -> CtOption<Self> {
         Self::from_bytes(repr)
+    }
+}
+
+impl<P> NonIdentity<P> {
+    /// Transform array reference containing [`NonIdentity`] points to an array reference to the
+    /// inner point type.
+    pub fn cast_array_as_inner<const N: usize>(points: &[Self; N]) -> &[P; N] {
+        // SAFETY: `NonIdentity` is a `repr(transparent)` newtype for `P` so it's safe to cast to
+        // the inner `P` type.
+        #[allow(unsafe_code)]
+        unsafe {
+            &*points.as_ptr().cast()
+        }
+    }
+
+    /// Transform slice containing [`NonIdentity`] points to a slice of the inner point type.
+    pub fn cast_slice_as_inner(points: &[Self]) -> &[P] {
+        // SAFETY: `NonIdentity` is a `repr(transparent)` newtype for `P` so it's safe to cast to
+        // the inner `P` type.
+        #[allow(unsafe_code)]
+        unsafe {
+            &*(points as *const [NonIdentity<P>] as *const [P])
+        }
     }
 }
 
@@ -114,26 +137,8 @@ where
     type Output = [NonIdentity<P::AffineRepr>; N];
 
     fn batch_normalize(points: &[Self; N]) -> [NonIdentity<P::AffineRepr>; N] {
-        // Ensure casting is safe.
-        // This always succeeds because `NonIdentity` is `repr(transparent)`.
-        debug_assert_eq!(size_of::<P>(), size_of::<NonIdentity<P>>());
-        debug_assert_eq!(align_of::<P>(), align_of::<NonIdentity<P>>());
-
-        #[allow(unsafe_code)]
-        // SAFETY: `NonIdentity` is `repr(transparent)`.
-        let points: &[P; N] = unsafe { &*points.as_ptr().cast() };
+        let points = Self::cast_array_as_inner::<N>(points);
         let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
-
-        // Ensure `array::map()` can be optimized to a `memcpy`.
-        debug_assert_eq!(
-            size_of::<P::AffineRepr>(),
-            size_of::<NonIdentity<P::AffineRepr>>()
-        );
-        debug_assert_eq!(
-            align_of::<P::AffineRepr>(),
-            align_of::<NonIdentity<P::AffineRepr>>()
-        );
-
         affine_points.map(|point| NonIdentity { point })
     }
 }
@@ -146,26 +151,8 @@ where
     type Output = Vec<NonIdentity<P::AffineRepr>>;
 
     fn batch_normalize(points: &[Self]) -> Vec<NonIdentity<P::AffineRepr>> {
-        // Ensure casting is safe.
-        // This always succeeds because `NonIdentity` is `repr(transparent)`.
-        debug_assert_eq!(size_of::<P>(), size_of::<NonIdentity<P>>());
-        debug_assert_eq!(align_of::<P>(), align_of::<NonIdentity<P>>());
-
-        #[allow(unsafe_code)]
-        // SAFETY: `NonIdentity` is `repr(transparent)`.
-        let points: &[P] = unsafe { &*(points as *const [NonIdentity<P>] as *const [P]) };
+        let points = Self::cast_slice_as_inner(points);
         let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
-
-        // Ensure `into_iter()` + `collect()` can be optimized away.
-        debug_assert_eq!(
-            size_of::<P::AffineRepr>(),
-            size_of::<NonIdentity<P::AffineRepr>>()
-        );
-        debug_assert_eq!(
-            align_of::<P::AffineRepr>(),
-            align_of::<NonIdentity<P::AffineRepr>>()
-        );
-
         affine_points
             .into_iter()
             .map(|point| NonIdentity { point })
