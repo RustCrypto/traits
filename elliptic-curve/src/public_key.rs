@@ -1,10 +1,11 @@
 //! Elliptic curve public keys.
 
 use crate::{
-    AffinePoint, CurveArithmetic, Error, NonZeroScalar, ProjectivePoint, Result, point::NonIdentity,
+    AffinePoint, CurveArithmetic, CurveGroup, Error, NonZeroScalar, ProjectivePoint, Result,
+    point::NonIdentity,
 };
 use core::fmt::Debug;
-use group::{Curve, Group};
+use group::Group;
 
 #[cfg(feature = "jwk")]
 use crate::{JwkEcKey, JwkParameters};

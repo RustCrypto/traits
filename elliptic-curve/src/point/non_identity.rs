@@ -2,7 +2,7 @@
 
 use core::ops::{Deref, Mul};
 
-use group::{Curve, Group, GroupEncoding, prime::PrimeCurveAffine};
+use group::{Group, GroupEncoding, prime::PrimeCurveAffine};
 use rand_core::CryptoRng;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
@@ -13,7 +13,7 @@ use alloc::vec::Vec;
 use serdect::serde::{Deserialize, Serialize, de, ser};
 use zeroize::Zeroize;
 
-use crate::{BatchNormalize, CurveArithmetic, NonZeroScalar, Scalar};
+use crate::{BatchNormalize, CurveArithmetic, CurveGroup, NonZeroScalar, Scalar};
 
 /// Non-identity point type.
 ///
@@ -83,7 +83,7 @@ impl<P: Copy> NonIdentity<P> {
 
 impl<P> NonIdentity<P>
 where
-    P: ConditionallySelectable + ConstantTimeEq + Curve + Default,
+    P: ConditionallySelectable + ConstantTimeEq + CurveGroup + Default,
 {
     /// Generate a random `NonIdentity<ProjectivePoint>`.
     pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
@@ -132,7 +132,7 @@ impl<P> AsRef<P> for NonIdentity<P> {
 
 impl<const N: usize, P> BatchNormalize<[Self; N]> for NonIdentity<P>
 where
-    P: Curve + BatchNormalize<[P; N], Output = [P::AffineRepr; N]>,
+    P: CurveGroup + BatchNormalize<[P; N], Output = [P::AffineRepr; N]>,
 {
     type Output = [NonIdentity<P::AffineRepr>; N];
 
@@ -146,7 +146,7 @@ where
 #[cfg(feature = "alloc")]
 impl<P> BatchNormalize<[Self]> for NonIdentity<P>
 where
-    P: Curve + BatchNormalize<[P], Output = Vec<P::AffineRepr>>,
+    P: CurveGroup + BatchNormalize<[P], Output = Vec<P::AffineRepr>>,
 {
     type Output = Vec<NonIdentity<P::AffineRepr>>;
 
