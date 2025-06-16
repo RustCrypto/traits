@@ -207,7 +207,7 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
         } else {
             // Note that we temporarily write a pseudo-random byte into
             // the first byte of `self.buffer`. It may break the safety invariant,
-            // but after XORing keystream block with `tail`, we immediately
+            // but after writing keystream block with `tail`, we immediately
             // overwrite the first byte with a correct value.
             self.core.write_keystream_block(&mut self.buffer);
             tail.copy_from_slice(&self.buffer[..tail.len()]);
