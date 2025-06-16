@@ -195,7 +195,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.14.0-rc.6"
+version = "0.14.0-rc.7"
 dependencies = [
  "base16ct",
  "base64ct",
