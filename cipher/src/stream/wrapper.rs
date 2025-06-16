@@ -3,7 +3,9 @@ use super::{
     StreamCipherSeekCore, errors::StreamCipherError,
 };
 use core::fmt;
-use crypto_common::{Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser, typenum::Unsigned};
+use crypto_common::{
+    Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser, array::Array, typenum::Unsigned,
+};
 use inout::InOutBuf;
 #[cfg(feature = "zeroize")]
 use zeroize::{Zeroize, ZeroizeOnDrop};
@@ -157,6 +159,58 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
             // overwrite the first byte with a correct value.
             self.core.write_keystream_block(&mut self.buffer);
             tail.xor_in2out(&self.buffer[..tail.len()]);
+            tail.len()
+        };
+
+        // SAFETY: `into_chunks` always returns tail with size
+        // less than block size. If `tail.len()` is zero, we replace
+        // it with block size. Thus the invariant required by
+        // `set_pos_unchecked` is satisfied.
+        unsafe {
+            self.set_pos_unchecked(new_pos);
+        }
+
+        Ok(())
+    }
+
+    #[inline]
+    fn try_write_keystream(&mut self, mut data: &mut [u8]) -> Result<(), StreamCipherError> {
+        self.check_remaining(data.len())?;
+
+        let pos = usize::from(self.get_pos());
+        let rem = usize::from(self.remaining());
+        let data_len = data.len();
+
+        if rem != 0 {
+            if data_len <= rem {
+                data.copy_from_slice(&self.buffer[pos..][..data_len]);
+                // SAFETY: we have checked that `data_len` is less or equal to length
+                // of remaining keystream data, thus `pos + data_len` can not be bigger
+                // than block size. Since `pos` is never zero, `pos + data_len` can not
+                // be zero. Thus `pos + data_len` satisfies the safety invariant required
+                // by `set_pos_unchecked`.
+                unsafe {
+                    self.set_pos_unchecked(pos + data_len);
+                }
+                return Ok(());
+            }
+            let (left, right) = data.split_at_mut(rem);
+            data = right;
+            left.copy_from_slice(&self.buffer[pos..]);
+        }
+
+        let (blocks, tail) = Array::slice_as_chunks_mut(data);
+        self.core.write_keystream_blocks(blocks);
+
+        let new_pos = if tail.is_empty() {
+            T::BlockSize::USIZE
+        } else {
+            // Note that we temporarily write a pseudo-random byte into
+            // the first byte of `self.buffer`. It may break the safety invariant,
+            // but after XORing keystream block with `tail`, we immediately
+            // overwrite the first byte with a correct value.
+            self.core.write_keystream_block(&mut self.buffer);
+            tail.copy_from_slice(&self.buffer[..tail.len()]);
             tail.len()
         };
 
