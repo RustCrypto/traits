@@ -104,6 +104,16 @@ pub trait StreamCipher {
         self.try_apply_keystream_inout(buf.into())
     }
 
+    /// Write keystream to `buf`.
+    ///
+    /// If end of the keystream will be achieved with the given data length,
+    /// method will return [`StreamCipherError`] without modifying provided `data`.
+    #[inline]
+    fn try_write_keystream(&mut self, buf: &mut [u8]) -> Result<(), StreamCipherError> {
+        buf.fill(0);
+        self.try_apply_keystream(buf)
+    }
+
     /// Apply keystream to `inout` data.
     ///
     /// It will XOR generated keystream with the data behind `in` pointer
@@ -128,6 +138,16 @@ pub trait StreamCipher {
     #[inline]
     fn apply_keystream(&mut self, buf: &mut [u8]) {
         self.try_apply_keystream(buf).unwrap();
+    }
+
+    /// Write keystream to `buf`.
+    ///
+    /// # Panics
+    /// If end of the keystream will be reached with the given data length,
+    /// method will panic without modifying the provided `data`.
+    #[inline]
+    fn write_keystream(&mut self, buf: &mut [u8]) {
+        self.try_write_keystream(buf).unwrap();
     }
 
     /// Apply keystream to data buffer-to-buffer.
