@@ -374,7 +374,7 @@ where
     fn try_from(sec1_private_key: sec1::EcPrivateKey<'_>) -> der::Result<Self> {
         if let Some(sec1::EcParameters::NamedCurve(curve_oid)) = sec1_private_key.parameters {
             if C::OID != curve_oid {
-                return Err(der::Tag::ObjectIdentifier.value_error());
+                return Err(der::Tag::ObjectIdentifier.value_error().into());
             }
         }
 
@@ -386,7 +386,7 @@ where
                 .map_err(|_| der::Tag::BitString.value_error())?;
 
             if C::validate_public_key(&secret_key, &pk).is_err() {
-                return Err(der::Tag::BitString.value_error());
+                return Err(der::Tag::BitString.value_error().into());
             }
         }
 
