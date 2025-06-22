@@ -467,10 +467,10 @@ where
         let public_key_bytes = spki
             .subject_public_key
             .as_bytes()
-            .ok_or_else(|| der::Tag::BitString.value_error())?;
+            .ok_or_else(|| der::Tag::BitString.value_error().to_error())?;
 
         Self::from_sec1_bytes(public_key_bytes)
-            .map_err(|_| der::Tag::BitString.value_error().into())
+            .map_err(|_| der::Tag::BitString.value_error().to_error().into())
     }
 }
 

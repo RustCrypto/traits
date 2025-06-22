@@ -172,9 +172,8 @@ dependencies = [
 
 [[package]]
 name = "der"
-version = "0.8.0-rc.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c2e6107818886eff6b71fba7a2da3dd11025ebb80f0c9b94ff961168ef629f2"
+version = "0.8.0-rc.5"
+source = "git+https://github.com/RustCrypto/formats.git#4cb99df01f32ecc51f036de5d71a42d84cb6f499"
 dependencies = [
  "const-oid",
  "pem-rfc7468",
@@ -422,8 +421,7 @@ dependencies = [
 [[package]]
 name = "pkcs8"
 version = "0.11.0-rc.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f1843d4345dfe1a55e487db747a04c01af50415b03e937410e0a41d8cc24ec7"
+source = "git+https://github.com/RustCrypto/formats.git#4cb99df01f32ecc51f036de5d71a42d84cb6f499"
 dependencies = [
  "der",
  "spki",
@@ -478,8 +476,7 @@ checksum = "28d3b2b1366ec20994f1fd18c3c594f05c5dd4bc44d8bb0c1c632c8d6829481f"
 [[package]]
 name = "sec1"
 version = "0.8.0-rc.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4855dd9b15e8e469fad23529698f7f7b7a6b250a81c88b1f9d7efe1abca7717"
+source = "git+https://github.com/RustCrypto/formats.git#4cb99df01f32ecc51f036de5d71a42d84cb6f499"
 dependencies = [
  "base16ct",
  "der",
