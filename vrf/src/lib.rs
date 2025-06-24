@@ -31,7 +31,6 @@ use digest::{Output, OutputSizeUser};
 
 pub use signature::Verifier;
 
-
 /// A VRF Proof, denoted `pi` or `pi_string` in RFC9381. See RFC9381 section 1.2 for details.
 pub trait Proof<H>
 where
