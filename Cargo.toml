@@ -11,6 +11,7 @@ members = [
     "password-hash",
     "universal-hash",
     "signature",
+    "vrf",
 ]
 
 [patch.crates-io]
