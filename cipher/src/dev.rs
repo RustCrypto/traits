@@ -1,2 +1,5 @@
+//! Development-related functionality
 mod block;
-mod stream;
+pub mod stream;
+
+pub use blobby;
