@@ -70,8 +70,7 @@ dependencies = [
 [[package]]
 name = "blobby"
 version = "0.4.0-pre.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a859067dcb257cb2ae028cb821399b55140b76fb8b2a360e052fe109019db43"
+source = "git+https://github.com/RustCrypto/utils?branch=blobby%2Fconst_prsing#ce705168b0d6730b84eb9e07ccb31646f49ff0af"
 
 [[package]]
 name = "block-buffer"

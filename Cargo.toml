@@ -20,3 +20,4 @@ signature = { path = "signature" }
 der = { git = "https://github.com/RustCrypto/formats.git" }
 pkcs8 = { git = "https://github.com/RustCrypto/formats.git" }
 sec1 = { git = "https://github.com/RustCrypto/formats.git" }
+blobby = { git = "https://github.com/RustCrypto/utils", branch = "blobby/const_prsing" }
