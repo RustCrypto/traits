@@ -137,12 +137,13 @@ macro_rules! new_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
-            use $crate::{KeyInit, dev::TestVector};
+            use $crate::dev::TestVector;
 
             $crate::dev::blobby::parse_into_structs!(
                 include_bytes!(concat!("data/", $test_name, ".blb"));
-                static TEST_VECTORS;
-                existing struct TestVector { key, nonce, aad, plaintext, ciphertext, pass }
+                static TEST_VECTORS: &[
+                    TestVector { key, nonce, aad, plaintext, ciphertext, pass }
+                ];
             );
 
             for (i, tv) in TEST_VECTORS.iter().enumerate() {

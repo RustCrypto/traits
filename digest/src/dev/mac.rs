@@ -134,8 +134,7 @@ macro_rules! new_mac_test {
 
             $crate::dev::blobby::parse_into_structs!(
                 include_bytes!(concat!("data/", $test_name, ".blb"));
-                static TEST_VECTORS;
-                existing struct MacTestVector { key, input, tag }
+                static TEST_VECTORS: &[MacTestVector { key, input, tag }];
             );
 
             for (i, tv) in TEST_VECTORS.iter().enumerate() {

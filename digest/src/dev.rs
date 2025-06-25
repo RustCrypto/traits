@@ -34,8 +34,7 @@ macro_rules! new_test {
 
             $crate::dev::blobby::parse_into_structs!(
                 include_bytes!(concat!("data/", $test_name, ".blb"));
-                static TEST_VECTORS;
-                existing struct TestVector { input, output }
+                static TEST_VECTORS: &[TestVector { input, output }];
             );
 
             for (i, tv) in TEST_VECTORS.iter().enumerate() {

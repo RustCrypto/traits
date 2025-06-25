@@ -70,7 +70,7 @@ dependencies = [
 [[package]]
 name = "blobby"
 version = "0.4.0-pre.0"
-source = "git+https://github.com/RustCrypto/utils?branch=blobby%2Fconst_prsing#ce705168b0d6730b84eb9e07ccb31646f49ff0af"
+source = "git+https://github.com/RustCrypto/utils?branch=blobby%2Fconst_prsing#0f7121f4d195f1c035dea6a2656de7d10029c6e9"
 
 [[package]]
 name = "block-buffer"
