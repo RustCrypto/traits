@@ -23,7 +23,7 @@ pub struct TestVector {
 }
 
 /// Run AEAD test for the provided passing test vector
-pub fn run_pass_test<C: AeadInOut + KeyInit>(
+pub fn pass_test<C: AeadInOut + KeyInit>(
     &TestVector {
         key,
         nonce,
@@ -103,7 +103,7 @@ pub fn run_pass_test<C: AeadInOut + KeyInit>(
 }
 
 /// Run AEAD test for the provided failing test vector
-pub fn run_fail_test<C: AeadInOut + KeyInit>(
+pub fn fail_test<C: AeadInOut + KeyInit>(
     &TestVector {
         key,
         nonce,
@@ -113,7 +113,7 @@ pub fn run_fail_test<C: AeadInOut + KeyInit>(
         ..
     }: &TestVector,
 ) -> Result<(), &'static str> {
-    assert_eq!(pass, &[1]);
+    assert_eq!(pass, &[0]);
     let nonce = nonce.try_into().expect("wrong nonce size");
     let cipher = <C as KeyInit>::new_from_slice(key).expect("failed to initialize the cipher");
 
@@ -148,9 +148,9 @@ macro_rules! new_test {
             for (i, tv) in TEST_VECTORS.iter().enumerate() {
                 let pass = tv.pass[0] == 1;
                 let res = if pass {
-                    $crate::dev::run_pass_test::<$cipher>(tv)
+                    $crate::dev::pass_test::<$cipher>(tv)
                 } else {
-                    $crate::dev::run_fail_test::<$cipher>(tv)
+                    $crate::dev::fail_test::<$cipher>(tv)
                 };
 
                 if let Err(reason) = res {
