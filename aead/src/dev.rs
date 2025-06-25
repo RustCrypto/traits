@@ -1,43 +1,80 @@
 //! Development-related functionality
 use crate::{
-    Aead, AeadInOut, Nonce, Payload, Tag, TagPosition, array::typenum::Unsigned, inout::InOutBuf,
+    Aead, AeadInOut, Payload, Tag, TagPosition, array::typenum::Unsigned, inout::InOutBuf,
 };
 pub use blobby;
+use crypto_common::KeyInit;
+
+/// AEAD test vector
+#[derive(Debug, Clone, Copy)]
+pub struct TestVector {
+    /// Initialization key
+    pub key: &'static [u8],
+    /// Nonce
+    pub nonce: &'static [u8],
+    /// Additional associated data
+    pub aad: &'static [u8],
+    /// Plaintext
+    pub plaintext: &'static [u8],
+    /// Ciphertext
+    pub ciphertext: &'static [u8],
+    /// Whether the test vector should pass (`[1]`) or fail (`[0]`)
+    pub pass: &'static [u8],
+}
 
 /// Run AEAD test for the provided passing test vector
-pub fn run_pass_test<C: AeadInOut>(
-    cipher: &C,
-    nonce: &Nonce<C>,
-    aad: &[u8],
-    pt: &[u8],
-    ct: &[u8],
+pub fn pass_test<C: AeadInOut + KeyInit>(
+    &TestVector {
+        key,
+        nonce,
+        aad,
+        plaintext,
+        ciphertext,
+        pass,
+    }: &TestVector,
 ) -> Result<(), &'static str> {
+    assert_eq!(pass, &[1]);
+    let nonce = nonce.try_into().expect("wrong nonce size");
+    let cipher = <C as KeyInit>::new_from_slice(key).expect("failed to initialize the cipher");
+
     let res = cipher
-        .encrypt(nonce, Payload { aad, msg: pt })
+        .encrypt(
+            nonce,
+            Payload {
+                aad,
+                msg: plaintext,
+            },
+        )
         .map_err(|_| "encryption failure")?;
-    if res != ct {
+    if res != ciphertext {
         return Err("encrypted data is different from target ciphertext");
     }
 
     let res = cipher
-        .decrypt(nonce, Payload { aad, msg: ct })
+        .decrypt(
+            nonce,
+            Payload {
+                aad,
+                msg: ciphertext,
+            },
+        )
         .map_err(|_| "decryption failure")?;
-    if res != pt {
+    if res != plaintext {
         return Err("decrypted data is different from target plaintext");
     }
 
     let (ct, tag) = match C::TAG_POSITION {
         TagPosition::Prefix => {
-            let (tag, ct) = ct.split_at(C::TagSize::USIZE);
+            let (tag, ct) = ciphertext.split_at(C::TagSize::USIZE);
             (ct, tag)
         }
-        TagPosition::Postfix => ct.split_at(pt.len()),
+        TagPosition::Postfix => ciphertext.split_at(plaintext.len()),
     };
     let tag: &Tag<C> = tag.try_into().expect("tag has correct length");
 
     // Fill output buffer with "garbage" to test that its data does not get read during encryption
-    let mut buf: alloc::vec::Vec<u8> = (0..pt.len()).map(|i| i as u8).collect();
-    let inout_buf = InOutBuf::new(pt, &mut buf).expect("pt and buf have the same length");
+    let mut buf: alloc::vec::Vec<u8> = (0..plaintext.len()).map(|i| i as u8).collect();
+    let inout_buf = InOutBuf::new(plaintext, &mut buf).expect("pt and buf have the same length");
 
     let calc_tag = cipher
         .encrypt_inout_detached(nonce, aad, inout_buf)
@@ -50,13 +87,15 @@ pub fn run_pass_test<C: AeadInOut>(
     }
 
     // Fill output buffer with "garbage"
-    buf.iter_mut().enumerate().for_each(|(i, v)| *v = i as u8);
+    buf.iter_mut()
+        .enumerate()
+        .for_each(|(i, v): (usize, &mut u8)| *v = i as u8);
 
     let inout_buf = InOutBuf::new(ct, &mut buf).expect("ct and buf have the same length");
     cipher
         .decrypt_inout_detached(nonce, aad, inout_buf, tag)
         .map_err(|_| "decrypt_inout_detached: decryption failure")?;
-    if pt != buf {
+    if plaintext != buf {
         return Err("decrypt_inout_detached: plaintext mismatch");
     }
 
@@ -64,13 +103,27 @@ pub fn run_pass_test<C: AeadInOut>(
 }
 
 /// Run AEAD test for the provided failing test vector
-pub fn run_fail_test<C: AeadInOut>(
-    cipher: &C,
-    nonce: &Nonce<C>,
-    aad: &[u8],
-    ct: &[u8],
+pub fn fail_test<C: AeadInOut + KeyInit>(
+    &TestVector {
+        key,
+        nonce,
+        aad,
+        ciphertext,
+        pass,
+        ..
+    }: &TestVector,
 ) -> Result<(), &'static str> {
-    let res = cipher.decrypt(nonce, Payload { aad, msg: ct });
+    assert_eq!(pass, &[0]);
+    let nonce = nonce.try_into().expect("wrong nonce size");
+    let cipher = <C as KeyInit>::new_from_slice(key).expect("failed to initialize the cipher");
+
+    let res = cipher.decrypt(
+        nonce,
+        Payload {
+            aad,
+            msg: ciphertext,
+        },
+    );
     if res.is_ok() {
         Err("decryption must return error")
     } else {
@@ -84,33 +137,29 @@ macro_rules! new_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
-            use $crate::KeyInit;
-            use $crate::dev::blobby::Blob6Iterator;
+            use $crate::dev::TestVector;
 
-            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
-            for (i, row) in Blob6Iterator::new(data).unwrap().enumerate() {
-                let [key, nonce, aad, pt, ct, status] = row.unwrap();
-                let key = key.try_into().expect("wrong key size");
-                let nonce = nonce.try_into().expect("wrong nonce size");
-                let cipher = <$cipher as KeyInit>::new(key);
+            $crate::dev::blobby::parse_into_structs!(
+                include_bytes!(concat!("data/", $test_name, ".blb"));
+                static TEST_VECTORS: &[
+                    TestVector { key, nonce, aad, plaintext, ciphertext, pass }
+                ];
+            );
 
-                let res = match status {
-                    [0] => $crate::dev::run_fail_test(&cipher, nonce, aad, ct),
-                    [1] => $crate::dev::run_pass_test(&cipher, nonce, aad, pt, ct),
-                    _ => panic!("invalid value for pass flag"),
+            for (i, tv) in TEST_VECTORS.iter().enumerate() {
+                let pass = tv.pass[0] == 1;
+                let res = if pass {
+                    $crate::dev::pass_test::<$cipher>(tv)
+                } else {
+                    $crate::dev::fail_test::<$cipher>(tv)
                 };
-                let mut pass = status[0] == 1;
+
                 if let Err(reason) = res {
                     panic!(
                         "\n\
                         Failed test #{i}\n\
                         reason:\t{reason:?}\n\
-                        key:\t{key:?}\n\
-                        nonce:\t{nonce:?}\n\
-                        aad:\t{aad:?}\n\
-                        plaintext:\t{pt:?}\n\
-                        ciphertext:\t{ct:?}\n\
-                        pass:\t{pass}\n"
+                        test vector:\t{tv:?}\n"
                     );
                 }
             }
