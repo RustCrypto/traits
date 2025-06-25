@@ -148,9 +148,9 @@ macro_rules! new_test {
             for (i, tv) in TEST_VECTORS.iter().enumerate() {
                 let pass = tv.pass[0] == 1;
                 let res = if pass {
-                    $crate::dev::run_fail_test::<$cipher>(tv)
-                } else {
                     $crate::dev::run_pass_test::<$cipher>(tv)
+                } else {
+                    $crate::dev::run_fail_test::<$cipher>(tv)
                 };
 
                 if let Err(reason) = res {
