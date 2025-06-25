@@ -18,16 +18,24 @@ pub struct TestVector {
 pub fn stream_cipher_test<C: KeyIvInit + StreamCipher>(
     tv: &TestVector,
 ) -> Result<(), &'static str> {
+    if tv.plaintext.len() != tv.ciphertext.len() {
+        return Err("mismatch of plaintext and ciphertext lengths");
+    }
+    let mut buf = [0u8; 256];
     for chunk_len in 1..256 {
         let Ok(mut mode) = C::new_from_slices(tv.key, tv.iv) else {
             return Err("cipher initialization failure");
         };
-        let mut pt = tv.plaintext.to_vec();
-        for chunk in pt.chunks_mut(chunk_len) {
-            mode.apply_keystream(chunk);
-        }
-        if pt != tv.ciphertext {
-            return Err("ciphertext mismatch");
+        let pt_chunks = tv.plaintext.chunks(chunk_len);
+        let ct_chunks = tv.ciphertext.chunks(chunk_len);
+        for (pt_chunk, ct_chunk) in pt_chunks.zip(ct_chunks) {
+            let buf = &mut buf[..pt_chunk.len()];
+            buf.copy_from_slice(pt_chunk);
+            mode.apply_keystream(buf);
+
+            if buf != ct_chunk {
+                return Err("ciphertext mismatch");
+            }
         }
     }
     Ok(())
