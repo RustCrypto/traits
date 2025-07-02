@@ -1,11 +1,10 @@
-use crate::ExtendableOutputReset;
+use crate::{ExtendableOutputReset, dev::TestVector};
 use core::fmt::Debug;
 
 /// Resettable XOF test
-pub fn xof_reset_test<D>(input: &[u8], output: &[u8]) -> Option<&'static str>
-where
-    D: ExtendableOutputReset + Default + Debug + Clone,
-{
+pub fn xof_reset_test<D: ExtendableOutputReset + Default + Debug + Clone>(
+    &TestVector { input, output }: &TestVector,
+) -> Result<(), &'static str> {
     let mut hasher = D::default();
     let mut buf = [0u8; 1024];
     let buf = &mut buf[..output.len()];
@@ -14,7 +13,7 @@ where
     let mut hasher2 = hasher.clone();
     hasher.finalize_xof_into(buf);
     if buf != output {
-        return Some("whole message");
+        return Err("whole message");
     }
     buf.iter_mut().for_each(|b| *b = 0);
 
@@ -23,7 +22,7 @@ where
     hasher2.update(input);
     hasher2.finalize_xof_reset_into(buf);
     if buf != output {
-        return Some("whole message after reset");
+        return Err("whole message after reset");
     }
     buf.iter_mut().for_each(|b| *b = 0);
 
@@ -36,16 +35,16 @@ where
         }
         hasher.finalize_xof_into(buf);
         if buf != output {
-            return Some("message in chunks");
+            return Err("message in chunks");
         }
         buf.iter_mut().for_each(|b| *b = 0);
 
         hasher2.finalize_xof_reset_into(buf);
         if buf != output {
-            return Some("message in chunks");
+            return Err("message in chunks");
         }
         buf.iter_mut().for_each(|b| *b = 0);
     }
 
-    None
+    Ok(())
 }
