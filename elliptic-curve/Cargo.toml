@@ -1,6 +1,6 @@
 [package]
 name = "elliptic-curve"
-version = "0.14.0-rc.7"
+version = "0.14.0-rc.10"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -18,7 +18,7 @@ and public/secret keys composed thereof.
 
 [dependencies]
 base16ct = "0.2"
-crypto-bigint = { version = "=0.7.0-pre.5", default-features = false, features = ["rand_core", "hybrid-array", "zeroize"] }
+crypto-bigint = { version = "=0.7.0-pre.6", default-features = false, features = ["rand_core", "hybrid-array", "zeroize"] }
 hybrid-array = { version = "0.3", default-features = false, features = ["zeroize"] }
 rand_core = { version = "0.9.0", default-features = false }
 subtle = { version = "2.6", default-features = false }
@@ -32,8 +32,8 @@ group = { version = "=0.14.0-pre.0", optional = true, default-features = false }
 hkdf = { version = "0.13.0-rc.0", optional = true, default-features = false }
 hex-literal = { version = "1", optional = true }
 pem-rfc7468 = { version = "1.0.0-rc.2", optional = true, features = ["alloc"] }
-pkcs8 = { version = "0.11.0-rc.1", optional = true, default-features = false }
-sec1 = { version = "0.8.0-rc.4", optional = true, features = ["subtle", "zeroize"] }
+pkcs8 = { version = "0.11.0-rc.6", optional = true, default-features = false }
+sec1 = { version = "0.8.0-rc.8", optional = true, features = ["subtle", "zeroize"] }
 serdect = { version = "0.3", optional = true, default-features = false, features = ["alloc"] }
 serde_json = { version = "1.0.121", optional = true, default-features = false, features = ["alloc"] }
 
@@ -64,12 +64,10 @@ bits = ["arithmetic", "ff/bits"]
 dev = ["arithmetic", "dep:hex-literal", "pem", "pkcs8"]
 ecdh = ["arithmetic", "digest", "dep:hkdf"]
 group = ["dep:group", "ff"]
-hash2curve = ["arithmetic", "digest"]
 jwk = ["dep:base64ct", "dep:serde_json", "alloc", "serde", "zeroize/alloc"]
-oprf = ["digest", "hash2curve"]
 pkcs8 = ["dep:pkcs8", "sec1"]
-pem = ["dep:pem-rfc7468", "alloc", "arithmetic", "pkcs8", "sec1/pem"]
+pem = ["dep:pem-rfc7468", "alloc", "arithmetic", "pkcs8/pem", "sec1/pem"]
 serde = ["dep:serdect", "alloc", "pkcs8", "sec1/serde"]
 
 [package.metadata.docs.rs]
-features = ["bits", "ecdh", "hash2curve", "jwk", "oprf", "pem", "std"]
+features = ["bits", "ecdh", "jwk", "pem", "std"]

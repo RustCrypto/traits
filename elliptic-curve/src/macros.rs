@@ -55,7 +55,8 @@ macro_rules! scalar_from_impls {
             }
         }
 
-        /// The constant-time alternative is available at [`$crate::NonZeroScalar<$curve>::new()`].
+        /// The constant-time alternative is available at
+        #[doc = concat!("[`", stringify!(elliptic_curve), "::NonZeroScalar<", stringify!($curve), ">::new()`].")]
         impl TryFrom<$scalar> for $crate::NonZeroScalar<$curve> {
             type Error = $crate::Error;
 

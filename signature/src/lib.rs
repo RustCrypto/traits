@@ -141,12 +141,9 @@ mod signer;
 mod verifier;
 
 #[cfg(feature = "digest")]
-mod prehash_signature;
+pub use digest;
 
 pub use crate::{encoding::*, error::*, keypair::*, signer::*, verifier::*};
-
-#[cfg(feature = "digest")]
-pub use {crate::prehash_signature::*, digest};
 
 #[cfg(feature = "rand_core")]
 pub use rand_core;

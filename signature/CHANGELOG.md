@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - `std` feature - replaced with `core::error::Error`
 - `derive` feature
+- `SignerMut` blanket implementation for `Signer`
+- `PrehashSignature` trait
 
 [#1448]: https://github.com/RustCrypto/traits/pull/1448
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
