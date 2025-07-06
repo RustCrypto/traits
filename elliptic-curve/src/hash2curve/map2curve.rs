@@ -1,12 +1,12 @@
 //! Traits for mapping field elements to points on the curve.
 
-use crate::{CurveArithmetic, ProjectivePoint};
+use crate::Group;
 
 use super::FromOkm;
 
 /// Trait for converting field elements into a point via a mapping method like
 /// Simplified Shallue-van de Woestijne-Ulas or Elligator.
-pub trait MapToCurve: CurveArithmetic<Scalar: FromOkm> {
+pub trait MapToCurve: Group<Scalar: FromOkm> {
     /// The intermediate representation, an element of the curve which may or may not
     /// be in the curve subgroup.
     type CurvePoint;
@@ -18,7 +18,7 @@ pub trait MapToCurve: CurveArithmetic<Scalar: FromOkm> {
 
     /// Map a curve point to a point in the curve subgroup.
     /// This is usually done by clearing the cofactor, if necessary.
-    fn map_to_subgroup(point: Self::CurvePoint) -> ProjectivePoint<Self>;
+    fn map_to_subgroup(point: Self::CurvePoint) -> Self;
 
     /// Combine two curve points into a point in the curve subgroup.
     /// This is usually done by clearing the cofactor of the sum. In case
@@ -27,7 +27,7 @@ pub trait MapToCurve: CurveArithmetic<Scalar: FromOkm> {
     fn add_and_map_to_subgroup(
         lhs: Self::CurvePoint,
         rhs: Self::CurvePoint,
-    ) -> ProjectivePoint<Self> {
+    ) -> Self {
         Self::map_to_subgroup(lhs) + Self::map_to_subgroup(rhs)
     }
 }
