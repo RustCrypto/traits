@@ -140,6 +140,9 @@ mod keypair;
 mod signer;
 mod verifier;
 
+#[cfg(feature = "digest")]
+pub use digest;
+
 pub use crate::{encoding::*, error::*, keypair::*, signer::*, verifier::*};
 
 #[cfg(feature = "rand_core")]
