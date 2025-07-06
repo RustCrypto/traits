@@ -24,10 +24,7 @@ pub trait MapToCurve: Group<Scalar: FromOkm> {
     /// This is usually done by clearing the cofactor of the sum. In case
     /// addition is not implemented for `Self::CurvePoint`, then both terms
     /// must be mapped to the subgroup individually before being added.
-    fn add_and_map_to_subgroup(
-        lhs: Self::CurvePoint,
-        rhs: Self::CurvePoint,
-    ) -> Self {
+    fn add_and_map_to_subgroup(lhs: Self::CurvePoint, rhs: Self::CurvePoint) -> Self {
         Self::map_to_subgroup(lhs) + Self::map_to_subgroup(rhs)
     }
 }
