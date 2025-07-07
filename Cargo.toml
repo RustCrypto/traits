@@ -7,6 +7,7 @@ members = [
     "crypto-common",
     "digest",
     "elliptic-curve",
+    "kdf",
     "kem",
     "password-hash",
     "universal-hash",
