@@ -91,8 +91,6 @@ pub mod scalar;
 pub mod dev;
 #[cfg(feature = "ecdh")]
 pub mod ecdh;
-#[cfg(feature = "hash2curve")]
-pub mod hash2curve;
 #[cfg(feature = "arithmetic")]
 pub mod ops;
 #[cfg(feature = "sec1")]
@@ -112,9 +110,6 @@ mod public_key;
 
 #[cfg(feature = "jwk")]
 mod jwk;
-
-#[cfg(feature = "oprf")]
-mod oprf;
 
 pub use crate::{
     error::{Error, Result},
@@ -146,9 +141,6 @@ pub use crate::jwk::{JwkEcKey, JwkParameters};
 
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;
-
-#[cfg(feature = "oprf")]
-pub use crate::oprf::OprfParameters;
 
 use core::{
     fmt::Debug,
