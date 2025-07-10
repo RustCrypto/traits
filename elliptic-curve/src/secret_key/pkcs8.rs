@@ -18,8 +18,9 @@ use {
     },
     pkcs8::{
         EncodePrivateKey,
-        der::{self, asn1::OctetStringRef},
+        der::{self, Encode, asn1::OctetStringRef},
     },
+    zeroize::Zeroizing,
 };
 
 // Imports for actual PEM support
@@ -71,7 +72,17 @@ where
             parameters: Some((&C::OID).into()),
         };
 
-        let ec_private_key = self.to_sec1_der()?;
+        let private_key_bytes = Zeroizing::new(self.to_bytes());
+        let public_key_bytes = self.public_key().to_encoded_point(false);
+
+        let ec_private_key = Zeroizing::new(
+            EcPrivateKey {
+                private_key: &private_key_bytes,
+                parameters: None,
+                public_key: Some(public_key_bytes.as_bytes()),
+            }
+            .to_der()?,
+        );
 
         let pkcs8_key = pkcs8::PrivateKeyInfoRef::new(
             algorithm_identifier,
