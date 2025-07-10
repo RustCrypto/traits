@@ -66,7 +66,7 @@ ecdh = ["arithmetic", "digest", "dep:hkdf"]
 group = ["dep:group", "ff"]
 jwk = ["dep:base64ct", "dep:serde_json", "alloc", "serde", "zeroize/alloc"]
 pkcs8 = ["dep:pkcs8", "sec1"]
-pem = ["dep:pem-rfc7468", "alloc", "arithmetic", "pkcs8", "sec1/pem"]
+pem = ["dep:pem-rfc7468", "alloc", "arithmetic", "pkcs8/pem", "sec1/pem"]
 serde = ["dep:serdect", "alloc", "pkcs8", "sec1/serde"]
 
 [package.metadata.docs.rs]
