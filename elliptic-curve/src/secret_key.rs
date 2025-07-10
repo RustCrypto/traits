@@ -387,7 +387,7 @@ where
 
         Ok(der::SecretDocument::encode_msg(&sec1::EcPrivateKey {
             private_key: &private_key_bytes,
-            parameters: None,
+            parameters: Some(C::OID.into()),
             public_key: Some(public_key_bytes.as_bytes()),
         })?)
     }
