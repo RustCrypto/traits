@@ -1,6 +1,6 @@
 [package]
 name = "elliptic-curve"
-version = "0.14.0-rc.8"
+version = "0.14.0-rc.9"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -32,8 +32,8 @@ group = { version = "=0.14.0-pre.0", optional = true, default-features = false }
 hkdf = { version = "0.13.0-rc.0", optional = true, default-features = false }
 hex-literal = { version = "1", optional = true }
 pem-rfc7468 = { version = "1.0.0-rc.2", optional = true, features = ["alloc"] }
-pkcs8 = { version = "0.11.0-rc.5", optional = true, default-features = false }
-sec1 = { version = "0.8.0-rc.6", optional = true, features = ["subtle", "zeroize"] }
+pkcs8 = { version = "0.11.0-rc.6", optional = true, default-features = false }
+sec1 = { version = "0.8.0-rc.8", optional = true, features = ["subtle", "zeroize"] }
 serdect = { version = "0.3", optional = true, default-features = false, features = ["alloc"] }
 serde_json = { version = "1.0.121", optional = true, default-features = false, features = ["alloc"] }
 
