@@ -32,7 +32,7 @@ use {
         FieldBytesSize,
         sec1::{EncodedPoint, ModulusSize, ValidatePublicKey},
     },
-    sec1::der::{self, oid::AssociatedOid},
+    sec1::der::{self, Decode, oid::AssociatedOid},
 };
 
 #[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
@@ -360,6 +360,36 @@ where
 {
     fn eq(&self, other: &Self) -> bool {
         self.ct_eq(other).into()
+    }
+}
+
+#[cfg(feature = "sec1")]
+impl<C> sec1::DecodeEcPrivateKey for SecretKey<C>
+where
+    C: AssociatedOid + Curve + ValidatePublicKey,
+    FieldBytesSize<C>: ModulusSize,
+{
+    fn from_sec1_der(bytes: &[u8]) -> sec1::Result<Self> {
+        Ok(sec1::EcPrivateKey::from_der(bytes)?.try_into()?)
+    }
+}
+
+#[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
+impl<C> sec1::EncodeEcPrivateKey for SecretKey<C>
+where
+    C: AssociatedOid + CurveArithmetic,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldBytesSize<C>: ModulusSize,
+{
+    fn to_sec1_der(&self) -> sec1::Result<der::SecretDocument> {
+        let private_key_bytes = Zeroizing::new(self.to_bytes());
+        let public_key_bytes = self.public_key().to_encoded_point(false);
+
+        Ok(der::SecretDocument::encode_msg(&sec1::EcPrivateKey {
+            private_key: &private_key_bytes,
+            parameters: None,
+            public_key: Some(public_key_bytes.as_bytes()),
+        })?)
     }
 }
 

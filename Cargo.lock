@@ -478,13 +478,11 @@ checksum = "28d3b2b1366ec20994f1fd18c3c594f05c5dd4bc44d8bb0c1c632c8d6829481f"
 [[package]]
 name = "sec1"
 version = "0.8.0-rc.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1231d6ed04c5242799d39a97ca91aeda70ecc27a67870a5fe43149e5c12aed3d"
+source = "git+https://github.com/RustCrypto/formats/#17bb02635dba4ab75a51eeffdf5a5de80ffe8ce3"
 dependencies = [
  "base16ct",
  "der",
  "hybrid-array",
- "pkcs8",
  "serdect",
  "subtle",
  "zeroize",
