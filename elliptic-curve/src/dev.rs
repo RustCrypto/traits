@@ -752,8 +752,8 @@ impl CurveGroup for ProjectivePoint {
     }
 }
 
-impl LinearCombination<[(ProjectivePoint, Scalar)]> for ProjectivePoint {}
-impl<const N: usize> LinearCombination<[(ProjectivePoint, Scalar); N]> for ProjectivePoint {}
+impl LinearCombination<'_, [(ProjectivePoint, Scalar)]> for ProjectivePoint {}
+impl<const N: usize> LinearCombination<'_, [(ProjectivePoint, Scalar); N]> for ProjectivePoint {}
 
 impl Add<ProjectivePoint> for ProjectivePoint {
     type Output = ProjectivePoint;

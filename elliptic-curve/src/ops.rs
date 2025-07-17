@@ -160,15 +160,15 @@ pub(crate) fn invert_batch_internal<T: Copy + Mul<Output = T> + MulAssign>(
 ///
 /// It's generic around `PointsAndScalars` to allow overlapping impls. For example, const generic
 /// impls can use the input size to determine the size needed to store temporary variables.
-pub trait LinearCombination<PointsAndScalars>: CurveGroup
+pub trait LinearCombination<'a, PointsAndScalars>: CurveGroup
 where
-    PointsAndScalars: AsRef<[(Self, Self::Scalar)]> + ?Sized,
+    PointsAndScalars: ?Sized + 'a,
+    &'a PointsAndScalars: IntoIterator<Item = &'a (Self, Self::Scalar)>,
 {
     /// Calculates `x1 * k1 + ... + xn * kn`.
-    fn lincomb(points_and_scalars: &PointsAndScalars) -> Self {
+    fn lincomb(points_and_scalars: &'a PointsAndScalars) -> Self {
         points_and_scalars
-            .as_ref()
-            .iter()
+            .into_iter()
             .copied()
             .map(|(point, scalar)| point * scalar)
             .sum()

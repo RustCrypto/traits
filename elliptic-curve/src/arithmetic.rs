@@ -47,8 +47,8 @@ pub trait CurveArithmetic: Curve {
         + From<Self::AffinePoint>
         + From<NonIdentity<Self::ProjectivePoint>>
         + Into<Self::AffinePoint>
-        + LinearCombination<[(Self::ProjectivePoint, Self::Scalar)]>
-        + LinearCombination<[(Self::ProjectivePoint, Self::Scalar); 2]>
+        + for<'a> LinearCombination<'a, [(Self::ProjectivePoint, Self::Scalar)]>
+        + for<'a> LinearCombination<'a, [(Self::ProjectivePoint, Self::Scalar); 2]>
         + TryInto<NonIdentity<Self::ProjectivePoint>, Error = Error>
         + CurveGroup<AffineRepr = Self::AffinePoint>
         + Group<Scalar = Self::Scalar>;
