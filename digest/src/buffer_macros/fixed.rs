@@ -39,6 +39,21 @@ macro_rules! buffer_fixed {
             const OID: $crate::const_oid::ObjectIdentifier =
                 $crate::const_oid::ObjectIdentifier::new_unwrap($oid);
         }
+
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? Drop for $name$(< $( $lt ),+ >)? {
+            #[inline]
+            fn drop(&mut self) {
+                #[cfg(feature = "zeroize")]
+                {
+                    use $crate::zeroize::Zeroize;
+                    self.core.zeroize();
+                    self.buffer.zeroize();
+                }
+            }
+        }
+
+        #[cfg(feature = "zeroize")]
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::zeroize::ZeroizeOnDrop for $name$(< $( $lt ),+ >)? {}
     };
 
     // Terminates `impl_inner` sequences.
@@ -183,8 +198,8 @@ macro_rules! buffer_fixed {
                 Self { core, buffer }
             }
             fn decompose(self) -> (Self::Core, $crate::block_api::Buffer<Self::Core>) {
-                let Self { core, buffer } = self;
-                (core, buffer)
+                let Self { ref core, ref buffer } = self;
+                (core.clone(), buffer.clone())
             }
         }
 

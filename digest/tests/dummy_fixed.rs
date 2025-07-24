@@ -75,6 +75,13 @@ mod block_api {
             })
         }
     }
+
+    #[cfg(feature = "zeroize")]
+    impl zeroize::Zeroize for FixedHashCore {
+        fn zeroize(&mut self) {
+            self.state.zeroize()
+        }
+    }
 }
 
 digest::buffer_fixed!(
