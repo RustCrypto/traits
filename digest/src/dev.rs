@@ -3,33 +3,47 @@
 pub use blobby;
 
 mod fixed;
+#[cfg(feature = "mac")]
 mod mac;
 mod rng;
 mod variable;
 mod xof;
 
 pub use fixed::*;
+#[cfg(feature = "mac")]
+pub use mac::*;
 pub use variable::*;
 pub use xof::*;
+
+/// Test vector for hash functions
+#[derive(Debug, Clone, Copy)]
+pub struct TestVector {
+    /// Input data
+    pub input: &'static [u8],
+    /// Output hash
+    pub output: &'static [u8],
+}
 
 /// Define hash function test
 #[macro_export]
 macro_rules! new_test {
-    ($name:ident, $test_name:expr, $hasher:ty, $test_func:ident $(,)?) => {
+    ($name:ident, $test_name:expr, $hasher:ty, $test_fn:ident $(,)?) => {
         #[test]
         fn $name() {
-            use digest::dev::blobby::Blob2Iterator;
-            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
+            use $crate::dev::TestVector;
 
-            for (i, row) in Blob2Iterator::new(data).unwrap().enumerate() {
-                let [input, output] = row.unwrap();
-                if let Some(desc) = $test_func::<$hasher>(input, output) {
+            $crate::dev::blobby::parse_into_structs!(
+                include_bytes!(concat!("data/", $test_name, ".blb"));
+                static TEST_VECTORS: &[TestVector { input, output }];
+            );
+
+            for (i, tv) in TEST_VECTORS.iter().enumerate() {
+                if let Err(reason) = $test_fn::<$hasher>(tv) {
                     panic!(
                         "\n\
-                         Failed test №{}: {}\n\
-                         input:\t{:?}\n\
-                         output:\t{:?}\n",
-                        i, desc, input, output,
+                        Failed test #{i}:\n\
+                        reason:\t{reason}\n\
+                        test vector:\t{tv:?}\n"
                     );
                 }
             }

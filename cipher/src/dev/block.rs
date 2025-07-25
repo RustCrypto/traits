@@ -1,213 +1,154 @@
-//! Development-related functionality
+//! Development-related functionality for block ciphers
+
+use crate::{Block, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
+
+/// Block cipher test vector
+#[derive(Debug, Clone, Copy)]
+pub struct TestVector {
+    /// Initialization key
+    pub key: &'static [u8],
+    /// Plaintext block
+    pub plaintext: &'static [u8],
+    /// Ciphertext block
+    pub ciphertext: &'static [u8],
+}
+
+/// Block cipher encryption test
+pub fn block_cipher_enc_test<C: BlockCipherEncrypt + KeyInit>(
+    tv: &TestVector,
+) -> Result<(), &'static str> {
+    let Ok(state) = C::new_from_slice(tv.key) else {
+        return Err("cipher initialization failure");
+    };
+
+    let Ok(pt_block) = Block::<C>::try_from(tv.plaintext) else {
+        return Err("unexpected size of plaintext block");
+    };
+    let Ok(ct_block) = Block::<C>::try_from(tv.ciphertext) else {
+        return Err("unexpected size of ciphertext block");
+    };
+
+    let mut block = pt_block.clone();
+    state.encrypt_block(&mut block);
+    if block != ct_block {
+        return Err("single block encryption failure");
+    }
+
+    let mut blocks1: [Block<C>; 101] = core::array::from_fn(|i| {
+        let mut block = pt_block.clone();
+        block[0] ^= i as u8;
+        block
+    });
+    let mut blocks2 = blocks1.clone();
+
+    // Check that `encrypt_blocks` and `encrypt_block` result in the same ciphertext
+    state.encrypt_blocks(&mut blocks1);
+    for b in blocks2.iter_mut() {
+        state.encrypt_block(b);
+    }
+    if blocks1 != blocks2 {
+        return Err("multi-block encryption failure");
+    }
+
+    Ok(())
+}
+
+/// Block cipher encryption test
+pub fn block_cipher_dec_test<C: BlockCipherDecrypt + KeyInit>(
+    tv: &TestVector,
+) -> Result<(), &'static str> {
+    let Ok(state) = C::new_from_slice(tv.key) else {
+        return Err("cipher initialization failure");
+    };
+
+    let Ok(pt_block) = Block::<C>::try_from(tv.plaintext) else {
+        return Err("unexpected size of plaintext block");
+    };
+    let Ok(ct_block) = Block::<C>::try_from(tv.ciphertext) else {
+        return Err("unexpected size of ciphertext block");
+    };
+
+    let mut block = ct_block.clone();
+    state.decrypt_block(&mut block);
+    if block != pt_block {
+        return Err("single block decryption failure");
+    }
+
+    let mut blocks1: [Block<C>; 101] = core::array::from_fn(|i| {
+        let mut block = ct_block.clone();
+        block[0] ^= i as u8;
+        block
+    });
+    let mut blocks2 = blocks1.clone();
+
+    // Check that `encrypt_blocks` and `encrypt_block` result in the same ciphertext
+    state.decrypt_blocks(&mut blocks1);
+    for b in blocks2.iter_mut() {
+        state.decrypt_block(b);
+    }
+    if blocks1 != blocks2 {
+        return Err("multi-block decryption failure");
+    }
+
+    Ok(())
+}
 
 /// Define block cipher test
 #[macro_export]
 macro_rules! block_cipher_test {
-    ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
-        #[test]
-        fn $name() {
-            use cipher::{
-                BlockSizeUser, KeyInit,
-                array::Array,
-                blobby::Blob3Iterator,
-                block::{BlockCipherDecrypt, BlockCipherEncrypt},
-                typenum::Unsigned,
-            };
-
-            fn run_test(key: &[u8], pt: &[u8], ct: &[u8]) -> bool {
-                let mut state = <$cipher as KeyInit>::new_from_slice(key).unwrap();
-
-                let mut block = Array::try_from(pt).unwrap();
-                state.encrypt_block(&mut block);
-                if ct != block.as_slice() {
-                    return false;
-                }
-
-                state.decrypt_block(&mut block);
-                if pt != block.as_slice() {
-                    return false;
-                }
-
-                true
-            }
-
-            fn run_par_test(key: &[u8], pt: &[u8]) -> bool {
-                type Block = cipher::Block<$cipher>;
-
-                let mut state = <$cipher as KeyInit>::new_from_slice(key).unwrap();
-
-                let block = Block::try_from(pt).unwrap();
-                let mut blocks1 = vec![block; 101];
-                for (i, b) in blocks1.iter_mut().enumerate() {
-                    *b = block;
-                    b[0] = b[0].wrapping_add(i as u8);
-                }
-                let mut blocks2 = blocks1.clone();
-
-                // check that `encrypt_blocks` and `encrypt_block`
-                // result in the same ciphertext
-                state.encrypt_blocks(&mut blocks1);
-                for b in blocks2.iter_mut() {
-                    state.encrypt_block(b);
-                }
-                if blocks1 != blocks2 {
-                    return false;
-                }
-
-                // check that `encrypt_blocks` and `encrypt_block`
-                // result in the same plaintext
-                state.decrypt_blocks(&mut blocks1);
-                for b in blocks2.iter_mut() {
-                    state.decrypt_block(b);
-                }
-                if blocks1 != blocks2 {
-                    return false;
-                }
-
-                true
-            }
-
-            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
-            for (i, row) in Blob3Iterator::new(data).unwrap().enumerate() {
-                let [key, pt, ct] = row.unwrap();
-                if !run_test(key, pt, ct) {
-                    panic!(
-                        "\n\
-                         Failed test №{}\n\
-                         key:\t{:?}\n\
-                         plaintext:\t{:?}\n\
-                         ciphertext:\t{:?}\n",
-                        i, key, pt, ct,
-                    );
-                }
-
-                // test parallel blocks encryption/decryption
-                if !run_par_test(key, pt) {
-                    panic!(
-                        "\n\
-                         Failed parallel test №{}\n\
-                         key:\t{:?}\n\
-                         plaintext:\t{:?}\n\
-                         ciphertext:\t{:?}\n",
-                        i, key, pt, ct,
-                    );
-                }
-            }
-        }
+    (
+        encdec: $name:ident, $test_name:expr, $cipher:ty $(,)?
+    ) => {
+        $crate::block_cipher_test!(
+            inner: $name, $test_name, $cipher,
+            "encryption" block_cipher_enc_test,
+            "decryption" block_cipher_dec_test,
+        );
     };
-}
-
-/// Define block mode encryption test
-#[macro_export]
-macro_rules! block_mode_enc_test {
-    ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
-        #[test]
-        fn $name() {
-            use cipher::{
-                BlockCipherEncrypt, BlockModeEncrypt, BlockSizeUser, KeyIvInit, array::Array,
-                blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
-            };
-
-            fn run_test(key: &[u8], iv: &[u8], pt: &[u8], ct: &[u8]) -> bool {
-                assert_eq!(pt.len(), ct.len());
-                // test block-by-block processing
-                let mut state = <$cipher as KeyIvInit>::new_from_slices(key, iv).unwrap();
-
-                let mut out = vec![0u8; ct.len()];
-                let mut buf = InOutBuf::new(pt, &mut out).unwrap();
-                let (blocks, tail) = buf.reborrow().into_chunks();
-                assert_eq!(tail.len(), 0);
-                for block in blocks {
-                    state.encrypt_block_inout(block);
-                }
-                if buf.get_out() != ct {
-                    return false;
-                }
-
-                // test multi-block processing
-                let mut state = <$cipher as KeyIvInit>::new_from_slices(key, iv).unwrap();
-                buf.get_out().iter_mut().for_each(|b| *b = 0);
-                let (blocks, _) = buf.reborrow().into_chunks();
-                state.encrypt_blocks_inout(blocks);
-                if buf.get_out() != ct {
-                    return false;
-                }
-
-                true
-            }
-
-            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
-            for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
-                let [key, iv, pt, ct] = row.unwrap();
-                if !run_test(key, iv, pt, ct) {
-                    panic!(
-                        "\n\
-                         Failed test №{}\n\
-                         key:\t{:?}\n\
-                         iv:\t{:?}\n\
-                         plaintext:\t{:?}\n\
-                         ciphertext:\t{:?}\n",
-                        i, key, iv, pt, ct,
-                    );
-                }
-            }
-        }
+    (
+        enc: $name:ident, $test_name:expr, $cipher:ty $(,)?
+    ) => {
+        $crate::block_cipher_test!(
+            inner: $name, $test_name, $cipher,
+            "encryption" block_cipher_enc_test,
+        );
     };
-}
+    (
+        dec: $name:ident, $test_name:expr, $cipher:ty $(,)?
+    ) => {
+        $crate::block_cipher_test!(
+            inner: $name, $test_name, $cipher,
+            "decryption" block_cipher_dec_test,
+        );
+    };
 
-/// Define block mode decryption test
-#[macro_export]
-macro_rules! block_mode_dec_test {
-    ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
+    (
+        inner: $name:ident, $test_name:expr, $cipher:ty,
+        $($test_desc:literal $test_fn:ident,)*
+    ) => {
         #[test]
         fn $name() {
-            use cipher::{
-                BlockCipherDecrypt, BlockModeDecrypt, BlockSizeUser, KeyIvInit, array::Array,
-                blobby::Blob4Iterator, inout::InOutBuf, typenum::Unsigned,
-            };
+            use $crate::dev::block::TestVector;
 
-            fn run_test(key: &[u8], iv: &[u8], pt: &[u8], ct: &[u8]) -> bool {
-                assert_eq!(pt.len(), ct.len());
-                // test block-by-block processing
-                let mut state = <$cipher as KeyIvInit>::new_from_slices(key, iv).unwrap();
+            $crate::dev::blobby::parse_into_structs!(
+                include_bytes!(concat!("data/", $test_name, ".blb"));
+                static TEST_VECTORS: &[
+                    TestVector { key, plaintext, ciphertext }
+                ];
+            );
 
-                let mut out = vec![0u8; pt.len()];
-                let mut buf = InOutBuf::new(ct, &mut out).unwrap();
-                let (blocks, tail) = buf.reborrow().into_chunks();
-                assert_eq!(tail.len(), 0);
-                for block in blocks {
-                    state.decrypt_block_inout(block);
-                }
-                if buf.get_out() != pt {
-                    return false;
-                }
-
-                // test multi-block processing
-                let mut state = <$cipher as KeyIvInit>::new_from_slices(key, iv).unwrap();
-                buf.get_out().iter_mut().for_each(|b| *b = 0);
-                let (blocks, _) = buf.reborrow().into_chunks();
-                state.decrypt_blocks_inout(blocks);
-                if buf.get_out() != pt {
-                    return false;
-                }
-
-                true
-            }
-
-            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
-            for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
-                let [key, iv, pt, ct] = row.unwrap();
-                if !run_test(key, iv, pt, ct) {
-                    panic!(
-                        "\n\
-                         Failed test №{}\n\
-                         key:\t{:?}\n\
-                         iv:\t{:?}\n\
-                         plaintext:\t{:?}\n\
-                         ciphertext:\t{:?}\n",
-                        i, key, iv, pt, ct,
-                    );
-                }
+            for (i, tv) in TEST_VECTORS.iter().enumerate() {
+                $(
+                    let res = $test_fn(tv);
+                    if let Err(reason) = res {
+                        panic!(concat!(
+                            "\n\
+                            Failed ", $test_desc, " test #{i}\n\
+                            reason:\t{reason:?}\n\
+                            test vector:\t{tv:?}\n"
+                        ));
+                    }
+                )*
             }
         }
     };
