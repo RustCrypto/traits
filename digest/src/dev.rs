@@ -38,7 +38,7 @@ macro_rules! new_test {
             );
 
             for (i, tv) in TEST_VECTORS.iter().enumerate() {
-                if let Some(reason) = $test_fn::<$hasher>(tv) {
+                if let Err(reason) = $test_fn::<$hasher>(tv) {
                     panic!(
                         "\n\
                         Failed test #{i}:\n\
