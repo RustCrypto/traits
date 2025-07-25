@@ -19,9 +19,9 @@ pub use xof::*;
 #[derive(Debug, Clone, Copy)]
 pub struct TestVector {
     /// Input data
-    input: &'static [u8],
+    pub input: &'static [u8],
     /// Output hash
-    output: &'static [u8],
+    pub output: &'static [u8],
 }
 
 /// Define hash function test

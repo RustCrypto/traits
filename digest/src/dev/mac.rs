@@ -17,9 +17,9 @@ pub struct MacTestVector {
     /// Initialization key
     pub key: &'static [u8],
     /// Input message
-    input: &'static [u8],
+    pub input: &'static [u8],
     /// Output tag
-    tag: &'static [u8],
+    pub tag: &'static [u8],
 }
 
 /// Run MAC test
@@ -138,8 +138,7 @@ macro_rules! new_mac_test {
             );
 
             for (i, tv) in TEST_VECTORS.iter().enumerate() {
-                let [key, input, tag] = row.unwrap();
-                if let Some(reason) = $test_fn(tv, $trunc) {
+                if let Err(reason) = $test_fn::<$mac>(tv, $trunc) {
                     panic!(
                         "\n\
                         Failed test #{i}\n\
