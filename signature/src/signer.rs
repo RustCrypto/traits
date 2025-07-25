@@ -55,13 +55,6 @@ pub trait SignerMut<S> {
     fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error>;
 }
 
-/// Blanket impl of [`SignerMut`] for all [`Signer`] types.
-impl<S, T: Signer<S>> SignerMut<S> for T {
-    fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error> {
-        T::try_sign(self, msg)
-    }
-}
-
 /// Sign the given prehashed message [`Digest`] using `Self`.
 ///
 /// ## Notes

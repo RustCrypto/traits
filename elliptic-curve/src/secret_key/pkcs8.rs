@@ -75,7 +75,6 @@ where
         let private_key_bytes = Zeroizing::new(self.to_bytes());
         let public_key_bytes = self.public_key().to_encoded_point(false);
 
-        // TODO(tarcieri): unify with `to_sec1_der()` by building an owned `EcPrivateKey`
         let ec_private_key = Zeroizing::new(
             EcPrivateKey {
                 private_key: &private_key_bytes,
