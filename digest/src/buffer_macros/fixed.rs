@@ -39,21 +39,6 @@ macro_rules! buffer_fixed {
             const OID: $crate::const_oid::ObjectIdentifier =
                 $crate::const_oid::ObjectIdentifier::new_unwrap($oid);
         }
-
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? Drop for $name$(< $( $lt ),+ >)? {
-            #[inline]
-            fn drop(&mut self) {
-                #[cfg(feature = "zeroize")]
-                {
-                    use $crate::zeroize::Zeroize;
-                    self.core.zeroize();
-                    self.buffer.zeroize();
-                }
-            }
-        }
-
-        #[cfg(feature = "zeroize")]
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::zeroize::ZeroizeOnDrop for $name$(< $( $lt ),+ >)? {}
     };
 
     // Terminates `impl_inner` sequences.
@@ -75,7 +60,7 @@ macro_rules! buffer_fixed {
         $crate::buffer_fixed!(
             impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty);
             BaseFixedTraits AlgorithmName Default Clone HashMarker
-            Reset FixedOutputReset SerializableState $($trait_name)*;
+            Reset FixedOutputReset SerializableState ZeroizeOnDrop $($trait_name)*;
         );
     };
 
@@ -198,8 +183,8 @@ macro_rules! buffer_fixed {
                 Self { core, buffer }
             }
             fn decompose(self) -> (Self::Core, $crate::block_api::Buffer<Self::Core>) {
-                let Self { ref core, ref buffer } = self;
-                (core.clone(), buffer.clone())
+                let Self { core, buffer } = self;
+                (core, buffer)
             }
         }
 
@@ -491,5 +476,30 @@ macro_rules! buffer_fixed {
         }
 
         $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
-    }
+    };
+
+    // Implements `ZeroizeOnDrop`
+    (
+        impl_inner: $name:ident
+        $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
+        ($core_ty:ty);
+        ZeroizeOnDrop $($trait_name:ident)*;
+    ) => {
+        // Verify that `$core_ty` and `Buffer<$core_ty>` implement `ZeroizeOnDrop`
+        #[cfg(feature = "zeroize")]
+        const _: () = {
+            fn check_core$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?(v: &$core_ty) {
+                v as &dyn $crate::zeroize::ZeroizeOnDrop;
+            }
+
+            fn check_buffer$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?(v: &$crate::block_api::Buffer<$core_ty>) {
+                v as &dyn $crate::zeroize::ZeroizeOnDrop;
+            }
+        };
+
+        #[cfg(feature = "zeroize")]
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::zeroize::ZeroizeOnDrop for $name$(< $( $lt ),+ >)? {}
+
+        $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
+    };
 }
