@@ -19,3 +19,5 @@ signature = { path = "signature" }
 
 # https://github.com/RustCrypto/utils/pull/1187
 blobby = { git = "https://github.com/RustCrypto/utils" }
+# https://github.com/RustCrypto/utils/pull/1192
+block-buffer = { git = "https://github.com/RustCrypto/utils" }
