@@ -55,5 +55,5 @@ dual licensed as above, without any additional terms or conditions.
 [`dsa`]: https://github.com/RustCrypto/signatures/tree/master/dsa
 [`ecdsa`]: https://github.com/RustCrypto/signatures/tree/master/ecdsa
 [`ed25519`]: https://github.com/RustCrypto/signatures/tree/master/ed25519
-[`ed25519-dalek`]: https://github.com/dalek-cryptography/ed25519-dalek
+[`ed25519-dalek`]: https://github.com/dalek-cryptography/curve25519-dalek
 [`rsa`]: https://github.com/RustCrypto/RSA
