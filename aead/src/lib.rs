@@ -18,6 +18,7 @@ extern crate alloc;
 
 #[cfg(feature = "dev")]
 pub mod dev;
+mod doc;
 
 pub use crypto_common::{
     Key, KeyInit, KeySizeUser,
