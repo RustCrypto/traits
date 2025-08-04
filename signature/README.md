@@ -7,11 +7,30 @@
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
 
-This crate contains traits which provide generic, object-safe APIs for
+This crate contains traits which provide generic type-safe APIs for
 generating and verifying [digital signatures].
 
-Used by the [`dsa`], [`ecdsa`], [`ed25519`], and [`rsa`] crates maintained by
-the [RustCrypto] organization, as well as [`ed25519-dalek`].
+## Supported crates
+
+The following crates are implemented using traits from the `signature` crate:
+
+### RustCrypto crates
+
+- [`dsa`]
+- [`ecdsa`]
+- [`ed25519`]
+- [`ed448`]
+- [`ed448-goldilocks`]
+- [`lms`]
+- [`ml-dsa`]
+- [`slh-dsa`]
+- [`sm2`]
+- [`rsa`]
+
+### Third-party crates
+
+- [`ed25519-dalek`]
+- [`yubihsm`]
 
 ## SemVer Policy Exemptions
 
@@ -55,5 +74,12 @@ dual licensed as above, without any additional terms or conditions.
 [`dsa`]: https://github.com/RustCrypto/signatures/tree/master/dsa
 [`ecdsa`]: https://github.com/RustCrypto/signatures/tree/master/ecdsa
 [`ed25519`]: https://github.com/RustCrypto/signatures/tree/master/ed25519
-[`ed25519-dalek`]: https://github.com/dalek-cryptography/ed25519-dalek
+[`ed25519-dalek`]: https://github.com/dalek-cryptography/curve25519-dalek/tree/main/ed25519-dalek
+[`ed448`]: https://github.com/RustCrypto/elliptic-curves/tree/master/ed448
+[`ed448-goldilocks`]: https://github.com/RustCrypto/elliptic-curves/tree/master/ed448-goldilocks
+[`lms`]: https://github.com/RustCrypto/signatures/tree/master/lms
+[`ml-dsa`]: https://github.com/RustCrypto/signatures/tree/master/ml-dsa
 [`rsa`]: https://github.com/RustCrypto/RSA
+[`slh-dsa`]: https://github.com/RustCrypto/signatures/tree/master/slh-dsa
+[`sm2`]: https://github.com/RustCrypto/elliptic-curves/tree/master/sm2
+[`yubihsm`]: https://github.com/iqlusioninc/yubihsm.rs

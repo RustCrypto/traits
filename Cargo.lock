@@ -76,8 +76,7 @@ checksum = "4a859067dcb257cb2ae028cb821399b55140b76fb8b2a360e052fe109019db43"
 [[package]]
 name = "block-buffer"
 version = "0.11.0-rc.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a229bfd78e4827c91b9b95784f69492c1b77c1ab75a45a8a037b139215086f94"
+source = "git+https://github.com/RustCrypto/utils.git#6fd0e8ddc827d7e7d9242e130f8944fc9ca328cf"
 dependencies = [
  "hybrid-array",
  "zeroize",
