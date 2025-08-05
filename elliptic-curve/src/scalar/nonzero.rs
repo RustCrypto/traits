@@ -12,7 +12,6 @@ use core::{
     ops::{Deref, Mul, MulAssign, Neg},
     str,
 };
-use crypto_bigint::{ArrayEncoding, Integer};
 use ff::{Field, PrimeField};
 use rand_core::{CryptoRng, TryCryptoRng};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
@@ -391,42 +390,25 @@ where
     }
 }
 
-/// Note: this is a non-zero reduction, as it's impl'd for [`NonZeroScalar`].
-impl<C, I> Reduce<I> for NonZeroScalar<C>
+impl<C, T> Reduce<T> for NonZeroScalar<C>
 where
     C: CurveArithmetic,
-    I: Integer + ArrayEncoding,
-    Scalar<C>: Reduce<I> + ReduceNonZero<I>,
+    Scalar<C>: ReduceNonZero<T>,
 {
-    type Bytes = <Scalar<C> as Reduce<I>>::Bytes;
-
-    fn reduce(n: I) -> Self {
-        let scalar = Scalar::<C>::reduce_nonzero(n);
-        debug_assert!(!bool::from(scalar.is_zero()));
-        Self { scalar }
-    }
-
-    fn reduce_bytes(bytes: &Self::Bytes) -> Self {
-        let scalar = Scalar::<C>::reduce_nonzero_bytes(bytes);
-        debug_assert!(!bool::from(scalar.is_zero()));
-        Self { scalar }
+    fn reduce(n: &T) -> Self {
+        <Self as ReduceNonZero<T>>::reduce_nonzero(n)
     }
 }
 
-/// Note: forwards to the [`Reduce`] impl.
-impl<C, I> ReduceNonZero<I> for NonZeroScalar<C>
+impl<C, T> ReduceNonZero<T> for NonZeroScalar<C>
 where
-    Self: Reduce<I>,
     C: CurveArithmetic,
-    I: Integer + ArrayEncoding,
-    Scalar<C>: Reduce<I, Bytes = Self::Bytes> + ReduceNonZero<I>,
+    Scalar<C>: ReduceNonZero<T>,
 {
-    fn reduce_nonzero(n: I) -> Self {
-        <Self as Reduce<I>>::reduce(n)
-    }
-
-    fn reduce_nonzero_bytes(bytes: &Self::Bytes) -> Self {
-        <Self as Reduce<I>>::reduce_bytes(bytes)
+    fn reduce_nonzero(n: &T) -> Self {
+        let scalar = Scalar::<C>::reduce_nonzero(n);
+        debug_assert!(!bool::from(scalar.is_zero()));
+        Self { scalar }
     }
 }
 

@@ -1,11 +1,10 @@
 //! Traits for arithmetic operations on elliptic curve field elements.
 
 pub use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Shr, ShrAssign, Sub, SubAssign};
-pub use crypto_bigint::Invert;
+pub use crypto_bigint::{Invert, Reduce};
 
 use crate::CurveGroup;
 use core::iter;
-use crypto_bigint::Integer;
 use ff::Field;
 use subtle::{Choice, CtOption};
 
@@ -175,18 +174,6 @@ where
     }
 }
 
-/// Modular reduction.
-pub trait Reduce<Uint: Integer>: Sized {
-    /// Bytes used as input to [`Reduce::reduce_bytes`].
-    type Bytes: AsRef<[u8]>;
-
-    /// Perform a modular reduction, returning a field element.
-    fn reduce(n: Uint) -> Self;
-
-    /// Interpret the given bytes as an integer and perform a modular reduction.
-    fn reduce_bytes(bytes: &Self::Bytes) -> Self;
-}
-
 /// Modular reduction to a non-zero output.
 ///
 /// This trait is primarily intended for use by curve implementations such
@@ -194,11 +181,7 @@ pub trait Reduce<Uint: Integer>: Sized {
 ///
 /// End users should use the [`Reduce`] impl on
 /// [`NonZeroScalar`][`crate::NonZeroScalar`] instead.
-pub trait ReduceNonZero<Uint: Integer>: Reduce<Uint> + Sized {
+pub trait ReduceNonZero<T>: Reduce<T> {
     /// Perform a modular reduction, returning a field element.
-    fn reduce_nonzero(n: Uint) -> Self;
-
-    /// Interpret the given bytes as an integer and perform a modular reduction
-    /// to a non-zero output.
-    fn reduce_nonzero_bytes(bytes: &Self::Bytes) -> Self;
+    fn reduce_nonzero(n: &T) -> Self;
 }

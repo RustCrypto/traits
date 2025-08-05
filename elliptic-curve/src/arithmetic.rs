@@ -80,7 +80,8 @@ pub trait CurveArithmetic: Curve {
         + Mul<Self::ProjectivePoint, Output = Self::ProjectivePoint>
         + for<'a> Mul<&'a Self::ProjectivePoint, Output = Self::ProjectivePoint>
         + PartialOrd
-        + Reduce<Self::Uint, Bytes = FieldBytes<Self>>
+        + Reduce<Self::Uint>
+        + Reduce<FieldBytes<Self>>
         + TryInto<NonZeroScalar<Self>, Error = Error>
         + ff::Field
         + ff::PrimeField<Repr = FieldBytes<Self>>;

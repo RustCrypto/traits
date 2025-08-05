@@ -366,16 +366,16 @@ impl Invert for Scalar {
 }
 
 impl Reduce<U256> for Scalar {
-    type Bytes = FieldBytes;
-
-    fn reduce(w: U256) -> Self {
+    fn reduce(w: &U256) -> Self {
         let (r, underflow) = w.borrowing_sub(&MockCurve::ORDER, Limb::ZERO);
         let underflow = Choice::from((underflow.0 >> (Limb::BITS - 1)) as u8);
-        let reduced = U256::conditional_select(&w, &r, !underflow);
+        let reduced = U256::conditional_select(w, &r, !underflow);
         Self(ScalarPrimitive::new(reduced).unwrap())
     }
+}
 
-    fn reduce_bytes(_: &FieldBytes) -> Self {
+impl Reduce<FieldBytes> for Scalar {
+    fn reduce(_w: &FieldBytes) -> Self {
         todo!()
     }
 }
