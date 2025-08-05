@@ -11,7 +11,7 @@ on:
 defaults:
   run:
     working-directory: aead
-    
+
 env:
   CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-Dwarnings"
