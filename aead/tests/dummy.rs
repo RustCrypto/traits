@@ -91,7 +91,7 @@ impl DummyAead {
     }
 }
 
-struct PrefixDummyAead(DummyAead);
+pub struct PrefixDummyAead(DummyAead);
 
 impl KeySizeUser for PrefixDummyAead {
     type KeySize = U8;
@@ -130,7 +130,7 @@ impl AeadInOut for PrefixDummyAead {
     }
 }
 
-struct PostfixDummyAead(DummyAead);
+pub struct PostfixDummyAead(DummyAead);
 
 impl KeySizeUser for PostfixDummyAead {
     type KeySize = U8;
