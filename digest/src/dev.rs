@@ -54,7 +54,7 @@ macro_rules! new_test {
 /// Define hash function serialization test
 #[macro_export]
 macro_rules! hash_serialization_test {
-    ($name:ident, $hasher:ty, $expected_path:expr $(,)?) => {
+    ($name:ident, $expected_path:expr, $hasher:ty $(,)?) => {
         #[test]
         fn $name() {
             use digest::{
