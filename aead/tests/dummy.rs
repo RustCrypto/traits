@@ -6,7 +6,7 @@ use aead::{
 };
 use inout::InOutBuf;
 
-struct DummyAead {
+pub struct DummyAead {
     key: [u8; 8],
 }
 
