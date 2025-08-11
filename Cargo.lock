@@ -76,7 +76,7 @@ checksum = "4a859067dcb257cb2ae028cb821399b55140b76fb8b2a360e052fe109019db43"
 [[package]]
 name = "block-buffer"
 version = "0.11.0-rc.4"
-source = "git+https://github.com/RustCrypto/utils.git#6fd0e8ddc827d7e7d9242e130f8944fc9ca328cf"
+source = "git+https://github.com/RustCrypto/utils?branch=block-buffer%2Fserialization#bf8ff4b38f2a44087a12792146dee9c23bd6bb3f"
 dependencies = [
  "hybrid-array",
  "zeroize",

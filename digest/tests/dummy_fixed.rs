@@ -111,6 +111,13 @@ digest::buffer_fixed!(
     impl: FixedHashTraits;
 );
 
+#[cfg(feature = "dev")]
+digest::hash_serialization_test!(
+    fixed_hash_serialization_test,
+    FixedHashWithOidSer,
+    [19, 19, 19, 19, 19, 19, 19, 19, 1, 19, 0, 0, 0, 0, 0, 0]
+);
+
 #[cfg(feature = "zeroize")]
 /// check for `ZeroizeOnDrop` implementations
 const _: () = {

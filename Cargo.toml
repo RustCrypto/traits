@@ -18,4 +18,5 @@ digest = { path = "digest" }
 signature = { path = "signature" }
 
 # https://github.com/RustCrypto/utils/pull/1192
-block-buffer = { git = "https://github.com/RustCrypto/utils.git" }
+# https://github.com/RustCrypto/utils/pull/1200
+block-buffer = { git = "https://github.com/RustCrypto/utils", branch = "block-buffer/serialization" }
