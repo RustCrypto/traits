@@ -448,8 +448,8 @@ macro_rules! buffer_fixed {
             ) -> Result<Self, $crate::crypto_common::hazmat::DeserializeStateError> {
                 use $crate::crypto_common::hazmat::{SerializableState, DeserializeStateError};
 
-                type StateSize = <$core_ty as SerializableState>::SerializedStateSize;
-                let (serialized_core, serialized_buf) = serialized_state.split_ref::<StateSize>();
+                let (serialized_core, serialized_buf) = serialized_state
+                    .split_ref::<<$core_ty as SerializableState>::SerializedStateSize>();
 
                 let core = SerializableState::deserialize(serialized_core)?;
                 let buffer = $crate::block_buffer::BlockBuffer::deserialize(serialized_buf)
