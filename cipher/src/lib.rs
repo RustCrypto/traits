@@ -18,7 +18,7 @@
     missing_debug_implementations
 )]
 
-#[cfg(all(feature = "block-padding", feature = "alloc"))]
+#[cfg(feature = "alloc")]
 extern crate alloc;
 
 #[cfg(feature = "dev")]
@@ -34,7 +34,7 @@ pub use zeroize;
 
 pub mod block;
 #[cfg(feature = "dev")]
-mod dev;
+pub mod dev;
 pub mod stream;
 pub mod tweak;
 

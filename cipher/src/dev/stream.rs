@@ -1,4 +1,45 @@
-//! Development-related functionality
+//! Development-related functionality for stream ciphers
+use crate::{KeyIvInit, StreamCipher};
+
+/// Stream cipher test vector
+#[derive(Clone, Copy, Debug)]
+pub struct TestVector {
+    /// Initialization key
+    pub key: &'static [u8],
+    /// Initialization vector
+    pub iv: &'static [u8],
+    /// Plaintext
+    pub plaintext: &'static [u8],
+    /// Ciphertext
+    pub ciphertext: &'static [u8],
+}
+
+/// Run stream cipher test
+pub fn stream_cipher_test<C: KeyIvInit + StreamCipher>(
+    tv: &TestVector,
+) -> Result<(), &'static str> {
+    if tv.plaintext.len() != tv.ciphertext.len() {
+        return Err("mismatch of plaintext and ciphertext lengths");
+    }
+    let mut buf = [0u8; 256];
+    for chunk_len in 1..256 {
+        let Ok(mut mode) = C::new_from_slices(tv.key, tv.iv) else {
+            return Err("cipher initialization failure");
+        };
+        let pt_chunks = tv.plaintext.chunks(chunk_len);
+        let ct_chunks = tv.ciphertext.chunks(chunk_len);
+        for (pt_chunk, ct_chunk) in pt_chunks.zip(ct_chunks) {
+            let buf = &mut buf[..pt_chunk.len()];
+            buf.copy_from_slice(pt_chunk);
+            mode.apply_keystream(buf);
+
+            if buf != ct_chunk {
+                return Err("ciphertext mismatch");
+            }
+        }
+    }
+    Ok(())
+}
 
 /// Test core functionality of synchronous stream cipher
 #[macro_export]
@@ -6,29 +47,24 @@ macro_rules! stream_cipher_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
-            use cipher::array::Array;
-            use cipher::{KeyIvInit, StreamCipher, blobby::Blob4Iterator};
+            use $crate::dev::stream::TestVector;
 
-            let data = include_bytes!(concat!("data/", $test_name, ".blb"));
-            for (i, row) in Blob4Iterator::new(data).unwrap().enumerate() {
-                let [key, iv, pt, ct] = row.unwrap();
+            $crate::dev::blobby::parse_into_structs!(
+                include_bytes!(concat!("data/", $test_name, ".blb"));
+                static TEST_VECTORS: &[
+                    TestVector { key, iv, plaintext, ciphertext }
+                ];
+            );
 
-                for chunk_n in 1..256 {
-                    let mut mode = <$cipher>::new_from_slices(key, iv).unwrap();
-                    let mut pt = pt.to_vec();
-                    for chunk in pt.chunks_mut(chunk_n) {
-                        mode.apply_keystream(chunk);
-                    }
-                    if pt != &ct[..] {
-                        panic!(
-                            "Failed main test №{}, chunk size: {}\n\
-                            key:\t{:?}\n\
-                            iv:\t{:?}\n\
-                            plaintext:\t{:?}\n\
-                            ciphertext:\t{:?}\n",
-                            i, chunk_n, key, iv, pt, ct,
-                        );
-                    }
+            for (i, tv) in TEST_VECTORS.iter().enumerate() {
+                let res = $crate::dev::stream::stream_cipher_test(tv);
+                if Err(reason) = res {
+                    panic!(
+                        "\n\
+                        Failed test #{i}\n\
+                        reason:\t{reason:?}\n\
+                        test vector:\t{tv:?}\n"
+                    );
                 }
             }
         }
