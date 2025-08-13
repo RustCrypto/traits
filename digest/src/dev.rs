@@ -33,7 +33,7 @@ macro_rules! new_test {
             use $crate::dev::TestVector;
 
             $crate::dev::blobby::parse_into_structs!(
-                include_bytes!(concat!("data/", stringify!($test_name), ".blb"));
+                include_bytes!(concat!("data/", stringify!($name), ".blb"));
                 static TEST_VECTORS: &[TestVector { input, output }];
             );
 
