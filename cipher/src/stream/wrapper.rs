@@ -123,8 +123,10 @@ impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
 
         self.core.set_block_pos(block_pos);
 
+        self.buffer.reset();
+
         self.buffer.write_block(
-            T::BlockSize::USIZE - usize::from(byte_pos),
+            usize::from(byte_pos),
             |b| self.core.write_keystream_block(b),
             |_| {},
         );
