@@ -27,13 +27,13 @@ pub struct TestVector {
 /// Define hash function test
 #[macro_export]
 macro_rules! new_test {
-    ($name:ident, $test_name:expr, $hasher:ty, $test_fn:ident $(,)?) => {
+    ($name:ident, $hasher:ty, $test_fn:ident $(,)?) => {
         #[test]
         fn $name() {
             use $crate::dev::TestVector;
 
             $crate::dev::blobby::parse_into_structs!(
-                include_bytes!(concat!("data/", $test_name, ".blb"));
+                include_bytes!(concat!("data/", stringify!($test_name), ".blb"));
                 static TEST_VECTORS: &[TestVector { input, output }];
             );
 
