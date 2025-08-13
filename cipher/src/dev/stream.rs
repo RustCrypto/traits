@@ -58,7 +58,7 @@ macro_rules! stream_cipher_test {
 
             for (i, tv) in TEST_VECTORS.iter().enumerate() {
                 let res = $crate::dev::stream::stream_cipher_test(tv);
-                if Err(reason) = res {
+                if let Err(reason) = res {
                     panic!(
                         "\n\
                         Failed test #{i}\n\
