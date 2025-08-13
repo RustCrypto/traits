@@ -118,22 +118,22 @@ pub fn reset_mac_test<M: Mac + KeyInit + FixedOutputReset + Clone>(
 /// Define MAC test
 #[macro_export]
 macro_rules! new_mac_test {
-    ($name:ident, $test_name:expr, $mac:ty, $test_fn:ident $(,)?) => {
-        digest::new_mac_test!($name, $test_name, $mac, $test_fn, $crate::dev::MacTruncSide::None);
+    ($name:ident, $mac:ty, $test_fn:ident $(,)?) => {
+        digest::new_mac_test!($name, $mac, $test_fn, $crate::dev::MacTruncSide::None);
     };
-    ($name:ident, $test_name:expr, $mac:ty, $test_fn:ident, trunc_left $(,)?) => {
-        digest::new_mac_test!($name, $test_name, $mac, $test_fn, $crate::dev::MacTruncSide::Left);
+    ($name:ident, $mac:ty, $test_fn:ident, trunc_left $(,)?) => {
+        digest::new_mac_test!($name, $mac, $test_fn, $crate::dev::MacTruncSide::Left);
     };
-    ($name:ident, $test_name:expr, $mac:ty, $test_fn:ident, trunc_right $(,)?) => {
-        digest::new_mac_test!($name, $test_name, $mac, $test_fn, $crate::dev::MacTruncSide::Right);
+    ($name:ident, $mac:ty, $test_fn:ident, trunc_right $(,)?) => {
+        digest::new_mac_test!($name, $mac, $test_fn, $crate::dev::MacTruncSide::Right);
     };
-    ($name:ident, $test_name:expr, $mac:ty, $test_fn:ident, $trunc:expr $(,)?) => {
+    ($name:ident, $mac:ty, $test_fn:ident, $trunc:expr $(,)?) => {
         #[test]
         fn $name() {
             use digest::dev::MacTestVector;
 
             $crate::dev::blobby::parse_into_structs!(
-                include_bytes!(concat!("data/", $test_name, ".blb"));
+                include_bytes!(concat!("data/", stringify!($name), ".blb"));
                 static TEST_VECTORS: &[MacTestVector { key, input, tag }];
             );
 

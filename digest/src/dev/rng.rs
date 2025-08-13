@@ -10,7 +10,7 @@ pub(crate) const RNG: XorShiftRng = XorShiftRng {
     w: Wrapping(0xB0AD_B4F3),
 };
 
-/// Xorshift RNG instance/
+/// Xorshift RNG instance
 pub(crate) struct XorShiftRng {
     x: Wrapping<u32>,
     y: Wrapping<u32>,
