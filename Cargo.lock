@@ -70,12 +70,12 @@ dependencies = [
 [[package]]
 name = "blobby"
 version = "0.4.0-pre.0"
-source = "git+https://github.com/RustCrypto/utils#0e7e6e662608a3a862a4beb930b8ffedbea6563d"
+source = "git+https://github.com/RustCrypto/utils#f5ac85f6aa02aa39614f62a6a1add9468be67892"
 
 [[package]]
 name = "block-buffer"
 version = "0.11.0-rc.4"
-source = "git+https://github.com/RustCrypto/utils?branch=block-buffer%2Fserialization#f57451f62fb3f87c5ee3f71fe4b1afdf3752abf5"
+source = "git+https://github.com/RustCrypto/utils#f5ac85f6aa02aa39614f62a6a1add9468be67892"
 dependencies = [
  "hybrid-array",
  "zeroize",
