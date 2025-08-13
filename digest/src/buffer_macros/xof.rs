@@ -52,7 +52,6 @@ macro_rules! buffer_xof {
             #[inline]
             fn read(&mut self, buf: &mut [u8]) {
                 let Self { core, buffer } = self;
-
                 buffer.read(buf, |block| {
                     *block = $crate::block_api::XofReaderCore::read_block(core);
                 });
