@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
 - `CtVariableCoreWrapper` renamed to `CtOutWrapper` ([#1799])
 - Removed the OID type parameter from `CtOutWrapper` ([#1799])
+- Implementations of the `SerializableState` trait ([#1953])
 
 ### Removed
 - `Mac::new`, `Mac::new_from_slice`, and `Mac::generate_key` methods ([#1173])
@@ -29,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#1799]: https://github.com/RustCrypto/traits/pull/1799
 [#1809]: https://github.com/RustCrypto/traits/pull/1809
 [#1820]: https://github.com/RustCrypto/traits/pull/1820
+[#1953]: https://github.com/RustCrypto/traits/pull/1953
 
 ## 0.10.7 (2023-05-19)
 ### Changed

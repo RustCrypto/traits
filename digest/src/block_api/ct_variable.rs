@@ -5,16 +5,12 @@ use super::{
 #[cfg(feature = "mac")]
 use crate::MacMarker;
 use crate::{CollisionResistance, CustomizedInit, HashMarker, VarOutputCustomized};
-use core::{
-    fmt,
-    marker::PhantomData,
-    ops::{Add, Sub},
-};
+use core::{fmt, marker::PhantomData};
 use crypto_common::{
     Block, BlockSizeUser, OutputSizeUser,
     array::{Array, ArraySize},
-    hazmat::{DeserializeStateError, SerializableState, SerializedState, SubSerializedStateSize},
-    typenum::{IsLess, IsLessOrEqual, Le, NonZero, Sum, True, U1, U256},
+    hazmat::{DeserializeStateError, SerializableState, SerializedState},
+    typenum::{IsLessOrEqual, True},
 };
 
 /// Wrapper around [`VariableOutputCore`] which selects output size at compile time.
@@ -177,41 +173,21 @@ where
     }
 }
 
-type CtVariableCoreWrapperSerializedStateSize<T> =
-    Sum<<T as SerializableState>::SerializedStateSize, U1>;
-
 impl<T, OutSize> SerializableState for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + SerializableState,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
-    T::BlockSize: IsLess<U256>,
-    Le<T::BlockSize, U256>: NonZero,
-    T::SerializedStateSize: Add<U1>,
-    CtVariableCoreWrapperSerializedStateSize<T>: Sub<T::SerializedStateSize> + ArraySize,
-    SubSerializedStateSize<CtVariableCoreWrapperSerializedStateSize<T>, T>: ArraySize,
 {
-    type SerializedStateSize = CtVariableCoreWrapperSerializedStateSize<T>;
+    type SerializedStateSize = <T as SerializableState>::SerializedStateSize;
 
     fn serialize(&self) -> SerializedState<Self> {
-        let serialized_inner = self.inner.serialize();
-        let serialized_outsize = Array([OutSize::U8]);
-
-        serialized_inner.concat(serialized_outsize)
+        self.inner.serialize()
     }
 
     fn deserialize(
         serialized_state: &SerializedState<Self>,
     ) -> Result<Self, DeserializeStateError> {
-        let (serialized_inner, serialized_outsize) =
-            serialized_state.split_ref::<T::SerializedStateSize>();
-
-        if serialized_outsize[0] != OutSize::U8 {
-            return Err(DeserializeStateError);
-        }
-
-        Ok(Self {
-            inner: T::deserialize(serialized_inner)?,
-            _out: PhantomData,
-        })
+        let _out = PhantomData;
+        T::deserialize(serialized_state).map(|inner| Self { inner, _out })
     }
 }

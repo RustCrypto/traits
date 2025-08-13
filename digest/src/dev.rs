@@ -54,7 +54,7 @@ macro_rules! new_test {
 /// Define hash function serialization test
 #[macro_export]
 macro_rules! hash_serialization_test {
-    ($name:ident, $hasher:ty, $expected_serialized_state:expr) => {
+    ($name:ident, $hasher:ty $(,)?) => {
         #[test]
         fn $name() {
             use digest::{
@@ -68,7 +68,8 @@ macro_rules! hash_serialization_test {
             h.update(&[0x13; <$hasher as BlockSizeUser>::BlockSize::USIZE + 1]);
 
             let serialized_state = h.serialize();
-            assert_eq!(serialized_state.as_slice(), $expected_serialized_state);
+            let expected = include_bytes!(concat!("data/", stringify!($name), ".bin"));
+            assert_eq!(serialized_state.as_slice(), expected);
 
             let mut h = <$hasher>::deserialize(&serialized_state).unwrap();
 
