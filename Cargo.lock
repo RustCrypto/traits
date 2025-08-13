@@ -75,7 +75,7 @@ source = "git+https://github.com/RustCrypto/utils#f5ac85f6aa02aa39614f62a6a1add9
 [[package]]
 name = "block-buffer"
 version = "0.11.0-rc.4"
-source = "git+https://github.com/RustCrypto/utils?branch=block-buffer%2Fread-buf#21054d717f77c160fa0a70f79bdef2435c578d17"
+source = "git+https://github.com/RustCrypto/utils?branch=block-buffer%2Fread-buf#1be52dc741e6adb5202c3ae536a706d252c361a9"
 dependencies = [
  "hybrid-array",
  "zeroize",

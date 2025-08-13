@@ -53,20 +53,9 @@ macro_rules! buffer_xof {
             fn read(&mut self, buf: &mut [u8]) {
                 let Self { core, buffer } = self;
 
-                let head_ks = self.buffer.read_cached(buf.len());
-                let (head, buf) = buf.split_at_mut(head_ks.len());
-                let (blocks, tail) = $crate::array::Array::slice_as_chunks_mut(buf);
-
-                head.copy_from_slice(head_ks);
-                for block in blocks {
+                buffer.read(buf, |block| {
                     *block = $crate::block_api::XofReaderCore::read_block(core);
-                }
-
-                self.buffer.write_block(
-                    tail.len(),
-                    |block| *block = $crate::block_api::XofReaderCore::read_block(core),
-                    |tail_ks| tail.copy_from_slice(tail_ks),
-                );
+                });
             }
         }
 
