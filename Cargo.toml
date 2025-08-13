@@ -21,4 +21,5 @@ signature = { path = "signature" }
 blobby = { git = "https://github.com/RustCrypto/utils" }
 # https://github.com/RustCrypto/utils/pull/1192
 # https://github.com/RustCrypto/utils/pull/1200
-block-buffer = { git = "https://github.com/RustCrypto/utils" }
+# https://github.com/RustCrypto/utils/pull/1201
+block-buffer = { git = "https://github.com/RustCrypto/utils", branch = "block-buffer/read-buf" }
