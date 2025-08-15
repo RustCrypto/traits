@@ -80,7 +80,7 @@ where
     }
 
     /// Decode a [`NonZeroScalar`] from a big endian-serialized field element.
-    pub fn from_repr(repr: FieldBytes<C>) -> CtOption<Self> {
+    pub fn from_repr(repr: &FieldBytes<C>) -> CtOption<Self> {
         Scalar::<C>::from_repr(repr).and_then(Self::new)
     }
 
@@ -476,7 +476,7 @@ where
         let mut bytes = FieldBytes::<C>::default();
 
         if base16ct::mixed::decode(hex, &mut bytes)?.len() == bytes.len() {
-            Self::from_repr(bytes).into_option().ok_or(Error)
+            Self::from_repr(&bytes).into_option().ok_or(Error)
         } else {
             Err(Error)
         }
@@ -522,7 +522,7 @@ mod tests {
     #[test]
     fn round_trip() {
         let bytes = hex!("c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721");
-        let scalar = NonZeroScalar::from_repr(bytes.into()).unwrap();
+        let scalar = NonZeroScalar::from_repr(&bytes.into()).unwrap();
         assert_eq!(&bytes, scalar.to_repr().as_slice());
     }
 
