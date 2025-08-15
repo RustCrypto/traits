@@ -1,29 +1,22 @@
 use super::{
-    Block, OverflowError, SeekNum, StreamCipher, StreamCipherCore, StreamCipherSeek,
-    StreamCipherSeekCore, errors::StreamCipherError,
+    OverflowError, SeekNum, StreamCipher, StreamCipherCore, StreamCipherSeek, StreamCipherSeekCore,
+    errors::StreamCipherError,
 };
+use block_buffer::ReadBuffer;
 use core::fmt;
 use crypto_common::{
     Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser, array::Array, typenum::Unsigned,
 };
 use inout::InOutBuf;
 #[cfg(feature = "zeroize")]
-use zeroize::{Zeroize, ZeroizeOnDrop};
+use zeroize::ZeroizeOnDrop;
 
 /// Buffering wrapper around a [`StreamCipherCore`] implementation.
 ///
 /// It handles data buffering and implements the slice-based traits.
 pub struct StreamCipherCoreWrapper<T: StreamCipherCore> {
     core: T,
-    // First byte is used as position
-    buffer: Block<T>,
-}
-
-impl<T: StreamCipherCore + Default> Default for StreamCipherCoreWrapper<T> {
-    #[inline]
-    fn default() -> Self {
-        Self::from_core(T::default())
-    }
+    buffer: ReadBuffer<T::BlockSize>,
 }
 
 impl<T: StreamCipherCore + Clone> Clone for StreamCipherCoreWrapper<T> {
@@ -38,70 +31,19 @@ impl<T: StreamCipherCore + Clone> Clone for StreamCipherCoreWrapper<T> {
 
 impl<T: StreamCipherCore + fmt::Debug> fmt::Debug for StreamCipherCoreWrapper<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let pos = self.get_pos().into();
-        let buf_data = &self.buffer[pos..];
         f.debug_struct("StreamCipherCoreWrapper")
-            .field("core", &self.core)
-            .field("buffer_data", &buf_data)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
 impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
-    /// Return reference to the core type.
-    pub fn get_core(&self) -> &T {
-        &self.core
-    }
-
-    /// Return reference to the core type.
-    pub fn from_core(core: T) -> Self {
-        let mut buffer: Block<T> = Default::default();
-        buffer[0] = T::BlockSize::U8;
-        Self { core, buffer }
-    }
-
-    /// Return current cursor position.
-    #[inline]
-    fn get_pos(&self) -> u8 {
-        let pos = self.buffer[0];
-        if pos == 0 || pos > T::BlockSize::U8 {
-            debug_assert!(false);
-            // SAFETY: `pos` never breaks the invariant
-            unsafe {
-                core::hint::unreachable_unchecked();
-            }
-        }
-        pos
-    }
-
-    /// Set buffer position without checking that it's smaller
-    /// than buffer size.
-    ///
-    /// # Safety
-    /// `pos` MUST be bigger than zero and smaller or equal to `T::BlockSize::USIZE`.
-    #[inline]
-    unsafe fn set_pos_unchecked(&mut self, pos: usize) {
-        debug_assert!(pos != 0 && pos <= T::BlockSize::USIZE);
-        // Block size is always smaller than 256 because of the `BlockSizes` bound,
-        // so if the safety condition is satisfied, the `as` cast does not truncate
-        // any non-zero bits.
-        self.buffer[0] = pos as u8;
-    }
-
-    /// Return number of remaining bytes in the internal buffer.
-    #[inline]
-    fn remaining(&self) -> u8 {
-        // This never underflows because of the safety invariant
-        T::BlockSize::U8 - self.get_pos()
-    }
-
     fn check_remaining(&self, data_len: usize) -> Result<(), StreamCipherError> {
         let rem_blocks = match self.core.remaining_blocks() {
             Some(v) => v,
             None => return Ok(()),
         };
 
-        let buf_rem = usize::from(self.remaining());
+        let buf_rem = self.buffer.remaining();
         let data_len = match data_len.checked_sub(buf_rem) {
             Some(0) | None => return Ok(()),
             Some(res) => res,
@@ -121,106 +63,46 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
     #[inline]
     fn try_apply_keystream_inout(
         &mut self,
-        mut data: InOutBuf<'_, '_, u8>,
+        data: InOutBuf<'_, '_, u8>,
     ) -> Result<(), StreamCipherError> {
         self.check_remaining(data.len())?;
 
-        let pos = usize::from(self.get_pos());
-        let rem = usize::from(self.remaining());
-        let data_len = data.len();
+        let head_ks = self.buffer.read_cached(data.len());
 
-        if rem != 0 {
-            if data_len <= rem {
-                data.xor_in2out(&self.buffer[pos..][..data_len]);
-                // SAFETY: we have checked that `data_len` is less or equal to length
-                // of remaining keystream data, thus `pos + data_len` can not be bigger
-                // than block size. Since `pos` is never zero, `pos + data_len` can not
-                // be zero. Thus `pos + data_len` satisfies the safety invariant required
-                // by `set_pos_unchecked`.
-                unsafe {
-                    self.set_pos_unchecked(pos + data_len);
-                }
-                return Ok(());
-            }
-            let (mut left, right) = data.split_at(rem);
-            data = right;
-            left.xor_in2out(&self.buffer[pos..]);
-        }
-
+        let (mut head, data) = data.split_at(head_ks.len());
         let (blocks, mut tail) = data.into_chunks();
+
+        head.xor_in2out(head_ks);
         self.core.apply_keystream_blocks_inout(blocks);
 
-        let new_pos = if tail.is_empty() {
-            T::BlockSize::USIZE
-        } else {
-            // Note that we temporarily write a pseudo-random byte into
-            // the first byte of `self.buffer`. It may break the safety invariant,
-            // but after XORing keystream block with `tail`, we immediately
-            // overwrite the first byte with a correct value.
-            self.core.write_keystream_block(&mut self.buffer);
-            tail.xor_in2out(&self.buffer[..tail.len()]);
-            tail.len()
-        };
-
-        // SAFETY: `into_chunks` always returns tail with size
-        // less than block size. If `tail.len()` is zero, we replace
-        // it with block size. Thus the invariant required by
-        // `set_pos_unchecked` is satisfied.
-        unsafe {
-            self.set_pos_unchecked(new_pos);
-        }
+        self.buffer.write_block(
+            tail.len(),
+            |b| self.core.write_keystream_block(b),
+            |tail_ks| {
+                tail.xor_in2out(tail_ks);
+            },
+        );
 
         Ok(())
     }
 
     #[inline]
-    fn try_write_keystream(&mut self, mut data: &mut [u8]) -> Result<(), StreamCipherError> {
+    fn try_write_keystream(&mut self, data: &mut [u8]) -> Result<(), StreamCipherError> {
         self.check_remaining(data.len())?;
 
-        let pos = usize::from(self.get_pos());
-        let rem = usize::from(self.remaining());
-        let data_len = data.len();
+        let head_ks = self.buffer.read_cached(data.len());
 
-        if rem != 0 {
-            if data_len <= rem {
-                data.copy_from_slice(&self.buffer[pos..][..data_len]);
-                // SAFETY: we have checked that `data_len` is less or equal to length
-                // of remaining keystream data, thus `pos + data_len` can not be bigger
-                // than block size. Since `pos` is never zero, `pos + data_len` can not
-                // be zero. Thus `pos + data_len` satisfies the safety invariant required
-                // by `set_pos_unchecked`.
-                unsafe {
-                    self.set_pos_unchecked(pos + data_len);
-                }
-                return Ok(());
-            }
-            let (left, right) = data.split_at_mut(rem);
-            data = right;
-            left.copy_from_slice(&self.buffer[pos..]);
-        }
-
+        let (head, data) = data.split_at_mut(head_ks.len());
         let (blocks, tail) = Array::slice_as_chunks_mut(data);
+
+        head.copy_from_slice(head_ks);
         self.core.write_keystream_blocks(blocks);
 
-        let new_pos = if tail.is_empty() {
-            T::BlockSize::USIZE
-        } else {
-            // Note that we temporarily write a pseudo-random byte into
-            // the first byte of `self.buffer`. It may break the safety invariant,
-            // but after writing keystream block with `tail`, we immediately
-            // overwrite the first byte with a correct value.
-            self.core.write_keystream_block(&mut self.buffer);
-            tail.copy_from_slice(&self.buffer[..tail.len()]);
-            tail.len()
-        };
-
-        // SAFETY: `into_chunks` always returns tail with size
-        // less than block size. If `tail.len()` is zero, we replace
-        // it with block size. Thus the invariant required by
-        // `set_pos_unchecked` is satisfied.
-        unsafe {
-            self.set_pos_unchecked(new_pos);
-        }
+        self.buffer.write_block(
+            tail.len(),
+            |b| self.core.write_keystream_block(b),
+            |tail_ks| tail.copy_from_slice(tail_ks),
+        );
 
         Ok(())
     }
@@ -228,7 +110,8 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
 
 impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
     fn try_current_pos<SN: SeekNum>(&self) -> Result<SN, OverflowError> {
-        let pos = self.get_pos();
+        let pos = u8::try_from(self.buffer.get_pos())
+            .expect("buffer position is always smaller than 256");
         SN::from_block_byte(self.core.get_block_pos(), pos, T::BlockSize::U8)
     }
 
@@ -239,19 +122,14 @@ impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
         assert!(byte_pos < T::BlockSize::U8);
 
         self.core.set_block_pos(block_pos);
-        let new_pos = if byte_pos != 0 {
-            // See comment in `try_apply_keystream_inout` for use of `write_keystream_block`
-            self.core.write_keystream_block(&mut self.buffer);
-            byte_pos.into()
-        } else {
-            T::BlockSize::USIZE
-        };
-        // SAFETY: we assert that `byte_pos` is always smaller than block size.
-        // If `byte_pos` is zero, we replace it with block size. Thus the invariant
-        // required by `set_pos_unchecked` is satisfied.
-        unsafe {
-            self.set_pos_unchecked(new_pos);
-        }
+
+        self.buffer.reset();
+
+        self.buffer.write_block(
+            usize::from(byte_pos),
+            |b| self.core.write_keystream_block(b),
+            |_| {},
+        );
         Ok(())
     }
 }
@@ -272,11 +150,9 @@ impl<T: IvSizeUser + StreamCipherCore> IvSizeUser for StreamCipherCoreWrapper<T>
 impl<T: KeyIvInit + StreamCipherCore> KeyIvInit for StreamCipherCoreWrapper<T> {
     #[inline]
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self {
-        let mut buffer = Block::<T>::default();
-        buffer[0] = T::BlockSize::U8;
         Self {
             core: T::new(key, iv),
-            buffer,
+            buffer: Default::default(),
         }
     }
 }
@@ -284,22 +160,21 @@ impl<T: KeyIvInit + StreamCipherCore> KeyIvInit for StreamCipherCoreWrapper<T> {
 impl<T: KeyInit + StreamCipherCore> KeyInit for StreamCipherCoreWrapper<T> {
     #[inline]
     fn new(key: &Key<Self>) -> Self {
-        let mut buffer = Block::<T>::default();
-        buffer[0] = T::BlockSize::U8;
         Self {
             core: T::new(key),
-            buffer,
+            buffer: Default::default(),
         }
     }
 }
 
 #[cfg(feature = "zeroize")]
-impl<T: StreamCipherCore> Drop for StreamCipherCoreWrapper<T> {
-    fn drop(&mut self) {
-        // If present, `core` will be zeroized by its own `Drop`.
-        self.buffer.zeroize();
-    }
-}
-
-#[cfg(feature = "zeroize")]
 impl<T: StreamCipherCore + ZeroizeOnDrop> ZeroizeOnDrop for StreamCipherCoreWrapper<T> {}
+
+// Assert that `ReadBuffer` implements `ZeroizeOnDrop`
+#[cfg(feature = "zeroize")]
+const _: () = {
+    #[allow(dead_code)]
+    fn check_buffer<BS: crate::array::ArraySize>(v: &ReadBuffer<BS>) {
+        let _ = v as &dyn crate::zeroize::ZeroizeOnDrop;
+    }
+};

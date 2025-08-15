@@ -17,6 +17,7 @@
     unused_lifetimes,
     missing_debug_implementations
 )]
+#![forbid(unsafe_code)]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;

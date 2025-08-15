@@ -75,7 +75,7 @@ source = "git+https://github.com/RustCrypto/utils#f5ac85f6aa02aa39614f62a6a1add9
 [[package]]
 name = "block-buffer"
 version = "0.11.0-rc.4"
-source = "git+https://github.com/RustCrypto/utils#f5ac85f6aa02aa39614f62a6a1add9468be67892"
+source = "git+https://github.com/RustCrypto/utils?branch=block-buffer%2Fread-buf#79e12dfd745e732d24ba1566f705f35ba409edc6"
 dependencies = [
  "hybrid-array",
  "zeroize",
@@ -113,6 +113,7 @@ name = "cipher"
 version = "0.5.0-rc.0"
 dependencies = [
  "blobby",
+ "block-buffer",
  "crypto-common",
  "inout",
  "zeroize",
@@ -429,9 +430,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.96"
+version = "1.0.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "beef09f85ae72cea1ef96ba6870c51e6382ebfa4f0e85b643459331f3daa5be0"
+checksum = "d61789d7719defeb74ea5fe81f2fdfdbd28a803847077cecce2ff14e1472f6f1"
 dependencies = [
  "unicode-ident",
 ]
