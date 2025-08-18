@@ -31,9 +31,6 @@ use alloc::vec::Vec;
 #[cfg(feature = "bits")]
 use ff::PrimeFieldBits;
 
-#[cfg(feature = "jwk")]
-use crate::JwkParameters;
-
 /// Pseudo-coordinate for fixed-based scalar mult output
 pub const PSEUDO_COORDINATE_FIXED_BASE_MUL: [u8; 32] =
     hex!("deadbeef00000000000000000000000000000000000000000000000000000001");
@@ -88,11 +85,6 @@ impl CurveArithmetic for MockCurve {
 impl AssociatedOid for MockCurve {
     /// OID for NIST P-256
     const OID: pkcs8::ObjectIdentifier = pkcs8::ObjectIdentifier::new_unwrap("1.2.840.10045.3.1.7");
-}
-
-#[cfg(feature = "jwk")]
-impl JwkParameters for MockCurve {
-    const CRV: &'static str = "P-256";
 }
 
 /// Example scalar type

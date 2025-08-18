@@ -17,7 +17,7 @@ env:
   CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-Dwarnings"
   RUSTDOCFLAGS: "-Dwarnings"
-  
+
 # Cancels CI jobs when new commits are pushed to a PR branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -48,7 +48,6 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features dev
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features digest
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features ecdh
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features jwk
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features pem
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features pkcs8
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features sec1
@@ -57,10 +56,10 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,arithmetic,pkcs8
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,serde
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features arithmetic,serde
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,digest,ecdh,jwk,pem,pkcs8,sec1,serde
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,digest,ecdh,pem,pkcs8,sec1,serde
 
   minimal-versions:
-    # Temporarily disabled until elliptic-curve 0.13.0-pre.0 is published
+    # Temporarily disabled until elliptic-curve 0.14.0 is published
     if: false
     runs-on: ubuntu-latest
     steps:

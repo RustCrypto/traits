@@ -61,7 +61,6 @@
 //! When the `serde` feature of this crate is enabled, `Serialize` and
 //! `Deserialize` impls are provided for the following types:
 //!
-//! - [`JwkEcKey`]
 //! - [`PublicKey`]
 //! - [`ScalarPrimitive`]
 //!
@@ -108,9 +107,6 @@ mod arithmetic;
 #[cfg(feature = "arithmetic")]
 mod public_key;
 
-#[cfg(feature = "jwk")]
-mod jwk;
-
 pub use crate::{
     error::{Error, Result},
     field::{FieldBytes, FieldBytesEncoding, FieldBytesSize},
@@ -135,9 +131,6 @@ pub use {
     ff::{self, Field, PrimeField},
     group::{self, Curve as CurveGroup, Group},
 };
-
-#[cfg(feature = "jwk")]
-pub use crate::jwk::{JwkEcKey, JwkParameters};
 
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;

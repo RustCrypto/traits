@@ -25,7 +25,6 @@ subtle = { version = "2.6", default-features = false }
 zeroize = { version = "1.7", default-features = false }
 
 # optional dependencies
-base64ct = { version = "1", optional = true, default-features = false, features = ["alloc"] }
 digest = { version = "0.11.0-rc.0", optional = true }
 ff = { version = "=0.14.0-pre.0", optional = true, default-features = false }
 group = { version = "=0.14.0-pre.0", optional = true, default-features = false }
@@ -35,7 +34,6 @@ pem-rfc7468 = { version = "1.0.0-rc.2", optional = true, features = ["alloc"] }
 pkcs8 = { version = "0.11.0-rc.6", optional = true, default-features = false }
 sec1 = { version = "0.8.0-rc.8", optional = true, features = ["subtle", "zeroize"] }
 serdect = { version = "0.3", optional = true, default-features = false, features = ["alloc"] }
-serde_json = { version = "1.0.121", optional = true, default-features = false, features = ["alloc"] }
 
 [dev-dependencies]
 hex-literal = "1"
@@ -64,10 +62,9 @@ bits = ["arithmetic", "ff/bits"]
 dev = ["arithmetic", "dep:hex-literal", "pem", "pkcs8"]
 ecdh = ["arithmetic", "digest", "dep:hkdf"]
 group = ["dep:group", "ff"]
-jwk = ["dep:base64ct", "dep:serde_json", "alloc", "serde", "zeroize/alloc"]
 pkcs8 = ["dep:pkcs8", "sec1"]
 pem = ["dep:pem-rfc7468", "alloc", "arithmetic", "pkcs8/pem", "sec1/pem"]
 serde = ["dep:serdect", "alloc", "pkcs8", "sec1/serde"]
 
 [package.metadata.docs.rs]
-features = ["bits", "ecdh", "jwk", "pem", "std"]
+features = ["bits", "ecdh", "pem", "std"]
