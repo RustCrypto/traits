@@ -7,14 +7,14 @@ use crate::{
 use core::fmt::Debug;
 use group::Group;
 
-#[cfg(feature = "jwk")]
-use crate::{JwkEcKey, JwkParameters};
-
 #[cfg(feature = "pkcs8")]
 use pkcs8::spki::{AlgorithmIdentifier, AssociatedAlgorithmIdentifier, ObjectIdentifier};
 
 #[cfg(feature = "pem")]
-use core::str::FromStr;
+use {
+    alloc::string::{String, ToString},
+    core::str::FromStr,
+};
 
 #[cfg(feature = "sec1")]
 use {
@@ -27,17 +27,14 @@ use {
     subtle::{Choice, CtOption},
 };
 
+#[cfg(feature = "serde")]
+use serdect::serde::{Deserialize, Serialize, de, ser};
+
 #[cfg(all(feature = "alloc", feature = "pkcs8"))]
 use pkcs8::EncodePublicKey;
 
 #[cfg(all(feature = "alloc", feature = "sec1"))]
 use alloc::boxed::Box;
-
-#[cfg(any(feature = "jwk", feature = "pem"))]
-use alloc::string::{String, ToString};
-
-#[cfg(feature = "serde")]
-use serdect::serde::{Deserialize, Serialize, de, ser};
 
 #[cfg(any(feature = "pem", feature = "serde"))]
 use pkcs8::DecodePublicKey;
@@ -82,8 +79,6 @@ use {
 ///
 /// The serialization is binary-oriented and supports ASN.1 DER
 /// Subject Public Key Info (SPKI) as the encoding format.
-///
-/// For a more text-friendly encoding of public keys, use [`JwkEcKey`] instead.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PublicKey<C>
 where
@@ -161,50 +156,6 @@ where
     /// Convert this [`PublicKey`] to a [`NonIdentity`] of the inner [`AffinePoint`]
     pub fn to_nonidentity(&self) -> NonIdentity<AffinePoint<C>> {
         NonIdentity::new_unchecked(self.point)
-    }
-
-    /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`PublicKey`].
-    #[cfg(feature = "jwk")]
-    pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
-    where
-        C: JwkParameters,
-        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldBytesSize<C>: ModulusSize,
-    {
-        jwk.to_public_key::<C>()
-    }
-
-    /// Parse a string containing a JSON Web Key (JWK) into a [`PublicKey`].
-    #[cfg(feature = "jwk")]
-    pub fn from_jwk_str(jwk: &str) -> Result<Self>
-    where
-        C: JwkParameters,
-        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldBytesSize<C>: ModulusSize,
-    {
-        jwk.parse::<JwkEcKey>().and_then(|jwk| Self::from_jwk(&jwk))
-    }
-
-    /// Serialize this public key as [`JwkEcKey`] JSON Web Key (JWK).
-    #[cfg(feature = "jwk")]
-    pub fn to_jwk(&self) -> JwkEcKey
-    where
-        C: JwkParameters,
-        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldBytesSize<C>: ModulusSize,
-    {
-        self.into()
-    }
-
-    /// Serialize this public key as JSON Web Key (JWK) string.
-    #[cfg(feature = "jwk")]
-    pub fn to_jwk_string(&self) -> String
-    where
-        C: JwkParameters,
-        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldBytesSize<C>: ModulusSize,
-    {
-        self.to_jwk().to_string()
     }
 }
 
