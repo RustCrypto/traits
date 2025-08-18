@@ -146,21 +146,6 @@ impl<'a> Salt<'a> {
     pub fn len(&self) -> usize {
         self.as_str().len()
     }
-
-    /// Create a [`Salt`] from the given B64-encoded input string, validating
-    /// [`Salt::MIN_LENGTH`] and [`Salt::MAX_LENGTH`] restrictions.
-    #[deprecated(since = "0.5.0", note = "use `from_b64` instead")]
-    pub fn new(input: &'a str) -> Result<Self> {
-        Self::from_b64(input)
-    }
-
-    /// Attempt to decode a B64-encoded [`Salt`] into bytes, writing the
-    /// decoded output into the provided buffer, and returning a slice of the
-    /// portion of the buffer containing the decoded result on success.
-    #[deprecated(since = "0.5.0", note = "use `decode_b64` instead")]
-    pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8]> {
-        self.decode_b64(buf)
-    }
 }
 
 impl AsRef<str> for Salt<'_> {
@@ -267,27 +252,6 @@ impl SaltString {
     /// Get the length of this value in ASCII characters.
     pub fn len(&self) -> usize {
         self.as_str().len()
-    }
-
-    /// Create a new [`SaltString`] from the given B64-encoded input string,
-    /// validating [`Salt::MIN_LENGTH`] and [`Salt::MAX_LENGTH`] restrictions.
-    #[deprecated(since = "0.5.0", note = "use `from_b64` instead")]
-    pub fn new(s: &str) -> Result<Self> {
-        Self::from_b64(s)
-    }
-
-    /// Decode this [`SaltString`] from B64 into the provided output buffer.
-    #[deprecated(since = "0.5.0", note = "use `decode_b64` instead")]
-    pub fn b64_decode<'a>(&self, buf: &'a mut [u8]) -> Result<&'a [u8]> {
-        self.decode_b64(buf)
-    }
-
-    /// Encode the given byte slice as B64 into a new [`SaltString`].
-    ///
-    /// Returns `Error` if the slice is too long.
-    #[deprecated(since = "0.5.0", note = "use `encode_b64` instead")]
-    pub fn b64_encode(input: &[u8]) -> Result<Self> {
-        Self::encode_b64(input)
     }
 }
 
