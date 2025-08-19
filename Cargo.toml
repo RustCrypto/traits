@@ -15,6 +15,7 @@ members = [
 
 [patch.crates-io]
 digest = { path = "digest" }
+ff = { git = "https://github.com/zkcrypto/ff.git", rev = "8e139e2fb25ab61a5d362394af0a34b10c03d59b" }
 signature = { path = "signature" }
 
 # https://github.com/RustCrypto/utils/pull/1187
