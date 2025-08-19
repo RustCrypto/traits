@@ -62,6 +62,7 @@ where
     };
 
     /// Scalar modulus.
+    // TODO(tarcieri): make `NonZero` or `Odd`?
     pub const MODULUS: C::Uint = C::ORDER;
 
     /// Generate a random [`ScalarPrimitive`].
@@ -254,7 +255,9 @@ where
 
     fn add(self, other: &Self) -> Self {
         Self {
-            inner: self.inner.add_mod(&other.inner, &Self::MODULUS),
+            inner: self
+                .inner
+                .add_mod(&other.inner, &NonZero::new(Self::MODULUS).unwrap()),
         }
     }
 }
@@ -296,7 +299,9 @@ where
 
     fn sub(self, other: &Self) -> Self {
         Self {
-            inner: self.inner.sub_mod(&other.inner, &Self::MODULUS),
+            inner: self
+                .inner
+                .sub_mod(&other.inner, &NonZero::new(Self::MODULUS).unwrap()),
         }
     }
 }
@@ -327,7 +332,7 @@ where
 
     fn neg(self) -> Self {
         Self {
-            inner: self.inner.neg_mod(&Self::MODULUS),
+            inner: self.inner.neg_mod(&NonZero::new(Self::MODULUS).unwrap()),
         }
     }
 }
