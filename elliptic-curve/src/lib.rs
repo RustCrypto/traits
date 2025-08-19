@@ -179,6 +179,7 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
 
     /// Order of this elliptic curve, i.e. number of elements in the scalar
     /// field.
+    // TODO(tarcieri): make `NonZero` or `Odd`?
     const ORDER: Self::Uint;
 }
 
