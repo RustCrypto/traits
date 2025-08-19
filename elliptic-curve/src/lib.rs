@@ -135,6 +135,7 @@ pub use {
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;
 
+use bigint::NonZero;
 use core::{
     fmt::Debug,
     ops::{Add, ShrAssign},
@@ -179,8 +180,9 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
 
     /// Order of this elliptic curve, i.e. number of elements in the scalar
     /// field.
-    // TODO(tarcieri): make `NonZero` or `Odd`?
-    const ORDER: Self::Uint;
+    // TODO(tarcieri): make `Odd`? the prime order subgroup should always have an odd number of
+    // elements, even if there is a cofactor
+    const ORDER: NonZero<Self::Uint>;
 }
 
 /// Marker trait for elliptic curves with prime order.
