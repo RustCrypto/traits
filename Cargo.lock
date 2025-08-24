@@ -197,6 +197,7 @@ version = "0.14.0-rc.12"
 dependencies = [
  "base16ct",
  "crypto-bigint",
+ "der",
  "digest",
  "ff",
  "group",

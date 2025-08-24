@@ -425,6 +425,28 @@ where
     }
 }
 
+#[cfg(feature = "serde")]
+impl<C> PublicKey<C>
+where
+    C: AssociatedOid + CurveArithmetic,
+    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    FieldBytesSize<C>: ModulusSize,
+{
+    /// Encode this [`PublicKey`] as der bytes, placing the result in `output`. This function
+    /// returns a slice containing the encoded DER bytes.
+    fn encode_as_der<'buf>(&self, output: &'buf mut [u8]) -> der::Result<&'buf [u8]> {
+        let public_key_bytes = self.to_encoded_point(false);
+        let subject_public_key = der::asn1::BitStringRef::new(0, public_key_bytes.as_bytes())?;
+
+        let spki = pkcs8::SubjectPublicKeyInfo {
+            algorithm: Self::ALGORITHM_IDENTIFIER,
+            subject_public_key,
+        };
+
+        der::Encode::encode_to_slice(&spki, output)
+    }
+}
+
 #[cfg(all(feature = "alloc", feature = "pkcs8"))]
 impl<C> EncodePublicKey for PublicKey<C>
 where
@@ -436,6 +458,7 @@ where
         let public_key_bytes = self.to_encoded_point(false);
         let subject_public_key = der::asn1::BitStringRef::new(0, public_key_bytes.as_bytes())?;
 
+        // TODO: use `encode_as_der` here?
         pkcs8::SubjectPublicKeyInfo {
             algorithm: Self::ALGORITHM_IDENTIFIER,
             subject_public_key,
@@ -483,7 +506,11 @@ where
     where
         S: ser::Serializer,
     {
-        let der = self.to_public_key_der().map_err(ser::Error::custom)?;
+        // TODO: can we determine DER encoding length up-front? Using `MockCurve` gives
+        // 91 bytes of output, but it feels like that depends on the curve that is being
+        // used here.
+        let mut buf = [0u8; 91];
+        let der = self.encode_as_der(&mut buf).map_err(ser::Error::custom)?;
         serdect::slice::serialize_hex_upper_or_bin(&der, serializer)
     }
 }
