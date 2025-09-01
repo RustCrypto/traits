@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Common cryptographic traits"
 
 [dependencies]
-hybrid-array = "0.3"
+hybrid-array = "0.4"
 
 # optional dependencies
 rand_core = { version = "0.9", optional = true }
