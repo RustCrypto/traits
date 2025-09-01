@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
 - Migrate to `doc_auto_cfg` ([#1370])
 - Exclude pre-1.60 crates from workspace ([#1380])
+- Implement `Buffer` for `&mut impl Buffer` ([#1975])
 - bump `crypto-common` to v0.2.0-pre; MSRV 1.65 ([#1384])
 - Bump `heapless` dependency to v0.8 ([#1398])
 - Bump `hybrid-array` to v0.2.0-pre.6 ([#1432])
