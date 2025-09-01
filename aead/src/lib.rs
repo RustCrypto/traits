@@ -513,13 +513,15 @@ impl<const N: usize> Buffer for arrayvec::ArrayVec<u8, N> {
 }
 
 #[cfg(feature = "heapless")]
-impl<const N: usize> Buffer for heapless::Vec<u8, N> {
+impl<S: heapless::vec::VecStorage<u8> + ?Sized, LenT: heapless::LenType> Buffer
+    for heapless::vec::VecInner<u8, LenT, S>
+{
     fn extend_from_slice(&mut self, other: &[u8]) -> Result<()> {
-        heapless::Vec::extend_from_slice(self, other).map_err(|_| Error)
+        heapless::vec::VecInner::extend_from_slice(self, other).map_err(|_| Error)
     }
 
     fn truncate(&mut self, len: usize) {
-        heapless::Vec::truncate(self, len);
+        heapless::vec::VecInner::truncate(self, len);
     }
 }
 
