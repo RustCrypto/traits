@@ -200,7 +200,7 @@ dependencies = [
 name = "elliptic-curve"
 version = "0.14.0-rc.12"
 dependencies = [
- "base16ct 0.2.0",
+ "base16ct 0.3.0",
  "crypto-bigint",
  "digest",
  "ff",
