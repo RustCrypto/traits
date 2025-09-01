@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - minor documentation error in `AeadCore::TagSize` ([#1351])
 - fixup `hybrid-array` migration ([#1531])
+- Update `heapless` to `0.9.1` and bump MSRV to 1.87 ([#1974])
 
 ### Changed
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
@@ -27,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - enable `missing_debug_implementations` lint and add `Debug` impls ([#1411])
 
 
+[#1974]: https://github.com/RustCrypto/traits/pull/1974
 [#1351]: https://github.com/RustCrypto/traits/pull/1351
 [#1370]: https://github.com/RustCrypto/traits/pull/1370
 [#1380]: https://github.com/RustCrypto/traits/pull/1380

@@ -8,7 +8,7 @@ Collection of traits which describe functionality of cryptographic primitives.
 
 | Name                | Algorithm | Crates.io | Docs  | MSRV |
 |---------------------|-----------|:---------:|:-----:|:----:|
-| [`aead`]            | [Authenticated encryption]    | [![crates.io](https://img.shields.io/crates/v/aead.svg)](https://crates.io/crates/aead) | [![Documentation](https://docs.rs/aead/badge.svg)](https://docs.rs/aead) | ![MSRV 1.85][msrv-1.85] |
+| [`aead`]            | [Authenticated encryption]    | [![crates.io](https://img.shields.io/crates/v/aead.svg)](https://crates.io/crates/aead) | [![Documentation](https://docs.rs/aead/badge.svg)](https://docs.rs/aead) | ![MSRV 1.87][msrv-1.87] |
 | [`async‑signature`] | [Digital signature]           | [![crates.io](https://img.shields.io/crates/v/async-signature.svg)](https://crates.io/crates/async-signature) | [![Documentation](https://docs.rs/async-signature/badge.svg)](https://docs.rs/async-signature) | ![MSRV 1.85][msrv-1.85] |
 | [`cipher`]          | [Block] and [stream cipher]   | [![crates.io](https://img.shields.io/crates/v/cipher.svg)](https://crates.io/crates/cipher) | [![Documentation](https://docs.rs/cipher/badge.svg)](https://docs.rs/cipher) | ![MSRV 1.85][msrv-1.85] |
 | [`crypto‑common`]      | Common cryptographic traits | [![crates.io](https://img.shields.io/crates/v/crypto-common.svg)](https://crates.io/crates/crypto-common) | [![Documentation](https://docs.rs/crypto-common/badge.svg)](https://docs.rs/crypto-common) | ![MSRV 1.85][msrv-1.85] |
@@ -46,6 +46,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [deps-image]: https://deps.rs/repo/github/RustCrypto/traits/status.svg
 [deps-link]: https://deps.rs/repo/github/RustCrypto/traits
 [msrv-1.85]: https://img.shields.io/badge/rustc-1.85.0+-blue.svg
+[msrv-1.87]: https://img.shields.io/badge/rustc-1.87.0+-blue.svg
 
 [//]: # (crates)
 
