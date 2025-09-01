@@ -212,7 +212,7 @@ dependencies = [
  "pkcs8",
  "rand_core",
  "sec1",
- "serdect 0.3.0",
+ "serdect",
  "sha2",
  "sha3",
  "subtle",
@@ -464,7 +464,7 @@ dependencies = [
  "base16ct 0.3.0",
  "der",
  "hybrid-array",
- "serdect 0.4.0",
+ "serdect",
  "subtle",
  "zeroize",
 ]
@@ -487,16 +487,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.106",
-]
-
-[[package]]
-name = "serdect"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f42f67da2385b51a5f9652db9c93d78aeaf7610bf5ec366080b6de810604af53"
-dependencies = [
- "base16ct 0.2.0",
- "serde",
 ]
 
 [[package]]
