@@ -469,6 +469,24 @@ pub trait Buffer: AsRef<[u8]> + AsMut<[u8]> {
     fn truncate(&mut self, len: usize);
 }
 
+impl<C: Buffer> Buffer for &mut C {
+    fn extend_from_slice(&mut self, other: &[u8]) -> Result<()> {
+        C::extend_from_slice(self, other)
+    }
+
+    fn truncate(&mut self, len: usize) {
+        C::truncate(self, len);
+    }
+
+    fn len(&self) -> usize {
+        C::len(self)
+    }
+
+    fn is_empty(&self) -> bool {
+        C::is_empty(self)
+    }
+}
+
 #[cfg(feature = "alloc")]
 impl Buffer for Vec<u8> {
     fn extend_from_slice(&mut self, other: &[u8]) -> Result<()> {
