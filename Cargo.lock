@@ -436,8 +436,9 @@ dependencies = [
 
 [[package]]
 name = "sec1"
-version = "0.8.0-rc.8"
-source = "git+https://github.com/RustCrypto/formats#4f55e5849921b1754f73903e612ca5ea3cb5cf69"
+version = "0.8.0-rc.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f5e67a3c9fb9a8f065af9fa30d65812fcc16a66cbf911eff1f6946957ce48f16"
 dependencies = [
  "base16ct",
  "der",
