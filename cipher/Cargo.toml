@@ -14,11 +14,11 @@ description = "Traits for describing block ciphers and stream ciphers"
 
 [dependencies]
 crypto-common = { version = "0.2.0-rc.3", path = "../crypto-common" }
-inout = "0.2.0-rc.4"
+inout = "0.2.0-rc.6"
 
 # optional dependencies
 blobby = { version = "0.4.0-pre.0", optional = true }
-block-buffer = { version = "0.11.0-rc.4", optional = true}
+block-buffer = { version = "0.11.0-rc.5", optional = true }
 zeroize = { version = "1.8", optional = true, default-features = false }
 
 [features]
