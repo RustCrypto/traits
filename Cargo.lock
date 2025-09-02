@@ -15,7 +15,7 @@ dependencies = [
 
 [[package]]
 name = "aead"
-version = "0.6.0-rc.1"
+version = "0.6.0-rc.2"
 dependencies = [
  "arrayvec",
  "blobby",
@@ -111,7 +111,7 @@ checksum = "2fd1289c04a9ea8cb22300a459a72a385d7c73d3259e2ed7dcb2af674838cfa9"
 
 [[package]]
 name = "cipher"
-version = "0.5.0-rc.0"
+version = "0.5.0-rc.1"
 dependencies = [
  "blobby",
  "block-buffer",
@@ -174,7 +174,7 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.11.0-rc.0"
+version = "0.11.0-rc.1"
 dependencies = [
  "blobby",
  "block-buffer",
@@ -479,7 +479,7 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "3.0.0-rc.2"
+version = "3.0.0-rc.3"
 dependencies = [
  "digest",
  "rand_core",
@@ -549,7 +549,7 @@ checksum = "5a5f39404a5da50712a4c1eecf25e90dd62b613502b7e925fd4e4d19b5c96512"
 
 [[package]]
 name = "universal-hash"
-version = "0.6.0-rc.1"
+version = "0.6.0-rc.2"
 dependencies = [
  "crypto-common",
  "subtle",

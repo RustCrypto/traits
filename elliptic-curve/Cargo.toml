@@ -18,14 +18,14 @@ and public/secret keys composed thereof.
 
 [dependencies]
 base16ct = "0.3"
-crypto-bigint = { version = "0.7.0-rc.1", default-features = false, features = ["rand_core", "hybrid-array", "zeroize"] }
+crypto-bigint = { version = "0.7.0-rc.3", default-features = false, features = ["rand_core", "hybrid-array", "zeroize"] }
 hybrid-array = { version = "0.4", default-features = false, features = ["zeroize"] }
 rand_core = { version = "0.9.0", default-features = false }
 subtle = { version = "2.6", default-features = false }
 zeroize = { version = "1.7", default-features = false }
 
 # optional dependencies
-digest = { version = "0.11.0-rc.0", optional = true }
+digest = { version = "0.11.0-rc.1", optional = true }
 ff = { version = "=0.14.0-pre.0", optional = true, default-features = false }
 group = { version = "=0.14.0-pre.0", optional = true, default-features = false }
 hkdf = { version = "0.13.0-rc.0", optional = true, default-features = false }
