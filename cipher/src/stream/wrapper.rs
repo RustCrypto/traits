@@ -37,6 +37,14 @@ impl<T: StreamCipherCore + fmt::Debug> fmt::Debug for StreamCipherCoreWrapper<T>
 }
 
 impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
+    /// Initialize from a [`StreamCipherCore`] instance.
+    pub fn from_core(core: T) -> Self {
+        Self {
+            core,
+            buffer: Default::default(),
+        }
+    }
+
     fn check_remaining(&self, data_len: usize) -> Result<(), StreamCipherError> {
         let rem_blocks = match self.core.remaining_blocks() {
             Some(v) => v,
