@@ -23,5 +23,4 @@ blobby = { git = "https://github.com/RustCrypto/utils" }
 # https://github.com/RustCrypto/utils/pull/1200
 # https://github.com/RustCrypto/utils/pull/1201
 # https://github.com/RustCrypto/utils/pull/1208
-crypto-bigint = { git = "https://github.com/RustCrypto/crypto-bigint" }
 sec1 = { git = "https://github.com/RustCrypto/formats" }
