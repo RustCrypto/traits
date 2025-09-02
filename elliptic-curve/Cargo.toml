@@ -44,6 +44,7 @@ alloc = [
     "base16ct/alloc",
     "ff?/alloc",
     "group?/alloc",
+    "hybrid-array/alloc",
     "pkcs8?/alloc",
     "sec1?/alloc",
     "zeroize/alloc"
