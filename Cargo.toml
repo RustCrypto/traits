@@ -27,4 +27,4 @@ block-buffer = { git = "https://github.com/RustCrypto/utils" }
 block-padding = { git = "https://github.com/RustCrypto/utils" }
 crypto-bigint = { git = "https://github.com/RustCrypto/crypto-bigint" }
 inout = { git = "https://github.com/RustCrypto/utils" }
-sec1 = { git = "https://github.com/RustCrypto/formats", branch = "sec1/hybrid-array-v0.4" }
+sec1 = { git = "https://github.com/RustCrypto/formats" }

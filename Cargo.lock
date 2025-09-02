@@ -433,7 +433,7 @@ dependencies = [
 [[package]]
 name = "sec1"
 version = "0.8.0-rc.8"
-source = "git+https://github.com/RustCrypto/formats?branch=sec1%2Fhybrid-array-v0.4#fdc1f293f71bfbbee5e89997b1ec17b13e632c61"
+source = "git+https://github.com/RustCrypto/formats#4f55e5849921b1754f73903e612ca5ea3cb5cf69"
 dependencies = [
  "base16ct",
  "der",
