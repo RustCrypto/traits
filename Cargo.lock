@@ -154,7 +154,7 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.2.0-rc.3"
+version = "0.2.0-rc.4"
 dependencies = [
  "hybrid-array",
  "rand_core",
