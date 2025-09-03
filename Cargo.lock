@@ -288,18 +288,18 @@ checksum = "bcaaec4551594c969335c98c903c1397853d4198408ea609190f420500f6be71"
 
 [[package]]
 name = "hkdf"
-version = "0.13.0-rc.0"
+version = "0.13.0-rc.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6738bc5110ee31b066339f0c9454db29a93db3b0484bbf2afa8a7e9cebc62141"
+checksum = "7984b5d6605e93b2787c95aef698b3c28933a4d7f9fd09d46f54130da1efaee0"
 dependencies = [
  "hmac",
 ]
 
 [[package]]
 name = "hmac"
-version = "0.13.0-rc.0"
+version = "0.13.0-rc.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8dc6a2fcc35ab09136c6df2cdf9ca49790701420a3a6b5db0987dddbabc79b21"
+checksum = "49e206bca159aebaaed410f5e78b2fe56bfc0dd5b19ecae922813b8556b8b07e"
 dependencies = [
  "digest",
 ]
