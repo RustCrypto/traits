@@ -61,7 +61,6 @@
 //! When the `serde` feature of this crate is enabled, `Serialize` and
 //! `Deserialize` impls are provided for the following types:
 //!
-//! - [`JwkEcKey`]
 //! - [`PublicKey`]
 //! - [`ScalarPrimitive`]
 //!
@@ -108,9 +107,6 @@ mod arithmetic;
 #[cfg(feature = "arithmetic")]
 mod public_key;
 
-#[cfg(feature = "jwk")]
-mod jwk;
-
 pub use crate::{
     error::{Error, Result},
     field::{FieldBytes, FieldBytesEncoding, FieldBytesSize},
@@ -136,12 +132,10 @@ pub use {
     group::{self, Curve as CurveGroup, Group},
 };
 
-#[cfg(feature = "jwk")]
-pub use crate::jwk::{JwkEcKey, JwkParameters};
-
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;
 
+use bigint::NonZero;
 use core::{
     fmt::Debug,
     ops::{Add, ShrAssign},
@@ -186,7 +180,9 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
 
     /// Order of this elliptic curve, i.e. number of elements in the scalar
     /// field.
-    const ORDER: Self::Uint;
+    // TODO(tarcieri): make `Odd`? the prime order subgroup should always have an odd number of
+    // elements, even if there is a cofactor
+    const ORDER: NonZero<Self::Uint>;
 }
 
 /// Marker trait for elliptic curves with prime order.

@@ -62,12 +62,12 @@ where
     };
 
     /// Scalar modulus.
-    pub const MODULUS: C::Uint = C::ORDER;
+    pub const MODULUS: NonZero<C::Uint> = C::ORDER;
 
     /// Generate a random [`ScalarPrimitive`].
     pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
         Self {
-            inner: C::Uint::random_mod(rng, &NonZero::new(Self::MODULUS).unwrap()),
+            inner: C::Uint::random_mod(rng, &Self::MODULUS),
         }
     }
 
@@ -357,7 +357,7 @@ where
     C: Curve,
 {
     fn is_high(&self) -> Choice {
-        let n_2 = C::ORDER >> 1u32;
+        let n_2 = Self::MODULUS.get() >> 1u32;
         self.inner.ct_gt(&n_2)
     }
 }

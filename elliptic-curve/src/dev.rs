@@ -6,7 +6,7 @@
 use crate::{
     BatchNormalize, Curve, CurveArithmetic, CurveGroup, FieldBytesEncoding, PrimeCurve,
     array::typenum::U32,
-    bigint::{Limb, U256},
+    bigint::{Limb, NonZero, U256},
     error::{Error, Result},
     ops::{Invert, LinearCombination, Reduce, ShrAssign},
     point::{AffineCoordinates, NonIdentity},
@@ -30,9 +30,6 @@ use alloc::vec::Vec;
 
 #[cfg(feature = "bits")]
 use ff::PrimeFieldBits;
-
-#[cfg(feature = "jwk")]
-use crate::JwkParameters;
 
 /// Pseudo-coordinate for fixed-based scalar mult output
 pub const PSEUDO_COORDINATE_FIXED_BASE_MUL: [u8; 32] =
@@ -73,8 +70,9 @@ impl Curve for MockCurve {
     type FieldBytesSize = U32;
     type Uint = U256;
 
-    const ORDER: U256 =
-        U256::from_be_hex("ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551");
+    const ORDER: NonZero<U256> = NonZero::<U256>::from_be_hex(
+        "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
+    );
 }
 
 impl PrimeCurve for MockCurve {}
@@ -88,11 +86,6 @@ impl CurveArithmetic for MockCurve {
 impl AssociatedOid for MockCurve {
     /// OID for NIST P-256
     const OID: pkcs8::ObjectIdentifier = pkcs8::ObjectIdentifier::new_unwrap("1.2.840.10045.3.1.7");
-}
-
-#[cfg(feature = "jwk")]
-impl JwkParameters for MockCurve {
-    const CRV: &'static str = "P-256";
 }
 
 /// Example scalar type
@@ -366,16 +359,16 @@ impl Invert for Scalar {
 }
 
 impl Reduce<U256> for Scalar {
-    type Bytes = FieldBytes;
-
-    fn reduce(w: U256) -> Self {
+    fn reduce(w: &U256) -> Self {
         let (r, underflow) = w.borrowing_sub(&MockCurve::ORDER, Limb::ZERO);
         let underflow = Choice::from((underflow.0 >> (Limb::BITS - 1)) as u8);
-        let reduced = U256::conditional_select(&w, &r, !underflow);
+        let reduced = U256::conditional_select(w, &r, !underflow);
         Self(ScalarPrimitive::new(reduced).unwrap())
     }
+}
 
-    fn reduce_bytes(_: &FieldBytes) -> Self {
+impl Reduce<FieldBytes> for Scalar {
+    fn reduce(_w: &FieldBytes) -> Self {
         todo!()
     }
 }

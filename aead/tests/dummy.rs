@@ -1,5 +1,6 @@
 //! This module defines dummy (horribly insecure!) AEAD implementations
 //! to test implementation of the AEAD traits and helper macros in the `dev` module.
+#![cfg(feature = "dev")]
 use aead::{
     AeadCore, AeadInOut, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag, TagPosition,
     array::Array, consts::U8,
@@ -91,7 +92,7 @@ impl DummyAead {
     }
 }
 
-struct PrefixDummyAead(DummyAead);
+pub struct PrefixDummyAead(DummyAead);
 
 impl KeySizeUser for PrefixDummyAead {
     type KeySize = U8;
@@ -130,7 +131,7 @@ impl AeadInOut for PrefixDummyAead {
     }
 }
 
-struct PostfixDummyAead(DummyAead);
+pub struct PostfixDummyAead(DummyAead);
 
 impl KeySizeUser for PostfixDummyAead {
     type KeySize = U8;
@@ -169,7 +170,5 @@ impl AeadInOut for PostfixDummyAead {
     }
 }
 
-#[cfg(feature = "dev")]
 aead::new_test!(dummy_prefix, "prefix", PrefixDummyAead);
-#[cfg(feature = "dev")]
 aead::new_test!(dummy_postfix, "postfix", PostfixDummyAead);

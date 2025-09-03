@@ -20,9 +20,6 @@ use crate::{
     rand_core::{CryptoRng, TryCryptoRng},
 };
 
-#[cfg(feature = "jwk")]
-use crate::jwk::{JwkEcKey, JwkParameters};
-
 #[cfg(feature = "pem")]
 use pem_rfc7468::{self as pem, PemLabel};
 
@@ -45,11 +42,8 @@ use {
     sec1::der::Encode,
 };
 
-#[cfg(all(feature = "arithmetic", any(feature = "jwk", feature = "pem")))]
+#[cfg(all(feature = "arithmetic", feature = "pem"))]
 use alloc::string::String;
-
-#[cfg(all(feature = "arithmetic", feature = "jwk"))]
-use alloc::string::ToString;
 
 #[cfg(all(doc, feature = "pkcs8"))]
 use {crate::pkcs8::DecodePrivateKey, core::str::FromStr};
@@ -277,48 +271,6 @@ where
             })
             .map(Zeroizing::new)
             .ok_or(Error)
-    }
-
-    /// Parse a [`JwkEcKey`] JSON Web Key (JWK) into a [`SecretKey`].
-    #[cfg(feature = "jwk")]
-    pub fn from_jwk(jwk: &JwkEcKey) -> Result<Self>
-    where
-        C: JwkParameters + ValidatePublicKey,
-        FieldBytesSize<C>: ModulusSize,
-    {
-        Self::try_from(jwk)
-    }
-
-    /// Parse a string containing a JSON Web Key (JWK) into a [`SecretKey`].
-    #[cfg(feature = "jwk")]
-    pub fn from_jwk_str(jwk: &str) -> Result<Self>
-    where
-        C: JwkParameters + ValidatePublicKey,
-        FieldBytesSize<C>: ModulusSize,
-    {
-        jwk.parse::<JwkEcKey>().and_then(|jwk| Self::from_jwk(&jwk))
-    }
-
-    /// Serialize this secret key as [`JwkEcKey`] JSON Web Key (JWK).
-    #[cfg(all(feature = "arithmetic", feature = "jwk"))]
-    pub fn to_jwk(&self) -> JwkEcKey
-    where
-        C: CurveArithmetic + JwkParameters,
-        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldBytesSize<C>: ModulusSize,
-    {
-        self.into()
-    }
-
-    /// Serialize this secret key as JSON Web Key (JWK) string.
-    #[cfg(all(feature = "arithmetic", feature = "jwk"))]
-    pub fn to_jwk_string(&self) -> Zeroizing<String>
-    where
-        C: CurveArithmetic + JwkParameters,
-        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-        FieldBytesSize<C>: ModulusSize,
-    {
-        Zeroizing::new(self.to_jwk().to_string())
     }
 }
 

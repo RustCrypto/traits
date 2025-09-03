@@ -176,54 +176,32 @@ macro_rules! buffer_ct_variable {
         where
             $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
-            type SerializedStateSize = $crate::typenum::Add1<$crate::typenum::Sum<
-                <
-                    $crate::block_api::CtOutWrapper<$core_ty, $out_size>
-                    as $crate::crypto_common::hazmat::SerializableState
-                >::SerializedStateSize,
-                <$core_ty as $crate::block_api::BlockSizeUser>::BlockSize,
-            >>;
+            type SerializedStateSize = $crate::typenum::Sum<
+                <$core_ty as $crate::crypto_common::hazmat::SerializableState>::SerializedStateSize,
+                $crate::block_buffer::SerializedBufferSize<
+                    <$core_ty as $crate::block_api::BlockSizeUser>::BlockSize,
+                    <$core_ty as $crate::block_api::BufferKindUser>::BufferKind,
+                >
+            >;
 
             #[inline]
             fn serialize(&self) -> $crate::crypto_common::hazmat::SerializedState<Self> {
-                use $crate::{
-                    array::Array,
-                    consts::U1,
-                    block_buffer::BlockBuffer,
-                    crypto_common::hazmat::SerializableState,
-                };
-
                 let serialized_core = self.core.serialize();
-                let pos = u8::try_from(self.buffer.get_pos()).unwrap();
-                let serialized_pos: Array<u8, U1> = Array([pos]);
-                let serialized_data = self.buffer.clone().pad_with_zeros();
-
-                serialized_core
-                    .concat(serialized_pos)
-                    .concat(serialized_data)
+                let serialized_buf = self.buffer.serialize();
+                serialized_core.concat(serialized_buf)
             }
 
             #[inline]
             fn deserialize(
                 serialized_state: &$crate::crypto_common::hazmat::SerializedState<Self>,
             ) -> Result<Self, $crate::crypto_common::hazmat::DeserializeStateError> {
-                use $crate::{
-                    block_buffer::BlockBuffer,
-                    consts::U1,
-                    block_api::CtOutWrapper,
-                    crypto_common::hazmat::{SerializableState, DeserializeStateError},
-                };
+                use $crate::crypto_common::hazmat::{SerializableState, DeserializeStateError};
 
-                let (serialized_core, remaining_buffer) = serialized_state
-                    .split_ref::<<
-                        CtOutWrapper<$core_ty, $out_size>
-                        as SerializableState
-                    >::SerializedStateSize>();
-                let (serialized_pos, serialized_data) = remaining_buffer.split_ref::<U1>();
+                let (serialized_core, serialized_buf) = serialized_state
+                    .split_ref::<<$core_ty as SerializableState>::SerializedStateSize>();
 
                 let core = SerializableState::deserialize(serialized_core)?;
-                let pos = usize::from(serialized_pos[0]);
-                let buffer = BlockBuffer::try_new(&serialized_data[..pos])
+                let buffer = $crate::block_buffer::BlockBuffer::deserialize(serialized_buf)
                     .map_err(|_| DeserializeStateError)?;
 
                 Ok(Self { core, buffer })

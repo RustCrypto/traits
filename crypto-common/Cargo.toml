@@ -1,6 +1,6 @@
 [package]
 name = "crypto-common"
-version = "0.2.0-rc.3"
+version = "0.2.0-rc.4"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Common cryptographic traits"
 
 [dependencies]
-hybrid-array = "0.3"
+hybrid-array = "0.4"
 
 # optional dependencies
 rand_core = { version = "0.9", optional = true }

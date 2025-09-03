@@ -1,6 +1,6 @@
 [package]
 name = "aead"
-version = "0.6.0-rc.1"
+version = "0.6.0-rc.2"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -16,8 +16,8 @@ such as AES-GCM as ChaCha20Poly1305, which provide a high-level API
 """
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.3", path = "../crypto-common" }
-inout = "0.2.0-rc.4"
+crypto-common = { version = "0.2.0-rc.4", path = "../crypto-common" }
+inout = "0.2.0-rc.6"
 
 # optional dependencies
 arrayvec = { version = "0.7", optional = true, default-features = false }

@@ -1,6 +1,6 @@
 [package]
 name = "universal-hash"
-version = "0.6.0-rc.1"
+version = "0.6.0-rc.2"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Traits which describe the functionality of universal hash functions (UHFs)"
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.3", path = "../crypto-common" }
+crypto-common = { version = "0.2.0-rc.4", path = "../crypto-common" }
 subtle = { version = "2.4", default-features = false }
 
 [package.metadata.docs.rs]

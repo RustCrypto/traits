@@ -9,6 +9,7 @@ use inout::{InOutBuf, NotEqualError};
 
 mod core_api;
 mod errors;
+#[cfg(feature = "stream-wrapper")]
 mod wrapper;
 
 pub use core_api::{
@@ -16,6 +17,7 @@ pub use core_api::{
     StreamCipherSeekCore,
 };
 pub use errors::{OverflowError, StreamCipherError};
+#[cfg(feature = "stream-wrapper")]
 pub use wrapper::StreamCipherCoreWrapper;
 
 /// Marker trait for block-level asynchronous stream ciphers
