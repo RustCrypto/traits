@@ -20,7 +20,7 @@ dependencies = [
  "arrayvec",
  "blobby",
  "bytes",
- "crypto-common",
+ "crypto-common 0.2.0-rc.3",
  "heapless",
  "inout",
 ]
@@ -132,8 +132,8 @@ version = "0.6.0-pre"
 dependencies = [
  "aead",
  "cipher",
- "crypto-common",
- "digest",
+ "crypto-common 0.2.0-rc.3",
+ "digest 0.11.0-rc.0",
  "elliptic-curve",
  "password-hash",
  "signature",
@@ -162,6 +162,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crypto-common"
+version = "0.2.0-rc.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a23fa214dea9efd4dacee5a5614646b30216ae0f05d4bb51bafb50e9da1c5be"
+dependencies = [
+ "hybrid-array",
+]
+
+[[package]]
 name = "der"
 version = "0.8.0-rc.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -179,7 +188,7 @@ dependencies = [
  "blobby",
  "block-buffer",
  "const-oid",
- "crypto-common",
+ "crypto-common 0.2.0-rc.3",
  "subtle",
  "zeroize",
 ]
@@ -190,7 +199,7 @@ version = "0.14.0-rc.13"
 dependencies = [
  "base16ct",
  "crypto-bigint",
- "digest",
+ "digest 0.11.0-rc.0",
  "ff",
  "group",
  "hex-literal",
@@ -301,7 +310,7 @@ version = "0.13.0-rc.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49e206bca159aebaaed410f5e78b2fe56bfc0dd5b19ecae922813b8556b8b07e"
 dependencies = [
- "digest",
+ "digest 0.11.0-rc.0",
 ]
 
 [[package]]
@@ -482,7 +491,7 @@ dependencies = [
 name = "signature"
 version = "3.0.0-rc.3"
 dependencies = [
- "digest",
+ "digest 0.11.0-rc.0",
  "rand_core",
 ]
 
@@ -552,8 +561,16 @@ checksum = "5a5f39404a5da50712a4c1eecf25e90dd62b613502b7e925fd4e4d19b5c96512"
 name = "universal-hash"
 version = "0.6.0-rc.2"
 dependencies = [
- "crypto-common",
+ "crypto-common 0.2.0-rc.3",
  "subtle",
+]
+
+[[package]]
+name = "vrf"
+version = "0.1.0"
+dependencies = [
+ "digest 0.11.0-pre.10",
+ "signature",
 ]
 
 [[package]]
