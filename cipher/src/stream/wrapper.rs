@@ -45,6 +45,11 @@ impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
         }
     }
 
+    /// Get reference to the wrapped [`StreamCipherCore`] instance.
+    pub fn get_core(&self) -> &T {
+        &self.core
+    }
+
     fn check_remaining(&self, data_len: usize) -> Result<(), StreamCipherError> {
         let rem_blocks = match self.core.remaining_blocks() {
             Some(v) => v,
