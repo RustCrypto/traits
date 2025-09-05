@@ -466,6 +466,10 @@ pub enum AffinePoint {
 impl AffineCoordinates for AffinePoint {
     type FieldRepr = FieldBytes;
 
+    fn from_coordinates(_: &FieldBytes, _: &FieldBytes) -> CtOption<Self> {
+        unimplemented!();
+    }
+
     fn x(&self) -> FieldBytes {
         unimplemented!();
     }
