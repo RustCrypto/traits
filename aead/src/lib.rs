@@ -30,8 +30,6 @@ pub use arrayvec;
 pub use bytes;
 #[cfg(feature = "rand_core")]
 pub use crypto_common::rand_core;
-#[cfg(feature = "heapless")]
-pub use heapless;
 pub use inout;
 
 use core::fmt;
@@ -509,17 +507,6 @@ impl<const N: usize> Buffer for arrayvec::ArrayVec<u8, N> {
 
     fn truncate(&mut self, len: usize) {
         arrayvec::ArrayVec::truncate(self, len);
-    }
-}
-
-#[cfg(feature = "heapless")]
-impl<const N: usize> Buffer for heapless::Vec<u8, N> {
-    fn extend_from_slice(&mut self, other: &[u8]) -> Result<()> {
-        heapless::Vec::extend_from_slice(self, other).map_err(|_| Error)
-    }
-
-    fn truncate(&mut self, len: usize) {
-        heapless::Vec::truncate(self, len);
     }
 }
 

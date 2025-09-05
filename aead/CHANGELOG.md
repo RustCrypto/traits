@@ -7,15 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 ### Fixed
-- minor documentation error in `AeadCore::TagSize` ([#1351])
-- fixup `hybrid-array` migration ([#1531])
+- Minor documentation error in `AeadCore::TagSize` ([#1351])
+- Fixup `hybrid-array` migration ([#1531])
 
 ### Changed
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
 - Migrate to `doc_auto_cfg` ([#1370])
 - Exclude pre-1.60 crates from workspace ([#1380])
-- bump `crypto-common` to v0.2.0-pre; MSRV 1.65 ([#1384])
-- Bump `heapless` dependency to v0.8 ([#1398])
+- Bump `crypto-common` to v0.2.0-pre; MSRV 1.65 ([#1384])
 - Bump `hybrid-array` to v0.2.0-pre.6 ([#1432])
 - Bump `crypto-common` to v0.2.0-pre.1 ([#1433])
 - Bump `crypto-common` to v0.2.0-pre.2 ([#1436])
@@ -24,14 +23,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `crypto-common` to v0.2.0-pre.5 ([#1496])
 
 ### Added
-- enable `missing_debug_implementations` lint and add `Debug` impls ([#1411])
+- Enable `missing_debug_implementations` lint and add `Debug` impls ([#1411])
+
+### Removed
+- `heapless` support ([#1999])
 
 
 [#1351]: https://github.com/RustCrypto/traits/pull/1351
 [#1370]: https://github.com/RustCrypto/traits/pull/1370
 [#1380]: https://github.com/RustCrypto/traits/pull/1380
 [#1384]: https://github.com/RustCrypto/traits/pull/1384
-[#1398]: https://github.com/RustCrypto/traits/pull/1398
 [#1411]: https://github.com/RustCrypto/traits/pull/1411
 [#1432]: https://github.com/RustCrypto/traits/pull/1432
 [#1433]: https://github.com/RustCrypto/traits/pull/1433
@@ -41,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#1496]: https://github.com/RustCrypto/traits/pull/1496
 [#1531]: https://github.com/RustCrypto/traits/pull/1531
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
+[#1999]: https://github.com/RustCrypto/traits/pull/1999
 
 ## 0.5.2 (2023-04-02)
 ### Added
