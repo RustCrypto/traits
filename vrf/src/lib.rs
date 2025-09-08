@@ -20,12 +20,6 @@
 //!
 //! Traits are defined to match the functionality of verifiable random functions in
 //! [RFC9381](https://www.rfc-editor.org/rfc/rfc9381.pdf).
-//!
-//! ## Verifying Proofs
-//!
-//! Trait based proof verification is delegated to the [`signature::Verifier`] trait, defined in
-//! the `signature` crate and re-exported here. The message corresponds to the `alpha` or
-//! `alpha_string` in RFC9381 (see section 1.2), and the signature corresponds to the [`Proof`].
 
 use digest::{Output, OutputSizeUser};
 
