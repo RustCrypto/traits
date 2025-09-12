@@ -140,22 +140,20 @@ use core::{
 };
 use hybrid_array::ArraySize;
 
-/// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic
-/// curve public key cryptography (`id-ecPublicKey`).
+/// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic curve public key
+/// cryptography (`id-ecPublicKey`).
 ///
-/// <http://oid-info.com/get/1.2.840.10045.2.1>
+/// <https://oid-base.com/get/1.2.840.10045.2.1>
 #[cfg(feature = "pkcs8")]
 pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
     pkcs8::ObjectIdentifier::new_unwrap("1.2.840.10045.2.1");
 
 /// Elliptic curve.
 ///
-/// This trait is intended to be impl'd by a ZST which represents a concrete
-/// elliptic curve.
+/// This trait is intended to be impl'd by a ZST which represents a concrete elliptic curve.
 ///
-/// Other traits in this crate which are bounded by [`Curve`] are intended to
-/// be impl'd by these ZSTs, facilitating types which are generic over elliptic
-/// curves (e.g. [`SecretKey`]).
+/// Other traits in this crate which are bounded by [`Curve`] are intended to be impl'd by these
+/// ZSTs, facilitating types which are generic over elliptic curves (e.g. [`SecretKey`]).
 pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sync {
     /// Size of a serialized field element in bytes.
     ///
