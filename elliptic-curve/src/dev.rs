@@ -6,7 +6,7 @@
 use crate::{
     BatchNormalize, Curve, CurveArithmetic, CurveGroup, FieldBytesEncoding, PrimeCurve,
     array::typenum::U32,
-    bigint::{Limb, NonZero, U256},
+    bigint::{Limb, Odd, U256},
     error::{Error, Result},
     ops::{Invert, LinearCombination, Reduce, ShrAssign},
     point::{AffineCoordinates, NonIdentity},
@@ -70,7 +70,7 @@ impl Curve for MockCurve {
     type FieldBytesSize = U32;
     type Uint = U256;
 
-    const ORDER: NonZero<U256> = NonZero::<U256>::from_be_hex(
+    const ORDER: Odd<U256> = Odd::<U256>::from_be_hex(
         "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
     );
 }

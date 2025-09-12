@@ -3,7 +3,7 @@
 use crate::{
     Curve, Error, FieldBytes, FieldBytesEncoding, Result,
     array::Array,
-    bigint::{Limb, NonZero, prelude::*},
+    bigint::{Limb, Odd, prelude::*},
     scalar::FromUintUnchecked,
     scalar::IsHigh,
 };
@@ -62,12 +62,12 @@ where
     };
 
     /// Scalar modulus.
-    pub const MODULUS: NonZero<C::Uint> = C::ORDER;
+    pub const MODULUS: Odd<C::Uint> = C::ORDER;
 
     /// Generate a random [`ScalarPrimitive`].
     pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
         Self {
-            inner: C::Uint::random_mod(rng, &Self::MODULUS),
+            inner: C::Uint::random_mod(rng, Self::MODULUS.as_nz_ref()),
         }
     }
 
@@ -254,7 +254,7 @@ where
 
     fn add(self, other: &Self) -> Self {
         Self {
-            inner: self.inner.add_mod(&other.inner, &Self::MODULUS),
+            inner: self.inner.add_mod(&other.inner, Self::MODULUS.as_nz_ref()),
         }
     }
 }
@@ -296,7 +296,7 @@ where
 
     fn sub(self, other: &Self) -> Self {
         Self {
-            inner: self.inner.sub_mod(&other.inner, &Self::MODULUS),
+            inner: self.inner.sub_mod(&other.inner, Self::MODULUS.as_nz_ref()),
         }
     }
 }
@@ -327,7 +327,7 @@ where
 
     fn neg(self) -> Self {
         Self {
-            inner: self.inner.neg_mod(&Self::MODULUS),
+            inner: self.inner.neg_mod(Self::MODULUS.as_nz_ref()),
         }
     }
 }
