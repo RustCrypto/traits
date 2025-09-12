@@ -18,7 +18,7 @@ and public/secret keys composed thereof.
 
 [dependencies]
 base16ct = "0.3"
-crypto-bigint = { version = "0.7.0-rc.4", default-features = false, features = ["rand_core", "hybrid-array", "zeroize"] }
+crypto-bigint = { version = "0.7.0-rc.5", default-features = false, features = ["rand_core", "hybrid-array", "zeroize"] }
 hybrid-array = { version = "0.4", default-features = false, features = ["zeroize"] }
 rand_core = { version = "0.9.0", default-features = false }
 subtle = { version = "2.6", default-features = false }
