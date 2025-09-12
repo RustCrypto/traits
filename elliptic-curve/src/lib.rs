@@ -94,8 +94,6 @@ pub mod ecdh;
 pub mod ops;
 #[cfg(feature = "sec1")]
 pub mod sec1;
-#[cfg(feature = "arithmetic")]
-pub mod weierstrass;
 
 mod error;
 mod field;
