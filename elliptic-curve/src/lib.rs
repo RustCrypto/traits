@@ -163,13 +163,11 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
 
     /// Integer type used to represent field elements of this elliptic curve.
     type Uint: bigint::ArrayEncoding
-        + bigint::AddMod<Output = Self::Uint>
         + bigint::Encoding
         + bigint::FixedInteger
-        + bigint::NegMod<Output = Self::Uint>
         + bigint::Random
         + bigint::RandomMod
-        + bigint::SubMod<Output = Self::Uint>
+        + bigint::Unsigned
         + zeroize::Zeroize
         + FieldBytesEncoding<Self>
         + ShrAssign<usize>;
