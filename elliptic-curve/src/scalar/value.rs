@@ -1,4 +1,4 @@
-//! Generic scalar type with primitive functionality.
+//!  Integer values within the range of a given [`Curve`]'s scalar modulus.
 
 use crate::{
     Curve, Error, FieldBytes, FieldBytesEncoding, Result,
@@ -27,11 +27,10 @@ use super::{CurveArithmetic, Scalar};
 #[cfg(feature = "serde")]
 use serdect::serde::{Deserialize, Serialize, de, ser};
 
-/// Generic scalar type with primitive functionality.
+/// Integer values within the range of a given [`Curve`]'s scalar modulus.
 ///
 /// This type provides a baseline level of scalar arithmetic functionality
-/// which is always available for all curves, regardless of if they implement
-/// any arithmetic traits.
+/// which is always available for all curves.
 ///
 /// # `serde` support
 ///
@@ -40,14 +39,14 @@ use serdect::serde::{Deserialize, Serialize, de, ser};
 ///
 /// The serialization is a fixed-width big endian encoding. When used with
 /// textual formats, the binary data is encoded as hexadecimal.
-// TODO(tarcieri): use `crypto-bigint`'s `Residue` type, expose more functionality?
+// TODO(tarcieri): replace with `primefield`? RustCrypto/elliptic-curves#1192
 #[derive(Copy, Clone, Debug, Default)]
-pub struct ScalarPrimitive<C: Curve> {
+pub struct ScalarValue<C: Curve> {
     /// Inner unsigned integer type.
     inner: C::Uint,
 }
 
-impl<C> ScalarPrimitive<C>
+impl<C> ScalarValue<C>
 where
     C: Curve,
 {
@@ -64,7 +63,7 @@ where
     /// Scalar modulus.
     pub const MODULUS: Odd<C::Uint> = C::ORDER;
 
-    /// Generate a random [`ScalarPrimitive`].
+    /// Generate a random [`ScalarValue`].
     pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
         Self {
             inner: C::Uint::random_mod(rng, Self::MODULUS.as_nz_ref()),
@@ -76,12 +75,12 @@ where
         CtOption::new(Self { inner: uint }, uint.ct_lt(&Self::MODULUS))
     }
 
-    /// Decode [`ScalarPrimitive`] from a serialized field element
+    /// Decode [`ScalarValue`] from a serialized field element
     pub fn from_bytes(bytes: &FieldBytes<C>) -> CtOption<Self> {
         Self::new(C::Uint::decode_field_bytes(bytes))
     }
 
-    /// Decode [`ScalarPrimitive`] from a big endian byte slice.
+    /// Decode [`ScalarValue`] from a big endian byte slice.
     pub fn from_slice(slice: &[u8]) -> Result<Self> {
         let bytes = Array::try_from(slice).map_err(|_| Error)?;
         Self::from_bytes(&bytes).into_option().ok_or(Error)
@@ -97,22 +96,22 @@ where
         self.inner.as_ref()
     }
 
-    /// Is this [`ScalarPrimitive`] value equal to zero?
+    /// Is this [`ScalarValue`] value equal to zero?
     pub fn is_zero(&self) -> Choice {
         self.inner.is_zero()
     }
 
-    /// Is this [`ScalarPrimitive`] value even?
+    /// Is this [`ScalarValue`] value even?
     pub fn is_even(&self) -> Choice {
         self.inner.is_even()
     }
 
-    /// Is this [`ScalarPrimitive`] value odd?
+    /// Is this [`ScalarValue`] value odd?
     pub fn is_odd(&self) -> Choice {
         self.inner.is_odd()
     }
 
-    /// Encode [`ScalarPrimitive`] as a serialized field element.
+    /// Encode [`ScalarValue`] as a serialized field element.
     pub fn to_bytes(&self) -> FieldBytes<C> {
         self.inner.encode_field_bytes()
     }
@@ -123,7 +122,7 @@ where
     }
 }
 
-impl<C> FromUintUnchecked for ScalarPrimitive<C>
+impl<C> FromUintUnchecked for ScalarValue<C>
 where
     C: Curve,
 {
@@ -135,18 +134,18 @@ where
 }
 
 #[cfg(feature = "arithmetic")]
-impl<C> ScalarPrimitive<C>
+impl<C> ScalarValue<C>
 where
     C: CurveArithmetic,
 {
-    /// Convert [`ScalarPrimitive`] into a given curve's scalar type.
+    /// Convert [`ScalarValue`] into a given curve's scalar type.
     pub(super) fn to_scalar(self) -> Scalar<C> {
         Scalar::<C>::from_uint_unchecked(self.inner)
     }
 }
 
 // TODO(tarcieri): better encapsulate this?
-impl<C> AsRef<[Limb]> for ScalarPrimitive<C>
+impl<C> AsRef<[Limb]> for ScalarValue<C>
 where
     C: Curve,
 {
@@ -155,7 +154,7 @@ where
     }
 }
 
-impl<C> ConditionallySelectable for ScalarPrimitive<C>
+impl<C> ConditionallySelectable for ScalarValue<C>
 where
     C: Curve,
 {
@@ -166,7 +165,7 @@ where
     }
 }
 
-impl<C> ConstantTimeEq for ScalarPrimitive<C>
+impl<C> ConstantTimeEq for ScalarValue<C>
 where
     C: Curve,
 {
@@ -175,7 +174,7 @@ where
     }
 }
 
-impl<C> ConstantTimeLess for ScalarPrimitive<C>
+impl<C> ConstantTimeLess for ScalarValue<C>
 where
     C: Curve,
 {
@@ -184,7 +183,7 @@ where
     }
 }
 
-impl<C> ConstantTimeGreater for ScalarPrimitive<C>
+impl<C> ConstantTimeGreater for ScalarValue<C>
 where
     C: Curve,
 {
@@ -193,11 +192,11 @@ where
     }
 }
 
-impl<C: Curve> DefaultIsZeroes for ScalarPrimitive<C> {}
+impl<C: Curve> DefaultIsZeroes for ScalarValue<C> {}
 
-impl<C: Curve> Eq for ScalarPrimitive<C> {}
+impl<C: Curve> Eq for ScalarValue<C> {}
 
-impl<C> PartialEq for ScalarPrimitive<C>
+impl<C> PartialEq for ScalarValue<C>
 where
     C: Curve,
 {
@@ -206,7 +205,7 @@ where
     }
 }
 
-impl<C> PartialOrd for ScalarPrimitive<C>
+impl<C> PartialOrd for ScalarValue<C>
 where
     C: Curve,
 {
@@ -215,7 +214,7 @@ where
     }
 }
 
-impl<C> Ord for ScalarPrimitive<C>
+impl<C> Ord for ScalarValue<C>
 where
     C: Curve,
 {
@@ -224,7 +223,7 @@ where
     }
 }
 
-impl<C> From<u64> for ScalarPrimitive<C>
+impl<C> From<u64> for ScalarValue<C>
 where
     C: Curve,
 {
@@ -235,7 +234,7 @@ where
     }
 }
 
-impl<C> Add<ScalarPrimitive<C>> for ScalarPrimitive<C>
+impl<C> Add<ScalarValue<C>> for ScalarValue<C>
 where
     C: Curve,
 {
@@ -246,7 +245,7 @@ where
     }
 }
 
-impl<C> Add<&ScalarPrimitive<C>> for ScalarPrimitive<C>
+impl<C> Add<&ScalarValue<C>> for ScalarValue<C>
 where
     C: Curve,
 {
@@ -259,7 +258,7 @@ where
     }
 }
 
-impl<C> AddAssign<ScalarPrimitive<C>> for ScalarPrimitive<C>
+impl<C> AddAssign<ScalarValue<C>> for ScalarValue<C>
 where
     C: Curve,
 {
@@ -268,7 +267,7 @@ where
     }
 }
 
-impl<C> AddAssign<&ScalarPrimitive<C>> for ScalarPrimitive<C>
+impl<C> AddAssign<&ScalarValue<C>> for ScalarValue<C>
 where
     C: Curve,
 {
@@ -277,7 +276,7 @@ where
     }
 }
 
-impl<C> Sub<ScalarPrimitive<C>> for ScalarPrimitive<C>
+impl<C> Sub<ScalarValue<C>> for ScalarValue<C>
 where
     C: Curve,
 {
@@ -288,7 +287,7 @@ where
     }
 }
 
-impl<C> Sub<&ScalarPrimitive<C>> for ScalarPrimitive<C>
+impl<C> Sub<&ScalarValue<C>> for ScalarValue<C>
 where
     C: Curve,
 {
@@ -301,7 +300,7 @@ where
     }
 }
 
-impl<C> SubAssign<ScalarPrimitive<C>> for ScalarPrimitive<C>
+impl<C> SubAssign<ScalarValue<C>> for ScalarValue<C>
 where
     C: Curve,
 {
@@ -310,7 +309,7 @@ where
     }
 }
 
-impl<C> SubAssign<&ScalarPrimitive<C>> for ScalarPrimitive<C>
+impl<C> SubAssign<&ScalarValue<C>> for ScalarValue<C>
 where
     C: Curve,
 {
@@ -319,7 +318,7 @@ where
     }
 }
 
-impl<C> Neg for ScalarPrimitive<C>
+impl<C> Neg for ScalarValue<C>
 where
     C: Curve,
 {
@@ -332,18 +331,18 @@ where
     }
 }
 
-impl<C> Neg for &ScalarPrimitive<C>
+impl<C> Neg for &ScalarValue<C>
 where
     C: Curve,
 {
-    type Output = ScalarPrimitive<C>;
+    type Output = ScalarValue<C>;
 
-    fn neg(self) -> ScalarPrimitive<C> {
+    fn neg(self) -> ScalarValue<C> {
         -*self
     }
 }
 
-impl<C> ShrAssign<usize> for ScalarPrimitive<C>
+impl<C> ShrAssign<usize> for ScalarValue<C>
 where
     C: Curve,
 {
@@ -352,7 +351,7 @@ where
     }
 }
 
-impl<C> IsHigh for ScalarPrimitive<C>
+impl<C> IsHigh for ScalarValue<C>
 where
     C: Curve,
 {
@@ -362,7 +361,7 @@ where
     }
 }
 
-impl<C> fmt::Display for ScalarPrimitive<C>
+impl<C> fmt::Display for ScalarValue<C>
 where
     C: Curve,
 {
@@ -371,7 +370,7 @@ where
     }
 }
 
-impl<C> fmt::LowerHex for ScalarPrimitive<C>
+impl<C> fmt::LowerHex for ScalarValue<C>
 where
     C: Curve,
 {
@@ -380,7 +379,7 @@ where
     }
 }
 
-impl<C> fmt::UpperHex for ScalarPrimitive<C>
+impl<C> fmt::UpperHex for ScalarValue<C>
 where
     C: Curve,
 {
@@ -389,7 +388,7 @@ where
     }
 }
 
-impl<C> str::FromStr for ScalarPrimitive<C>
+impl<C> str::FromStr for ScalarValue<C>
 where
     C: Curve,
 {
@@ -403,7 +402,7 @@ where
 }
 
 #[cfg(feature = "serde")]
-impl<C> Serialize for ScalarPrimitive<C>
+impl<C> Serialize for ScalarValue<C>
 where
     C: Curve,
 {
@@ -416,7 +415,7 @@ where
 }
 
 #[cfg(feature = "serde")]
-impl<'de, C> Deserialize<'de> for ScalarPrimitive<C>
+impl<'de, C> Deserialize<'de> for ScalarValue<C>
 where
     C: Curve,
 {

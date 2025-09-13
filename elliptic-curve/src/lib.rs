@@ -62,7 +62,7 @@
 //! `Deserialize` impls are provided for the following types:
 //!
 //! - [`PublicKey`]
-//! - [`ScalarPrimitive`]
+//! - [`ScalarValue`]
 //!
 //! Please see type-specific documentation for more information.
 //!
@@ -108,7 +108,7 @@ mod public_key;
 pub use crate::{
     error::{Error, Result},
     field::{FieldBytes, FieldBytesEncoding, FieldBytesSize},
-    scalar::ScalarPrimitive,
+    scalar::ScalarValue,
     secret_key::SecretKey,
 };
 pub use crypto_bigint as bigint;
