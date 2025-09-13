@@ -3,7 +3,7 @@
 use crate::error::Error;
 
 #[cfg(feature = "digest")]
-use crate::digest::Digest;
+use crate::digest::Update;
 
 #[cfg(feature = "rand_core")]
 use crate::rand_core::{CryptoRng, TryCryptoRng};
@@ -55,7 +55,7 @@ pub trait SignerMut<S> {
     fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error>;
 }
 
-/// Sign the given prehashed message [`Digest`] using `Self`.
+/// Sign the given prehashed message `Digest` using `Self`.
 ///
 /// ## Notes
 ///
@@ -71,22 +71,32 @@ pub trait SignerMut<S> {
 /// therefore doing so would allow the attacker to trivially forge signatures.
 ///
 /// To prevent misuse which would potentially allow this to be possible, this
-/// API accepts a [`Digest`] instance, rather than a raw digest value.
+/// API accepts a `Digest` instance, rather than a raw digest value.
 ///
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 #[cfg(feature = "digest")]
-pub trait DigestSigner<D: Digest, S> {
-    /// Sign the given prehashed message [`Digest`], returning a signature.
+pub trait DigestSigner<D: Update, S> {
+    /// Sign a message by updating the received `Digest` with it,
+    /// returning a signature.
+    ///
+    /// The given function can be invoked multiple times. It is expected that
+    /// in each invocation the `Digest` is updated with the entire equal message.
     ///
     /// Panics in the event of a signing error.
-    fn sign_digest(&self, digest: D) -> S {
-        self.try_sign_digest(digest)
-            .expect("signature operation failed")
+    fn sign_digest<F: Fn(&mut D)>(&self, f: F) -> S {
+        self.try_sign_digest(|digest| {
+            f(digest);
+            Ok(())
+        })
+        .expect("signature operation failed")
     }
 
-    /// Attempt to sign the given prehashed message [`Digest`], returning a
-    /// digital signature on success, or an error if something went wrong.
-    fn try_sign_digest(&self, digest: D) -> Result<S, Error>;
+    /// Attempt to sign a message by updating the received `Digest` with it,
+    /// returning a digital signature on success, or an error if something went wrong.
+    ///
+    /// The given function can be invoked multiple times. It is expected that
+    /// in each invocation the `Digest` is updated with the entire equal message.
+    fn try_sign_digest<F: Fn(&mut D) -> Result<(), Error>>(&self, f: F) -> Result<S, Error>;
 }
 
 /// Sign the given message using the provided external randomness source.
@@ -132,21 +142,31 @@ pub trait RandomizedMultipartSigner<S> {
 /// Combination of [`DigestSigner`] and [`RandomizedSigner`] with support for
 /// computing a signature over a digest which requires entropy from an RNG.
 #[cfg(all(feature = "digest", feature = "rand_core"))]
-pub trait RandomizedDigestSigner<D: Digest, S> {
-    /// Sign the given prehashed message `Digest`, returning a signature.
+pub trait RandomizedDigestSigner<D: Update, S> {
+    /// Sign a message by updating the received `Digest` with it,
+    /// returning a signature.
+    ///
+    /// The given function can be invoked multiple times. It is expected that
+    /// in each invocation the `Digest` is updated with the entire equal message.
     ///
     /// Panics in the event of a signing error.
-    fn sign_digest_with_rng<R: CryptoRng + ?Sized>(&self, rng: &mut R, digest: D) -> S {
-        self.try_sign_digest_with_rng(rng, digest)
-            .expect("signature operation failed")
+    fn sign_digest_with_rng<R: CryptoRng + ?Sized, F: Fn(&mut D)>(&self, rng: &mut R, f: F) -> S {
+        self.try_sign_digest_with_rng(rng, |digest| {
+            f(digest);
+            Ok(())
+        })
+        .expect("signature operation failed")
     }
 
-    /// Attempt to sign the given prehashed message `Digest`, returning a
-    /// digital signature on success, or an error if something went wrong.
-    fn try_sign_digest_with_rng<R: TryCryptoRng + ?Sized>(
+    /// Attempt to sign a message by updating the received `Digest` with it,
+    /// returning a digital signature on success, or an error if something went wrong.
+    ///
+    /// The given function can be invoked multiple times. It is expected that
+    /// in each invocation the `Digest` is updated with the entire equal message.
+    fn try_sign_digest_with_rng<R: TryCryptoRng + ?Sized, F: Fn(&mut D) -> Result<(), Error>>(
         &self,
         rng: &mut R,
-        digest: D,
+        f: F,
     ) -> Result<S, Error>;
 }
 
@@ -226,17 +246,23 @@ where
     }
 }
 
-/// Asynchronously sign the given prehashed message [`Digest`] using `Self`.
+/// Asynchronously sign the given prehashed message `Digest` using `Self`.
 ///
 /// This trait is an async equivalent of the [`DigestSigner`] trait.
 #[cfg(feature = "digest")]
 pub trait AsyncDigestSigner<D, S>
 where
-    D: Digest,
+    D: Update,
 {
-    /// Attempt to sign the given prehashed message [`Digest`], returning a
-    /// digital signature on success, or an error if something went wrong.
-    async fn sign_digest_async(&self, digest: D) -> Result<S, Error>;
+    /// Attempt to sign a message by updating the received `Digest` with it,
+    /// returning a digital signature on success, or an error if something went wrong.
+    ///
+    /// The given function can be invoked multiple times. It is expected that
+    /// in each invocation the `Digest` is updated with the entire equal message.
+    async fn sign_digest_async<F: AsyncFn(&mut D) -> Result<(), Error>>(
+        &self,
+        f: F,
+    ) -> Result<S, Error>;
 }
 
 /// Sign the given message using the provided external randomness source.

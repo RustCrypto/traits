@@ -3,7 +3,7 @@
 use crate::error::Error;
 
 #[cfg(feature = "digest")]
-use crate::digest::Digest;
+use crate::digest::Update;
 
 /// Verify the provided message bytestring using `Self` (e.g. a public key)
 pub trait Verifier<S> {
@@ -21,7 +21,7 @@ pub trait MultipartVerifier<S> {
     fn multipart_verify(&self, msg: &[&[u8]], signature: &S) -> Result<(), Error>;
 }
 
-/// Verify the provided signature for the given prehashed message [`Digest`]
+/// Verify the provided signature for the given prehashed message `Digest`
 /// is authentic.
 ///
 /// ## Notes
@@ -38,11 +38,20 @@ pub trait MultipartVerifier<S> {
 /// therefore doing so would allow the attacker to trivially forge signatures.
 ///
 /// To prevent misuse which would potentially allow this to be possible, this
-/// API accepts a [`Digest`] instance, rather than a raw digest value.
+/// API accepts a message by updating the received `Digest` with it, rather
+/// than a raw digest value.
 ///
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 #[cfg(feature = "digest")]
-pub trait DigestVerifier<D: Digest, S> {
-    /// Verify the signature against the given [`Digest`] output.
-    fn verify_digest(&self, digest: D, signature: &S) -> Result<(), Error>;
+pub trait DigestVerifier<D: Update, S> {
+    /// Verify the signature against the received `Digest` output,
+    /// by updating it with the message.
+    ///
+    /// The given function can be invoked multiple times. It is expected that
+    /// in each invocation the `Digest` is updated with the entire equal message.
+    fn verify_digest<F: Fn(&mut D) -> Result<(), Error>>(
+        &self,
+        f: F,
+        signature: &S,
+    ) -> Result<(), Error>;
 }
