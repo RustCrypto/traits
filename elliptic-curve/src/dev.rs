@@ -50,9 +50,8 @@ pub type PublicKey = crate::PublicKey<MockCurve>;
 /// Secret key.
 pub type SecretKey = crate::SecretKey<MockCurve>;
 
-/// Scalar primitive type.
-// TODO(tarcieri): make this the scalar type when it's more capable
-pub type ScalarPrimitive = crate::ScalarPrimitive<MockCurve>;
+/// Scalar value type.
+pub type ScalarValue = crate::ScalarValue<MockCurve>;
 
 /// Scalar bits.
 #[cfg(feature = "bits")]
@@ -90,11 +89,11 @@ impl AssociatedOid for MockCurve {
 
 /// Example scalar type
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, PartialOrd, Ord)]
-pub struct Scalar(ScalarPrimitive);
+pub struct Scalar(ScalarValue);
 
 impl Field for Scalar {
-    const ZERO: Self = Self(ScalarPrimitive::ZERO);
-    const ONE: Self = Self(ScalarPrimitive::ONE);
+    const ZERO: Self = Self(ScalarValue::ZERO);
+    const ONE: Self = Self(ScalarValue::ONE);
 
     fn try_from_rng<R: TryRngCore + ?Sized>(rng: &mut R) -> core::result::Result<Self, R::Error> {
         let mut bytes = FieldBytes::default();
@@ -147,7 +146,7 @@ impl PrimeField for Scalar {
     const DELTA: Self = Self::ZERO; // BOGUS!
 
     fn from_repr(bytes: FieldBytes) -> CtOption<Self> {
-        ScalarPrimitive::from_bytes(&bytes).map(Self)
+        ScalarValue::from_bytes(&bytes).map(Self)
     }
 
     fn to_repr(&self) -> FieldBytes {
@@ -184,7 +183,7 @@ impl AsRef<Scalar> for Scalar {
 
 impl ConditionallySelectable for Scalar {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        Self(ScalarPrimitive::conditional_select(&a.0, &b.0, choice))
+        Self(ScalarValue::conditional_select(&a.0, &b.0, choice))
     }
 }
 
@@ -363,7 +362,7 @@ impl Reduce<U256> for Scalar {
         let (r, underflow) = w.borrowing_sub(&MockCurve::ORDER, Limb::ZERO);
         let underflow = Choice::from((underflow.0 >> (Limb::BITS - 1)) as u8);
         let reduced = U256::conditional_select(w, &r, !underflow);
-        Self(ScalarPrimitive::new(reduced).unwrap())
+        Self(ScalarValue::new(reduced).unwrap())
     }
 }
 
@@ -387,14 +386,14 @@ impl From<NonZeroScalar> for Scalar {
     }
 }
 
-impl From<ScalarPrimitive> for Scalar {
-    fn from(scalar: ScalarPrimitive) -> Scalar {
+impl From<ScalarValue> for Scalar {
+    fn from(scalar: ScalarValue) -> Scalar {
         Self(scalar)
     }
 }
 
-impl From<Scalar> for ScalarPrimitive {
-    fn from(scalar: Scalar) -> ScalarPrimitive {
+impl From<Scalar> for ScalarValue {
+    fn from(scalar: Scalar) -> ScalarValue {
         scalar.0
     }
 }
@@ -417,7 +416,7 @@ impl TryFrom<U256> for Scalar {
     type Error = Error;
 
     fn try_from(w: U256) -> Result<Self> {
-        Option::from(ScalarPrimitive::new(w)).map(Self).ok_or(Error)
+        ScalarValue::new(w).into_option().map(Self).ok_or(Error)
     }
 }
 
@@ -425,7 +424,7 @@ impl FromUintUnchecked for Scalar {
     type Uint = U256;
 
     fn from_uint_unchecked(uint: U256) -> Self {
-        Self(ScalarPrimitive::from_uint_unchecked(uint))
+        Self(ScalarValue::from_uint_unchecked(uint))
     }
 }
 

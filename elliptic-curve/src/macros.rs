@@ -25,27 +25,27 @@ macro_rules! scalar_from_impls {
             }
         }
 
-        impl From<$crate::ScalarPrimitive<$curve>> for $scalar {
-            fn from(w: $crate::ScalarPrimitive<$curve>) -> Self {
+        impl From<$crate::ScalarValue<$curve>> for $scalar {
+            fn from(w: $crate::ScalarValue<$curve>) -> Self {
                 <$scalar>::from(&w)
             }
         }
 
-        impl From<&$crate::ScalarPrimitive<$curve>> for $scalar {
-            fn from(w: &$crate::ScalarPrimitive<$curve>) -> $scalar {
+        impl From<&$crate::ScalarValue<$curve>> for $scalar {
+            fn from(w: &$crate::ScalarValue<$curve>) -> $scalar {
                 <$scalar>::from_uint_unchecked(*w.as_uint())
             }
         }
 
-        impl From<$scalar> for $crate::ScalarPrimitive<$curve> {
-            fn from(scalar: $scalar) -> $crate::ScalarPrimitive<$curve> {
-                $crate::ScalarPrimitive::from(&scalar)
+        impl From<$scalar> for $crate::ScalarValue<$curve> {
+            fn from(scalar: $scalar) -> $crate::ScalarValue<$curve> {
+                $crate::ScalarValue::from(&scalar)
             }
         }
 
-        impl From<&$scalar> for $crate::ScalarPrimitive<$curve> {
-            fn from(scalar: &$scalar) -> $crate::ScalarPrimitive<$curve> {
-                $crate::ScalarPrimitive::new(scalar.into()).unwrap()
+        impl From<&$scalar> for $crate::ScalarValue<$curve> {
+            fn from(scalar: &$scalar) -> $crate::ScalarValue<$curve> {
+                $crate::ScalarValue::new(scalar.into()).unwrap()
             }
         }
 

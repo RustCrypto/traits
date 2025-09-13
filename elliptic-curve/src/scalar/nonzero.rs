@@ -1,7 +1,7 @@
 //! Non-zero scalar type.
 
 use crate::{
-    CurveArithmetic, Error, FieldBytes, PrimeCurve, Scalar, ScalarPrimitive, SecretKey,
+    CurveArithmetic, Error, FieldBytes, PrimeCurve, Scalar, ScalarValue, SecretKey,
     ops::{self, BatchInvert, Invert, Reduce, ReduceNonZero},
     point::NonIdentity,
     scalar::IsHigh,
@@ -86,7 +86,7 @@ where
 
     /// Create a [`NonZeroScalar`] from a `C::Uint`.
     pub fn from_uint(uint: C::Uint) -> CtOption<Self> {
-        ScalarPrimitive::new(uint).and_then(|scalar| Self::new(scalar.into()))
+        ScalarValue::new(uint).and_then(|scalar| Self::new(scalar.into()))
     }
 
     /// Transform array reference containing [`NonZeroScalar`]s to an array reference to the inner
@@ -214,22 +214,22 @@ where
     }
 }
 
-impl<C> From<NonZeroScalar<C>> for ScalarPrimitive<C>
+impl<C> From<NonZeroScalar<C>> for ScalarValue<C>
 where
     C: CurveArithmetic,
 {
     #[inline]
-    fn from(scalar: NonZeroScalar<C>) -> ScalarPrimitive<C> {
+    fn from(scalar: NonZeroScalar<C>) -> ScalarValue<C> {
         Self::from(&scalar)
     }
 }
 
-impl<C> From<&NonZeroScalar<C>> for ScalarPrimitive<C>
+impl<C> From<&NonZeroScalar<C>> for ScalarValue<C>
 where
     C: CurveArithmetic,
 {
-    fn from(scalar: &NonZeroScalar<C>) -> ScalarPrimitive<C> {
-        ScalarPrimitive::from_bytes(&scalar.to_repr()).unwrap()
+    fn from(scalar: &NonZeroScalar<C>) -> ScalarValue<C> {
+        ScalarValue::from_bytes(&scalar.to_repr()).unwrap()
     }
 }
 
@@ -247,7 +247,7 @@ where
     C: CurveArithmetic,
 {
     fn from(sk: &SecretKey<C>) -> NonZeroScalar<C> {
-        let scalar = sk.as_scalar_primitive().to_scalar();
+        let scalar = sk.as_scalar_value().to_scalar();
         debug_assert!(!bool::from(scalar.is_zero()));
         Self { scalar }
     }
@@ -492,7 +492,7 @@ where
     where
         S: ser::Serializer,
     {
-        ScalarPrimitive::from(self).serialize(serializer)
+        ScalarValue::from(self).serialize(serializer)
     }
 }
 
@@ -505,7 +505,7 @@ where
     where
         D: de::Deserializer<'de>,
     {
-        let scalar = ScalarPrimitive::deserialize(deserializer)?;
+        let scalar = ScalarValue::deserialize(deserializer)?;
         Self::new(scalar.into())
             .into_option()
             .ok_or_else(|| de::Error::custom("expected non-zero scalar"))

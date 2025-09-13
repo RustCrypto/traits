@@ -1,7 +1,7 @@
 //! Elliptic curve arithmetic traits.
 
 use crate::{
-    Curve, CurveGroup, Error, FieldBytes, Group, NonZeroScalar, PrimeCurve, ScalarPrimitive,
+    Curve, CurveGroup, Error, FieldBytes, Group, NonZeroScalar, PrimeCurve, ScalarValue,
     ops::{Invert, LinearCombination, Mul, Reduce},
     point::{AffineCoordinates, NonIdentity},
     scalar::{FromUintUnchecked, IsHigh},
@@ -68,10 +68,10 @@ pub trait CurveArithmetic: Curve {
     type Scalar: AsRef<Self::Scalar>
         + DefaultIsZeroes
         + From<NonZeroScalar<Self>>
-        + From<ScalarPrimitive<Self>>
+        + From<ScalarValue<Self>>
         + FromUintUnchecked<Uint = Self::Uint>
         + Into<FieldBytes<Self>>
-        + Into<ScalarPrimitive<Self>>
+        + Into<ScalarValue<Self>>
         + Into<Self::Uint>
         + Invert<Output = CtOption<Self::Scalar>>
         + IsHigh

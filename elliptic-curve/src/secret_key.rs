@@ -8,7 +8,7 @@
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
 mod pkcs8;
 
-use crate::{Curve, Error, FieldBytes, Result, ScalarPrimitive};
+use crate::{Curve, Error, FieldBytes, Result, ScalarValue};
 use core::fmt::{self, Debug};
 use hybrid_array::typenum::Unsigned;
 use subtle::{Choice, ConstantTimeEq, CtOption};
@@ -74,7 +74,7 @@ use {crate::pkcs8::DecodePrivateKey, core::str::FromStr};
 #[derive(Clone)]
 pub struct SecretKey<C: Curve> {
     /// Scalar value
-    inner: ScalarPrimitive<C>,
+    inner: ScalarValue<C>,
 }
 
 impl<C> SecretKey<C>
@@ -115,19 +115,19 @@ where
     /// # Returns
     ///
     /// This will return a none if the scalar is all-zero.
-    pub fn from_scalar(scalar: impl Into<ScalarPrimitive<C>>) -> CtOption<Self> {
+    pub fn from_scalar(scalar: impl Into<ScalarValue<C>>) -> CtOption<Self> {
         let inner = scalar.into();
         CtOption::new(Self { inner }, !inner.is_zero())
     }
 
-    /// Borrow the inner secret [`ScalarPrimitive`] value.
+    /// Borrow the inner secret [`ScalarValue`] value.
     ///
     /// # ⚠️ Warning
     ///
     /// This value is key material.
     ///
     /// Please treat it with the care it deserves!
-    pub fn as_scalar_primitive(&self) -> &ScalarPrimitive<C> {
+    pub fn as_scalar_value(&self) -> &ScalarValue<C> {
         &self.inner
     }
 
@@ -157,7 +157,7 @@ where
 
     /// Deserialize secret key from an encoded secret scalar.
     pub fn from_bytes(bytes: &FieldBytes<C>) -> Result<Self> {
-        let inner = ScalarPrimitive::<C>::from_bytes(bytes)
+        let inner = ScalarValue::<C>::from_bytes(bytes)
             .into_option()
             .ok_or(Error)?;
 
