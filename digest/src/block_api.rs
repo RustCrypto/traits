@@ -3,7 +3,7 @@
 //! Usage of traits in this module in user code is discouraged. Instead use
 //! core algorithm wrapped by the wrapper types, which implement the
 //! higher-level traits.
-use crate::InvalidOutputSize;
+use crate::{Digest, HashMarker, InvalidOutputSize};
 
 pub use block_buffer::{Eager, Lazy};
 pub use crypto_common::{AlgorithmName, Block, BlockSizeUser, OutputSizeUser, Reset};
@@ -28,6 +28,32 @@ pub trait UpdateCore: BlockSizeUser {
 pub trait BufferKindUser: BlockSizeUser {
     /// Block buffer kind over which type operates.
     type BufferKind: BufferKind;
+}
+
+/// Trait implemented by eager hashes which expose their block-level core.
+pub trait EagerHash: BlockSizeUser + Digest {
+    /// Block-level core type of the hash.
+    type Core: HashMarker
+        + UpdateCore
+        + FixedOutputCore
+        + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
+        + BufferKindUser<BufferKind = Eager>
+        + Default
+        + Clone;
+}
+
+impl<T> EagerHash for T
+where
+    T: CoreProxy + BlockSizeUser + Digest,
+    <T as CoreProxy>::Core: HashMarker
+        + UpdateCore
+        + FixedOutputCore
+        + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
+        + BufferKindUser<BufferKind = Eager>
+        + Default
+        + Clone,
+{
+    type Core = T::Core;
 }
 
 /// Core trait for hash functions with fixed output size.
