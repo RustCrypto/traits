@@ -170,6 +170,5 @@ impl AeadInOut for PostfixDummyAead {
     }
 }
 
-// TODO: re-enable after dev macros are fixed
-// aead::new_test!(dummy_prefix, "prefix", PrefixDummyAead);
-// aead::new_test!(dummy_postfix, "postfix", PostfixDummyAead);
+aead::new_test!(dummy_prefix, "prefix", PrefixDummyAead);
+aead::new_test!(dummy_postfix, "postfix", PostfixDummyAead);
