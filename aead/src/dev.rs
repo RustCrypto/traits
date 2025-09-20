@@ -18,8 +18,6 @@ pub struct TestVector {
     pub plaintext: &'static [u8],
     /// Ciphertext
     pub ciphertext: &'static [u8],
-    /// Whether the test vector should pass (`[1]`) or fail (`[0]`)
-    pub pass: &'static [u8],
 }
 
 /// Run AEAD test for the provided passing test vector
@@ -30,10 +28,8 @@ pub fn pass_test<C: AeadInOut + KeyInit>(
         aad,
         plaintext,
         ciphertext,
-        pass,
     }: &TestVector,
 ) -> Result<(), &'static str> {
-    assert_eq!(pass, &[1]);
     let nonce = nonce.try_into().expect("wrong nonce size");
     let cipher = <C as KeyInit>::new_from_slice(key).expect("failed to initialize the cipher");
 
@@ -109,11 +105,9 @@ pub fn fail_test<C: AeadInOut + KeyInit>(
         nonce,
         aad,
         ciphertext,
-        pass,
         ..
     }: &TestVector,
 ) -> Result<(), &'static str> {
-    assert_eq!(pass, &[0]);
     let nonce = nonce.try_into().expect("wrong nonce size");
     let cipher = <C as KeyInit>::new_from_slice(key).expect("failed to initialize the cipher");
 
@@ -131,9 +125,9 @@ pub fn fail_test<C: AeadInOut + KeyInit>(
     }
 }
 
-/// Define AEAD test
+/// Define AEAD test for passing test vectors
 #[macro_export]
-macro_rules! new_test {
+macro_rules! new_pass_test {
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
@@ -142,17 +136,43 @@ macro_rules! new_test {
             $crate::dev::blobby::parse_into_structs!(
                 include_bytes!(concat!("data/", $test_name, ".blb"));
                 static TEST_VECTORS: &[
-                    TestVector { key, nonce, aad, plaintext, ciphertext, pass }
+                    TestVector { key, nonce, aad, plaintext, ciphertext }
                 ];
             );
 
             for (i, tv) in TEST_VECTORS.iter().enumerate() {
-                let pass = tv.pass[0] == 1;
-                let res = if pass {
-                    $crate::dev::pass_test::<$cipher>(tv)
-                } else {
-                    $crate::dev::fail_test::<$cipher>(tv)
-                };
+                let res = $crate::dev::pass_test::<$cipher>(tv);
+
+                if let Err(reason) = res {
+                    panic!(
+                        "\n\
+                        Failed test #{i}\n\
+                        reason:\t{reason:?}\n\
+                        test vector:\t{tv:?}\n"
+                    );
+                }
+            }
+        }
+    };
+}
+
+/// Define AEAD test for failing test vectors
+#[macro_export]
+macro_rules! new_fail_test {
+    ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
+        #[test]
+        fn $name() {
+            use $crate::dev::TestVector;
+
+            $crate::dev::blobby::parse_into_structs!(
+                include_bytes!(concat!("data/", $test_name, ".blb"));
+                static TEST_VECTORS: &[
+                    TestVector { key, nonce, aad, plaintext, ciphertext }
+                ];
+            );
+
+            for (i, tv) in TEST_VECTORS.iter().enumerate() {
+                let res = $crate::dev::fail_test::<$cipher>(tv);
 
                 if let Err(reason) = res {
                     panic!(

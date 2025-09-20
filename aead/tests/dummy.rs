@@ -170,5 +170,12 @@ impl AeadInOut for PostfixDummyAead {
     }
 }
 
-aead::new_test!(dummy_prefix, "prefix", PrefixDummyAead);
-aead::new_test!(dummy_postfix, "postfix", PostfixDummyAead);
+#[cfg(feature = "dev")]
+mod tests {
+    use super::{PostfixDummyAead, PrefixDummyAead};
+
+    aead::new_pass_test!(dummy_prefix_pass, "prefix_pass", PrefixDummyAead);
+    aead::new_fail_test!(dummy_prefix_fail, "prefix_fail", PrefixDummyAead);
+    aead::new_pass_test!(dummy_postfix_pass, "postfix_pass", PostfixDummyAead);
+    aead::new_fail_test!(dummy_postfix_fail, "postfix_fail", PostfixDummyAead);
+}
