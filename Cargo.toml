@@ -11,6 +11,7 @@ members = [
     "password-hash",
     "universal-hash",
     "signature",
+    "verifiable-random-function",
 ]
 
 [patch.crates-io]
