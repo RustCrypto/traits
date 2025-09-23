@@ -96,6 +96,8 @@ pub mod ops;
 pub mod sec1;
 #[cfg(feature = "arithmetic")]
 pub mod weierstrass;
+#[cfg(feature = "group")]
+pub mod vrf;
 
 mod error;
 mod field;
