@@ -30,6 +30,7 @@ ff = { version = "=0.14.0-pre.0", optional = true, default-features = false }
 group = { version = "=0.14.0-pre.0", optional = true, default-features = false }
 hkdf = { version = "0.13.0-rc.1", optional = true, default-features = false }
 hex-literal = { version = "1", optional = true }
+once_cell = { version = "1.21", optional = true, default-features = false }
 pem-rfc7468 = { version = "1.0.0-rc.2", optional = true, features = ["alloc"] }
 pkcs8 = { version = "0.11.0-rc.7", optional = true, default-features = false }
 sec1 = { version = "0.8.0-rc.10", optional = true, features = ["subtle", "zeroize"] }
@@ -52,11 +53,14 @@ alloc = [
 std = [
     "alloc",
     "rand_core/std",
+    "once_cell?/std",
     "pkcs8?/std",
     "sec1?/std"
 ]
 
 arithmetic = ["group"]
+basepoint-table = ["arithmetic"]
+critical-section = ["basepoint-table", "once_cell/critical-section"]
 bits = ["arithmetic", "ff/bits"]
 dev = ["arithmetic", "dep:hex-literal", "pem", "pkcs8"]
 ecdh = ["arithmetic", "digest", "dep:hkdf"]

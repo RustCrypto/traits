@@ -1,5 +1,7 @@
 //! Non-identity point type.
 
+#![cfg(feature = "arithmetic")]
+
 use core::ops::{Deref, Mul};
 
 use group::{Group, GroupEncoding, prime::PrimeCurveAffine};

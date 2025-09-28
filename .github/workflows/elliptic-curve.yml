@@ -45,6 +45,7 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features arithmetic
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features bits
+      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features critical-section
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features dev
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features digest
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features ecdh
