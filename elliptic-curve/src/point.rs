@@ -1,13 +1,20 @@
 //! Traits for elliptic curve points.
 
-#[cfg(feature = "arithmetic")]
+mod basepoint_table;
+mod lookup_table;
 mod non_identity;
 
 #[cfg(feature = "arithmetic")]
-pub use {self::non_identity::NonIdentity, crate::CurveArithmetic};
+pub use {self::non_identity::NonIdentity, lookup_table::LookupTable};
+
+#[cfg(feature = "basepoint-table")]
+pub use self::basepoint_table::BasepointTable;
 
 use crate::{Curve, FieldBytes};
 use subtle::{Choice, CtOption};
+
+#[cfg(feature = "arithmetic")]
+use crate::CurveArithmetic;
 
 /// Affine point type for a given curve with a [`CurveArithmetic`]
 /// implementation.
