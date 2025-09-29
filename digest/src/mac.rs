@@ -133,7 +133,7 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
         if n != Self::OutputSize::USIZE {
             return Err(MacError);
         }
-        let choice = self.finalize_fixed().ct_eq(tag);
+        let choice = self.finalize_fixed().as_slice().ct_eq(tag);
         if choice.into() { Ok(()) } else { Err(MacError) }
     }
 
@@ -146,7 +146,7 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
         if n != Self::OutputSize::USIZE {
             return Err(MacError);
         }
-        let choice = self.finalize_fixed_reset().ct_eq(tag);
+        let choice = self.finalize_fixed_reset().as_slice().ct_eq(tag);
         if choice.into() { Ok(()) } else { Err(MacError) }
     }
 
