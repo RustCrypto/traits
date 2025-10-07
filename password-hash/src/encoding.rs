@@ -6,7 +6,7 @@ use base64ct::{
 };
 
 /// Base64 encoding variants.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Default, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[non_exhaustive]
 pub enum Encoding {
     /// "B64" encoding: standard Base64 without padding.
@@ -16,6 +16,7 @@ pub enum Encoding {
     /// 0x41-0x5a, 0x61-0x7a, 0x30-0x39, 0x2b, 0x2f
     /// ```
     /// <https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#b64>
+    #[default]
     B64,
 
     /// bcrypt encoding.
@@ -45,12 +46,6 @@ pub enum Encoding {
     /// 0x2e-0x39, 0x41-0x5a, 0x61-0x7a
     /// ```
     ShaCrypt,
-}
-
-impl Default for Encoding {
-    fn default() -> Self {
-        Self::B64
-    }
 }
 
 impl Encoding {

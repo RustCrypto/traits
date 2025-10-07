@@ -447,12 +447,13 @@ impl IsHigh for Scalar {
 }
 
 /// Example affine point type
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Default, Debug, Eq, PartialEq)]
 pub enum AffinePoint {
     /// Result of fixed-based scalar multiplication.
     FixedBaseOutput(Scalar),
 
     /// Identity.
+    #[default]
     Identity,
 
     /// Base point.
@@ -503,12 +504,6 @@ impl ConditionallySelectable for AffinePoint {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         // Not really constant time, but this is dev code
         if choice.into() { *b } else { *a }
-    }
-}
-
-impl Default for AffinePoint {
-    fn default() -> Self {
-        Self::Identity
     }
 }
 
@@ -569,12 +564,13 @@ impl TryFrom<AffinePoint> for NonIdentity<AffinePoint> {
 }
 
 /// Example projective point type
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Default, Debug, Eq, PartialEq)]
 pub enum ProjectivePoint {
     /// Result of fixed-based scalar multiplication
     FixedBaseOutput(Scalar),
 
     /// Is this point the identity point?
+    #[default]
     Identity,
 
     /// Is this point the generator point?
@@ -617,12 +613,6 @@ impl ConstantTimeEq for ProjectivePoint {
 impl ConditionallySelectable for ProjectivePoint {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         if choice.into() { *b } else { *a }
-    }
-}
-
-impl Default for ProjectivePoint {
-    fn default() -> Self {
-        Self::Identity
     }
 }
 
