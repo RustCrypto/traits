@@ -396,7 +396,7 @@ where
 
     fn from_str(hex: &str) -> Result<Self> {
         let mut bytes = FieldBytes::<C>::default();
-        base16ct::lower::decode(hex, &mut bytes)?;
+        base16ct::mixed::decode(hex, &mut bytes)?;
         Self::from_slice(&bytes)
     }
 }
