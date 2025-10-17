@@ -10,7 +10,7 @@ use hex_literal::hex;
 const KEY: [u8; 4] = hex!("00010203");
 const IV: [u8; 4] = hex!("04050607");
 
-/// Dummy insecure stream cipher.
+/// Core of dummy insecure stream cipher.
 pub struct DummyStreamCipherCore {
     key_iv: u64,
     pos: u64,
@@ -83,6 +83,7 @@ impl StreamCipherSeekCore for DummyStreamCipherCore {
     }
 }
 
+/// Dummy insecure stream cipher.
 #[cfg(feature = "stream-wrapper")]
 pub type DummyStreamCipher = StreamCipherCoreWrapper<DummyStreamCipherCore>;
 
