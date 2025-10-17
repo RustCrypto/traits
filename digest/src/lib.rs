@@ -6,10 +6,9 @@
 //! - **High-level convenience traits**: [`Digest`], [`DynDigest`], [`Mac`].
 //!   Wrappers around lower-level traits for most common use-cases. Users should
 //!   usually prefer using these traits.
-//! - **Mid-level traits**: [`Update`], [`FixedOutput`], [`FixedOutputReset`],
-//!   [`ExtendableOutput`], [`ExtendableOutputReset`], [`XofReader`],
-//!   [`VariableOutput`], [`Reset`], [`KeyInit`], and [`InnerInit`]. These
-//!   traits atomically describe available functionality of an algorithm.
+//! - **Mid-level traits**: [`Update`], [`FixedOutput`], [`FixedOutputReset`], [`ExtendableOutput`],
+//!   [`ExtendableOutputReset`], [`XofReader`], [`Reset`], [`KeyInit`], and [`InnerInit`].
+//!   These traits atomically describe available functionality of an algorithm.
 //! - **Marker traits**: [`HashMarker`], [`MacMarker`]. Used to distinguish
 //!   different algorithm classes.
 //! - **Low-level traits** defined in the [`block_api`] module. These traits
