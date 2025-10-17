@@ -26,12 +26,11 @@ impl IvSizeUser for DummyStreamCipherCore {
 
 impl KeyIvInit for DummyStreamCipherCore {
     fn new(key: &cipher::Key<Self>, iv: &cipher::Iv<Self>) -> Self {
-        let mut buf = [0u8; 8];
-        buf[..4].copy_from_slice(key);
-        buf[4..].copy_from_slice(iv);
-        let pos = u64::from_le_bytes(buf);
+        let mut key_iv = [0u8; 8];
+        key_iv[..4].copy_from_slice(key);
+        key_iv[4..].copy_from_slice(iv);
         Self {
-            key_iv: pos,
+            key_iv: u64::from_le_bytes(key_iv),
             pos: 0,
         }
     }
