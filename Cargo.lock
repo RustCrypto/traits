@@ -104,6 +104,7 @@ dependencies = [
  "blobby",
  "block-buffer",
  "crypto-common",
+ "hex-literal",
  "inout",
  "zeroize",
 ]

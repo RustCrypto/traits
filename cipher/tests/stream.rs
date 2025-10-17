@@ -1,9 +1,11 @@
 use cipher::{
-    BlockSizeUser, IvSizeUser, KeyIvInit, KeySizeUser, ParBlocksSizeUser, StreamCipher,
-    StreamCipherBackend, StreamCipherClosure, StreamCipherCore, StreamCipherCoreWrapper,
-    StreamCipherSeek, StreamCipherSeekCore,
+    BlockSizeUser, IvSizeUser, KeyIvInit, KeySizeUser, ParBlocksSizeUser, StreamCipherBackend,
+    StreamCipherClosure, StreamCipherCore, StreamCipherSeekCore,
     consts::{U1, U4, U16},
 };
+#[cfg(feature = "stream-wrapper")]
+use cipher::{StreamCipher, StreamCipherCoreWrapper, StreamCipherSeek};
+use hex_literal::hex;
 
 const KEY: [u8; 4] = [0, 1, 2, 3];
 const IV: [u8; 4] = [4, 5, 6, 7];
@@ -86,32 +88,39 @@ impl StreamCipherSeekCore for DummyStreamCipherCore {
 pub type DummyStreamCipher = StreamCipherCoreWrapper<DummyStreamCipherCore>;
 
 #[test]
+fn dummy_stream_cipher_core() {
+    let mut cipher = DummyStreamCipherCore::new(&KEY.into(), &IV.into());
+    assert_eq!(cipher.get_block_pos(), 0);
+
+    let mut block = [0u8; 16].into();
+    cipher.write_keystream_block(&mut block);
+    assert_eq!(block, hex!("e82393543cc96089305116003a417acc"));
+    assert_eq!(cipher.get_block_pos(), 1);
+
+    cipher.set_block_pos(200);
+    assert_eq!(cipher.get_block_pos(), 200);
+
+    cipher.write_keystream_block(&mut block);
+    assert_eq!(block, hex!("28a96998fe4874ffb0ce9b046c6a9ddb"));
+    assert_eq!(cipher.get_block_pos(), 201);
+}
+
+#[test]
 #[cfg(feature = "stream-wrapper")]
 fn dummy_stream_cipher() {
     let mut cipher = DummyStreamCipher::new(&KEY.into(), &IV.into());
-
     assert_eq!(cipher.current_pos::<u64>(), 0);
 
     let mut buf = [0u8; 20];
-
     cipher.apply_keystream(&mut buf);
+    assert_eq!(buf, hex!("e82393543cc96089305116003a417accd073384a"));
     assert_eq!(cipher.current_pos::<usize>(), buf.len());
 
-    let expected = [
-        232, 35, 147, 84, 60, 201, 96, 137, 48, 81, 22, 0, 58, 65, 122, 204, 208, 115, 56, 74,
-    ];
-    assert_eq!(buf, expected);
-
     const SEEK_POS: usize = 500;
-
     cipher.seek(SEEK_POS);
     cipher.apply_keystream(&mut buf);
+    assert_eq!(buf, hex!("6b014c6a3c376b13c4720590d26147c5ebf334c5"));
     assert_eq!(cipher.current_pos::<usize>(), SEEK_POS + buf.len());
-
-    let expected = [
-        107, 1, 76, 106, 60, 55, 107, 19, 196, 114, 5, 144, 210, 97, 71, 197, 235, 243, 52, 197,
-    ];
-    assert_eq!(buf, expected);
 }
 
 #[test]
