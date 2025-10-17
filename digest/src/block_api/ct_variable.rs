@@ -1,10 +1,10 @@
 use super::{
     AlgorithmName, Buffer, BufferKindUser, FixedOutputCore, Reset, TruncSide, UpdateCore,
-    VariableOutputCore,
+    VariableOutputCore, VariableOutputCoreCustomized,
 };
 #[cfg(feature = "mac")]
 use crate::MacMarker;
-use crate::{CollisionResistance, CustomizedInit, HashMarker, VarOutputCustomized};
+use crate::{CollisionResistance, CustomizedInit, HashMarker};
 use core::{fmt, marker::PhantomData};
 use crypto_common::{
     Block, BlockSizeUser, OutputSizeUser,
@@ -120,7 +120,7 @@ where
 
 impl<T, OutSize> CustomizedInit for CtOutWrapper<T, OutSize>
 where
-    T: VariableOutputCore + VarOutputCustomized,
+    T: VariableOutputCoreCustomized,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     #[inline]

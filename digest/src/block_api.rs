@@ -113,6 +113,12 @@ pub trait VariableOutputCore: UpdateCore + OutputSizeUser + BufferKindUser + Siz
     fn finalize_variable_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>);
 }
 
+/// Trait adding customization string to hash functions with variable output.
+pub trait VariableOutputCoreCustomized: VariableOutputCore {
+    /// Create new hasher instance with the given customization string and output size.
+    fn new_customized(customization: &[u8], output_size: usize) -> Self;
+}
+
 /// Type which used for defining truncation side in the [`VariableOutputCore`]
 /// trait.
 #[derive(Copy, Clone, Debug)]
