@@ -21,6 +21,9 @@ blobby = { version = "0.4.0-pre.1", optional = true }
 block-buffer = { version = "0.11.0-rc.5", optional = true }
 zeroize = { version = "1.8", optional = true, default-features = false }
 
+[dev-dependencies]
+hex-literal = "1"
+
 [features]
 alloc = []
 block-padding = ["inout/block-padding"]
