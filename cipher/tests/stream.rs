@@ -7,8 +7,8 @@ use cipher::{
 use cipher::{StreamCipher, StreamCipherCoreWrapper, StreamCipherSeek};
 use hex_literal::hex;
 
-const KEY: [u8; 4] = [0, 1, 2, 3];
-const IV: [u8; 4] = [4, 5, 6, 7];
+const KEY: [u8; 4] = hex!("00010203");
+const IV: [u8; 4] = hex!("04050607");
 
 /// Dummy insecure stream cipher.
 pub struct DummyStreamCipherCore {
