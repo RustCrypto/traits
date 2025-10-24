@@ -6,10 +6,9 @@
 //! - **High-level convenience traits**: [`Digest`], [`DynDigest`], [`Mac`].
 //!   Wrappers around lower-level traits for most common use-cases. Users should
 //!   usually prefer using these traits.
-//! - **Mid-level traits**: [`Update`], [`FixedOutput`], [`FixedOutputReset`],
-//!   [`ExtendableOutput`], [`ExtendableOutputReset`], [`XofReader`],
-//!   [`VariableOutput`], [`Reset`], [`KeyInit`], and [`InnerInit`]. These
-//!   traits atomically describe available functionality of an algorithm.
+//! - **Mid-level traits**: [`Update`], [`FixedOutput`], [`FixedOutputReset`], [`ExtendableOutput`],
+//!   [`ExtendableOutputReset`], [`XofReader`], [`Reset`], [`KeyInit`], and [`InnerInit`].
+//!   These traits atomically describe available functionality of an algorithm.
 //! - **Marker traits**: [`HashMarker`], [`MacMarker`]. Used to distinguish
 //!   different algorithm classes.
 //! - **Low-level traits** defined in the [`block_api`] module. These traits
@@ -207,88 +206,10 @@ pub trait ExtendableOutputReset: ExtendableOutput + Reset {
     }
 }
 
-/// Trait for hash functions with variable-size output.
-pub trait VariableOutput: Sized + Update {
-    /// Maximum size of output hash in bytes.
-    const MAX_OUTPUT_SIZE: usize;
-
-    /// Create new hasher instance with the given output size in bytes.
-    ///
-    /// It will return `Err(InvalidOutputSize)` in case if hasher can not return
-    /// hash of the specified output size.
-    fn new(output_size: usize) -> Result<Self, InvalidOutputSize>;
-
-    /// Get output size in bytes of the hasher instance provided to the `new` method
-    fn output_size(&self) -> usize;
-
-    /// Write result into the output buffer.
-    ///
-    /// Returns `Err(InvalidOutputSize)` if `out` size is not equal to
-    /// `self.output_size()`.
-    fn finalize_variable(self, out: &mut [u8]) -> Result<(), InvalidBufferSize>;
-
-    /// Compute hash of `data` and write it to `output`.
-    ///
-    /// Length of the output hash is determined by `output`. If `output` is
-    /// bigger than `Self::MAX_OUTPUT_SIZE`, this method returns
-    /// `InvalidOutputSize`.
-    fn digest_variable(
-        input: impl AsRef<[u8]>,
-        output: &mut [u8],
-    ) -> Result<(), InvalidOutputSize> {
-        let mut hasher = Self::new(output.len())?;
-        hasher.update(input.as_ref());
-        hasher
-            .finalize_variable(output)
-            .map_err(|_| InvalidOutputSize)
-    }
-
-    /// Retrieve result into a boxed slice and consume hasher.
-    ///
-    /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
-    /// they have size of 2 and 3 words respectively.
-    #[cfg(feature = "alloc")]
-    fn finalize_boxed(self) -> Box<[u8]> {
-        let n = self.output_size();
-        let mut buf = vec![0u8; n].into_boxed_slice();
-        self.finalize_variable(&mut buf)
-            .expect("buf length is equal to output_size");
-        buf
-    }
-}
-
-/// Trait for hash functions with variable-size output able to reset themselves.
-pub trait VariableOutputReset: VariableOutput + Reset {
-    /// Write result into the output buffer and reset the hasher state.
-    ///
-    /// Returns `Err(InvalidOutputSize)` if `out` size is not equal to
-    /// `self.output_size()`.
-    fn finalize_variable_reset(&mut self, out: &mut [u8]) -> Result<(), InvalidBufferSize>;
-
-    /// Retrieve result into a boxed slice and reset the hasher state.
-    ///
-    /// `Box<[u8]>` is used instead of `Vec<u8>` to save stack space, since
-    /// they have size of 2 and 3 words respectively.
-    #[cfg(feature = "alloc")]
-    fn finalize_boxed_reset(&mut self) -> Box<[u8]> {
-        let n = self.output_size();
-        let mut buf = vec![0u8; n].into_boxed_slice();
-        self.finalize_variable_reset(&mut buf)
-            .expect("buf length is equal to output_size");
-        buf
-    }
-}
-
 /// Trait for hash functions with customization string for domain separation.
 pub trait CustomizedInit: Sized {
     /// Create new hasher instance with the given customization string.
     fn new_customized(customization: &[u8]) -> Self;
-}
-
-/// Trait adding customization string to hash functions with variable output.
-pub trait VarOutputCustomized: Sized {
-    /// Create new hasher instance with the given customization string and output size.
-    fn new_customized(customization: &[u8], output_size: usize) -> Self;
 }
 
 /// Types with a certain collision resistance.
