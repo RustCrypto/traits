@@ -303,7 +303,7 @@ dependencies = [
 
 [[package]]
 name = "kem"
-version = "0.3.0-pre.0"
+version = "0.3.0-pre.1"
 dependencies = [
  "rand_core",
  "zeroize",
