@@ -3,8 +3,6 @@ use cipher::{
     StreamCipherClosure, StreamCipherCore, StreamCipherSeekCore,
     consts::{U1, U4, U16},
 };
-#[cfg(feature = "stream-wrapper")]
-use cipher::{StreamCipher, StreamCipherCoreWrapper, StreamCipherSeek};
 use hex_literal::hex;
 
 const KEY: [u8; 4] = hex!("00010203");
@@ -83,10 +81,6 @@ impl StreamCipherSeekCore for DummyStreamCipherCore {
     }
 }
 
-/// Dummy insecure stream cipher.
-#[cfg(feature = "stream-wrapper")]
-pub type DummyStreamCipher = StreamCipherCoreWrapper<DummyStreamCipherCore>;
-
 #[test]
 fn dummy_stream_cipher_core() {
     let mut cipher = DummyStreamCipherCore::new(&KEY.into(), &IV.into());
@@ -105,55 +99,62 @@ fn dummy_stream_cipher_core() {
     assert_eq!(cipher.get_block_pos(), 201);
 }
 
-#[test]
 #[cfg(feature = "stream-wrapper")]
-fn dummy_stream_cipher_basic() {
-    let mut cipher = DummyStreamCipher::new(&KEY.into(), &IV.into());
-    assert_eq!(cipher.current_pos::<u64>(), 0);
+mod wrapper {
+    use super::*;
+    use cipher::{StreamCipher, StreamCipherCoreWrapper, StreamCipherSeek};
 
-    let mut buf = [0u8; 20];
-    cipher.apply_keystream(&mut buf);
-    assert_eq!(buf, hex!("e82393543cc96089305116003a417accd073384a"));
-    assert_eq!(cipher.current_pos::<usize>(), buf.len());
+    /// Dummy insecure stream cipher.
+    pub type DummyStreamCipher = StreamCipherCoreWrapper<DummyStreamCipherCore>;
 
-    const SEEK_POS: usize = 500;
-    cipher.seek(SEEK_POS);
-    cipher.apply_keystream(&mut buf);
-    assert_eq!(buf, hex!("6b014c6a3c376b13c4720590d26147c5ebf334c5"));
-    assert_eq!(cipher.current_pos::<usize>(), SEEK_POS + buf.len());
+    #[test]
+    fn dummy_stream_cipher_basic() {
+        let mut cipher = DummyStreamCipher::new(&KEY.into(), &IV.into());
+        assert_eq!(cipher.current_pos::<u64>(), 0);
+
+        let mut buf = [0u8; 20];
+        cipher.apply_keystream(&mut buf);
+        assert_eq!(buf, hex!("e82393543cc96089305116003a417accd073384a"));
+        assert_eq!(cipher.current_pos::<usize>(), buf.len());
+
+        const SEEK_POS: usize = 500;
+        cipher.seek(SEEK_POS);
+        cipher.apply_keystream(&mut buf);
+        assert_eq!(buf, hex!("6b014c6a3c376b13c4720590d26147c5ebf334c5"));
+        assert_eq!(cipher.current_pos::<usize>(), SEEK_POS + buf.len());
+    }
+
+    #[test]
+    fn dummy_stream_cipher_seek_limit() {
+        let mut cipher = DummyStreamCipher::new(&KEY.into(), &IV.into());
+
+        let pos = ((u64::MAX as u128) << 4) - 20;
+        cipher.try_seek(pos).unwrap();
+
+        let mut buf = [0u8; 30];
+        let res = cipher.try_apply_keystream(&mut buf);
+        assert!(res.is_err());
+        let cur_pos: u128 = cipher.current_pos();
+        assert_eq!(cur_pos, pos);
+
+        let res = cipher.try_apply_keystream(&mut buf[..19]);
+        assert!(res.is_ok());
+        let cur_pos: u128 = cipher.current_pos();
+        assert_eq!(cur_pos, pos + 19);
+
+        cipher.try_seek(pos).unwrap();
+
+        // TODO: fix as part of https://github.com/RustCrypto/traits/issues/1808
+        // let res = cipher.try_apply_keystream(&mut buf[..20]);
+        // assert!(res.is_err());
+    }
+
+    #[cfg(feature = "dev")]
+    cipher::stream_cipher_test!(
+        dummy_stream_cipher,
+        "dummy_stream_cipher",
+        DummyStreamCipher,
+    );
+    #[cfg(feature = "dev")]
+    cipher::stream_cipher_seek_test!(dummy_stream_cipher_seek, DummyStreamCipher);
 }
-
-#[test]
-#[cfg(feature = "stream-wrapper")]
-fn dummy_stream_cipher_seek_limit() {
-    let mut cipher = DummyStreamCipher::new(&KEY.into(), &IV.into());
-
-    let pos = ((u64::MAX as u128) << 4) - 20;
-    cipher.try_seek(pos).unwrap();
-
-    let mut buf = [0u8; 30];
-    let res = cipher.try_apply_keystream(&mut buf);
-    assert!(res.is_err());
-    let cur_pos: u128 = cipher.current_pos();
-    assert_eq!(cur_pos, pos);
-
-    let res = cipher.try_apply_keystream(&mut buf[..19]);
-    assert!(res.is_ok());
-    let cur_pos: u128 = cipher.current_pos();
-    assert_eq!(cur_pos, pos + 19);
-
-    cipher.try_seek(pos).unwrap();
-
-    // TODO: fix as part of https://github.com/RustCrypto/traits/issues/1808
-    // let res = cipher.try_apply_keystream(&mut buf[..20]);
-    // assert!(res.is_err());
-}
-
-#[cfg(all(feature = "dev", feature = "stream-wrapper"))]
-cipher::stream_cipher_test!(
-    dummy_stream_cipher,
-    "dummy_stream_cipher",
-    DummyStreamCipher,
-);
-#[cfg(all(feature = "dev", feature = "stream-wrapper"))]
-cipher::stream_cipher_seek_test!(dummy_stream_cipher_seek, DummyStreamCipher);
