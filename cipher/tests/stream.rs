@@ -107,7 +107,7 @@ fn dummy_stream_cipher_core() {
 
 #[test]
 #[cfg(feature = "stream-wrapper")]
-fn dummy_stream_cipher() {
+fn dummy_stream_cipher_basic() {
     let mut cipher = DummyStreamCipher::new(&KEY.into(), &IV.into());
     assert_eq!(cipher.current_pos::<u64>(), 0);
 
@@ -149,5 +149,11 @@ fn dummy_stream_cipher_seek_limit() {
     // assert!(res.is_err());
 }
 
+#[cfg(all(feature = "dev", feature = "stream-wrapper"))]
+cipher::stream_cipher_test!(
+    dummy_stream_cipher,
+    "dummy_stream_cipher",
+    DummyStreamCipher,
+);
 #[cfg(all(feature = "dev", feature = "stream-wrapper"))]
 cipher::stream_cipher_seek_test!(dummy_stream_cipher_seek, DummyStreamCipher);
