@@ -37,16 +37,14 @@ pub trait StreamCipherClosure: BlockSizeUser {
 
 /// Block-level synchronous stream ciphers.
 pub trait StreamCipherCore: BlockSizeUser + Sized {
-    /// Process data using backend provided to the rank-2 closure.
-    fn process_with_backend(&mut self, f: impl StreamCipherClosure<BlockSize = Self::BlockSize>);
-
     /// Return number of remaining blocks before the cipher wraps around.
     ///
     /// Returns `None` if number of remaining blocks can not be computed
     /// (e.g. in the case of sponge-based stream ciphers) or it’s too big to fit into `usize`.
-    fn remaining_blocks(&self) -> Option<usize> {
-        None
-    }
+    fn remaining_blocks(&self) -> Option<usize>;
+
+    /// Process data using backend provided to the rank-2 closure.
+    fn process_with_backend(&mut self, f: impl StreamCipherClosure<BlockSize = Self::BlockSize>);
 
     /// Write keystream block.
     ///
