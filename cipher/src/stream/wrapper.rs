@@ -1,3 +1,5 @@
+use crate::StreamCipherCounter;
+
 use super::{
     OverflowError, SeekNum, StreamCipher, StreamCipherCore, StreamCipherSeek, StreamCipherSeekCore,
     errors::StreamCipherError,
@@ -51,20 +53,14 @@ impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
     }
 
     fn check_remaining(&self, data_len: usize) -> Result<(), StreamCipherError> {
-        let rem_blocks = match self.core.remaining_blocks() {
-            Some(v) => v,
-            None => return Ok(()),
+        let Some(rem_blocks) = self.core.remaining_blocks() else {
+            return Ok(());
         };
-
-        let buf_rem = self.buffer.remaining();
-        let data_len = match data_len.checked_sub(buf_rem) {
-            Some(0) | None => return Ok(()),
-            Some(res) => res,
+        let Some(data_len) = data_len.checked_sub(self.buffer.remaining()) else {
+            return Ok(());
         };
-
-        let bs = T::BlockSize::USIZE;
-        let blocks = data_len.div_ceil(bs);
-        if blocks > rem_blocks {
+        let req_blocks = data_len.div_ceil(T::BlockSize::USIZE);
+        if req_blocks > rem_blocks {
             Err(StreamCipherError)
         } else {
             Ok(())
@@ -129,8 +125,11 @@ impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
     }
 
     fn try_seek<SN: SeekNum>(&mut self, new_pos: SN) -> Result<(), StreamCipherError> {
-        let (block_pos, byte_pos) = new_pos.into_block_byte(T::BlockSize::U8)?;
-        // For correct implementations of `SeekNum` compiler should be able to
+        let (block_pos, byte_pos) = new_pos.into_block_byte::<T::Counter>(T::BlockSize::U8)?;
+        if byte_pos != 0 && block_pos.is_max() {
+            return Err(StreamCipherError);
+        }
+        // For correct implementations of `SeekNum` the compiler should be able to
         // eliminate this assert
         assert!(byte_pos < T::BlockSize::U8);
 

@@ -249,8 +249,8 @@ macro_rules! impl_seek_num {
                 }
 
                 fn into_block_byte<T: StreamCipherCounter>(self, block_size: u8) -> Result<(T, u8), OverflowError> {
-                    let bs: Self = block_size.into();
-                    let byte = (self % bs) as u8;
+                    let bs = Self::from(block_size);
+                    let byte = u8::try_from(self % bs).expect("bs fits into u8");
                     let block = T::try_from(self / bs).map_err(|_| OverflowError)?;
                     Ok((block, byte))
                 }
