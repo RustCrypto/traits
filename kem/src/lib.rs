@@ -8,6 +8,8 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, unused_qualifications, missing_debug_implementations)]
 
+pub use crypto_common::{KeyInit, KeySizeUser};
+
 use core::fmt::Debug;
 use rand_core::TryCryptoRng;
 
@@ -26,7 +28,7 @@ pub trait Encapsulate<EK, SS> {
 ///
 /// Often, this will just be a secret key. But, as with [`Encapsulate`], it can be a bundle
 /// of secret keys, or it can include a sender's private key for authenticated encapsulation.
-pub trait Decapsulate<EK, SS> {
+pub trait Decapsulate<EK, SS>: KeyInit {
     /// Decapsulation error
     type Error: Debug;
 
