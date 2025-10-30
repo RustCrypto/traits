@@ -13,6 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Traits for key encapsulation mechanisms"
 
 [dependencies]
+crypto-common = { version = "0.2.0-rc.4", features = ["rand_core"], path = "../crypto-common" }
 rand_core = "0.9"
 zeroize = { version = "1.7", default-features = false }
 
