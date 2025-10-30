@@ -38,5 +38,5 @@ pub trait Decapsulate<EK, SS> {
     fn decapsulate(&self, encapsulated_key: &EK) -> Result<SS, Self::Error>;
 
     /// Retrieve the encapsulator associated with this decapsulator.
-    fn to_encapsulator(&self) -> Self::Encapsulator;
+    fn encapsulator(&self) -> Self::Encapsulator;
 }
