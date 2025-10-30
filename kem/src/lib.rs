@@ -28,6 +28,9 @@ pub trait Encapsulate<EK, SS> {
 /// Often, this will just be a secret key. But, as with [`Encapsulate`], it can be a bundle
 /// of secret keys, or it can include a sender's private key for authenticated encapsulation.
 pub trait Decapsulate<EK, SS> {
+    /// Encapsulator which corresponds to this decapsulator.
+    type Encapsulator: Encapsulate<EK, SS>;
+
     /// Decapsulation error
     type Error: Debug;
 
