@@ -8,6 +8,8 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, unused_qualifications, missing_debug_implementations)]
 
+pub use crypto_common::{KeyInit, KeySizeUser};
+
 use core::fmt::Debug;
 use rand_core::TryCryptoRng;
 
