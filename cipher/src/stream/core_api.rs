@@ -37,11 +37,10 @@ pub trait StreamCipherClosure: BlockSizeUser {
 
 /// Block-level synchronous stream ciphers.
 pub trait StreamCipherCore: BlockSizeUser + Sized {
-    /// Return number of remaining blocks before cipher wraps around.
+    /// Return number of remaining blocks before the cipher wraps around.
     ///
     /// Returns `None` if number of remaining blocks can not be computed
-    /// (e.g. in ciphers based on the sponge construction) or it's too big
-    /// to fit into `usize`.
+    /// (e.g. in the case of sponge-based stream ciphers) or it’s too big to fit into `usize`.
     fn remaining_blocks(&self) -> Option<usize>;
 
     /// Process data using backend provided to the rank-2 closure.
@@ -91,23 +90,23 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
 
     /// Try to apply keystream to data not divided into blocks.
     ///
-    /// Consumes cipher since it may consume final keystream block only
-    /// partially.
+    /// Consumes cipher since it may consume the final keystream block only partially.
     ///
-    /// Returns an error if number of remaining blocks is not sufficient
-    /// for processing the input data.
+    /// Returns an error if the number of remaining blocks is not sufficient
+    /// for processing of the input data.
     #[inline]
     fn try_apply_keystream_partial(
         mut self,
         mut buf: InOutBuf<'_, '_, u8>,
     ) -> Result<(), StreamCipherError> {
-        if let Some(rem) = self.remaining_blocks() {
-            let blocks = if buf.len() % Self::BlockSize::USIZE == 0 {
-                buf.len() % Self::BlockSize::USIZE
-            } else {
-                buf.len() % Self::BlockSize::USIZE + 1
-            };
-            if blocks > rem {
+        if let Some(rem_blocks) = self.remaining_blocks() {
+            // Note that if `rem_blocks` is equal to zero, it means that
+            // the next generated block will be the last in the keystream and
+            // the cipher core will wrap to its initial state.
+            // Since we consume `self`, it's fine to generate the last keystream block,
+            // so we can use division instead of `div_ceil` to compute `req_blocks`.
+            let req_blocks = buf.len() / Self::BlockSize::USIZE;
+            if req_blocks > rem_blocks {
                 return Err(StreamCipherError);
             }
         }
@@ -164,7 +163,10 @@ pub trait StreamCipherCounter:
     + TryInto<u64>
     + TryInto<u128>
     + TryInto<usize>
+    + Copy
 {
+    /// Returns `true` if `self` is equal to the max counter value.
+    fn is_max(&self) -> bool;
 }
 
 /// Block-level seeking trait for stream ciphers.
@@ -181,7 +183,13 @@ pub trait StreamCipherSeekCore: StreamCipherCore {
 
 macro_rules! impl_counter {
     {$($t:ty )*} => {
-        $( impl StreamCipherCounter for $t { } )*
+        $(
+            impl StreamCipherCounter for $t {
+                fn is_max(&self) -> bool {
+                    *self == <$t>::MAX
+                }
+            }
+        )*
     };
 }
 
