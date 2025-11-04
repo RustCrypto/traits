@@ -28,7 +28,7 @@ bytes = { version = "1", optional = true, default-features = false }
 default = ["rand_core"]
 alloc = []
 dev = ["blobby", "alloc"]
-os_rng = ["crypto-common/os_rng", "rand_core"]
+getrandom = ["crypto-common/getrandom"]
 rand_core = ["crypto-common/rand_core"]
 
 [package.metadata.docs.rs]

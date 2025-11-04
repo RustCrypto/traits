@@ -29,8 +29,8 @@ alloc = []
 block-padding = ["inout/block-padding"]
 stream-wrapper = ["block-buffer"]
 # Enable random key and IV generation methods
+getrandom = ["crypto-common/getrandom"]
 rand_core = ["crypto-common/rand_core"]
-os_rng = ["crypto-common/os_rng", "rand_core"]
 dev = ["blobby"]
 zeroize = ["dep:zeroize", "crypto-common/zeroize", "block-buffer?/zeroize"]
 

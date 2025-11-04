@@ -12,6 +12,8 @@
 /// Hazardous materials.
 pub mod hazmat;
 
+#[cfg(feature = "getrandom")]
+pub use getrandom;
 #[cfg(feature = "rand_core")]
 pub use rand_core;
 
@@ -26,8 +28,6 @@ use hybrid_array::{
 
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, TryCryptoRng};
-#[cfg(feature = "os_rng")]
-use rand_core::{OsError, OsRng, TryRngCore};
 
 /// Block on which [`BlockSizeUser`] implementors operate.
 pub type Block<B> = Array<u8, <B as BlockSizeUser>::BlockSize>;
@@ -179,11 +179,11 @@ pub trait KeyInit: KeySizeUser + Sized {
     }
 
     /// Generate random key using the operating system's secure RNG.
-    #[cfg(feature = "os_rng")]
+    #[cfg(feature = "getrandom")]
     #[inline]
-    fn generate_key() -> Result<Key<Self>, OsError> {
+    fn generate_key() -> Result<Key<Self>, getrandom::Error> {
         let mut key = Key::<Self>::default();
-        OsRng.try_fill_bytes(&mut key)?;
+        getrandom::fill(&mut key)?;
         Ok(key)
     }
 
@@ -235,11 +235,11 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     }
 
     /// Generate random key using the operating system's secure RNG.
-    #[cfg(feature = "os_rng")]
+    #[cfg(feature = "getrandom")]
     #[inline]
-    fn generate_key() -> Result<Key<Self>, OsError> {
+    fn generate_key() -> Result<Key<Self>, getrandom::Error> {
         let mut key = Key::<Self>::default();
-        OsRng.try_fill_bytes(&mut key)?;
+        getrandom::fill(&mut key)?;
         Ok(key)
     }
 
@@ -264,11 +264,11 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     }
 
     /// Generate random IV using the operating system's secure RNG.
-    #[cfg(feature = "os_rng")]
+    #[cfg(feature = "getrandom")]
     #[inline]
-    fn generate_iv() -> Result<Iv<Self>, OsError> {
+    fn generate_iv() -> Result<Iv<Self>, getrandom::Error> {
         let mut iv = Iv::<Self>::default();
-        OsRng.try_fill_bytes(&mut iv)?;
+        getrandom::fill(&mut iv)?;
         Ok(iv)
     }
 
@@ -293,9 +293,9 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     }
 
     /// Generate random key and IV using the operating system's secure RNG.
-    #[cfg(feature = "os_rng")]
+    #[cfg(feature = "getrandom")]
     #[inline]
-    fn generate_key_iv() -> Result<(Key<Self>, Iv<Self>), OsError> {
+    fn generate_key_iv() -> Result<(Key<Self>, Iv<Self>), getrandom::Error> {
         let key = Self::generate_key()?;
         let iv = Self::generate_iv()?;
         Ok((key, iv))
@@ -346,11 +346,11 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     }
 
     /// Generate random IV using the operating system's secure RNG.
-    #[cfg(feature = "os_rng")]
+    #[cfg(feature = "getrandom")]
     #[inline]
-    fn generate_iv() -> Result<Iv<Self>, OsError> {
+    fn generate_iv() -> Result<Iv<Self>, getrandom::Error> {
         let mut iv = Iv::<Self>::default();
-        OsRng.try_fill_bytes(&mut iv)?;
+        getrandom::fill(&mut iv)?;
         Ok(iv)
     }
 
