@@ -358,6 +358,7 @@ name = "password-hash"
 version = "0.6.0-rc.1"
 dependencies = [
  "base64ct",
+ "getrandom",
  "rand_core",
  "subtle",
 ]

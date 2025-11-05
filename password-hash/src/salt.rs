@@ -186,12 +186,18 @@ pub struct SaltString {
 
 #[allow(clippy::len_without_is_empty)]
 impl SaltString {
+    /// Generate a random B64-encoded [`SaltString`].
+    #[cfg(feature = "getrandom")]
+    pub fn generate() -> Self {
+        let mut bytes = [0u8; Salt::RECOMMENDED_LENGTH];
+        getrandom::fill(&mut bytes).expect("RNG failure");
+        Self::encode_b64(&bytes).expect(INVARIANT_VIOLATED_MSG)
+    }
+
     /// Generate a random B64-encoded [`SaltString`] from [`CryptoRng`].
     #[cfg(feature = "rand_core")]
     pub fn from_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
-        let mut bytes = [0u8; Salt::RECOMMENDED_LENGTH];
-        rng.fill_bytes(&mut bytes);
-        Self::encode_b64(&bytes).expect(INVARIANT_VIOLATED_MSG)
+        Self::try_from_rng(rng).expect("RNG failure")
     }
 
     /// Generate a random B64-encoded [`SaltString`] from [`TryCryptoRng`].
