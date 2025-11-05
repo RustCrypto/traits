@@ -14,6 +14,7 @@ pub mod hazmat;
 
 #[cfg(feature = "getrandom")]
 pub use getrandom;
+
 #[cfg(feature = "rand_core")]
 pub use rand_core;
 
