@@ -6,11 +6,13 @@ mod fixed;
 #[cfg(feature = "mac")]
 mod mac;
 mod rng;
+mod variable;
 mod xof;
 
 pub use fixed::*;
 #[cfg(feature = "mac")]
 pub use mac::*;
+pub use variable::*;
 pub use xof::*;
 
 /// Test vector for hash functions
