@@ -14,7 +14,7 @@ description = "Traits for describing block ciphers and stream ciphers"
 
 [dependencies]
 crypto-common = { version = "0.2.0-rc.5", path = "../crypto-common" }
-inout = "0.2.0-rc.6"
+inout = "0.2"
 
 # optional dependencies
 blobby = { version = "0.4.0-pre.1", optional = true }
