@@ -1,6 +1,6 @@
 [package]
 name = "universal-hash"
-version = "0.6.0-rc.2"
+version = "0.6.0-rc.3"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
