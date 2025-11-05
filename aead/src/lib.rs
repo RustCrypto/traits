@@ -40,8 +40,8 @@ use inout::InOutBuf;
 use alloc::vec::Vec;
 #[cfg(feature = "bytes")]
 use bytes::BytesMut;
-#[cfg(feature = "os_rng")]
-use crypto_common::rand_core::{OsError, OsRng, TryRngCore};
+#[cfg(feature = "getrandom")]
+use crypto_common::getrandom;
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, TryCryptoRng};
 
@@ -125,10 +125,10 @@ pub trait AeadCore {
     ///
     /// [NIST SP 800-38D]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
     /// [`aead-stream`]: https://docs.rs/aead-stream
-    #[cfg(feature = "os_rng")]
-    fn generate_nonce() -> core::result::Result<Nonce<Self>, OsError> {
+    #[cfg(feature = "getrandom")]
+    fn generate_nonce() -> core::result::Result<Nonce<Self>, getrandom::Error> {
         let mut nonce = Nonce::<Self>::default();
-        OsRng.try_fill_bytes(&mut nonce)?;
+        getrandom::fill(&mut nonce)?;
         Ok(nonce)
     }
 

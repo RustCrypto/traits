@@ -26,7 +26,7 @@ universal-hash = { version = "0.6.0-rc.1", path = "../universal-hash", optional 
 
 [features]
 std = ["elliptic-curve/std"]
-os_rng = ["crypto-common/os_rng"]
+getrandom = ["crypto-common/getrandom"]
 rand_core = ["crypto-common/rand_core"]
 
 [package.metadata.docs.rs]

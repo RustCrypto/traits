@@ -152,6 +152,7 @@ dependencies = [
 name = "crypto-common"
 version = "0.2.0-rc.4"
 dependencies = [
+ "getrandom",
  "hybrid-array",
  "rand_core",
 ]
