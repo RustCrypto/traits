@@ -479,7 +479,7 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "3.0.0-rc.4"
+version = "3.0.0-rc.5"
 dependencies = [
  "digest",
  "rand_core",
