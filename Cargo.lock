@@ -138,8 +138,7 @@ dependencies = [
 [[package]]
 name = "crypto-bigint"
 version = "0.7.0-rc.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f4b0fda9462026d53a3ef37c5ec283639ee8494a1a5401109c0e2a3fb4d490c"
+source = "git+https://github.com/RustCrypto/crypto-bigint?branch=rand_core%2Fv0.10.0-rc-2#896b26cc24c96cad5edf957528d0e9558b13dc75"
 dependencies = [
  "hybrid-array",
  "num-traits",
@@ -205,8 +204,7 @@ dependencies = [
 [[package]]
 name = "ff"
 version = "0.14.0-pre.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d42dd26f5790eda47c1a2158ea4120e32c35ddc9a7743c98a292accc01b54ef3"
+source = "git+https://github.com/tarcieri/ff?branch=rand_core%2Fv0.10.0-rc-2#80d58e19c3649824c009b3c77cd15f969bb58ca0"
 dependencies = [
  "bitvec",
  "ff_derive",
@@ -217,8 +215,7 @@ dependencies = [
 [[package]]
 name = "ff_derive"
 version = "0.14.0-pre.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9266df7c7c72e5a865a447aca13bf480d7310eaa4f84de117c33e361d4da8888"
+source = "git+https://github.com/tarcieri/ff?branch=rand_core%2Fv0.10.0-rc-2#80d58e19c3649824c009b3c77cd15f969bb58ca0"
 dependencies = [
  "addchain",
  "num-bigint",
@@ -250,8 +247,7 @@ dependencies = [
 [[package]]
 name = "group"
 version = "0.14.0-pre.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ff6a0b2dd4b981b1ae9e3e6830ab146771f3660d31d57bafd9018805a91b0f1"
+source = "git+https://github.com/tarcieri/group?branch=rand_core%2Fv0.10.0-rc-2#642bee5b41b93c11496ca667fd99eacb6eb4a147"
 dependencies = [
  "ff",
  "rand_core",
@@ -423,12 +419,9 @@ checksum = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09"
 
 [[package]]
 name = "rand_core"
-version = "0.9.3"
+version = "0.10.0-rc-2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99d9a13982dcf210057a8a78572b2217b667c3beacbf3a0d8b454f6f82837d38"
-dependencies = [
- "getrandom",
-]
+checksum = "104a23e4e8b77312a823b6b5613edbac78397e2f34320bc7ac4277013ec4478e"
 
 [[package]]
 name = "sec1"

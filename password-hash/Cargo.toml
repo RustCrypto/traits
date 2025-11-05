@@ -21,12 +21,12 @@ base64ct = "1.7"
 subtle = { version = "2", default-features = false }
 
 # optional dependencies
-rand_core = { version = "0.9", optional = true, default-features = false }
+rand_core = { version = "0.10.0-rc-2", optional = true, default-features = false }
 
 [features]
 default = ["rand_core"]
 rand_core = ["dep:rand_core"]
-os_rng = ["rand_core", "rand_core/os_rng"]
+#os_rng = ["rand_core", "rand_core/os_rng"]
 alloc = ["base64ct/alloc"]
 
 [package.metadata.docs.rs]
