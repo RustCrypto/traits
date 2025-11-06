@@ -137,8 +137,9 @@ dependencies = [
 
 [[package]]
 name = "crypto-bigint"
-version = "0.7.0-rc.9"
-source = "git+https://github.com/RustCrypto/crypto-bigint?branch=rand_core%2Fv0.10.0-rc-2#896b26cc24c96cad5edf957528d0e9558b13dc75"
+version = "0.7.0-rc.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6715836b4946e8585016e80b79c7561476aff3b22f7b756778e7b109d86086c6"
 dependencies = [
  "hybrid-array",
  "num-traits",
