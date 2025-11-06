@@ -197,7 +197,8 @@ impl SaltString {
     /// Generate a random B64-encoded [`SaltString`] from [`CryptoRng`].
     #[cfg(feature = "rand_core")]
     pub fn from_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
-        Self::try_from_rng(rng).expect("RNG failure")
+        let Ok(out) = Self::try_from_rng(rng);
+        out
     }
 
     /// Generate a random B64-encoded [`SaltString`] from [`TryCryptoRng`].
