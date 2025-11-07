@@ -33,6 +33,7 @@ pub use inout::block_padding;
 #[cfg(feature = "zeroize")]
 pub use zeroize;
 
+pub mod async_stream;
 pub mod block;
 #[cfg(feature = "dev")]
 pub mod dev;
