@@ -101,6 +101,8 @@ fn dummy_stream_cipher_core() {
 
 #[cfg(feature = "stream-wrapper")]
 mod wrapper {
+    use core::panic;
+
     use super::*;
     use cipher::{StreamCipher, StreamCipherCoreWrapper, StreamCipherSeek};
 
@@ -127,26 +129,37 @@ mod wrapper {
     #[test]
     fn dummy_stream_cipher_seek_limit() {
         let mut cipher = DummyStreamCipher::new(&KEY.into(), &IV.into());
+        let mut buf = [0u8; 64];
 
-        let pos = ((u64::MAX as u128) << 4) - 20;
-        cipher.try_seek(pos).unwrap();
+        let block_size = DummyStreamCipherCore::block_size();
+        let block_size_u128 = u128::try_from(block_size).unwrap();
+        let keystream_end = 1u128 << 68;
+        let last_block_pos = keystream_end - block_size_u128;
 
-        let mut buf = [0u8; 30];
-        let res = cipher.try_apply_keystream(&mut buf);
-        assert!(res.is_err());
-        let cur_pos: u128 = cipher.current_pos();
-        assert_eq!(cur_pos, pos);
+        // Seeking to the last block or past it should return error
+        for offset in 0..block_size_u128 {
+            let res = cipher.try_seek(keystream_end - offset);
+            assert!(res.is_err());
+            let res = cipher.try_seek(keystream_end + offset);
+            assert!(res.is_err());
+        }
 
-        let res = cipher.try_apply_keystream(&mut buf[..19]);
-        assert!(res.is_ok());
-        let cur_pos: u128 = cipher.current_pos();
-        assert_eq!(cur_pos, pos + 19);
-
-        cipher.try_seek(pos).unwrap();
-
-        // TODO: fix as part of https://github.com/RustCrypto/traits/issues/1808
-        // let res = cipher.try_apply_keystream(&mut buf[..20]);
-        // assert!(res.is_err());
+        // Trying to apply the last keystream block should return error
+        for offset in block_size..buf.len() {
+            for len in 0..buf.len() {
+                let pos = keystream_end - u128::try_from(offset).unwrap();
+                let res = cipher.try_seek(pos);
+                assert!(res.is_ok());
+                let res = cipher.try_apply_keystream(&mut buf[..len]);
+                let expected_pos = pos + u128::try_from(len).unwrap();
+                if expected_pos > last_block_pos {
+                    assert!(res.is_err());
+                } else {
+                    assert!(res.is_ok());
+                    assert_eq!(cipher.current_pos::<u128>(), expected_pos);
+                }
+            }
+        }
     }
 
     #[cfg(feature = "dev")]
