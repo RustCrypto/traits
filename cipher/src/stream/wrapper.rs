@@ -51,7 +51,10 @@ impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
     pub fn get_core(&self) -> &T {
         &self.core
     }
+}
 
+impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
+    #[inline]
     fn check_remaining(&self, data_len: usize) -> Result<(), StreamCipherError> {
         let Some(rem_blocks) = self.core.remaining_blocks() else {
             return Ok(());
@@ -66,16 +69,9 @@ impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
             Ok(())
         }
     }
-}
 
-impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
     #[inline]
-    fn try_apply_keystream_inout(
-        &mut self,
-        data: InOutBuf<'_, '_, u8>,
-    ) -> Result<(), StreamCipherError> {
-        self.check_remaining(data.len())?;
-
+    fn unchecked_apply_keystream_inout(&mut self, data: InOutBuf<'_, '_, u8>) {
         let head_ks = self.buffer.read_cached(data.len());
 
         let (mut head, data) = data.split_at(head_ks.len());
@@ -91,14 +87,10 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
                 tail.xor_in2out(tail_ks);
             },
         );
-
-        Ok(())
     }
 
     #[inline]
-    fn try_write_keystream(&mut self, data: &mut [u8]) -> Result<(), StreamCipherError> {
-        self.check_remaining(data.len())?;
-
+    fn unchecked_write_keystream(&mut self, data: &mut [u8]) {
         let head_ks = self.buffer.read_cached(data.len());
 
         let (head, data) = data.split_at_mut(head_ks.len());
@@ -112,8 +104,6 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
             |b| self.core.write_keystream_block(b),
             |tail_ks| tail.copy_from_slice(tail_ks),
         );
-
-        Ok(())
     }
 }
 
