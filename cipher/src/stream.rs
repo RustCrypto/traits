@@ -97,8 +97,8 @@ pub trait AsyncStreamCipher: Sized {
 /// making the cipher vulnerable to chosen plaintext attack. Typically, the repetition period is
 /// astronomically large, rendering keystream repetition impossible to encounter in practice.
 ///
-/// However, some counter-based stream ciphers use small counters (e.g. 32 bits) and allow seeking
-/// across the keystream. This can result in practical encounters with keystream repetition.
+/// However, counter-based stream ciphers allow seeking across the keystream, and some also use
+/// small counters (e.g. 32 bits). This can result in triggering keystream repetition in practice.
 ///
 /// To guard against this, methods either panic (e.g. [`StreamCipher::apply_keystream`]) or
 /// return [`StreamCipherError`] (e.g. [`StreamCipher::try_apply_keystream`]) when
