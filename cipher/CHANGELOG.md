@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
 
+### Fixed
+- Seeking implementation in the stream cipher wrapper ([#2052])
+
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
+[#2052]: https://github.com/RustCrypto/traits/pull/2052
 
 ## 0.4.4 (2022-03-09)
 ### Changed
