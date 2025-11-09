@@ -15,7 +15,10 @@ use subtle::{Choice, ConstantTimeEq, CtOption};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 #[cfg(feature = "arithmetic")]
-use crate::{CurveArithmetic, NonZeroScalar, PublicKey, rand_core::TryCryptoRng};
+use crate::{
+    CurveArithmetic, NonZeroScalar, PublicKey,
+    rand_core::{CryptoRng, TryCryptoRng},
+};
 
 #[cfg(feature = "pem")]
 use pem_rfc7468::{self as pem, PemLabel};
@@ -84,6 +87,10 @@ where
     const MIN_SIZE: usize = 24;
 
     /// Generate a random [`SecretKey`].
+    ///
+    /// # Panics
+    ///
+    /// If the system's cryptographically secure RNG has an internal error.
     #[cfg(feature = "getrandom")]
     pub fn generate() -> Self
     where
@@ -105,6 +112,17 @@ where
         Ok(Self {
             inner: NonZeroScalar::<C>::try_from_rng(rng)?.into(),
         })
+    }
+
+    /// Deprecated: Generate a random [`SecretKey`].
+    #[cfg(feature = "arithmetic")]
+    #[deprecated(since = "0.14.0", note = "use `generate` or `try_from_rng` instead")]
+    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self
+    where
+        C: CurveArithmetic,
+    {
+        let Ok(ret) = Self::try_from_rng(rng);
+        ret
     }
 
     /// Create a new secret key from a scalar value.
