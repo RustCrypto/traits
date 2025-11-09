@@ -13,7 +13,7 @@ use core::{
     str,
 };
 use ff::{Field, PrimeField};
-use rand_core::TryCryptoRng;
+use rand_core::{CryptoRng, TryCryptoRng};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
@@ -50,7 +50,11 @@ impl<C> NonZeroScalar<C>
 where
     C: CurveArithmetic,
 {
-    /// Generate a random `NonZeroScalar`.
+    /// Generate a random [`NonZeroScalar`].
+    ///
+    /// # Panics
+    ///
+    /// If the system's cryptographically secure RNG has an internal error.
     #[cfg(feature = "getrandom")]
     pub fn generate() -> Self {
         // Use rejection sampling to eliminate invalid values
@@ -65,7 +69,7 @@ where
         }
     }
 
-    /// Generate a random `NonZeroScalar`.
+    /// Generate a random [`NonZeroScalar`].
     pub fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
         // Use rejection sampling to eliminate zero values.
         // While this method isn't constant-time, the attacker shouldn't learn
@@ -75,6 +79,14 @@ where
                 break Ok(result);
             }
         }
+    }
+
+    /// Deprecated: Generate a random [`NonZeroScalar`].
+    #[cfg(feature = "arithmetic")]
+    #[deprecated(since = "0.14.0", note = "use `generate` or `try_from_rng` instead")]
+    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
+        let Ok(ret) = Self::try_from_rng(rng);
+        ret
     }
 
     /// Create a [`NonZeroScalar`] from a scalar.
