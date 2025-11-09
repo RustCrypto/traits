@@ -15,10 +15,7 @@ use subtle::{Choice, ConstantTimeEq, CtOption};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 #[cfg(feature = "arithmetic")]
-use crate::{
-    CurveArithmetic, NonZeroScalar, PublicKey,
-    rand_core::{CryptoRng, TryCryptoRng},
-};
+use crate::{CurveArithmetic, NonZeroScalar, PublicKey, rand_core::TryCryptoRng};
 
 #[cfg(feature = "pem")]
 use pem_rfc7468::{self as pem, PemLabel};
@@ -87,13 +84,13 @@ where
     const MIN_SIZE: usize = 24;
 
     /// Generate a random [`SecretKey`].
-    #[cfg(feature = "arithmetic")]
-    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self
+    #[cfg(feature = "getrandom")]
+    pub fn generate() -> Self
     where
         C: CurveArithmetic,
     {
         Self {
-            inner: NonZeroScalar::<C>::random(rng).into(),
+            inner: NonZeroScalar::<C>::generate().into(),
         }
     }
 
