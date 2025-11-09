@@ -13,7 +13,7 @@ use core::{
     str,
 };
 use ff::{Field, PrimeField};
-use rand_core::{CryptoRng, TryCryptoRng};
+use rand_core::TryCryptoRng;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
@@ -51,12 +51,15 @@ where
     C: CurveArithmetic,
 {
     /// Generate a random `NonZeroScalar`.
-    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
-        // Use rejection sampling to eliminate zero values.
+    #[cfg(feature = "getrandom")]
+    pub fn generate() -> Self {
+        // Use rejection sampling to eliminate invalid values
         // While this method isn't constant-time, the attacker shouldn't learn
         // anything about unrelated outputs so long as `rng` is a secure `CryptoRng`.
         loop {
-            if let Some(result) = Self::new(Field::random(rng)).into() {
+            let mut repr = FieldBytes::<C>::default();
+            getrandom::fill(&mut repr).expect("RNG failure");
+            if let Some(result) = Self::from_repr(repr).into() {
                 break result;
             }
         }

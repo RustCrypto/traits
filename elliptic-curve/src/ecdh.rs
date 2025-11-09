@@ -34,7 +34,7 @@ use crate::{
 };
 use core::{borrow::Borrow, fmt};
 use hkdf::Hkdf;
-use rand_core::{CryptoRng, TryCryptoRng};
+use rand_core::TryCryptoRng;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Low-level Elliptic Curve Diffie-Hellman (ECDH) function.
@@ -108,9 +108,10 @@ where
     C: CurveArithmetic,
 {
     /// Generate a cryptographically random [`EphemeralSecret`].
-    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
+    #[cfg(feature = "getrandom")]
+    pub fn generate() -> Self {
         Self {
-            scalar: NonZeroScalar::random(rng),
+            scalar: NonZeroScalar::generate(),
         }
     }
 

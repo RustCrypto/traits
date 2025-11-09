@@ -188,6 +188,7 @@ dependencies = [
  "crypto-bigint",
  "digest",
  "ff",
+ "getrandom",
  "group",
  "hex-literal",
  "hkdf",
