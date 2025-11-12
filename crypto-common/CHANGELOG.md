@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
 
+## 0.1.7 (2025-11-12)
+### Changed
+- Pin `generic-array` to v0.14.7 ([#2088])
+
+[#2088]: https://github.com/RustCrypto/traits/pull/2088
+
 ## 0.1.6 (2022-07-16)
 ### Added
 - Move `ParBlocks`/`ParBlocksSizeUser` from `cipher` crate ([#1052])
