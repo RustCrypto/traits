@@ -153,7 +153,7 @@ pub trait AlgorithmName {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result;
 }
 
-/// Types which can be initialized from key.
+/// Types which can be initialized from a key.
 pub trait KeyInit: KeySizeUser + Sized {
     /// Create new value from fixed size key.
     fn new(key: &Key<Self>) -> Self;
@@ -209,7 +209,7 @@ pub trait KeyInit: KeySizeUser + Sized {
     }
 }
 
-/// Types which can be initialized from key and initialization vector (nonce).
+/// Types which can be initialized from a key and initialization vector (nonce).
 pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     /// Create new value from fixed length key and nonce.
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self;
@@ -320,6 +320,73 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
         let key = Self::try_generate_key_with_rng(rng)?;
         let iv = Self::try_generate_iv_with_rng(rng)?;
         Ok((key, iv))
+    }
+}
+
+/// Types which can be fallibly initialized from a key.
+pub trait TryKeyInit: KeySizeUser + Sized {
+    /// Create new value from a fixed-size key.
+    ///
+    /// # Errors
+    /// - if the key is considered invalid according to rules specific to the implementing type
+    fn new(key: &Key<Self>) -> Result<Self, InvalidKey>;
+
+    /// Create new value from a variable size key.
+    ///
+    /// # Errors
+    /// - if the provided slice is the wrong length
+    /// - if the key is considered invalid by [`TryKeyInit::new`]
+    #[inline]
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidKey> {
+        <&Key<Self>>::try_from(key)
+            .map_err(|_| InvalidKey)
+            .and_then(Self::new)
+    }
+
+    /// Generate random key using the operating system's secure RNG.
+    ///
+    /// # Errors
+    /// - if the system random number generator encountered an internal error
+    #[cfg(feature = "getrandom")]
+    #[inline]
+    fn generate_key() -> Result<Key<Self>, getrandom::Error> {
+        // Use rejection sampling to find a key which initializes successfully in an unbiased manner
+        loop {
+            let mut key = Key::<Self>::default();
+            getrandom::fill(&mut key)?;
+
+            if Self::new(&key).is_ok() {
+                return Ok(key);
+            }
+        }
+    }
+
+    /// Generate random key using the provided [`CryptoRng`].
+    #[cfg(feature = "rand_core")]
+    #[inline]
+    fn generate_key_with_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Key<Self> {
+        let Ok(key) = Self::try_generate_key_with_rng(rng);
+        key
+    }
+
+    /// Generate random key using the provided [`TryCryptoRng`].
+    ///
+    /// # Errors
+    /// - if the provided [`TryCryptoRng`] encountered an internal error
+    #[cfg(feature = "rand_core")]
+    #[inline]
+    fn try_generate_key_with_rng<R: TryCryptoRng + ?Sized>(
+        rng: &mut R,
+    ) -> Result<Key<Self>, R::Error> {
+        // Use rejection sampling to find a key which initializes successfully in an unbiased manner
+        loop {
+            let mut key = Key::<Self>::default();
+            rng.try_fill_bytes(&mut key)?;
+
+            if Self::new(&key).is_ok() {
+                return Ok(key);
+            }
+        }
     }
 }
 
@@ -461,6 +528,20 @@ where
     }
 }
 */
+
+/// Error type for [`TryKeyInit`] for cases where the provided bytes do not correspond to a
+/// valid key.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct InvalidKey;
+
+impl fmt::Display for InvalidKey {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("WeakKey")
+    }
+}
+
+impl core::error::Error for InvalidKey {}
 
 /// The error type returned when key and/or IV used in the [`KeyInit`],
 /// [`KeyIvInit`], and [`InnerIvInit`] slice-based methods had
