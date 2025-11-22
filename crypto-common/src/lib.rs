@@ -12,23 +12,23 @@
 /// Hazardous materials.
 pub mod hazmat;
 
-#[cfg(feature = "getrandom")]
-pub use getrandom;
-
+/// Secure random generation.
 #[cfg(feature = "rand_core")]
-pub use rand_core;
+mod generate;
 
 pub use hybrid_array as array;
 pub use hybrid_array::typenum;
+
+#[cfg(feature = "rand_core")]
+pub use {generate::Generate, rand_core};
+#[cfg(feature = "getrandom")]
+pub use {getrandom, getrandom::Error as RngError};
 
 use core::fmt;
 use hybrid_array::{
     Array, ArraySize,
     typenum::{Diff, Sum, Unsigned},
 };
-
-#[cfg(feature = "rand_core")]
-use rand_core::{CryptoRng, TryCryptoRng};
 
 /// Block on which [`BlockSizeUser`] implementors operate.
 pub type Block<B> = Array<u8, <B as BlockSizeUser>::BlockSize>;
@@ -178,35 +178,6 @@ pub trait KeyInit: KeySizeUser + Sized {
             .map(Self::new)
             .map_err(|_| InvalidLength)
     }
-
-    /// Generate random key using the operating system's secure RNG.
-    #[cfg(feature = "getrandom")]
-    #[inline]
-    fn generate_key() -> Result<Key<Self>, getrandom::Error> {
-        let mut key = Key::<Self>::default();
-        getrandom::fill(&mut key)?;
-        Ok(key)
-    }
-
-    /// Generate random key using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn generate_key_with_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Key<Self> {
-        let mut key = Key::<Self>::default();
-        rng.fill_bytes(&mut key);
-        key
-    }
-
-    /// Generate random key using the provided [`TryCryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn try_generate_key_with_rng<R: TryCryptoRng + ?Sized>(
-        rng: &mut R,
-    ) -> Result<Key<Self>, R::Error> {
-        let mut key = Key::<Self>::default();
-        rng.try_fill_bytes(&mut key)?;
-        Ok(key)
-    }
 }
 
 /// Types which can be initialized from key and initialization vector (nonce).
@@ -234,93 +205,6 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
         let iv = <&Iv<Self>>::try_from(iv).map_err(|_| InvalidLength)?;
         Ok(Self::new(key, iv))
     }
-
-    /// Generate random key using the operating system's secure RNG.
-    #[cfg(feature = "getrandom")]
-    #[inline]
-    fn generate_key() -> Result<Key<Self>, getrandom::Error> {
-        let mut key = Key::<Self>::default();
-        getrandom::fill(&mut key)?;
-        Ok(key)
-    }
-
-    /// Generate random key using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn generate_key_with_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Key<Self> {
-        let mut key = Key::<Self>::default();
-        rng.fill_bytes(&mut key);
-        key
-    }
-
-    /// Generate random key using the provided [`TryCryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn try_generate_key_with_rng<R: TryCryptoRng + ?Sized>(
-        rng: &mut R,
-    ) -> Result<Key<Self>, R::Error> {
-        let mut key = Key::<Self>::default();
-        rng.try_fill_bytes(&mut key)?;
-        Ok(key)
-    }
-
-    /// Generate random IV using the operating system's secure RNG.
-    #[cfg(feature = "getrandom")]
-    #[inline]
-    fn generate_iv() -> Result<Iv<Self>, getrandom::Error> {
-        let mut iv = Iv::<Self>::default();
-        getrandom::fill(&mut iv)?;
-        Ok(iv)
-    }
-
-    /// Generate random IV using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn generate_iv_with_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Iv<Self> {
-        let mut iv = Iv::<Self>::default();
-        rng.fill_bytes(&mut iv);
-        iv
-    }
-
-    /// Generate random IV using the provided [`TryCryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn try_generate_iv_with_rng<R: TryCryptoRng + ?Sized>(
-        rng: &mut R,
-    ) -> Result<Iv<Self>, R::Error> {
-        let mut iv = Iv::<Self>::default();
-        rng.try_fill_bytes(&mut iv)?;
-        Ok(iv)
-    }
-
-    /// Generate random key and IV using the operating system's secure RNG.
-    #[cfg(feature = "getrandom")]
-    #[inline]
-    fn generate_key_iv() -> Result<(Key<Self>, Iv<Self>), getrandom::Error> {
-        let key = Self::generate_key()?;
-        let iv = Self::generate_iv()?;
-        Ok((key, iv))
-    }
-
-    /// Generate random key and IV using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn generate_key_iv_with_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> (Key<Self>, Iv<Self>) {
-        let key = Self::generate_key_with_rng(rng);
-        let iv = Self::generate_iv_with_rng(rng);
-        (key, iv)
-    }
-
-    /// Generate random key and IV using the provided [`TryCryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn try_generate_key_iv_with_rng<R: TryCryptoRng + ?Sized>(
-        rng: &mut R,
-    ) -> Result<(Key<Self>, Iv<Self>), R::Error> {
-        let key = Self::try_generate_key_with_rng(rng)?;
-        let iv = Self::try_generate_iv_with_rng(rng)?;
-        Ok((key, iv))
-    }
 }
 
 /// Types which can be initialized from another type (usually block ciphers).
@@ -344,35 +228,6 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     fn inner_iv_slice_init(inner: Self::Inner, iv: &[u8]) -> Result<Self, InvalidLength> {
         let iv = <&Iv<Self>>::try_from(iv).map_err(|_| InvalidLength)?;
         Ok(Self::inner_iv_init(inner, iv))
-    }
-
-    /// Generate random IV using the operating system's secure RNG.
-    #[cfg(feature = "getrandom")]
-    #[inline]
-    fn generate_iv() -> Result<Iv<Self>, getrandom::Error> {
-        let mut iv = Iv::<Self>::default();
-        getrandom::fill(&mut iv)?;
-        Ok(iv)
-    }
-
-    /// Generate random IV using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn generate_iv_with_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Iv<Self> {
-        let mut iv = Iv::<Self>::default();
-        rng.fill_bytes(&mut iv);
-        iv
-    }
-
-    /// Generate random IV using the provided [`TryCryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[inline]
-    fn try_generate_iv_with_rng<R: TryCryptoRng + ?Sized>(
-        rng: &mut R,
-    ) -> Result<Iv<Self>, R::Error> {
-        let mut iv = Iv::<Self>::default();
-        rng.try_fill_bytes(&mut iv)?;
-        Ok(iv)
     }
 }
 

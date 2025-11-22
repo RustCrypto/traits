@@ -16,11 +16,11 @@ description = "Common cryptographic traits"
 hybrid-array = "0.4"
 
 # optional dependencies
-getrandom = { version = "0.3", optional = true, default-features = false }
+getrandom = { version = "0.3", optional = true, features = ["sys_rng"] }
 rand_core = { version = "0.10.0-rc-2", optional = true }
 
 [features]
-getrandom = ["dep:getrandom"]
+getrandom = ["rand_core", "dep:getrandom"]
 rand_core = ["dep:rand_core"]
 zeroize = ["hybrid-array/zeroize"]
 
