@@ -187,9 +187,7 @@ dependencies = [
  "base16ct",
  "crypto-bigint",
  "digest",
- "ff",
  "getrandom",
- "group",
  "hex-literal",
  "hkdf",
  "hybrid-array",
@@ -197,35 +195,12 @@ dependencies = [
  "pem-rfc7468",
  "pkcs8",
  "rand_core",
+ "rustcrypto-ff",
+ "rustcrypto-group",
  "sec1",
  "serdect",
  "subtle",
  "zeroize",
-]
-
-[[package]]
-name = "ff"
-version = "0.14.0-pre.0"
-source = "git+https://github.com/tarcieri/ff?branch=rand_core%2Fv0.10.0-rc-2#470e52fa35f7f6cb59f1f005003a14ac50b50cfd"
-dependencies = [
- "bitvec",
- "ff_derive",
- "rand_core",
- "subtle",
-]
-
-[[package]]
-name = "ff_derive"
-version = "0.14.0-pre.0"
-source = "git+https://github.com/tarcieri/ff?branch=rand_core%2Fv0.10.0-rc-2#470e52fa35f7f6cb59f1f005003a14ac50b50cfd"
-dependencies = [
- "addchain",
- "num-bigint",
- "num-integer",
- "num-traits",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
 ]
 
 [[package]]
@@ -244,16 +219,6 @@ dependencies = [
  "libc",
  "r-efi",
  "wasip2",
-]
-
-[[package]]
-name = "group"
-version = "0.14.0-pre.0"
-source = "git+https://github.com/tarcieri/group?branch=rand_core%2Fv0.10.0-rc-2#50640b46d5f7eff37aee24d76e991c18444f372e"
-dependencies = [
- "ff",
- "rand_core",
- "subtle",
 ]
 
 [[package]]
@@ -425,6 +390,44 @@ name = "rand_core"
 version = "0.10.0-rc-2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "104a23e4e8b77312a823b6b5613edbac78397e2f34320bc7ac4277013ec4478e"
+
+[[package]]
+name = "rustcrypto-ff"
+version = "0.14.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa9cd37111549306f79b09aa2618e15b1e8241b7178c286821e3dd71579db4db"
+dependencies = [
+ "bitvec",
+ "rand_core",
+ "rustcrypto-ff_derive",
+ "subtle",
+]
+
+[[package]]
+name = "rustcrypto-ff_derive"
+version = "0.14.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2aef88cb4ddb3b1c83beff963f9197607dac780cc39a09f19c041dacbb0b6a5"
+dependencies = [
+ "addchain",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "rustcrypto-group"
+version = "0.14.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e394cd734b5f97dfc3484fa42aad7acd912961c2bcd96c99aa05b3d6cab7cafd"
+dependencies = [
+ "rand_core",
+ "rustcrypto-ff",
+ "subtle",
+]
 
 [[package]]
 name = "sec1"
