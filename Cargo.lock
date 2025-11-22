@@ -182,7 +182,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.14.0-rc.16"
+version = "0.14.0-rc.17"
 dependencies = [
  "base16ct",
  "crypto-bigint",
