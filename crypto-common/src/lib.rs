@@ -19,10 +19,10 @@ mod generate;
 pub use hybrid_array as array;
 pub use hybrid_array::typenum;
 
+#[cfg(feature = "getrandom")]
+pub use getrandom::Error as RngError;
 #[cfg(feature = "rand_core")]
 pub use {generate::Generate, rand_core};
-#[cfg(feature = "getrandom")]
-pub use {getrandom, getrandom::Error as RngError};
 
 use core::fmt;
 use hybrid_array::{
