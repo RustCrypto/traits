@@ -35,7 +35,7 @@ jobs:
           - thumbv7em-none-eabi
           - wasm32-unknown-unknown
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -64,7 +64,7 @@ jobs:
     if: false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -82,7 +82,7 @@ jobs:
           - stable
           - nightly
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -95,7 +95,7 @@ jobs:
   test-careful:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
       - run: cargo install cargo-careful
       - run: cargo careful test --all-features
@@ -105,7 +105,7 @@ jobs:
     env:
       MIRIFLAGS: "-Zmiri-symbolic-alignment-check -Zmiri-strict-provenance"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
       - run: rustup component add miri && cargo miri setup
       - run: cargo miri test --all-features
