@@ -17,5 +17,4 @@ members = [
 digest = { path = "digest" }
 signature = { path = "signature" }
 
-block-padding = { git = "https://github.com/RustCrypto/utils", branch = "block-padding/static_bound" }
 getrandom = { git = "https://github.com/rust-random/getrandom" }

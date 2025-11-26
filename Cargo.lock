@@ -79,7 +79,8 @@ dependencies = [
 [[package]]
 name = "block-padding"
 version = "0.4.2"
-source = "git+https://github.com/RustCrypto/utils?branch=block-padding%2Fstatic_bound#113349be8cade036a5b32959e80f1df99158dfd7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "710f1dd022ef4e93f8a438b4ba958de7f64308434fa6a87104481645cc30068b"
 dependencies = [
  "hybrid-array",
 ]
