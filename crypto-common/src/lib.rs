@@ -153,7 +153,7 @@ pub trait AlgorithmName {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result;
 }
 
-/// Types which can be initialized from key.
+/// Types which can be initialized from a key.
 pub trait KeyInit: KeySizeUser + Sized {
     /// Create new value from fixed size key.
     fn new(key: &Key<Self>) -> Self;
@@ -180,7 +180,7 @@ pub trait KeyInit: KeySizeUser + Sized {
     }
 }
 
-/// Types which can be initialized from key and initialization vector (nonce).
+/// Types which can be initialized from a key and initialization vector (nonce).
 pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     /// Create new value from fixed length key and nonce.
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self;
@@ -204,6 +204,27 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
         let key = <&Key<Self>>::try_from(key).map_err(|_| InvalidLength)?;
         let iv = <&Iv<Self>>::try_from(iv).map_err(|_| InvalidLength)?;
         Ok(Self::new(key, iv))
+    }
+}
+
+/// Types which can be fallibly initialized from a key.
+pub trait TryKeyInit: KeySizeUser + Sized {
+    /// Create new value from a fixed-size key.
+    ///
+    /// # Errors
+    /// - if the key is considered invalid according to rules specific to the implementing type
+    fn new(key: &Key<Self>) -> Result<Self, InvalidKey>;
+
+    /// Create new value from a variable size key.
+    ///
+    /// # Errors
+    /// - if the provided slice is the wrong length
+    /// - if the key is considered invalid by [`TryKeyInit::new`]
+    #[inline]
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidKey> {
+        <&Key<Self>>::try_from(key)
+            .map_err(|_| InvalidKey)
+            .and_then(Self::new)
     }
 }
 
@@ -316,6 +337,20 @@ where
     }
 }
 */
+
+/// Error type for [`TryKeyInit`] for cases where the provided bytes do not correspond to a
+/// valid key.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct InvalidKey;
+
+impl fmt::Display for InvalidKey {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("WeakKey")
+    }
+}
+
+impl core::error::Error for InvalidKey {}
 
 /// The error type returned when key and/or IV used in the [`KeyInit`],
 /// [`KeyIvInit`], and [`InnerIvInit`] slice-based methods had
