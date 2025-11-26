@@ -78,9 +78,8 @@ dependencies = [
 
 [[package]]
 name = "block-padding"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41d28ed5f5f65056148fd25e1a596b5b6d9e772270abf9a9085d7cbfbf26c563"
+version = "0.4.2"
+source = "git+https://github.com/RustCrypto/utils?branch=block-padding%2Fstatic_bound#113349be8cade036a5b32959e80f1df99158dfd7"
 dependencies = [
  "hybrid-array",
 ]
@@ -212,7 +211,7 @@ checksum = "e6d5a32815ae3f33302d95fdcb2ce17862f8c65363dcfd29360480ba1001fc9c"
 [[package]]
 name = "getrandom"
 version = "0.3.4"
-source = "git+https://github.com/rust-random/getrandom#6cbbcb4a434f918a9a54bede9694f8138df2856d"
+source = "git+https://github.com/rust-random/getrandom#658bb1a43cade84eb7aa63a3225cfa9d12b826b8"
 dependencies = [
  "cfg-if",
  "libc",
@@ -469,7 +468,7 @@ checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.109",
+ "syn 2.0.111",
 ]
 
 [[package]]
@@ -519,9 +518,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.109"
+version = "2.0.111"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f17c7e013e88258aa9543dcbe81aca68a667a9ac37cd69c9fbc07858bfe0e2f"
+checksum = "390cc9a294ab71bdb1aa2e99d13be9c753cd2d7bd6560c77118597410c4d2e87"
 dependencies = [
  "proc-macro2",
  "quote",
