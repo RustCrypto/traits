@@ -127,19 +127,43 @@ pub trait BlockCipherEncrypt: BlockSizeUser + Sized {
         self.encrypt_padded_inout::<P>(buf)
     }
 
-    /// Pad input and encrypt into a newly allocated Vec. Returns resulting ciphertext Vec.
+    /// Pad `msg` with padding algorithm `P`, encrypt it into a newly allocated `Vec`,
+    /// and return the resulting ciphertext vector.
+    ///
+    /// # Panics
+    /// If `NoPadding` is used with a message size that is not a multiple of the cipher block size.
     #[cfg(all(feature = "block-padding", feature = "alloc"))]
     #[inline]
     fn encrypt_padded_vec<P: Padding>(&self, msg: &[u8]) -> Vec<u8> {
+        use block_padding::{NoPadding, ZeroPadding};
+        use core::any::TypeId;
         use crypto_common::typenum::Unsigned;
+
         let bs = Self::BlockSize::USIZE;
-        let mut out = vec![0; bs * (msg.len() / bs + 1)];
-        let len = self
-            .encrypt_padded_b2b::<P>(msg, &mut out)
-            .expect("enough space for encrypting is allocated")
+        let msg_len = msg.len();
+
+        let pad_type_id = TypeId::of::<P>();
+        let buf_blocks_len = if pad_type_id == TypeId::of::<NoPadding>() {
+            if msg_len % bs != 0 {
+                panic!(
+                    "NoPadding is used with a {msg_len}‑byte message,
+                    which is not a multiple of the {bs}‑byte cipher block size"
+                );
+            }
+            msg_len / bs
+        } else if pad_type_id == TypeId::of::<ZeroPadding>() {
+            msg_len.div_ceil(bs)
+        } else {
+            1 + msg_len / bs
+        };
+
+        let mut buf = vec![0; bs * buf_blocks_len];
+        let res_len = self
+            .encrypt_padded_b2b::<P>(msg, &mut buf)
+            .expect("`buf` has enough space for encryption")
             .len();
-        out.truncate(len);
-        out
+        buf.truncate(res_len);
+        buf
     }
 }
 
@@ -371,19 +395,43 @@ pub trait BlockModeEncrypt: BlockSizeUser + Sized {
         self.encrypt_padded_inout::<P>(buf)
     }
 
-    /// Pad input and encrypt into a newly allocated Vec. Returns resulting ciphertext Vec.
+    /// Pad `msg` with padding algorithm `P`, encrypt it into a newly allocated `Vec`,
+    /// and return the resulting ciphertext vector.
+    ///
+    /// # Panics
+    /// If `NoPadding` is used with a message size that is not a multiple of the cipher block size.
     #[cfg(all(feature = "block-padding", feature = "alloc"))]
     #[inline]
     fn encrypt_padded_vec<P: Padding>(self, msg: &[u8]) -> Vec<u8> {
+        use block_padding::{NoPadding, ZeroPadding};
+        use core::any::TypeId;
         use crypto_common::typenum::Unsigned;
+
         let bs = Self::BlockSize::USIZE;
-        let mut out = vec![0; bs * (msg.len() / bs + 1)];
-        let len = self
-            .encrypt_padded_b2b::<P>(msg, &mut out)
-            .expect("enough space for encrypting is allocated")
+        let msg_len = msg.len();
+
+        let pad_type_id = TypeId::of::<P>();
+        let buf_blocks_len = if pad_type_id == TypeId::of::<NoPadding>() {
+            if msg_len % bs != 0 {
+                panic!(
+                    "NoPadding is used with a {msg_len}‑byte message,
+                    which is not a multiple of the {bs}‑byte cipher block size"
+                );
+            }
+            msg_len / bs
+        } else if pad_type_id == TypeId::of::<ZeroPadding>() {
+            msg_len.div_ceil(bs)
+        } else {
+            1 + msg_len / bs
+        };
+
+        let mut buf = vec![0; bs * buf_blocks_len];
+        let res_len = self
+            .encrypt_padded_b2b::<P>(msg, &mut buf)
+            .expect("`buf` has enough space for encryption")
             .len();
-        out.truncate(len);
-        out
+        buf.truncate(res_len);
+        buf
     }
 }
 
