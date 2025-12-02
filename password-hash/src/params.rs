@@ -1,10 +1,11 @@
 //! Algorithm parameters.
 
-use crate::errors::InvalidValue;
 use crate::{
-    Encoding, Error, Ident, Result,
+    Error, Ident, Result,
+    errors::InvalidValue,
     value::{Decimal, Value},
 };
+use base64ct::{Base64Unpadded as B64, Encoding};
 use core::{
     fmt::{self, Debug, Write},
     str::{self, FromStr},
@@ -67,9 +68,7 @@ impl ParamsString {
 
         // Encode B64 value
         let offset = self.0.length as usize;
-        let written = Encoding::B64
-            .encode(bytes, &mut self.0.bytes[offset..])?
-            .len();
+        let written = B64::encode(bytes, &mut self.0.bytes[offset..])?.len();
 
         self.0.length += written as u8;
         Ok(())

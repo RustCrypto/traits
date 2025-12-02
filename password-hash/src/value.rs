@@ -13,8 +13,8 @@
 //!
 //! [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 
-use crate::errors::InvalidValue;
-use crate::{Encoding, Error, Result};
+use crate::{Error, Result, errors::InvalidValue};
+use base64ct::{Base64Unpadded as B64, Encoding};
 use core::{fmt, str};
 
 /// Type used to represent decimal (i.e. integer) values.
@@ -69,7 +69,7 @@ impl<'a> Value<'a> {
     ///
     /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#argon2-encoding
     pub fn b64_decode<'b>(&self, buf: &'b mut [u8]) -> Result<&'b [u8]> {
-        Ok(Encoding::B64.decode(self.as_str(), buf)?)
+        Ok(B64::decode(self.as_str(), buf)?)
     }
 
     /// Borrow this value as a `str`.

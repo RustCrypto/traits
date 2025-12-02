@@ -33,7 +33,6 @@ pub use rand_core;
 
 pub mod errors;
 
-mod encoding;
 mod ident;
 mod output;
 mod params;
@@ -42,7 +41,6 @@ mod traits;
 mod value;
 
 pub use crate::{
-    encoding::Encoding,
     errors::{Error, Result},
     ident::Ident,
     output::Output,
@@ -128,11 +126,6 @@ pub struct PasswordHash<'a> {
 impl<'a> PasswordHash<'a> {
     /// Parse a password hash from a string in the PHC string format.
     pub fn new(s: &'a str) -> Result<Self> {
-        Self::parse(s, Encoding::default())
-    }
-
-    /// Parse a password hash from the given [`Encoding`].
-    pub fn parse(s: &'a str, encoding: Encoding) -> Result<Self> {
         if s.is_empty() {
             return Err(Error::PhcStringField);
         }
@@ -185,7 +178,7 @@ impl<'a> PasswordHash<'a> {
         }
 
         if let Some(field) = fields.next() {
-            hash = Some(Output::decode(field, encoding)?);
+            hash = Some(Output::decode(field)?);
         }
 
         if fields.next().is_some() {
@@ -224,11 +217,6 @@ impl<'a> PasswordHash<'a> {
         }
 
         Err(Error::Password)
-    }
-
-    /// Get the [`Encoding`] that this [`PasswordHash`] is serialized with.
-    pub fn encoding(&self) -> Encoding {
-        self.hash.map(|h| h.encoding()).unwrap_or_default()
     }
 
     /// Serialize this [`PasswordHash`] as a [`PasswordHashString`].
@@ -282,9 +270,6 @@ impl fmt::Display for PasswordHash<'_> {
 pub struct PasswordHashString {
     /// String value
     string: String,
-
-    /// String encoding
-    encoding: Encoding,
 }
 
 #[cfg(feature = "alloc")]
@@ -292,22 +277,12 @@ pub struct PasswordHashString {
 impl PasswordHashString {
     /// Parse a password hash from a string in the PHC string format.
     pub fn new(s: &str) -> Result<Self> {
-        Self::parse(s, Encoding::default())
-    }
-
-    /// Parse a password hash from the given [`Encoding`].
-    pub fn parse(s: &str, encoding: Encoding) -> Result<Self> {
-        Ok(PasswordHash::parse(s, encoding)?.into())
+        PasswordHash::new(s).map(Into::into)
     }
 
     /// Parse this owned string as a [`PasswordHash`].
     pub fn password_hash(&self) -> PasswordHash<'_> {
-        PasswordHash::parse(&self.string, self.encoding).expect("malformed password hash")
-    }
-
-    /// Get the [`Encoding`] that this [`PasswordHashString`] is serialized with.
-    pub fn encoding(&self) -> Encoding {
-        self.encoding
+        PasswordHash::new(&self.string).expect("malformed password hash")
     }
 
     /// Borrow this value as a `str`.
@@ -370,7 +345,6 @@ impl From<&PasswordHash<'_>> for PasswordHashString {
     fn from(hash: &PasswordHash<'_>) -> PasswordHashString {
         PasswordHashString {
             string: hash.to_string(),
-            encoding: hash.encoding(),
         }
     }
 }
