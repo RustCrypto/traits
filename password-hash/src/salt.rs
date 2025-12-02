@@ -1,9 +1,9 @@
 //! Salt string support.
 
-use crate::{Encoding, Error, Result, Value};
+use crate::{Error, Result, Value, errors::InvalidValue};
+use base64ct::{Base64Unpadded as B64, Encoding};
 use core::{fmt, str};
 
-use crate::errors::InvalidValue;
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, TryCryptoRng};
 
@@ -239,7 +239,7 @@ impl SaltString {
     /// Returns `Error` if the slice is too long.
     pub fn encode_b64(input: &[u8]) -> Result<Self> {
         let mut bytes = [0u8; Salt::MAX_LENGTH];
-        let length = Encoding::B64.encode(input, &mut bytes)?.len() as u8;
+        let length = B64::encode(input, &mut bytes)?.len() as u8;
         Ok(Self {
             chars: bytes,
             length,

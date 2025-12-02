@@ -1,6 +1,7 @@
 //! Outputs from password hashing functions.
 
-use crate::{Encoding, Error, Result};
+use crate::{Error, Result};
+use base64ct::{Base64Unpadded as B64, Encoding};
 use core::{cmp::Ordering, fmt, str::FromStr};
 use subtle::{Choice, ConstantTimeEq};
 
@@ -102,9 +103,6 @@ pub struct Output {
 
     /// Length of the password hashing function output in bytes.
     length: u8,
-
-    /// Encoding which output should be serialized with.
-    encoding: Encoding,
 }
 
 #[allow(clippy::len_without_is_empty)]
@@ -128,15 +126,6 @@ impl Output {
             bytes.copy_from_slice(input);
             Ok(())
         })
-    }
-
-    /// Create a [`Output`] from the given byte slice and [`Encoding`],
-    /// validating it according to [`Output::MIN_LENGTH`] and
-    /// [`Output::MAX_LENGTH`] restrictions.
-    pub fn new_with_encoding(input: &[u8], encoding: Encoding) -> Result<Self> {
-        let mut result = Self::new(input)?;
-        result.encoding = encoding;
-        Ok(result)
     }
 
     /// Initialize an [`Output`] using the provided method, which is given
@@ -169,7 +158,6 @@ impl Output {
         Ok(Self {
             bytes,
             length: output_size as u8,
-            encoding: Encoding::default(),
         })
     }
 
@@ -178,52 +166,53 @@ impl Output {
         &self.bytes[..self.len()]
     }
 
-    /// Get the [`Encoding`] that this [`Output`] is serialized with.
-    pub fn encoding(&self) -> Encoding {
-        self.encoding
-    }
-
-    /// Creates a copy of this [`Output`] with the specified [`Encoding`].
-    pub fn with_encoding(&self, encoding: Encoding) -> Self {
-        Self { encoding, ..*self }
-    }
-
     /// Get the length of the output value as a byte slice.
     pub fn len(&self) -> usize {
         usize::from(self.length)
     }
 
-    /// Parse B64-encoded [`Output`], i.e. using the PHC string
-    /// specification's restricted interpretation of Base64.
-    pub fn b64_decode(input: &str) -> Result<Self> {
-        Self::decode(input, Encoding::B64)
+    /// Parse "B64"-encoded [`Output`], i.e. using the PHC string specification's restricted
+    /// interpretation of Base64.
+    pub fn decode(input: &str) -> Result<Self> {
+        let mut bytes = [0u8; Self::MAX_LENGTH];
+        B64::decode(input, &mut bytes)
+            .map_err(Into::into)
+            .and_then(Self::new)
     }
 
-    /// Write B64-encoded [`Output`] to the provided buffer, returning
-    /// a sub-slice containing the encoded data.
+    /// Write "B64"-encoded [`Output`] to the provided buffer, returning a sub-slice containing the
+    /// encoded data.
     ///
     /// Returns an error if the buffer is too short to contain the output.
+    pub fn encode<'a>(&self, out: &'a mut [u8]) -> Result<&'a str> {
+        Ok(B64::encode(self.as_ref(), out)?)
+    }
+
+    /// Get the length of this [`Output`] when encoded as "B64".
+    pub fn encoded_len(&self) -> usize {
+        B64::encoded_len(self.as_ref())
+    }
+
+    /// DEPRECATED: parse B64-encoded [`Output`], i.e. using the PHC string  specification's
+    /// restricted interpretation of Base64.
+    #[deprecated(since = "0.6.0", note = "Use `Output::decode` instead")]
+    pub fn b64_decode(input: &str) -> Result<Self> {
+        Self::decode(input)
+    }
+
+    /// DEPRECATED: write B64-encoded [`Output`] to the provided buffer, returning a sub-slice
+    /// containing the encoded data.
+    ///
+    /// Returns an error if the buffer is too short to contain the output.
+    #[deprecated(since = "0.6.0", note = "Use `Output::encode` instead")]
     pub fn b64_encode<'a>(&self, out: &'a mut [u8]) -> Result<&'a str> {
-        self.encode(out, Encoding::B64)
-    }
-
-    /// Decode the given input string using the specified [`Encoding`].
-    pub fn decode(input: &str, encoding: Encoding) -> Result<Self> {
-        let mut bytes = [0u8; Self::MAX_LENGTH];
-        encoding
-            .decode(input, &mut bytes)
-            .map_err(Into::into)
-            .and_then(|decoded| Self::new_with_encoding(decoded, encoding))
-    }
-
-    /// Encode this [`Output`] using the specified [`Encoding`].
-    pub fn encode<'a>(&self, out: &'a mut [u8], encoding: Encoding) -> Result<&'a str> {
-        Ok(encoding.encode(self.as_ref(), out)?)
+        self.encode(out)
     }
 
     /// Get the length of this [`Output`] when encoded as B64.
+    #[deprecated(since = "0.6.0", note = "Use `Output::encoded_len` instead")]
     pub fn b64_len(&self) -> usize {
-        Encoding::B64.encoded_len(self.as_ref())
+        self.encoded_len()
     }
 }
 
@@ -243,7 +232,7 @@ impl FromStr for Output {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self> {
-        Self::b64_decode(s)
+        Self::decode(s)
     }
 }
 
@@ -264,7 +253,7 @@ impl TryFrom<&[u8]> for Output {
 impl fmt::Display for Output {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut buffer = [0u8; Self::B64_MAX_LENGTH];
-        self.encode(&mut buffer, self.encoding)
+        self.encode(&mut buffer)
             .map_err(|_| fmt::Error)
             .and_then(|encoded| f.write_str(encoded))
     }
