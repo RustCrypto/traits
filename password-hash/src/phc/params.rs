@@ -1,10 +1,7 @@
 //! Algorithm parameters.
 
-use crate::{
-    Error, Ident, Result,
-    errors::InvalidValue,
-    value::{Decimal, Value},
-};
+use crate::phc::value::{Decimal, Value};
+use crate::{Error, Result, errors::InvalidValue, phc::Ident};
 use base64ct::{Base64Unpadded as B64, Encoding};
 use core::{
     fmt::{self, Debug, Write},

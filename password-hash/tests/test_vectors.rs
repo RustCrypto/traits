@@ -1,6 +1,6 @@
 //! Test vectors for commonly used password hashing algorithms.
 
-use password_hash::{Ident, PasswordHash};
+use password_hash::phc::{Ident, PasswordHash};
 
 const ARGON2D_HASH: &str =
     "$argon2d$v=19$m=512,t=3,p=2$5VtWOO3cGWYQHEMaYGbsfQ$AcmqasQgW/wI6wAHAMk4aQ";

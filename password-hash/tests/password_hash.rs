@@ -4,7 +4,7 @@
 //! of the string encoding, and ensures password hashes round trip under each
 //! of the conditions.
 
-use password_hash::{Ident, ParamsString, PasswordHash, Salt};
+use password_hash::phc::{Ident, ParamsString, PasswordHash, Salt};
 
 const EXAMPLE_ALGORITHM: Ident = Ident::new_unwrap("argon2d");
 const EXAMPLE_SALT: &str = "saltsaltsaltsaltsalt";

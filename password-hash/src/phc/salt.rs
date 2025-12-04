@@ -1,6 +1,6 @@
 //! Salt string support.
 
-use crate::{Error, Result, Value, errors::InvalidValue};
+use crate::{Error, Result, errors::InvalidValue, phc::Value};
 use base64ct::{Base64Unpadded as B64, Encoding};
 use core::{fmt, str};
 
