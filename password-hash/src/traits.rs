@@ -1,6 +1,9 @@
 //! Trait definitions.
 
-use crate::{Decimal, Error, Ident, ParamsString, PasswordHash, Result, Salt};
+use crate::{
+    Error, PasswordHash, Result,
+    phc::{Decimal, Ident, ParamsString, Salt},
+};
 use core::fmt::Debug;
 
 /// Trait for password hashing functions.

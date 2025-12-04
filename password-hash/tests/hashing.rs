@@ -1,7 +1,9 @@
 //! Password hashing tests
 
 pub use password_hash::{
-    Decimal, Error, Ident, Output, ParamsString, PasswordHash, PasswordHasher, Result, Salt,
+    PasswordHasher,
+    errors::{Error, Result},
+    phc::{Decimal, Ident, Output, ParamsString, PasswordHash, Salt},
 };
 
 const ALG: Ident = Ident::new_unwrap("example");

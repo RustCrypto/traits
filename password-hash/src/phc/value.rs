@@ -43,7 +43,7 @@ pub struct Value<'a>(&'a str);
 impl<'a> Value<'a> {
     /// Maximum length of an [`Value`] - 64 ASCII characters (i.e. 64-bytes).
     ///
-    /// This value is selected to match the maximum length of a [`Salt`][`crate::Salt`]
+    /// This value is selected to match the maximum length of a [`Salt`][`crate::phc::Salt`]
     /// as this library internally uses this type to represent salts.
     pub const MAX_LENGTH: usize = 64;
 

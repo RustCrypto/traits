@@ -89,8 +89,8 @@ use subtle::{Choice, ConstantTimeEq};
 /// time, we would also suggest preventing such attacks by using randomly
 /// generated salts and keeping those salts secret.
 ///
-/// The [`SaltString::from_rng`][`crate::SaltString::from_rng`] and
-/// [`SaltString::try_from_rng`][`crate::SaltString::try_from_rng`] functions can be
+/// The [`SaltString::from_rng`][`crate::phc::SaltString::from_rng`] and
+/// [`SaltString::try_from_rng`][`crate::phc::SaltString::try_from_rng`] functions can be
 /// used to generate random high-entropy salt values.
 ///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#function-duties
