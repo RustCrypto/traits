@@ -40,11 +40,23 @@ pub use phc::PasswordHash;
 #[cfg(feature = "alloc")]
 pub use phc::PasswordHashString;
 
-use crate::phc::{Decimal, Ident, ParamsString, Salt};
+use crate::phc::ParamsString;
 use core::fmt::Debug;
+
+/// Numeric version identifier for password hashing algorithms.
+pub type Version = u32;
 
 /// Trait for password hashing functions.
 pub trait PasswordHasher {
+    /// Simple API for computing a [`PasswordHash`] from a password and
+    /// salt value.
+    ///
+    /// Uses the default recommended parameters for a given algorithm.
+    fn hash_password<'a>(&self, password: &[u8], salt: &'a str) -> Result<PasswordHash<'a>>;
+}
+
+/// Trait for password hashing functions which support customization.
+pub trait CustomizedPasswordHasher {
     /// Algorithm-specific parameters.
     type Params: Clone
         + Debug
@@ -60,23 +72,11 @@ pub trait PasswordHasher {
     fn hash_password_customized<'a>(
         &self,
         password: &[u8],
-        algorithm: Option<Ident<'a>>,
-        version: Option<Decimal>,
+        algorithm: Option<&'a str>,
+        version: Option<Version>,
         params: Self::Params,
-        salt: impl Into<Salt<'a>>,
+        salt: &'a str,
     ) -> Result<PasswordHash<'a>>;
-
-    /// Simple API for computing a [`PasswordHash`] from a password and
-    /// salt value.
-    ///
-    /// Uses the default recommended parameters for a given algorithm.
-    fn hash_password<'a>(
-        &self,
-        password: &[u8],
-        salt: impl Into<Salt<'a>>,
-    ) -> Result<PasswordHash<'a>> {
-        self.hash_password_customized(password, None, None, Self::Params::default(), salt)
-    }
 }
 
 /// Trait for password verification.
@@ -93,15 +93,15 @@ pub trait PasswordVerifier {
     fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<()>;
 }
 
-impl<T: PasswordHasher> PasswordVerifier for T {
+impl<T: CustomizedPasswordHasher> PasswordVerifier for T {
     fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<()> {
         if let (Some(salt), Some(expected_output)) = (&hash.salt, &hash.hash) {
             let computed_hash = self.hash_password_customized(
                 password,
-                Some(hash.algorithm),
+                Some(hash.algorithm.as_str()),
                 hash.version,
                 T::Params::try_from(hash)?,
-                *salt,
+                salt.as_str(),
             )?;
 
             if let Some(computed_output) = &computed_hash.hash {
