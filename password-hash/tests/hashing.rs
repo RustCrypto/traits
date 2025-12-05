@@ -1,7 +1,8 @@
 //! Password hashing tests
 
+use password_hash::PasswordHasher;
 pub use password_hash::{
-    PasswordHasher,
+    CustomizedPasswordHasher,
     errors::{Error, Result},
     phc::{Decimal, Ident, Output, ParamsString, PasswordHash, Salt},
 };
@@ -12,21 +13,27 @@ const ALG: Ident = Ident::new_unwrap("example");
 pub struct StubPasswordHasher;
 
 impl PasswordHasher for StubPasswordHasher {
+    fn hash_password<'a>(&self, password: &[u8], salt: &'a str) -> Result<PasswordHash<'a>> {
+        self.hash_password_customized(password, None, None, StubParams, salt)
+    }
+}
+
+impl CustomizedPasswordHasher for StubPasswordHasher {
     type Params = StubParams;
 
     fn hash_password_customized<'a>(
         &self,
         password: &[u8],
-        algorithm: Option<Ident<'a>>,
+        algorithm: Option<&'a str>,
         version: Option<Decimal>,
         params: StubParams,
-        salt: impl Into<Salt<'a>>,
+        salt: &'a str,
     ) -> Result<PasswordHash<'a>> {
-        let salt = salt.into();
+        let salt = Salt::from_b64(salt)?;
         let mut output = Vec::new();
 
         if let Some(alg) = algorithm {
-            if alg != ALG {
+            if Ident::new(alg)? != ALG {
                 return Err(Error::Algorithm);
             }
         }
@@ -70,12 +77,12 @@ impl TryFrom<StubParams> for ParamsString {
 #[test]
 fn verify_password_hash() {
     let valid_password = "test password";
-    let salt = Salt::from_b64("test-salt").unwrap();
+    let salt = "test-salt";
     let hash = PasswordHash::generate(StubPasswordHasher, valid_password, salt).unwrap();
 
     // Sanity tests for StubFunction impl above
     assert_eq!(hash.algorithm, ALG);
-    assert_eq!(hash.salt.unwrap(), salt);
+    assert_eq!(hash.salt.unwrap().as_str(), salt);
 
     // Tests for generic password verification logic
     assert_eq!(
