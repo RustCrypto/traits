@@ -1,9 +1,10 @@
 //! Salt string support.
 
-use crate::{Error, Result, errors::InvalidValue, phc::Value};
+use super::{StringBuf, Value};
+use crate::{Error, Result, errors::InvalidValue};
 use base64ct::{Base64Unpadded as B64, Encoding};
+use core::str::FromStr;
 use core::{fmt, str};
-
 #[cfg(feature = "rand_core")]
 use rand_core::{CryptoRng, TryCryptoRng};
 
@@ -176,13 +177,7 @@ impl fmt::Debug for Salt<'_> {
 
 /// Owned stack-allocated equivalent of [`Salt`].
 #[derive(Clone, Eq)]
-pub struct SaltString {
-    /// ASCII-encoded characters which comprise the salt.
-    chars: [u8; Salt::MAX_LENGTH],
-
-    /// Length of the string in ASCII characters (i.e. bytes).
-    length: u8,
-}
+pub struct SaltString(StringBuf<{ Salt::MAX_LENGTH }>);
 
 #[allow(clippy::len_without_is_empty)]
 impl SaltString {
@@ -217,16 +212,7 @@ impl SaltString {
     pub fn from_b64(s: &str) -> Result<Self> {
         // Assert `s` parses successfully as a `Salt`
         Salt::from_b64(s)?;
-
-        let len = s.len();
-
-        let mut bytes = [0u8; Salt::MAX_LENGTH];
-        bytes[..len].copy_from_slice(s.as_bytes());
-
-        Ok(SaltString {
-            chars: bytes,
-            length: len as u8, // `Salt::from_b64` check prevents overflow
-        })
+        Ok(Self(s.parse()?))
     }
 
     /// Decode this [`SaltString`] from B64 into the provided output buffer.
@@ -239,11 +225,7 @@ impl SaltString {
     /// Returns `Error` if the slice is too long.
     pub fn encode_b64(input: &[u8]) -> Result<Self> {
         let mut bytes = [0u8; Salt::MAX_LENGTH];
-        let length = B64::encode(input, &mut bytes)?.len() as u8;
-        Ok(Self {
-            chars: bytes,
-            length,
-        })
+        B64::encode(input, &mut bytes)?.parse()
     }
 
     /// Borrow the contents of a [`SaltString`] as a [`Salt`].
@@ -253,7 +235,7 @@ impl SaltString {
 
     /// Borrow the contents of a [`SaltString`] as a `str`.
     pub fn as_str(&self) -> &str {
-        str::from_utf8(&self.chars[..(self.length as usize)]).expect(INVARIANT_VIOLATED_MSG)
+        &self.0
     }
 
     /// Get the length of this value in ASCII characters.
@@ -264,7 +246,15 @@ impl SaltString {
 
 impl AsRef<str> for SaltString {
     fn as_ref(&self) -> &str {
-        self.as_str()
+        &self.0
+    }
+}
+
+impl FromStr for SaltString {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Self::from_b64(s)
     }
 }
 
