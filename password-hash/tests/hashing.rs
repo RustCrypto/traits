@@ -1,5 +1,6 @@
 //! Password hashing tests
 
+use core::{fmt::Display, str::FromStr};
 use password_hash::PasswordHasher;
 pub use password_hash::{
     CustomizedPasswordHasher,
@@ -58,10 +59,16 @@ impl CustomizedPasswordHasher for StubPasswordHasher {
 #[derive(Clone, Debug, Default)]
 pub struct StubParams;
 
-impl<'a> TryFrom<&PasswordHash<'a>> for StubParams {
-    type Error = Error;
+impl Display for StubParams {
+    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Ok(())
+    }
+}
 
-    fn try_from(_: &PasswordHash<'a>) -> Result<Self> {
+impl FromStr for StubParams {
+    type Err = Error;
+
+    fn from_str(_: &str) -> Result<Self> {
         Ok(Self)
     }
 }

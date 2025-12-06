@@ -40,8 +40,10 @@ pub use phc::PasswordHash;
 #[cfg(feature = "alloc")]
 pub use phc::PasswordHashString;
 
-use crate::phc::ParamsString;
-use core::fmt::Debug;
+use core::{
+    fmt::{Debug, Display},
+    str::FromStr,
+};
 
 /// Numeric version identifier for password hashing algorithms.
 pub type Version = u32;
@@ -58,11 +60,7 @@ pub trait PasswordHasher {
 /// Trait for password hashing functions which support customization.
 pub trait CustomizedPasswordHasher {
     /// Algorithm-specific parameters.
-    type Params: Clone
-        + Debug
-        + Default
-        + for<'a> TryFrom<&'a PasswordHash<'a>, Error = Error>
-        + TryInto<ParamsString, Error = Error>;
+    type Params: Clone + Debug + Default + Display + FromStr<Err = Error>;
 
     /// Compute a [`PasswordHash`] from the provided password using an
     /// explicit set of customized algorithm parameters as opposed to the
@@ -95,21 +93,25 @@ pub trait PasswordVerifier {
 
 impl<T: CustomizedPasswordHasher> PasswordVerifier for T {
     fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<()> {
-        if let (Some(salt), Some(expected_output)) = (&hash.salt, &hash.hash) {
-            let computed_hash = self.hash_password_customized(
-                password,
-                Some(hash.algorithm.as_str()),
-                hash.version,
-                T::Params::try_from(hash)?,
-                salt.as_str(),
-            )?;
+        #[allow(clippy::single_match)]
+        match (&hash.salt, &hash.hash) {
+            (Some(salt), Some(expected_output)) => {
+                let computed_hash = self.hash_password_customized(
+                    password,
+                    Some(hash.algorithm.as_str()),
+                    hash.version,
+                    T::Params::from_str(hash.params.as_str())?,
+                    salt.as_str(),
+                )?;
 
-            if let Some(computed_output) = &computed_hash.hash {
-                // See notes on `Output` about the use of a constant-time comparison
-                if expected_output == computed_output {
-                    return Ok(());
+                if let Some(computed_output) = &computed_hash.hash {
+                    // See notes on `Output` about the use of a constant-time comparison
+                    if expected_output == computed_output {
+                        return Ok(());
+                    }
                 }
             }
+            _ => (),
         }
 
         Err(Error::Password)
