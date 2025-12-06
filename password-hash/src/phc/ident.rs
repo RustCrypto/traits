@@ -16,8 +16,13 @@
 //!
 //! [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 
+use super::StringBuf;
 use crate::{Error, Result};
-use core::{fmt, ops::Deref, str};
+use core::{
+    fmt,
+    ops::Deref,
+    str::{self, FromStr},
+};
 
 /// Algorithm or parameter identifier.
 ///
@@ -32,9 +37,9 @@ use core::{fmt, ops::Deref, str};
 ///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
 #[derive(Copy, Clone, Eq, Hash, PartialEq, PartialOrd, Ord)]
-pub struct Ident<'a>(&'a str);
+pub struct Ident(StringBuf<{ Ident::MAX_LENGTH }>);
 
-impl<'a> Ident<'a> {
+impl Ident {
     /// Maximum length of an [`Ident`] - 32 ASCII characters (i.e. 32-bytes).
     ///
     /// This value corresponds to the maximum size of a function symbolic names
@@ -49,7 +54,7 @@ impl<'a> Ident<'a> {
     ///
     /// String must conform to the constraints given in the type-level
     /// documentation.
-    pub const fn new(s: &'a str) -> Result<Self> {
+    pub const fn new(s: &str) -> Result<Self> {
         let input = s.as_bytes();
 
         match input.len() {
@@ -64,7 +69,10 @@ impl<'a> Ident<'a> {
                     i += 1;
                 }
 
-                Ok(Self(s))
+                match StringBuf::new(s) {
+                    Ok(buf) => Ok(Self(buf)),
+                    Err(e) => Err(e),
+                }
             }
             _ => Err(Error::ParamNameInvalid),
         }
@@ -75,7 +83,7 @@ impl<'a> Ident<'a> {
     /// This function exists as a workaround for `unwrap` not yet being
     /// stable in `const fn` contexts, and is intended to allow the result to
     /// be bound to a constant value.
-    pub const fn new_unwrap(s: &'a str) -> Self {
+    pub const fn new_unwrap(s: &str) -> Self {
         assert!(!s.is_empty(), "PHC ident string can't be empty");
         assert!(s.len() <= Self::MAX_LENGTH, "PHC ident string too long");
 
@@ -86,18 +94,18 @@ impl<'a> Ident<'a> {
     }
 
     /// Borrow this ident as a `str`
-    pub fn as_str(&self) -> &'a str {
-        self.0
+    pub fn as_str(&self) -> &str {
+        &self.0
     }
 }
 
-impl AsRef<str> for Ident<'_> {
+impl AsRef<str> for Ident {
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl Deref for Ident<'_> {
+impl Deref for Ident {
     type Target = str;
 
     fn deref(&self) -> &str {
@@ -105,23 +113,29 @@ impl Deref for Ident<'_> {
     }
 }
 
-// Note: this uses `TryFrom` instead of `FromStr` to support a lifetime on
-// the `str` the value is being parsed from.
-impl<'a> TryFrom<&'a str> for Ident<'a> {
-    type Error = Error;
+impl FromStr for Ident {
+    type Err = Error;
 
-    fn try_from(s: &'a str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self> {
         Self::new(s)
     }
 }
 
-impl fmt::Display for Ident<'_> {
+impl TryFrom<&str> for Ident {
+    type Error = Error;
+
+    fn try_from(s: &str) -> Result<Self> {
+        Self::new(s)
+    }
+}
+
+impl fmt::Display for Ident {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self)
     }
 }
 
-impl fmt::Debug for Ident<'_> {
+impl fmt::Debug for Ident {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("Ident").field(&self.as_ref()).finish()
     }

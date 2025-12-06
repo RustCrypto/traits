@@ -1,15 +1,15 @@
 //! Algorithm parameters.
 
-use crate::phc::value::{Decimal, Value};
-use crate::{Error, Result, errors::InvalidValue, phc::Ident};
+use super::{Decimal, Ident, StringBuf, Value};
+use crate::{Error, Result, errors::InvalidValue};
 use base64ct::{Base64Unpadded as B64, Encoding};
 use core::{
-    fmt::{self, Debug, Write},
+    fmt::{self, Debug, Write as _},
     str::{self, FromStr},
 };
 
 /// Individual parameter name/value pair.
-pub type Pair<'a> = (Ident<'a>, Value<'a>);
+pub type Pair<'a> = (Ident, Value<'a>);
 
 /// Delimiter character between name/value pairs.
 pub(crate) const PAIR_DELIMITER: char = '=';
@@ -17,7 +17,7 @@ pub(crate) const PAIR_DELIMITER: char = '=';
 /// Delimiter character between parameters.
 pub(crate) const PARAMS_DELIMITER: char = ',';
 
-/// Maximum number of supported parameters.
+/// Maximum serialized length of parameters.
 const MAX_LENGTH: usize = 127;
 
 /// Error message used with `expect` for when internal invariants are violated
@@ -38,7 +38,7 @@ const INVARIANT_VIOLATED_MSG: &str = "PHC params invariant violated";
 ///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#specification
 #[derive(Clone, Default, Eq, PartialEq)]
-pub struct ParamsString(Buffer);
+pub struct ParamsString(StringBuf<MAX_LENGTH>);
 
 impl ParamsString {
     /// Create new empty [`ParamsString`].
@@ -47,7 +47,7 @@ impl ParamsString {
     }
 
     /// Add the given byte value to the [`ParamsString`], encoding it as "B64".
-    pub fn add_b64_bytes<'a>(&mut self, name: impl TryInto<Ident<'a>>, bytes: &[u8]) -> Result<()> {
+    pub fn add_b64_bytes(&mut self, name: impl TryInto<Ident>, bytes: &[u8]) -> Result<()> {
         if !self.is_empty() {
             self.0
                 .write_char(PARAMS_DELIMITER)
@@ -72,7 +72,7 @@ impl ParamsString {
     }
 
     /// Add a key/value pair with a decimal value to the [`ParamsString`].
-    pub fn add_decimal<'a>(&mut self, name: impl TryInto<Ident<'a>>, value: Decimal) -> Result<()> {
+    pub fn add_decimal(&mut self, name: impl TryInto<Ident>, value: Decimal) -> Result<()> {
         let name = name.try_into().map_err(|_| Error::ParamNameInvalid)?;
         self.add(name, value)
     }
@@ -80,7 +80,7 @@ impl ParamsString {
     /// Add a key/value pair with a string value to the [`ParamsString`].
     pub fn add_str<'a>(
         &mut self,
-        name: impl TryInto<Ident<'a>>,
+        name: impl TryInto<Ident>,
         value: impl TryInto<Value<'a>>,
     ) -> Result<()> {
         let name = name.try_into().map_err(|_| Error::ParamNameInvalid)?;
@@ -118,7 +118,7 @@ impl ParamsString {
     }
 
     /// Get a parameter [`Value`] by name.
-    pub fn get<'a>(&self, name: impl TryInto<Ident<'a>>) -> Option<Value<'_>> {
+    pub fn get(&self, name: impl TryInto<Ident>) -> Option<Value<'_>> {
         let name = name.try_into().ok()?;
 
         for (n, v) in self.iter() {
@@ -131,19 +131,19 @@ impl ParamsString {
     }
 
     /// Get a parameter as a `str`.
-    pub fn get_str<'a>(&self, name: impl TryInto<Ident<'a>>) -> Option<&str> {
+    pub fn get_str(&self, name: impl TryInto<Ident>) -> Option<&str> {
         self.get(name).map(|value| value.as_str())
     }
 
     /// Get a parameter as a [`Decimal`].
     ///
     /// See [`Value::decimal`] for format information.
-    pub fn get_decimal<'a>(&self, name: impl TryInto<Ident<'a>>) -> Option<Decimal> {
+    pub fn get_decimal(&self, name: impl TryInto<Ident>) -> Option<Decimal> {
         self.get(name).and_then(|value| value.decimal().ok())
     }
 
     /// Add a value to this [`ParamsString`] using the provided callback.
-    fn add(&mut self, name: Ident<'_>, value: impl fmt::Display) -> Result<()> {
+    fn add(&mut self, name: Ident, value: impl fmt::Display) -> Result<()> {
         if self.get(name).is_some() {
             return Err(Error::ParamNameDuplicated);
         }
@@ -183,7 +183,7 @@ impl FromStr for ParamsString {
             param
                 .next()
                 .ok_or(Error::ParamNameInvalid)
-                .and_then(Ident::try_from)?;
+                .and_then(Ident::from_str)?;
 
             // Validate value
             param
@@ -199,7 +199,7 @@ impl FromStr for ParamsString {
         let mut bytes = [0u8; MAX_LENGTH];
         bytes[..s.len()].copy_from_slice(s.as_bytes());
 
-        Ok(Self(Buffer {
+        Ok(Self(StringBuf {
             bytes,
             length: s.len() as u8,
         }))
@@ -260,7 +260,7 @@ impl<'a> Iterator for Iter<'a> {
 
         let name = param
             .next()
-            .and_then(|id| Ident::try_from(id).ok())
+            .and_then(|id| Ident::from_str(id).ok())
             .expect(INVARIANT_VIOLATED_MSG);
 
         let value = param
@@ -270,54 +270,6 @@ impl<'a> Iterator for Iter<'a> {
 
         debug_assert_eq!(param.next(), None);
         Some((name, value))
-    }
-}
-
-/// Parameter buffer.
-#[derive(Clone, Debug, Eq)]
-struct Buffer {
-    /// Byte array containing an ASCII-encoded string.
-    bytes: [u8; MAX_LENGTH],
-
-    /// Length of the string in ASCII characters (i.e. bytes).
-    length: u8,
-}
-
-impl AsRef<str> for Buffer {
-    fn as_ref(&self) -> &str {
-        str::from_utf8(&self.bytes[..(self.length as usize)]).expect(INVARIANT_VIOLATED_MSG)
-    }
-}
-
-impl Default for Buffer {
-    fn default() -> Buffer {
-        Buffer {
-            bytes: [0u8; MAX_LENGTH],
-            length: 0,
-        }
-    }
-}
-
-impl PartialEq for Buffer {
-    fn eq(&self, other: &Self) -> bool {
-        // Ensure comparisons always honor the initialized portion of the buffer
-        self.as_ref().eq(other.as_ref())
-    }
-}
-
-impl Write for Buffer {
-    fn write_str(&mut self, input: &str) -> fmt::Result {
-        let bytes = input.as_bytes();
-        let length = self.length as usize;
-
-        if length + bytes.len() > MAX_LENGTH {
-            return Err(fmt::Error);
-        }
-
-        self.bytes[length..(length + bytes.len())].copy_from_slice(bytes);
-        self.length += bytes.len() as u8;
-
-        Ok(())
     }
 }
 
