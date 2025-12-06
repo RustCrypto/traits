@@ -4,22 +4,21 @@ mod ident;
 mod output;
 mod params;
 mod salt;
+mod string_buf;
 mod value;
 
-use crate::{Error, PasswordHasher, PasswordVerifier};
 pub use ident::Ident;
 pub use output::Output;
 pub use params::ParamsString;
 pub use salt::{Salt, SaltString};
 pub use value::{Decimal, Value};
 
-use core::fmt;
+use crate::{Error, PasswordHasher, PasswordVerifier};
+use core::{fmt, str::FromStr};
+use string_buf::StringBuf;
 
 #[cfg(feature = "alloc")]
-use alloc::{
-    str::FromStr,
-    string::{String, ToString},
-};
+use alloc::string::{String, ToString};
 
 /// Separator character used in password hashes (e.g. `$6$...`).
 const PASSWORD_HASH_SEPARATOR: char = '$';
@@ -62,7 +61,7 @@ pub struct PasswordHash<'a> {
     ///
     /// This corresponds to the `<id>` field in a PHC string, a.k.a. the
     /// symbolic name for the function.
-    pub algorithm: Ident<'a>,
+    pub algorithm: Ident,
 
     /// Optional version field.
     ///
@@ -103,7 +102,7 @@ impl<'a> PasswordHash<'a> {
         let algorithm = fields
             .next()
             .ok_or(Error::PhcStringField)
-            .and_then(Ident::try_from)?;
+            .and_then(Ident::from_str)?;
 
         let mut version = None;
         let mut params = ParamsString::new();
@@ -264,7 +263,7 @@ impl PasswordHashString {
     }
 
     /// Password hashing algorithm identifier.
-    pub fn algorithm(&self) -> Ident<'_> {
+    pub fn algorithm(&self) -> Ident {
         self.password_hash().algorithm
     }
 

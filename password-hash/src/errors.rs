@@ -21,6 +21,9 @@ pub enum Error {
     /// Cryptographic error.
     Crypto,
 
+    /// Out of memory (heap allocation failure).
+    OutOfMemory,
+
     /// Output size unexpected.
     OutputSize {
         /// Indicates why the output size is unexpected.
@@ -61,11 +64,14 @@ pub enum Error {
     /// Salt invalid.
     SaltInvalid(InvalidValue),
 
+    /// Value exceeds the maximum allowed length.
+    TooLong,
+
+    /// Value does not satisfy the minimum length.
+    TooShort,
+
     /// Invalid algorithm version.
     Version,
-
-    /// Out of memory (heap allocation failure).
-    OutOfMemory,
 }
 
 impl fmt::Display for Error {
@@ -74,6 +80,7 @@ impl fmt::Display for Error {
             Self::Algorithm => write!(f, "unsupported algorithm"),
             Self::B64Encoding(err) => write!(f, "{err}"),
             Self::Crypto => write!(f, "cryptographic error"),
+            Self::OutOfMemory => write!(f, "out of memory"),
             Self::OutputSize { provided, expected } => match provided {
                 Ordering::Less => write!(
                     f,
@@ -94,8 +101,9 @@ impl fmt::Display for Error {
                 write!(f, "password hash string contains trailing characters")
             }
             Self::SaltInvalid(val_err) => write!(f, "salt invalid: {val_err}"),
+            Self::TooLong => f.write_str("value to long"),
+            Self::TooShort => f.write_str("value to short"),
             Self::Version => write!(f, "invalid algorithm version"),
-            Self::OutOfMemory => write!(f, "out of memory"),
         }
     }
 }
