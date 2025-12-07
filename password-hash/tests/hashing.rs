@@ -1,5 +1,7 @@
 //! Password hashing tests
 
+#![cfg(feature = "phc")]
+
 use core::{fmt::Display, str::FromStr};
 use password_hash::{
     CustomizedPasswordHasher, PasswordHasher,

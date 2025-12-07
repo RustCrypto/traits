@@ -8,6 +8,8 @@
 //!
 //! <https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#b64>
 
+#![cfg(feature = "phc")]
+
 use password_hash::phc::{Output, Salt};
 
 // Example salt encoded as a B64 string.

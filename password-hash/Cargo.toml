@@ -25,10 +25,11 @@ getrandom = { version = "0.3", optional = true, default-features = false }
 rand_core = { version = "0.10.0-rc-2", optional = true, default-features = false }
 
 [features]
-default = ["rand_core"]
-getrandom = ["dep:getrandom"]
-rand_core = ["dep:rand_core"]
+default = ["phc", "rand_core"]
 alloc = ["base64ct/alloc"]
+getrandom = ["dep:getrandom"]
+phc = []
+rand_core = ["dep:rand_core"]
 
 [package.metadata.docs.rs]
 all-features = true

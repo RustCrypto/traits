@@ -4,6 +4,8 @@
 //! of the string encoding, and ensures password hashes round trip under each
 //! of the conditions.
 
+#![cfg(feature = "phc")]
+
 use password_hash::phc::{Ident, ParamsString, PasswordHash, Salt};
 
 const EXAMPLE_ALGORITHM: Ident = Ident::new_unwrap("argon2d");
