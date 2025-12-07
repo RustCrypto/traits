@@ -56,7 +56,7 @@ const PASSWORD_HASH_SEPARATOR: char = '$';
 ///
 /// [1]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#specification
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct PasswordHash<'a> {
+pub struct PasswordHash {
     /// Password hashing algorithm identifier.
     ///
     /// This corresponds to the `<id>` field in a PHC string, a.k.a. the
@@ -77,7 +77,7 @@ pub struct PasswordHash<'a> {
     /// [`Salt`] string for personalizing a password hash output.
     ///
     /// This corresponds to the `<salt>` value in a PHC string.
-    pub salt: Option<Salt<'a>>,
+    pub salt: Option<Salt>,
 
     /// Password hashing function [`Output`], a.k.a. hash/digest.
     ///
@@ -85,9 +85,9 @@ pub struct PasswordHash<'a> {
     pub hash: Option<Output>,
 }
 
-impl<'a> PasswordHash<'a> {
+impl PasswordHash {
     /// Parse a password hash from a string in the PHC string format.
-    pub fn new(s: &'a str) -> crate::Result<Self> {
+    pub fn new(s: &str) -> crate::Result<Self> {
         if s.is_empty() {
             return Err(Error::PhcStringField);
         }
@@ -136,7 +136,7 @@ impl<'a> PasswordHash<'a> {
         }
 
         if let Some(s) = next_field {
-            salt = Some(s.try_into()?);
+            salt = Some(s.parse()?);
         }
 
         if let Some(field) = fields.next() {
@@ -160,7 +160,7 @@ impl<'a> PasswordHash<'a> {
     pub fn generate(
         phf: impl PasswordHasher,
         password: impl AsRef<[u8]>,
-        salt: &'a str,
+        salt: &[u8],
     ) -> crate::Result<Self> {
         phf.hash_password(password.as_ref(), salt)
     }
@@ -188,17 +188,23 @@ impl<'a> PasswordHash<'a> {
     }
 }
 
-// Note: this uses `TryFrom` instead of `FromStr` to support a lifetime on
-// the `str` the value is being parsed from.
-impl<'a> TryFrom<&'a str> for PasswordHash<'a> {
-    type Error = Error;
+impl FromStr for PasswordHash {
+    type Err = Error;
 
-    fn try_from(s: &'a str) -> crate::Result<Self> {
+    fn from_str(s: &str) -> crate::Result<Self> {
         Self::new(s)
     }
 }
 
-impl fmt::Display for PasswordHash<'_> {
+impl TryFrom<&str> for PasswordHash {
+    type Error = Error;
+
+    fn try_from(s: &str) -> crate::Result<Self> {
+        Self::new(s)
+    }
+}
+
+impl fmt::Display for PasswordHash {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}{}", PASSWORD_HASH_SEPARATOR, self.algorithm)?;
 
@@ -243,7 +249,7 @@ impl PasswordHashString {
     }
 
     /// Parse this owned string as a [`PasswordHash`].
-    pub fn password_hash(&self) -> PasswordHash<'_> {
+    pub fn password_hash(&self) -> PasswordHash {
         PasswordHash::new(&self.string).expect("malformed password hash")
     }
 
@@ -278,7 +284,7 @@ impl PasswordHashString {
     }
 
     /// [`Salt`] string for personalizing a password hash output.
-    pub fn salt(&self) -> Option<Salt<'_>> {
+    pub fn salt(&self) -> Option<Salt> {
         self.password_hash().salt
     }
 
@@ -296,15 +302,15 @@ impl AsRef<str> for PasswordHashString {
 }
 
 #[cfg(feature = "alloc")]
-impl From<PasswordHash<'_>> for PasswordHashString {
-    fn from(hash: PasswordHash<'_>) -> PasswordHashString {
+impl From<PasswordHash> for PasswordHashString {
+    fn from(hash: PasswordHash) -> PasswordHashString {
         PasswordHashString::from(&hash)
     }
 }
 
 #[cfg(feature = "alloc")]
-impl From<&PasswordHash<'_>> for PasswordHashString {
-    fn from(hash: &PasswordHash<'_>) -> PasswordHashString {
+impl From<&PasswordHash> for PasswordHashString {
+    fn from(hash: &PasswordHash) -> PasswordHashString {
         PasswordHashString {
             string: hash.to_string(),
         }
