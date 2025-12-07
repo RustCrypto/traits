@@ -158,7 +158,7 @@ impl PasswordHash {
 
     /// Generate a password hash using the supplied algorithm.
     pub fn generate(
-        phf: impl PasswordHasher,
+        phf: impl PasswordHasher<Self>,
         password: impl AsRef<[u8]>,
         salt: &[u8],
     ) -> crate::Result<Self> {
@@ -169,7 +169,7 @@ impl PasswordHash {
     /// [`PasswordHasher`] trait objects.
     pub fn verify_password(
         &self,
-        phfs: &[&dyn PasswordVerifier],
+        phfs: &[&dyn PasswordVerifier<Self>],
         password: impl AsRef<[u8]>,
     ) -> crate::Result<()> {
         for &phf in phfs {

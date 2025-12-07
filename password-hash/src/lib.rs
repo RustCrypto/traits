@@ -49,16 +49,20 @@ use core::{
 pub type Version = u32;
 
 /// Trait for password hashing functions.
-pub trait PasswordHasher {
+///
+/// Generic around a password hash to be returned (typically [`PasswordHash`])
+pub trait PasswordHasher<H> {
     /// Simple API for computing a [`PasswordHash`] from a password and
     /// salt value.
     ///
     /// Uses the default recommended parameters for a given algorithm.
-    fn hash_password(&self, password: &[u8], salt: &[u8]) -> Result<PasswordHash>;
+    fn hash_password(&self, password: &[u8], salt: &[u8]) -> Result<H>;
 }
 
 /// Trait for password hashing functions which support customization.
-pub trait CustomizedPasswordHasher {
+///
+/// Generic around a password hash to be returned (typically [`PasswordHash`])
+pub trait CustomizedPasswordHasher<H> {
     /// Algorithm-specific parameters.
     type Params: Clone + Debug + Default + Display + FromStr<Err = Error>;
 
@@ -74,24 +78,26 @@ pub trait CustomizedPasswordHasher {
         algorithm: Option<&str>,
         version: Option<Version>,
         params: Self::Params,
-    ) -> Result<PasswordHash>;
+    ) -> Result<H>;
 }
 
 /// Trait for password verification.
 ///
-/// Automatically impl'd for any type that impls [`PasswordHasher`].
+/// Generic around a password hash to be returned (typically [`PasswordHash`])
+///
+/// Automatically impl'd for any type that impls [`PasswordHasher`] with [`PasswordHash`] as `H`.
 ///
 /// This trait is object safe and can be used to implement abstractions over
 /// multiple password hashing algorithms. One such abstraction is provided by
 /// the [`PasswordHash::verify_password`] method.
-pub trait PasswordVerifier {
+pub trait PasswordVerifier<H> {
     /// Compute this password hashing function against the provided password
     /// using the parameters from the provided password hash and see if the
     /// computed output matches.
-    fn verify_password(&self, password: &[u8], hash: &PasswordHash) -> Result<()>;
+    fn verify_password(&self, password: &[u8], hash: &H) -> Result<()>;
 }
 
-impl<T: CustomizedPasswordHasher> PasswordVerifier for T {
+impl<T: CustomizedPasswordHasher<PasswordHash>> PasswordVerifier<PasswordHash> for T {
     fn verify_password(&self, password: &[u8], hash: &PasswordHash) -> Result<()> {
         #[allow(clippy::single_match)]
         match (&hash.salt, &hash.hash) {
@@ -136,7 +142,7 @@ pub trait McfHasher {
     /// Verify a password hash in MCF format against the provided password.
     fn verify_mcf_hash(&self, password: &[u8], mcf_hash: &str) -> Result<()>
     where
-        Self: PasswordVerifier,
+        Self: PasswordVerifier<PasswordHash>,
     {
         self.verify_password(password, &self.upgrade_mcf_hash(mcf_hash)?)
     }
