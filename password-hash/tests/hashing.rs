@@ -1,9 +1,8 @@
 //! Password hashing tests
 
 use core::{fmt::Display, str::FromStr};
-use password_hash::PasswordHasher;
-pub use password_hash::{
-    CustomizedPasswordHasher,
+use password_hash::{
+    CustomizedPasswordHasher, PasswordHasher,
     errors::{Error, Result},
     phc::{Decimal, Ident, Output, ParamsString, PasswordHash, Salt},
 };
@@ -13,13 +12,7 @@ const ALG: Ident = Ident::new_unwrap("example");
 /// Stub password hashing function for testing.
 pub struct StubPasswordHasher;
 
-impl PasswordHasher for StubPasswordHasher {
-    fn hash_password(&self, password: &[u8], salt: &[u8]) -> Result<PasswordHash> {
-        self.hash_password_customized(password, salt, None, None, StubParams)
-    }
-}
-
-impl CustomizedPasswordHasher for StubPasswordHasher {
+impl CustomizedPasswordHasher<PasswordHash> for StubPasswordHasher {
     type Params = StubParams;
 
     fn hash_password_customized(
@@ -52,6 +45,12 @@ impl CustomizedPasswordHasher for StubPasswordHasher {
             salt: Some(salt),
             hash: Some(hash),
         })
+    }
+}
+
+impl PasswordHasher<PasswordHash> for StubPasswordHasher {
+    fn hash_password(&self, password: &[u8], salt: &[u8]) -> Result<PasswordHash> {
+        self.hash_password_customized(password, salt, None, None, StubParams)
     }
 }
 
