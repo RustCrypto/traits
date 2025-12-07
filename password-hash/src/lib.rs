@@ -38,10 +38,21 @@ pub mod phc;
 
 pub use crate::errors::{Error, Result};
 
+/// DEPRECATED: import this as `password_hash::phc::PasswordHash`.
 #[cfg(feature = "phc")]
-pub use phc::PasswordHash;
+#[deprecated(
+    since = "0.6.0",
+    note = "import as `password_hash::phc::PasswordHash` instead"
+)]
+pub type PasswordHash = phc::PasswordHash;
+
+/// DEPRECATED: import this as `password_hash::phc::PasswordHashString`.
 #[cfg(all(feature = "alloc", feature = "phc"))]
-pub use phc::PasswordHashString;
+#[deprecated(
+    since = "0.6.0",
+    note = "import as `password_hash::phc::PasswordHashString` instead"
+)]
+pub type PasswordHashString = phc::PasswordHashString;
 
 use core::{
     fmt::{Debug, Display},
@@ -101,8 +112,8 @@ pub trait PasswordVerifier<H> {
 }
 
 #[cfg(feature = "phc")]
-impl<T: CustomizedPasswordHasher<PasswordHash>> PasswordVerifier<PasswordHash> for T {
-    fn verify_password(&self, password: &[u8], hash: &PasswordHash) -> Result<()> {
+impl<T: CustomizedPasswordHasher<phc::PasswordHash>> PasswordVerifier<phc::PasswordHash> for T {
+    fn verify_password(&self, password: &[u8], hash: &phc::PasswordHash) -> Result<()> {
         #[allow(clippy::single_match)]
         match (&hash.salt, &hash.hash) {
             (Some(salt), Some(expected_output)) => {
@@ -142,12 +153,12 @@ pub trait McfHasher {
     ///
     /// MCF hashes are otherwise largely unstructured and parsed according to
     /// algorithm-specific rules so hashers must parse a raw string themselves.
-    fn upgrade_mcf_hash(&self, hash: &str) -> Result<PasswordHash>;
+    fn upgrade_mcf_hash(&self, hash: &str) -> Result<phc::PasswordHash>;
 
     /// Verify a password hash in MCF format against the provided password.
     fn verify_mcf_hash(&self, password: &[u8], mcf_hash: &str) -> Result<()>
     where
-        Self: PasswordVerifier<PasswordHash>,
+        Self: PasswordVerifier<phc::PasswordHash>,
     {
         self.verify_password(password, &self.upgrade_mcf_hash(mcf_hash)?)
     }
