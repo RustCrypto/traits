@@ -14,23 +14,23 @@ const ALG: Ident = Ident::new_unwrap("example");
 pub struct StubPasswordHasher;
 
 impl PasswordHasher for StubPasswordHasher {
-    fn hash_password<'a>(&self, password: &[u8], salt: &'a str) -> Result<PasswordHash<'a>> {
-        self.hash_password_customized(password, None, None, StubParams, salt)
+    fn hash_password(&self, password: &[u8], salt: &[u8]) -> Result<PasswordHash> {
+        self.hash_password_customized(password, salt, None, None, StubParams)
     }
 }
 
 impl CustomizedPasswordHasher for StubPasswordHasher {
     type Params = StubParams;
 
-    fn hash_password_customized<'a>(
+    fn hash_password_customized(
         &self,
         password: &[u8],
-        algorithm: Option<&'a str>,
+        salt: &[u8],
+        algorithm: Option<&str>,
         version: Option<Decimal>,
         params: StubParams,
-        salt: &'a str,
-    ) -> Result<PasswordHash<'a>> {
-        let salt = Salt::from_b64(salt)?;
+    ) -> Result<PasswordHash> {
+        let salt = Salt::new(salt)?;
         let mut output = Vec::new();
 
         if let Some(alg) = algorithm {
@@ -39,7 +39,7 @@ impl CustomizedPasswordHasher for StubPasswordHasher {
             }
         }
 
-        for slice in &[b"pw", password, b",salt:", salt.as_str().as_bytes()] {
+        for slice in &[b"pw", password, b",salt:", salt.as_ref()] {
             output.extend_from_slice(slice);
         }
 
@@ -84,12 +84,15 @@ impl TryFrom<StubParams> for ParamsString {
 #[test]
 fn verify_password_hash() {
     let valid_password = "test password";
-    let salt = "test-salt";
-    let hash = PasswordHash::generate(StubPasswordHasher, valid_password, salt).unwrap();
+    let salt = Salt::from_b64("testsalt000").unwrap();
+    let hash = PasswordHash::generate(StubPasswordHasher, valid_password, &salt).unwrap();
 
     // Sanity tests for StubFunction impl above
     assert_eq!(hash.algorithm, ALG);
-    assert_eq!(hash.salt.unwrap().as_str(), salt);
+    assert_eq!(
+        hash.salt.unwrap().as_ref(),
+        &[0xb5, 0xeb, 0x2d, 0xb1, 0xa9, 0x6d, 0xd3, 0x4d]
+    );
 
     // Tests for generic password verification logic
     assert_eq!(

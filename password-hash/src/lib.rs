@@ -54,7 +54,7 @@ pub trait PasswordHasher {
     /// salt value.
     ///
     /// Uses the default recommended parameters for a given algorithm.
-    fn hash_password<'a>(&self, password: &[u8], salt: &'a str) -> Result<PasswordHash<'a>>;
+    fn hash_password(&self, password: &[u8], salt: &[u8]) -> Result<PasswordHash>;
 }
 
 /// Trait for password hashing functions which support customization.
@@ -67,14 +67,14 @@ pub trait CustomizedPasswordHasher {
     /// defaults.
     ///
     /// When in doubt, use [`PasswordHasher::hash_password`] instead.
-    fn hash_password_customized<'a>(
+    fn hash_password_customized(
         &self,
         password: &[u8],
-        algorithm: Option<&'a str>,
+        salt: &[u8],
+        algorithm: Option<&str>,
         version: Option<Version>,
         params: Self::Params,
-        salt: &'a str,
-    ) -> Result<PasswordHash<'a>>;
+    ) -> Result<PasswordHash>;
 }
 
 /// Trait for password verification.
@@ -88,20 +88,20 @@ pub trait PasswordVerifier {
     /// Compute this password hashing function against the provided password
     /// using the parameters from the provided password hash and see if the
     /// computed output matches.
-    fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<()>;
+    fn verify_password(&self, password: &[u8], hash: &PasswordHash) -> Result<()>;
 }
 
 impl<T: CustomizedPasswordHasher> PasswordVerifier for T {
-    fn verify_password(&self, password: &[u8], hash: &PasswordHash<'_>) -> Result<()> {
+    fn verify_password(&self, password: &[u8], hash: &PasswordHash) -> Result<()> {
         #[allow(clippy::single_match)]
         match (&hash.salt, &hash.hash) {
             (Some(salt), Some(expected_output)) => {
                 let computed_hash = self.hash_password_customized(
                     password,
+                    salt,
                     Some(hash.algorithm.as_str()),
                     hash.version,
                     T::Params::from_str(hash.params.as_str())?,
-                    salt.as_str(),
                 )?;
 
                 if let Some(computed_output) = &computed_hash.hash {
@@ -131,7 +131,7 @@ pub trait McfHasher {
     ///
     /// MCF hashes are otherwise largely unstructured and parsed according to
     /// algorithm-specific rules so hashers must parse a raw string themselves.
-    fn upgrade_mcf_hash<'a>(&self, hash: &'a str) -> Result<PasswordHash<'a>>;
+    fn upgrade_mcf_hash(&self, hash: &str) -> Result<PasswordHash>;
 
     /// Verify a password hash in MCF format against the provided password.
     fn verify_mcf_hash(&self, password: &[u8], mcf_hash: &str) -> Result<()>
