@@ -1,5 +1,7 @@
 //! Test vectors for commonly used password hashing algorithms.
 
+#![cfg(feature = "phc")]
+
 use password_hash::phc::{Ident, PasswordHash};
 
 const ARGON2D_HASH: &str =

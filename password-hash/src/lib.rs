@@ -26,18 +26,21 @@
 //! For more information, please see the documentation for [`PasswordHash`].
 
 #[cfg(feature = "alloc")]
+#[allow(unused_extern_crates)]
 extern crate alloc;
 
 #[cfg(feature = "rand_core")]
 pub use rand_core;
 
 pub mod errors;
+#[cfg(feature = "phc")]
 pub mod phc;
 
 pub use crate::errors::{Error, Result};
-pub use phc::PasswordHash;
 
-#[cfg(feature = "alloc")]
+#[cfg(feature = "phc")]
+pub use phc::PasswordHash;
+#[cfg(all(feature = "alloc", feature = "phc"))]
 pub use phc::PasswordHashString;
 
 use core::{
@@ -97,6 +100,7 @@ pub trait PasswordVerifier<H> {
     fn verify_password(&self, password: &[u8], hash: &H) -> Result<()>;
 }
 
+#[cfg(feature = "phc")]
 impl<T: CustomizedPasswordHasher<PasswordHash>> PasswordVerifier<PasswordHash> for T {
     fn verify_password(&self, password: &[u8], hash: &PasswordHash) -> Result<()> {
         #[allow(clippy::single_match)]
@@ -128,6 +132,7 @@ impl<T: CustomizedPasswordHasher<PasswordHash>> PasswordVerifier<PasswordHash> f
 /// [Modular Crypt Format (MCF)][MCF].
 ///
 /// [MCF]: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
+#[cfg(feature = "phc")]
 pub trait McfHasher {
     /// Upgrade an MCF hash to a PHC hash. MCF follow this rough format:
     ///
