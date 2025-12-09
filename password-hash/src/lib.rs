@@ -29,14 +29,12 @@
 #[allow(unused_extern_crates)]
 extern crate alloc;
 
-#[cfg(feature = "rand_core")]
-pub use rand_core;
+mod error;
 
-pub mod errors;
+pub use crate::error::{Error, Result};
+
 #[cfg(feature = "phc")]
-pub mod phc;
-
-pub use crate::errors::{Error, Result};
+pub use phc;
 
 /// DEPRECATED: import this as `password_hash::phc::PasswordHash`.
 #[cfg(feature = "phc")]
@@ -46,11 +44,11 @@ pub use crate::errors::{Error, Result};
 )]
 pub type PasswordHash = phc::PasswordHash;
 
-/// DEPRECATED: import this as `password_hash::phc::PasswordHashString`.
+/// DEPRECATED: use `password_hash::phc::PasswordHash` or `String`
 #[cfg(all(feature = "alloc", feature = "phc"))]
 #[deprecated(
     since = "0.6.0",
-    note = "import as `password_hash::phc::PasswordHashString` instead"
+    note = "use `password_hash::phc::PasswordHash` or `String`"
 )]
 pub type PasswordHashString = phc::PasswordHashString;
 
@@ -97,13 +95,12 @@ pub trait CustomizedPasswordHasher<H> {
 
 /// Trait for password verification.
 ///
-/// Generic around a password hash to be returned (typically [`PasswordHash`])
+/// Generic around a password hash to be returned (typically [`phc::PasswordHash`])
 ///
-/// Automatically impl'd for any type that impls [`PasswordHasher`] with [`PasswordHash`] as `H`.
+/// Automatically impl'd for type that impl [`PasswordHasher`] with [`phc::PasswordHash`] as `H`.
 ///
 /// This trait is object safe and can be used to implement abstractions over
-/// multiple password hashing algorithms. One such abstraction is provided by
-/// the [`PasswordHash::verify_password`] method.
+/// multiple password hashing algorithms.
 pub trait PasswordVerifier<H> {
     /// Compute this password hashing function against the provided password
     /// using the parameters from the provided password hash and see if the
@@ -135,7 +132,7 @@ impl<T: CustomizedPasswordHasher<phc::PasswordHash>> PasswordVerifier<phc::Passw
             _ => (),
         }
 
-        Err(Error::Password)
+        Err(Error::PasswordInvalid)
     }
 }
 

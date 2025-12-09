@@ -324,10 +324,7 @@ dependencies = [
 name = "password-hash"
 version = "0.6.0-rc.3"
 dependencies = [
- "base64ct",
- "getrandom",
- "rand_core",
- "subtle",
+ "phc",
 ]
 
 [[package]]
@@ -337,6 +334,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6305423e0e7738146434843d1694d621cce767262b2a86910beab705e4493d9"
 dependencies = [
  "base64ct",
+]
+
+[[package]]
+name = "phc"
+version = "0.3.0-pre"
+source = "git+https://github.com/RustCrypto/formats#1e7caeb8e57b89d5cff1fba6ab500928fb3eccf7"
+dependencies = [
+ "base64ct",
+ "subtle",
 ]
 
 [[package]]
