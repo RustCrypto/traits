@@ -3,11 +3,8 @@
 #![cfg(feature = "phc")]
 
 use core::{fmt::Display, str::FromStr};
-use password_hash::{
-    CustomizedPasswordHasher, PasswordHasher,
-    errors::{Error, Result},
-    phc::{Decimal, Ident, Output, ParamsString, PasswordHash, Salt},
-};
+use password_hash::{CustomizedPasswordHasher, Error, PasswordHasher, Result};
+use phc::{Decimal, Ident, Output, ParamsString, PasswordHash, Salt};
 
 const ALG: Ident = Ident::new_unwrap("example");
 
@@ -25,11 +22,11 @@ impl CustomizedPasswordHasher<PasswordHash> for StubPasswordHasher {
         version: Option<Decimal>,
         params: StubParams,
     ) -> Result<PasswordHash> {
-        let salt = Salt::new(salt)?;
+        let salt = Salt::new(salt).map_err(|_| Error::SaltInvalid)?;
         let mut output = Vec::new();
 
         if let Some(alg) = algorithm {
-            if Ident::new(alg)? != ALG {
+            if Ident::new(alg).map_err(|_| Error::Algorithm)? != ALG {
                 return Err(Error::Algorithm);
             }
         }
@@ -38,7 +35,7 @@ impl CustomizedPasswordHasher<PasswordHash> for StubPasswordHasher {
             output.extend_from_slice(slice);
         }
 
-        let hash = Output::new(&output)?;
+        let hash = Output::new(&output).map_err(|_| Error::OutputSize)?;
 
         Ok(PasswordHash {
             algorithm: ALG,
@@ -84,25 +81,16 @@ impl TryFrom<StubParams> for ParamsString {
 
 #[test]
 fn verify_password_hash() {
-    let valid_password = "test password";
+    let valid_password = b"test password";
     let salt = Salt::from_b64("testsalt000").unwrap();
-    let hash = PasswordHash::generate(StubPasswordHasher, valid_password, &salt).unwrap();
+    let hash = StubPasswordHasher
+        .hash_password(valid_password, &salt)
+        .unwrap();
 
     // Sanity tests for StubFunction impl above
     assert_eq!(hash.algorithm, ALG);
     assert_eq!(
         hash.salt.unwrap().as_ref(),
         &[0xb5, 0xeb, 0x2d, 0xb1, 0xa9, 0x6d, 0xd3, 0x4d]
-    );
-
-    // Tests for generic password verification logic
-    assert_eq!(
-        hash.verify_password(&[&StubPasswordHasher], valid_password),
-        Ok(())
-    );
-
-    assert_eq!(
-        hash.verify_password(&[&StubPasswordHasher], "wrong password"),
-        Err(Error::Password)
     );
 }
