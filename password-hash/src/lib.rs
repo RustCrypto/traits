@@ -92,6 +92,17 @@ pub trait CustomizedPasswordHasher<H> {
         version: Option<Version>,
         params: Self::Params,
     ) -> Result<H>;
+
+    /// Compute a [`PasswordHash`] using customized parameters only, using the default
+    /// algorithm and version.
+    fn hash_password_with_params(
+        &self,
+        password: &[u8],
+        salt: &[u8],
+        params: Self::Params,
+    ) -> Result<H> {
+        self.hash_password_customized(password, salt, None, None, params)
+    }
 }
 
 /// Trait for password verification.
