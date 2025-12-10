@@ -77,7 +77,7 @@ pub trait PasswordHasher<H> {
 /// Generic around a password hash to be returned (typically [`PasswordHash`])
 pub trait CustomizedPasswordHasher<H> {
     /// Algorithm-specific parameters.
-    type Params: Clone + Debug + Default + Display + FromStr<Err = Error>;
+    type Params: Clone + Debug + Default + Display + FromStr;
 
     /// Compute a [`PasswordHash`] from the provided password using an
     /// explicit set of customized algorithm parameters as opposed to the
@@ -110,7 +110,11 @@ pub trait PasswordVerifier<H> {
 }
 
 #[cfg(feature = "phc")]
-impl<T: CustomizedPasswordHasher<phc::PasswordHash>> PasswordVerifier<phc::PasswordHash> for T {
+impl<T: CustomizedPasswordHasher<phc::PasswordHash>, E> PasswordVerifier<phc::PasswordHash> for T
+where
+    T::Params: FromStr<Err = E>,
+    Error: From<E>,
+{
     fn verify_password(&self, password: &[u8], hash: &phc::PasswordHash) -> Result<()> {
         #[allow(clippy::single_match)]
         match (&hash.salt, &hash.hash) {
