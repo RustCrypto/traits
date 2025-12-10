@@ -113,7 +113,7 @@ pub trait CustomizedPasswordHasher<H> {
 ///
 /// This trait is object safe and can be used to implement abstractions over
 /// multiple password hashing algorithms.
-pub trait PasswordVerifier<H> {
+pub trait PasswordVerifier<H: ?Sized> {
     /// Compute this password hashing function against the provided password
     /// using the parameters from the provided password hash and see if the
     /// computed output matches.
