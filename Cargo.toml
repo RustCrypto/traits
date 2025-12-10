@@ -18,4 +18,3 @@ digest = { path = "digest" }
 signature = { path = "signature" }
 
 getrandom = { git = "https://github.com/rust-random/getrandom" }
-phc = { git = "https://github.com/RustCrypto/formats" }
