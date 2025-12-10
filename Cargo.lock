@@ -338,8 +338,9 @@ dependencies = [
 
 [[package]]
 name = "phc"
-version = "0.3.0-pre"
-source = "git+https://github.com/RustCrypto/formats#1e7caeb8e57b89d5cff1fba6ab500928fb3eccf7"
+version = "0.6.0-rc.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c61f960577aaac5c259bc0866d685ba315c0ed30793c602d7287f54980913863"
 dependencies = [
  "base64ct",
  "subtle",

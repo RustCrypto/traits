@@ -50,6 +50,7 @@ pub type PasswordHash = phc::PasswordHash;
     since = "0.6.0",
     note = "use `password_hash::phc::PasswordHash` or `String`"
 )]
+#[allow(deprecated)]
 pub type PasswordHashString = phc::PasswordHashString;
 
 use core::{
