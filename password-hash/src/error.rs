@@ -18,6 +18,9 @@ pub enum Error {
     /// Encoding errors (e.g. Base64).
     EncodingInvalid,
 
+    /// Internal error within a password hashing library.
+    Internal,
+
     /// Out of memory (heap allocation failure).
     OutOfMemory,
 
@@ -49,6 +52,7 @@ impl fmt::Display for Error {
             Self::Algorithm => write!(f, "unsupported algorithm"),
             Self::Crypto => write!(f, "cryptographic error"),
             Self::EncodingInvalid => write!(f, "invalid encoding"),
+            Self::Internal => write!(f, "internal password hashing algorithm error"),
             Self::OutOfMemory => write!(f, "out of memory"),
             Self::OutputSize => write!(f, "password hash output size invalid"),
             Self::ParamInvalid { name } => write!(f, "invalid parameter: {name:?}"),
