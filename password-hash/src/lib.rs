@@ -152,12 +152,4 @@ pub trait McfHasher {
     /// MCF hashes are otherwise largely unstructured and parsed according to
     /// algorithm-specific rules so hashers must parse a raw string themselves.
     fn upgrade_mcf_hash(&self, hash: &str) -> Result<phc::PasswordHash>;
-
-    /// Verify a password hash in MCF format against the provided password.
-    fn verify_mcf_hash(&self, password: &[u8], mcf_hash: &str) -> Result<()>
-    where
-        Self: PasswordVerifier<phc::PasswordHash>,
-    {
-        self.verify_password(password, &self.upgrade_mcf_hash(mcf_hash)?)
-    }
 }
