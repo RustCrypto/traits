@@ -17,10 +17,12 @@ as well as a `no_std`-friendly implementation of the PHC string format
 """
 
 [dependencies]
+getrandom = { version = "0.3", optional = true, default-features = false }
 phc = { version = "0.6.0-rc.0", optional = true, default-features = false }
 
 [features]
 alloc = ["phc?/alloc"]
+getrandom = ["dep:getrandom", "phc?/getrandom"]
 
 [package.metadata.docs.rs]
 all-features = true

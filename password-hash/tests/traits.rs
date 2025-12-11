@@ -48,7 +48,7 @@ impl CustomizedPasswordHasher<PasswordHash> for StubPasswordHasher {
 }
 
 impl PasswordHasher<PasswordHash> for StubPasswordHasher {
-    fn hash_password(&self, password: &[u8], salt: &[u8]) -> Result<PasswordHash> {
+    fn hash_password_with_salt(&self, password: &[u8], salt: &[u8]) -> Result<PasswordHash> {
         self.hash_password_customized(password, salt, None, None, StubParams)
     }
 }
@@ -84,7 +84,7 @@ fn verify_password_hash() {
     let valid_password = b"test password";
     let salt = Salt::from_b64("testsalt000").unwrap();
     let hash = StubPasswordHasher
-        .hash_password(valid_password, &salt)
+        .hash_password_with_salt(valid_password, &salt)
         .unwrap();
 
     // Sanity tests for StubFunction impl above

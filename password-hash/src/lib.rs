@@ -61,15 +61,40 @@ use core::{
 /// Numeric version identifier for password hashing algorithms.
 pub type Version = u32;
 
-/// Trait for password hashing functions.
+/// Recommended length of a salt: 16-bytes.
 ///
-/// Generic around a password hash to be returned (typically [`PasswordHash`])
+/// This recommendation comes from the [PHC string format specification]:
+///
+/// > The role of salts is to achieve uniqueness. A *random* salt is fine
+/// > for that as long as its length is sufficient; a 16-byte salt would
+/// > work well (by definition, UUID are very good salts, and they encode
+/// > over exactly 16 bytes). 16 bytes encode as 22 characters in B64.
+///
+/// [PHC string format specification]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#function-duties
+#[cfg(feature = "getrandom")]
+const RECOMMENDED_SALT_LEN: usize = 16;
+
+/// High-level trait for password hashing functions.
+///
+/// Generic around a password hash to be returned (typically [`phc::PasswordHash`])
 pub trait PasswordHasher<H> {
-    /// Simple API for computing a [`PasswordHash`] from a password and
-    /// salt value.
+    /// Compute the hash `H` from the given password and salt, potentially using configuration
+    /// stored in `&self` for the parameters, or otherwise the recommended defaults.
     ///
-    /// Uses the default recommended parameters for a given algorithm.
-    fn hash_password(&self, password: &[u8], salt: &[u8]) -> Result<H>;
+    /// The salt should be unique per password. When in doubt, use [`PasswordHasher::hash_password`]
+    /// which will choose the salt for you.
+    fn hash_password_with_salt(&self, password: &[u8], salt: &[u8]) -> Result<H>;
+
+    /// Compute the hash `H` from the given password, potentially using configuration stored in
+    /// `&self` for the parameters, or otherwise the recommended defaults.
+    ///
+    /// A large random salt will be generated automatically.
+    #[cfg(feature = "getrandom")]
+    fn hash_password(&self, password: &[u8]) -> Result<H> {
+        let mut salt = [0u8; RECOMMENDED_SALT_LEN];
+        getrandom::fill(&mut salt).map_err(|_| Error::Crypto)?;
+        self.hash_password_with_salt(password, &salt)
+    }
 }
 
 /// Trait for password hashing functions which support customization.
