@@ -65,3 +65,22 @@ impl fmt::Display for Error {
 }
 
 impl core::error::Error for Error {}
+
+#[cfg(feature = "phc")]
+impl From<phc::Error> for Error {
+    fn from(err: phc::Error) -> Self {
+        match err {
+            phc::Error::B64Encoding(_) | phc::Error::MissingField | phc::Error::TrailingData => {
+                Self::EncodingInvalid
+            }
+            phc::Error::OutputSize { .. } => Self::OutputSize,
+            phc::Error::ParamNameDuplicated
+            | phc::Error::ParamNameInvalid
+            | phc::Error::ParamValueTooLong
+            | phc::Error::ParamsMaxExceeded
+            | phc::Error::ValueTooLong => Self::ParamsInvalid,
+            phc::Error::SaltTooShort | phc::Error::SaltTooLong => Self::SaltInvalid,
+            _ => Self::Internal, // Branch since `phc::Error` is `non_exhaustive`
+        }
+    }
+}
