@@ -3,8 +3,6 @@
 //! See the [RustCrypto/stream-ciphers](https://github.com/RustCrypto/stream-ciphers) repository
 //! for ciphers implementation.
 
-use crate::block::{BlockModeDecrypt, BlockModeEncrypt};
-use crypto_common::Block;
 use inout::{InOutBuf, NotEqualError};
 
 mod core_api;
@@ -19,72 +17,6 @@ pub use core_api::{
 pub use errors::{OverflowError, StreamCipherError};
 #[cfg(feature = "stream-wrapper")]
 pub use wrapper::StreamCipherCoreWrapper;
-
-/// Asynchronous stream cipher trait.
-pub trait AsyncStreamCipher: Sized {
-    /// Encrypt data using `InOutBuf`.
-    fn encrypt_inout(mut self, data: InOutBuf<'_, '_, u8>)
-    where
-        Self: BlockModeEncrypt,
-    {
-        let (blocks, mut tail) = data.into_chunks();
-        self.encrypt_blocks_inout(blocks);
-        let n = tail.len();
-        if n != 0 {
-            let mut block = Block::<Self>::default();
-            block[..n].copy_from_slice(tail.get_in());
-            self.encrypt_block(&mut block);
-            tail.get_out().copy_from_slice(&block[..n]);
-        }
-    }
-
-    /// Decrypt data using `InOutBuf`.
-    fn decrypt_inout(mut self, data: InOutBuf<'_, '_, u8>)
-    where
-        Self: BlockModeDecrypt,
-    {
-        let (blocks, mut tail) = data.into_chunks();
-        self.decrypt_blocks_inout(blocks);
-        let n = tail.len();
-        if n != 0 {
-            let mut block = Block::<Self>::default();
-            block[..n].copy_from_slice(tail.get_in());
-            self.decrypt_block(&mut block);
-            tail.get_out().copy_from_slice(&block[..n]);
-        }
-    }
-    /// Encrypt data in place.
-    fn encrypt(self, buf: &mut [u8])
-    where
-        Self: BlockModeEncrypt,
-    {
-        self.encrypt_inout(buf.into());
-    }
-
-    /// Decrypt data in place.
-    fn decrypt(self, buf: &mut [u8])
-    where
-        Self: BlockModeDecrypt,
-    {
-        self.decrypt_inout(buf.into());
-    }
-
-    /// Encrypt data from buffer to buffer.
-    fn encrypt_b2b(self, in_buf: &[u8], out_buf: &mut [u8]) -> Result<(), NotEqualError>
-    where
-        Self: BlockModeEncrypt,
-    {
-        InOutBuf::new(in_buf, out_buf).map(|b| self.encrypt_inout(b))
-    }
-
-    /// Decrypt data from buffer to buffer.
-    fn decrypt_b2b(self, in_buf: &[u8], out_buf: &mut [u8]) -> Result<(), NotEqualError>
-    where
-        Self: BlockModeDecrypt,
-    {
-        InOutBuf::new(in_buf, out_buf).map(|b| self.decrypt_inout(b))
-    }
-}
 
 /// Stream cipher trait.
 ///
