@@ -36,6 +36,9 @@ pub use crate::error::{Error, Result};
 #[cfg(feature = "phc")]
 pub use phc;
 
+#[cfg(feature = "rand_core")]
+pub use rand_core::{self, TryCryptoRng};
+
 /// DEPRECATED: import this as `password_hash::phc::PasswordHash`.
 #[cfg(feature = "phc")]
 #[deprecated(
@@ -71,7 +74,7 @@ pub type Version = u32;
 /// > over exactly 16 bytes). 16 bytes encode as 22 characters in B64.
 ///
 /// [PHC string format specification]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#function-duties
-#[cfg(feature = "getrandom")]
+#[cfg(any(feature = "getrandom", feature = "rand_core"))]
 const RECOMMENDED_SALT_LEN: usize = 16;
 
 /// High-level trait for password hashing functions.
@@ -93,6 +96,21 @@ pub trait PasswordHasher<H> {
     fn hash_password(&self, password: &[u8]) -> Result<H> {
         let mut salt = [0u8; RECOMMENDED_SALT_LEN];
         getrandom::fill(&mut salt).map_err(|_| Error::Crypto)?;
+        self.hash_password_with_salt(password, &salt)
+    }
+
+    /// Compute the hash `H` from the given password, potentially using configuration stored in
+    /// `&self` for the parameters, or otherwise the recommended defaults.
+    ///
+    /// A large random salt will be generated automatically from the provided RNG.
+    #[cfg(feature = "rand_core")]
+    fn hash_password_with_rng<R: TryCryptoRng + ?Sized>(
+        &self,
+        rng: &mut R,
+        password: &[u8],
+    ) -> Result<H> {
+        let mut salt = [0u8; RECOMMENDED_SALT_LEN];
+        rng.try_fill_bytes(&mut salt).map_err(|_| Error::Crypto)?;
         self.hash_password_with_salt(password, &salt)
     }
 }
