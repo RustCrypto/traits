@@ -37,7 +37,7 @@ pub use crate::error::{Error, Result};
 pub use phc;
 
 #[cfg(feature = "rand_core")]
-pub use rand_core::{self, TryCryptoRng};
+pub use rand_core;
 
 /// DEPRECATED: import this as `password_hash::phc::PasswordHash`.
 #[cfg(feature = "phc")]
@@ -60,6 +60,9 @@ use core::{
     fmt::{Debug, Display},
     str::FromStr,
 };
+
+#[cfg(feature = "rand_core")]
+use rand_core::TryCryptoRng;
 
 /// Numeric version identifier for password hashing algorithms.
 pub type Version = u32;
@@ -94,8 +97,7 @@ pub trait PasswordHasher<H> {
     /// A large random salt will be generated automatically.
     #[cfg(feature = "getrandom")]
     fn hash_password(&self, password: &[u8]) -> Result<H> {
-        let mut salt = [0u8; RECOMMENDED_SALT_LEN];
-        getrandom::fill(&mut salt).map_err(|_| Error::Crypto)?;
+        let salt = try_generate_salt()?;
         self.hash_password_with_salt(password, &salt)
     }
 
@@ -210,4 +212,19 @@ pub trait McfHasher {
     /// MCF hashes are otherwise largely unstructured and parsed according to
     /// algorithm-specific rules so hashers must parse a raw string themselves.
     fn upgrade_mcf_hash(&self, hash: &str) -> Result<phc::PasswordHash>;
+}
+
+/// Generate a random salt value of the recommended length using the system's secure RNG.
+#[cfg(feature = "getrandom")]
+pub fn generate_salt() -> [u8; RECOMMENDED_SALT_LEN] {
+    try_generate_salt().expect("RNG failure")
+}
+
+/// Try generating a random salt value of the recommended length using the system's secure RNG,
+/// returning errors if they occur.
+#[cfg(feature = "getrandom")]
+pub fn try_generate_salt() -> core::result::Result<[u8; RECOMMENDED_SALT_LEN], getrandom::Error> {
+    let mut salt = [0u8; RECOMMENDED_SALT_LEN];
+    getrandom::fill(&mut salt)?;
+    Ok(salt)
 }
