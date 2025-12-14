@@ -66,6 +66,14 @@ impl fmt::Display for Error {
 
 impl core::error::Error for Error {}
 
+#[cfg(feature = "getrandom")]
+impl From<getrandom::Error> for Error {
+    fn from(_: getrandom::Error) -> Self {
+        // TODO(tarcieri): should we have a specific variant for RNGs errors?
+        Error::Crypto
+    }
+}
+
 #[cfg(feature = "phc")]
 impl From<phc::Error> for Error {
     fn from(err: phc::Error) -> Self {
