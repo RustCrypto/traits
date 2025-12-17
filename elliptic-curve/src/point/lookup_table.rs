@@ -26,6 +26,7 @@ where
     pub const SIZE: usize = LUT_SIZE;
 
     /// Compute a new lookup table from the given point.
+    #[inline]
     pub fn new(p: Point) -> Self {
         let mut points = [p; LUT_SIZE];
 
@@ -38,6 +39,7 @@ where
 
     /// Given `-8 <= x <= 8`, returns `x * p` in constant time.
     #[allow(clippy::cast_sign_loss)]
+    #[inline]
     pub fn select(&self, x: i8) -> Point {
         debug_assert!((-8..=8).contains(&x));
 
