@@ -16,5 +16,3 @@ members = [
 [patch.crates-io]
 digest = { path = "digest" }
 signature = { path = "signature" }
-
-getrandom = { git = "https://github.com/rust-random/getrandom" }
