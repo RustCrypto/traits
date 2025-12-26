@@ -13,12 +13,15 @@ categories = ["cryptography", "no-std"]
 description = "Traits for key encapsulation mechanisms"
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.5", features = ["rand_core"], path = "../crypto-common" }
+crypto-common = { version = "0.2.0-rc.6", features = ["rand_core"], path = "../crypto-common" }
 rand_core = "0.10.0-rc-3"
-zeroize = { version = "1.7", default-features = false }
+
+[features]
+getrandom = ["crypto-common/getrandom"]
 
 [package.metadata.docs.rs]
 all-features = true
 
+# TODO(tarcieri): make README.md an actually valid example
 [lib]
 doctest = false
