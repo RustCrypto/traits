@@ -12,9 +12,10 @@ pub use crypto_common::{Generate, KeyInit, KeySizeUser, typenum::consts};
 
 use rand_core::TryCryptoRng;
 
-/// A value that can be encapsulated to. Often, this will just be a public key. However, it can
-/// also be a bundle of public keys, or it can include a sender's private key for authenticated
-/// encapsulation.
+/// Encapsulator for shared secrets.
+///
+/// Often, this will just be a public key. However, it can also be a bundle of public keys, or it
+/// can include a sender's private key for authenticated encapsulation.
 pub trait Encapsulate<EK, SS> {
     /// Encapsulation error
     type Error: core::error::Error;
@@ -32,10 +33,13 @@ pub trait Encapsulate<EK, SS> {
     }
 }
 
-/// A value that can be used to decapsulate an encapsulated key.
+/// Decapsulator for an encapsulated keys, with an associated encapsulator.
 ///
 /// Often, this will just be a secret key. But, as with [`Encapsulate`], it can be a bundle
 /// of secret keys, or it can include a sender's private key for authenticated encapsulation.
+///
+/// When possible (i.e. for software / non-HSM implementations) types which impl this trait should
+/// also impl the [`Generate`] trait to support key generation.
 pub trait Decapsulate<EK, SS> {
     /// Encapsulator which corresponds to this decapsulator.
     type Encapsulator: Encapsulate<EK, SS>;
