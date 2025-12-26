@@ -272,7 +272,6 @@ version = "0.4.0-pre.2"
 dependencies = [
  "crypto-common",
  "rand_core",
- "zeroize",
 ]
 
 [[package]]

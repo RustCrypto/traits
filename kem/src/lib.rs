@@ -8,7 +8,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, unused_qualifications, missing_debug_implementations)]
 
-pub use crypto_common::{KeyInit, KeySizeUser, typenum::consts};
+pub use crypto_common::{Generate, KeyInit, KeySizeUser, typenum::consts};
 
 use rand_core::TryCryptoRng;
 
