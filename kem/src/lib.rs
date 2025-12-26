@@ -10,7 +10,6 @@
 
 pub use crypto_common::{KeyInit, KeySizeUser, typenum::consts};
 
-use core::fmt::Debug;
 use rand_core::TryCryptoRng;
 
 /// A value that can be encapsulated to. Often, this will just be a public key. However, it can
@@ -18,7 +17,7 @@ use rand_core::TryCryptoRng;
 /// encapsulation.
 pub trait Encapsulate<EK, SS> {
     /// Encapsulation error
-    type Error: Debug;
+    type Error: core::error::Error;
 
     /// Encapsulates a fresh shared secret
     fn encapsulate<R: TryCryptoRng + ?Sized>(&self, rng: &mut R) -> Result<(EK, SS), Self::Error>;
@@ -33,7 +32,7 @@ pub trait Decapsulate<EK, SS> {
     type Encapsulator: Encapsulate<EK, SS>;
 
     /// Decapsulation error
-    type Error: Debug;
+    type Error: core::error::Error;
 
     /// Decapsulates the given encapsulated key
     fn decapsulate(&self, encapsulated_key: &EK) -> Result<SS, Self::Error>;
