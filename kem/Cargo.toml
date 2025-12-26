@@ -1,6 +1,6 @@
 [package]
 name = "kem"
-version = "0.4.0-pre.2"
+version = "0.4.0-rc.0"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -10,10 +10,14 @@ repository = "https://github.com/RustCrypto/traits"
 license = "Apache-2.0 OR MIT"
 keywords = ["crypto"]
 categories = ["cryptography", "no-std"]
-description = "Traits for key encapsulation mechanisms"
+description = """
+Traits for Key Encapsulation Mechanisms (KEMs): public-key cryptosystems designed to enable a sender
+(a.k.a. encapsulator) to generate and encrypt a short secret key and transmit it to a receiver
+(a.k.a. decapsulator) confidentially
+"""
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.6", features = ["rand_core"], path = "../crypto-common" }
+crypto-common = { version = "0.2.0-rc.7", features = ["rand_core"], path = "../crypto-common" }
 rand_core = "0.10.0-rc-3"
 
 [features]

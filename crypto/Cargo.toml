@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Facade crate for all of the RustCrypto traits (e.g. `aead`, `cipher`, `digest`)"
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.5", path = "../crypto-common", default-features = false }
+crypto-common = { version = "0.2.0-rc.7", path = "../crypto-common", default-features = false }
 
 # optional dependencies
 aead = { version = "0.6.0-rc.3", path = "../aead", optional = true }
