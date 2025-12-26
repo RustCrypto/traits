@@ -18,9 +18,9 @@ impl Encapsulate<SaberEncappedKey, SaberSharedSecret> for MyPubkey {
     // Encapsulation is infallible
     type Error = !;
 
-    fn encapsulate(
+    fn encapsulate_with_rng<R: TryCryptoRng + ?Sized>(
         &self,
-        csprng: impl CryptoRngCore,
+        csprng: &mut R,
     ) -> Result<(SaberEncappedKey, SaberSharedSecret), !> {
         let (ss, ek) = saber_encapsulate(&csprng, &self.0);
         Ok((ek, ss))
@@ -43,9 +43,9 @@ impl Encapsulate<EphemeralKey, SharedSecret> for EncapContext {
     // Encapsulation fails if signature verification fails
     type Error = SigError;
 
-    fn encapsulate(
+    fn encapsulate_with_rng<R: TryCryptoRng + ?Sized>(
         &self,
-        csprng: impl CryptoRngCore,
+        csprng: &mut R,
     ) -> Result<(EphemeralKey, SharedSecret), Self::Error> {
         // Make a new ephemeral key. This will be the encapped key
         let ek = EphemeralKey::gen(&mut csprng);
