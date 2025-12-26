@@ -86,7 +86,7 @@ impl<U: ArraySize> Generate for Array<u64, U> {
 }
 
 #[cfg(feature = "getrandom")]
-mod sys_rng {
+pub(crate) mod sys_rng {
     use getrandom::Error;
     use rand_core::{TryCryptoRng, TryRngCore};
 
