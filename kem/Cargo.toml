@@ -1,6 +1,6 @@
 [package]
 name = "kem"
-version = "0.4.0-rc.0"
+version = "0.4.0-rc.1"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -17,7 +17,7 @@ Traits for Key Encapsulation Mechanisms (KEMs): public-key cryptosystems designe
 """
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.7", features = ["rand_core"], path = "../crypto-common" }
+crypto-common = { version = "0.2.0-rc.8", features = ["rand_core"], path = "../crypto-common" }
 rand_core = "0.10.0-rc-3"
 
 [features]
