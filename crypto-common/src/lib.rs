@@ -22,7 +22,7 @@ pub use hybrid_array::typenum;
 #[cfg(feature = "rand_core")]
 pub use {generate::Generate, rand_core};
 #[cfg(feature = "getrandom")]
-pub use {generate::sys_rng::SysRng, getrandom::Error as RngError};
+pub use {getrandom::Error as RngError, getrandom::SysRng};
 
 use core::fmt;
 use hybrid_array::{
