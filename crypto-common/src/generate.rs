@@ -7,11 +7,11 @@ use crate::RngError;
 /// Secure random generation.
 pub trait Generate: Sized {
     /// Generate random key using the provided [`TryCryptoRng`].
-    fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error>;
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error>;
 
     /// Generate random key using the provided [`CryptoRng`].
-    fn from_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
-        let Ok(ret) = Self::try_from_rng(rng);
+    fn generate_from_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
+        let Ok(ret) = Self::try_generate_from_rng(rng);
         ret
     }
 
@@ -22,7 +22,7 @@ pub trait Generate: Sized {
     /// Returns [`RngError`] in the event the system's ambient RNG experiences an internal failure.
     #[cfg(feature = "getrandom")]
     fn try_generate() -> Result<Self, RngError> {
-        Self::try_from_rng(&mut sys_rng::SysRng)
+        Self::try_generate_from_rng(&mut sys_rng::SysRng)
     }
 
     /// Randomly generate a value of this type using the system's ambient cryptographically secure
@@ -41,21 +41,21 @@ pub trait Generate: Sized {
 
 impl Generate for u32 {
     #[inline]
-    fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
         rng.try_next_u32()
     }
 }
 
 impl Generate for u64 {
     #[inline]
-    fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
         rng.try_next_u64()
     }
 }
 
 impl<const N: usize> Generate for [u8; N] {
     #[inline]
-    fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
         let mut ret = [0u8; N];
         rng.try_fill_bytes(&mut ret)?;
         Ok(ret)
@@ -64,7 +64,7 @@ impl<const N: usize> Generate for [u8; N] {
 
 impl<U: ArraySize> Generate for Array<u8, U> {
     #[inline]
-    fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
         let mut ret = Self::default();
         rng.try_fill_bytes(&mut ret)?;
         Ok(ret)
@@ -73,14 +73,14 @@ impl<U: ArraySize> Generate for Array<u8, U> {
 
 impl<U: ArraySize> Generate for Array<u32, U> {
     #[inline]
-    fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
         Self::try_from_fn(|_| rng.try_next_u32())
     }
 }
 
 impl<U: ArraySize> Generate for Array<u64, U> {
     #[inline]
-    fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
         Self::try_from_fn(|_| rng.try_next_u64())
     }
 }
