@@ -29,7 +29,7 @@ pub trait Encapsulate<EK, SS> {
     /// Encapsulate a fresh shared secret generated using the system's secure RNG.
     #[cfg(feature = "getrandom")]
     fn encapsulate(&self) -> Result<(EK, SS), Self::Error> {
-        self.encapsulate_with_rng(&mut crypto_common::SysRng)
+        self.encapsulate_with_rng(&mut crypto_common::getrandom::SysRng)
     }
 }
 

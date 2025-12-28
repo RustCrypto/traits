@@ -1,9 +1,6 @@
 use hybrid_array::{Array, ArraySize};
 use rand_core::{CryptoRng, TryCryptoRng};
 
-#[cfg(feature = "getrandom")]
-use crate::RngError;
-
 /// Secure random generation.
 pub trait Generate: Sized {
     /// Generate random key using the provided [`TryCryptoRng`].
@@ -19,9 +16,10 @@ pub trait Generate: Sized {
     /// random number generator.
     ///
     /// # Errors
-    /// Returns [`RngError`] in the event the system's ambient RNG experiences an internal failure.
+    /// Returns [`getrandom::Error`] in the event the system's ambient RNG experiences an internal
+    /// failure.
     #[cfg(feature = "getrandom")]
-    fn try_generate() -> Result<Self, RngError> {
+    fn try_generate() -> Result<Self, getrandom::Error> {
         Self::try_generate_from_rng(&mut getrandom::SysRng)
     }
 
