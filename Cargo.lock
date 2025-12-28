@@ -152,7 +152,7 @@ dependencies = [
 name = "crypto-common"
 version = "0.2.0-rc.8"
 dependencies = [
- "getrandom 0.4.0-rc.0",
+ "getrandom",
  "hybrid-array",
  "rand_core",
 ]
@@ -187,7 +187,7 @@ dependencies = [
  "base16ct",
  "crypto-bigint",
  "digest",
- "getrandom 0.4.0-rc.0",
+ "getrandom",
  "hex-literal",
  "hkdf",
  "hybrid-array",
@@ -208,18 +208,6 @@ name = "funty"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6d5a32815ae3f33302d95fdcb2ce17862f8c65363dcfd29360480ba1001fc9c"
-
-[[package]]
-name = "getrandom"
-version = "0.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "899def5c37c4fd7b2664648c28120ecec138e4d395b459e5ca34f9cce2dd77fd"
-dependencies = [
- "cfg-if",
- "libc",
- "r-efi",
- "wasip2",
-]
 
 [[package]]
 name = "getrandom"
@@ -336,7 +324,7 @@ dependencies = [
 name = "password-hash"
 version = "0.6.0-rc.6"
 dependencies = [
- "getrandom 0.4.0-rc.0",
+ "getrandom",
  "phc",
  "rand_core",
 ]
@@ -352,12 +340,12 @@ dependencies = [
 
 [[package]]
 name = "phc"
-version = "0.6.0-rc.0"
+version = "0.6.0-rc.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c61f960577aaac5c259bc0866d685ba315c0ed30793c602d7287f54980913863"
+checksum = "71d390c5fe8d102c2c18ff39f1e72b9ad5996de282c2d831b0312f56910f5508"
 dependencies = [
  "base64ct",
- "getrandom 0.3.4",
+ "getrandom",
  "rand_core",
  "subtle",
 ]
