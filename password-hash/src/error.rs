@@ -78,7 +78,7 @@ impl From<getrandom::Error> for Error {
 impl From<phc::Error> for Error {
     fn from(err: phc::Error) -> Self {
         match err {
-            phc::Error::B64Encoding(_) | phc::Error::MissingField | phc::Error::TrailingData => {
+            phc::Error::Base64(_) | phc::Error::MissingField | phc::Error::TrailingData => {
                 Self::EncodingInvalid
             }
             phc::Error::OutputSize { .. } => Self::OutputSize,
