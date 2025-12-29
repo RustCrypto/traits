@@ -17,7 +17,7 @@ and public/secret keys composed thereof.
 """
 
 [dependencies.crypto-bigint]
-version = "0.7.0-rc.12"
+version = "0.7.0-rc.13"
 default-features = false
 features = ["hybrid-array", "rand_core", "subtle", "zeroize"]
 
