@@ -9,8 +9,8 @@
 mod pkcs8;
 
 use crate::{Curve, Error, FieldBytes, Result, ScalarValue};
+use array::typenum::Unsigned;
 use core::fmt::{self, Debug};
-use hybrid_array::typenum::Unsigned;
 use subtle::{Choice, ConstantTimeEq, CtOption};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 

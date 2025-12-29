@@ -111,9 +111,9 @@ pub use crate::{
     scalar::ScalarValue,
     secret_key::SecretKey,
 };
-pub use crypto_bigint as bigint;
-pub use hybrid_array as array;
-pub use hybrid_array::typenum::consts;
+pub use array;
+pub use array::typenum::consts;
+pub use bigint;
 pub use rand_core;
 pub use subtle;
 pub use zeroize;
@@ -133,12 +133,12 @@ pub use {
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;
 
+use array::ArraySize;
 use bigint::Odd;
 use core::{
     fmt::Debug,
     ops::{Add, ShrAssign},
 };
-use hybrid_array::ArraySize;
 
 /// Algorithm [`ObjectIdentifier`][`pkcs8::ObjectIdentifier`] for elliptic curve public key
 /// cryptography (`id-ecPublicKey`).
