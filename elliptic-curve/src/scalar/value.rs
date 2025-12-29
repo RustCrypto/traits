@@ -66,13 +66,13 @@ where
     /// Generate a random [`ScalarValue`].
     pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
         Self {
-            inner: C::Uint::random_mod(rng, Self::MODULUS.as_nz_ref()),
+            inner: C::Uint::random_mod_vartime(rng, Self::MODULUS.as_nz_ref()),
         }
     }
 
     /// Create a new scalar from [`Curve::Uint`].
     pub fn new(uint: C::Uint) -> CtOption<Self> {
-        CtOption::new(Self { inner: uint }, uint.ct_lt(&Self::MODULUS))
+        CtOption::new(Self { inner: uint }, uint.ct_lt(&Self::MODULUS).into())
     }
 
     /// Decode [`ScalarValue`] from a serialized field element
@@ -98,17 +98,17 @@ where
 
     /// Is this [`ScalarValue`] value equal to zero?
     pub fn is_zero(&self) -> Choice {
-        self.inner.is_zero()
+        self.inner.is_zero().into()
     }
 
     /// Is this [`ScalarValue`] value even?
     pub fn is_even(&self) -> Choice {
-        self.inner.is_even()
+        self.inner.is_even().into()
     }
 
     /// Is this [`ScalarValue`] value odd?
     pub fn is_odd(&self) -> Choice {
-        self.inner.is_odd()
+        self.inner.is_odd().into()
     }
 
     /// Encode [`ScalarValue`] as a serialized field element.
@@ -160,7 +160,7 @@ where
 {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         Self {
-            inner: C::Uint::conditional_select(&a.inner, &b.inner, choice),
+            inner: C::Uint::ct_select(&a.inner, &b.inner, choice.into()),
         }
     }
 }
@@ -170,7 +170,7 @@ where
     C: Curve,
 {
     fn ct_eq(&self, other: &Self) -> Choice {
-        self.inner.ct_eq(&other.inner)
+        self.inner.ct_eq(&other.inner).into()
     }
 }
 
@@ -179,7 +179,7 @@ where
     C: Curve,
 {
     fn ct_lt(&self, other: &Self) -> Choice {
-        self.inner.ct_lt(&other.inner)
+        self.inner.ct_lt(&other.inner).into()
     }
 }
 
@@ -188,7 +188,7 @@ where
     C: Curve,
 {
     fn ct_gt(&self, other: &Self) -> Choice {
-        self.inner.ct_gt(&other.inner)
+        self.inner.ct_gt(&other.inner).into()
     }
 }
 
@@ -357,7 +357,7 @@ where
 {
     fn is_high(&self) -> Choice {
         let n_2 = Self::MODULUS.get() >> 1u32;
-        self.inner.ct_gt(&n_2)
+        self.inner.ct_gt(&n_2).into()
     }
 }
 
