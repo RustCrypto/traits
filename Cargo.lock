@@ -143,9 +143,9 @@ dependencies = [
 
 [[package]]
 name = "crypto-bigint"
-version = "0.7.0-rc.12"
+version = "0.7.0-rc.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7ddf7876857d903765f30de7c789044ea2e49a4f611fe96416827175cef6b34"
+checksum = "b2bb4138de6db76c8155b4423e967049fbef2cf84ad6af7f552f73a161941b72"
 dependencies = [
  "ctutils",
  "hybrid-array",
@@ -166,9 +166,9 @@ dependencies = [
 
 [[package]]
 name = "ctutils"
-version = "0.2.2"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "925ebe186f09a7894817213f89eae07c39374f5c934613605af7accc8aea6414"
+checksum = "130ffe18bdf7a4926e57ed19d404995244e6c8d6a97abf4eddde1f892bf1ce0c"
 dependencies = [
  "cmov",
  "subtle",
