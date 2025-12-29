@@ -1,7 +1,7 @@
 //! Traits for arithmetic operations on elliptic curve field elements.
 
+pub use bigint::{Invert, Reduce};
 pub use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Shr, ShrAssign, Sub, SubAssign};
-pub use crypto_bigint::{Invert, Reduce};
 
 use crate::CurveGroup;
 use core::iter;

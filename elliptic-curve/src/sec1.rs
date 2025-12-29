@@ -5,7 +5,7 @@
 pub use sec1::point::{Coordinates, ModulusSize, Tag};
 
 use crate::{Curve, FieldBytesSize, Result, SecretKey};
-use hybrid_array::Array;
+use array::Array;
 use subtle::CtOption;
 
 #[cfg(feature = "arithmetic")]

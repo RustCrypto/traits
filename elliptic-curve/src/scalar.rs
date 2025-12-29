@@ -11,7 +11,7 @@ pub use self::value::ScalarValue;
 #[cfg(feature = "arithmetic")]
 pub use self::{blinded::BlindedScalar, nonzero::NonZeroScalar};
 
-use crypto_bigint::Integer;
+use bigint::Integer;
 use subtle::Choice;
 
 #[cfg(feature = "arithmetic")]

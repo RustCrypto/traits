@@ -148,6 +148,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b2bb4138de6db76c8155b4423e967049fbef2cf84ad6af7f552f73a161941b72"
 dependencies = [
  "ctutils",
+ "getrandom",
  "hybrid-array",
  "num-traits",
  "rand_core",
