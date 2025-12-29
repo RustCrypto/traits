@@ -166,9 +166,9 @@ dependencies = [
 
 [[package]]
 name = "ctutils"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "925ebe186f09a7894817213f89eae07c39374f5c934613605af7accc8aea6414"
+checksum = "3d0d4ebbcf0ee8b260dd060b79b7449973fffccdbaa5c871c9867c7b44445e75"
 dependencies = [
  "cmov",
  "subtle",
@@ -379,9 +379,9 @@ dependencies = [
 
 [[package]]
 name = "portable-atomic"
-version = "1.11.1"
+version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f84267b20a16ea918e43c6a88433c2d54fa145c92a811b5b047ccbe153674483"
+checksum = "f89776e4d69bb58bc6993e99ffa1d11f228b839984854c7daeb5d37f87cbe950"
 
 [[package]]
 name = "proc-macro2"
