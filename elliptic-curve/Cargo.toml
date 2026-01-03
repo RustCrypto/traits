@@ -24,7 +24,7 @@ features = ["hybrid-array", "rand_core", "subtle", "zeroize"]
 
 [dependencies]
 array = { package = "hybrid-array", version = "0.4", default-features = false, features = ["zeroize"] }
-base16ct = "0.3"
+base16ct = "1"
 rand_core = { version = "0.10.0-rc-3", default-features = false }
 subtle = { version = "2.6", default-features = false }
 zeroize = { version = "1.7", default-features = false }
