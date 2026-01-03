@@ -4,9 +4,8 @@
 
 pub use sec1::point::{Coordinates, ModulusSize, Tag};
 
-use crate::{Curve, FieldBytesSize, Result, SecretKey};
+use crate::{Curve, FieldBytesSize, Result, SecretKey, ctutils::CtOption};
 use array::Array;
-use subtle::CtOption;
 
 #[cfg(feature = "arithmetic")]
 use crate::{AffinePoint, CurveArithmetic, Error};

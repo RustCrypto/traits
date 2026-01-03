@@ -7,6 +7,7 @@ use crate::{
     BatchNormalize, Curve, CurveArithmetic, CurveGroup, FieldBytesEncoding, PrimeCurve,
     array::typenum::U32,
     bigint::{Limb, Odd, U256},
+    ctutils,
     error::{Error, Result},
     ops::{Invert, LinearCombination, Reduce, ShrAssign},
     point::{AffineCoordinates, NonIdentity},
@@ -516,14 +517,14 @@ impl From<NonIdentity<AffinePoint>> for AffinePoint {
 }
 
 impl FromEncodedPoint<MockCurve> for AffinePoint {
-    fn from_encoded_point(encoded_point: &EncodedPoint) -> CtOption<Self> {
+    fn from_encoded_point(encoded_point: &EncodedPoint) -> ctutils::CtOption<Self> {
         let point = if encoded_point.is_identity() {
             Self::Identity
         } else {
             Self::Other(*encoded_point)
         };
 
-        CtOption::new(point, Choice::from(1))
+        ctutils::CtOption::new(point, ctutils::Choice::TRUE)
     }
 }
 
@@ -642,7 +643,7 @@ impl From<ProjectivePoint> for AffinePoint {
 }
 
 impl FromEncodedPoint<MockCurve> for ProjectivePoint {
-    fn from_encoded_point(_point: &EncodedPoint) -> CtOption<Self> {
+    fn from_encoded_point(_point: &EncodedPoint) -> ctutils::CtOption<Self> {
         unimplemented!();
     }
 }
@@ -690,12 +691,14 @@ impl group::GroupEncoding for AffinePoint {
 
     fn from_bytes(bytes: &Self::Repr) -> CtOption<Self> {
         EncodedPoint::from_bytes(bytes)
-            .map(|point| CtOption::new(point, Choice::from(1)))
+            .map(|point| ctutils::CtOption::new(point, ctutils::Choice::TRUE))
             .unwrap_or_else(|_| {
-                let is_identity = bytes.ct_eq(&Self::Repr::default());
-                CtOption::new(EncodedPoint::identity(), is_identity)
+                let is_identity =
+                    ctutils::CtEq::ct_eq(bytes.as_slice(), Self::Repr::default().as_slice());
+                ctutils::CtOption::new(EncodedPoint::identity(), is_identity)
             })
             .and_then(|point| Self::from_encoded_point(&point))
+            .into()
     }
 
     fn from_bytes_unchecked(bytes: &Self::Repr) -> CtOption<Self> {
