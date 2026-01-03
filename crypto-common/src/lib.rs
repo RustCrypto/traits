@@ -30,6 +30,9 @@ use hybrid_array::{
     typenum::{Diff, Sum, Unsigned},
 };
 
+#[cfg(feature = "rand_core")]
+use rand_core::CryptoRng;
+
 /// Block on which [`BlockSizeUser`] implementors operate.
 pub type Block<B> = Array<u8, <B as BlockSizeUser>::BlockSize>;
 
@@ -178,6 +181,22 @@ pub trait KeyInit: KeySizeUser + Sized {
             .map(Self::new)
             .map_err(|_| InvalidLength)
     }
+
+    /// DEPRECATED: generate random key using the provided [`CryptoRng`].
+    ///
+    /// Instead, you can now use the [`Generate`] trait directly with the [`Key`] type:
+    ///
+    /// ```ignore
+    /// let key = Key::generate_from_rng(rng);
+    /// ```
+    #[deprecated(
+        since = "0.2.0",
+        note = "use the `Generate` trait impl on `Key` instead"
+    )]
+    #[cfg(feature = "rand_core")]
+    fn generate_key<R: CryptoRng>(rng: &mut R) -> Key<Self> {
+        Key::<Self>::generate_from_rng(rng)
+    }
 }
 
 /// Types which can be initialized from a key and initialization vector (nonce).
@@ -204,6 +223,57 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
         let key = <&Key<Self>>::try_from(key).map_err(|_| InvalidLength)?;
         let iv = <&Iv<Self>>::try_from(iv).map_err(|_| InvalidLength)?;
         Ok(Self::new(key, iv))
+    }
+
+    /// DEPRECATED: generate random key using the provided [`CryptoRng`].
+    ///
+    /// Instead, you can now use the [`Generate`] trait directly with the [`Key`] type:
+    ///
+    /// ```ignore
+    /// let key = Key::generate_from_rng(rng);
+    /// ```
+    #[deprecated(
+        since = "0.2.0",
+        note = "use the `Generate` trait impl on `Key` instead"
+    )]
+    #[cfg(feature = "rand_core")]
+    fn generate_key<R: CryptoRng>(rng: &mut R) -> Key<Self> {
+        Key::<Self>::generate_from_rng(rng)
+    }
+
+    /// DEPRECATED: generate random IV using the provided [`CryptoRng`].
+    ///
+    /// Instead, you can now use the [`Generate`] trait directly with the [`Iv`] type:
+    ///
+    /// ```ignore
+    /// let iv = Iv::generate_from_rng(rng);
+    /// ```
+    #[deprecated(
+        since = "0.2.0",
+        note = "use the `Generate` trait impl on `Iv` instead"
+    )]
+    #[cfg(feature = "rand_core")]
+    fn generate_iv<R: CryptoRng>(rng: &mut R) -> Iv<Self> {
+        Iv::<Self>::generate_from_rng(rng)
+    }
+
+    /// DEPRECATED: generate random key and IV using the provided [`CryptoRng`].
+    ///
+    /// Instead, you can now use the [`Generate`] trait directly with the [`Key`] and [`Iv`] types:
+    ///
+    /// ```ignore
+    /// let key = Key::generate_from_rng(rng);
+    /// let iv = Iv::generate_from_rng(rng);
+    /// ```
+    #[deprecated(
+        since = "0.2.0",
+        note = "use the `Generate` trait impls on `Key` and `Iv` instead"
+    )]
+    #[cfg(feature = "rand_core")]
+    fn generate_key_iv<R: CryptoRng>(rng: &mut R) -> (Key<Self>, Iv<Self>) {
+        let key = Key::<Self>::generate_from_rng(rng);
+        let iv = Iv::<Self>::generate_from_rng(rng);
+        (key, iv)
     }
 }
 
