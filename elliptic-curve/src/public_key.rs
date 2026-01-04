@@ -20,11 +20,11 @@ use {
 use {
     crate::{
         FieldBytesSize,
+        ctutils::{Choice, CtOption},
         point::PointCompression,
         sec1::{CompressedPoint, EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
     },
     core::cmp::Ordering,
-    subtle::{Choice, CtOption},
 };
 
 #[cfg(feature = "serde")]
@@ -181,7 +181,7 @@ where
     fn from_encoded_point(encoded_point: &EncodedPoint<C>) -> CtOption<Self> {
         AffinePoint::<C>::from_encoded_point(encoded_point).and_then(|point| {
             // Defeating the point of `subtle`, but the use case is specifically a public key
-            let is_identity = Choice::from(u8::from(encoded_point.is_identity()));
+            let is_identity = Choice::from_u8_lsb(u8::from(encoded_point.is_identity()));
             CtOption::new(PublicKey { point }, !is_identity)
         })
     }

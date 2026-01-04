@@ -114,6 +114,7 @@ pub use crate::{
 pub use array;
 pub use array::typenum::consts;
 pub use bigint;
+pub use bigint::ctutils;
 pub use rand_core;
 pub use subtle;
 pub use zeroize;
