@@ -469,6 +469,7 @@ dependencies = [
  "der",
  "hybrid-array",
  "serdect",
+ "subtle",
  "zeroize",
 ]
 
