@@ -2,6 +2,7 @@
 
 use crate::{
     Curve, CurveGroup, Error, FieldBytes, Group, NonZeroScalar, PrimeCurve, ScalarValue,
+    ctutils::{CtEq, CtSelect},
     ops::{Invert, LinearCombination, Mul, Reduce},
     point::{AffineCoordinates, NonIdentity},
     scalar::{FromUintUnchecked, IsHigh},
@@ -18,6 +19,8 @@ pub trait CurveArithmetic: Curve {
         + Copy
         + ConditionallySelectable
         + ConstantTimeEq
+        + CtEq
+        + CtSelect
         + Debug
         + Default
         + DefaultIsZeroes
@@ -42,6 +45,8 @@ pub trait CurveArithmetic: Curve {
     /// - [`Sync`]
     type ProjectivePoint: ConditionallySelectable
         + ConstantTimeEq
+        + CtEq
+        + CtSelect
         + Default
         + DefaultIsZeroes
         + From<Self::AffinePoint>
@@ -66,6 +71,8 @@ pub trait CurveArithmetic: Curve {
     /// - [`Send`]
     /// - [`Sync`]
     type Scalar: AsRef<Self::Scalar>
+        + CtEq
+        + CtSelect
         + DefaultIsZeroes
         + From<NonZeroScalar<Self>>
         + From<ScalarValue<Self>>
