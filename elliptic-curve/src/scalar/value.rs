@@ -3,9 +3,9 @@
 use crate::{
     Curve, Error, FieldBytes, FieldBytesEncoding, Result,
     array::Array,
-    bigint::{Limb, Odd, prelude::*},
-    scalar::FromUintUnchecked,
-    scalar::IsHigh,
+    bigint::{AddMod, ConstOne, ConstZero, Integer, Limb, NegMod, Odd, RandomMod, SubMod, Zero},
+    ctutils::{self, CtEq, CtGt, CtLt, CtSelect},
+    scalar::{FromUintUnchecked, IsHigh},
 };
 use base16ct::HexDisplay;
 use core::{
@@ -72,7 +72,10 @@ where
 
     /// Create a new scalar from [`Curve::Uint`].
     pub fn new(uint: C::Uint) -> CtOption<Self> {
-        CtOption::new(Self { inner: uint }, uint.ct_lt(&Self::MODULUS).into())
+        CtOption::new(
+            Self { inner: uint },
+            CtLt::ct_lt(&uint, &Self::MODULUS).into(),
+        )
     }
 
     /// Decode [`ScalarValue`] from a serialized field element
@@ -192,6 +195,44 @@ where
     }
 }
 
+impl<C> CtSelect for ScalarValue<C>
+where
+    C: Curve,
+{
+    fn ct_select(&self, other: &Self, choice: ctutils::Choice) -> Self {
+        Self {
+            inner: C::Uint::ct_select(&self.inner, &other.inner, choice),
+        }
+    }
+}
+
+impl<C> CtEq for ScalarValue<C>
+where
+    C: Curve,
+{
+    fn ct_eq(&self, other: &Self) -> ctutils::Choice {
+        self.inner.ct_eq(&other.inner)
+    }
+}
+
+impl<C> CtGt for ScalarValue<C>
+where
+    C: Curve,
+{
+    fn ct_gt(&self, other: &Self) -> ctutils::Choice {
+        self.inner.ct_gt(&other.inner)
+    }
+}
+
+impl<C> CtLt for ScalarValue<C>
+where
+    C: Curve,
+{
+    fn ct_lt(&self, other: &Self) -> ctutils::Choice {
+        self.inner.ct_lt(&other.inner)
+    }
+}
+
 impl<C: Curve> DefaultIsZeroes for ScalarValue<C> {}
 
 impl<C: Curve> Eq for ScalarValue<C> {}
@@ -201,7 +242,7 @@ where
     C: Curve,
 {
     fn eq(&self, other: &Self) -> bool {
-        self.ct_eq(other).into()
+        CtEq::ct_eq(self, other).to_bool()
     }
 }
 

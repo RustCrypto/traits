@@ -194,6 +194,18 @@ impl ConstantTimeEq for Scalar {
     }
 }
 
+impl ctutils::CtEq for Scalar {
+    fn ct_eq(&self, other: &Self) -> ctutils::Choice {
+        ctutils::CtEq::ct_eq(&self.0, &other.0)
+    }
+}
+
+impl ctutils::CtSelect for Scalar {
+    fn ct_select(&self, other: &Self, choice: ctutils::Choice) -> Self {
+        Self(self.0.ct_select(&other.0, choice))
+    }
+}
+
 impl DefaultIsZeroes for Scalar {}
 
 impl Add<Scalar> for Scalar {
@@ -503,8 +515,20 @@ impl ConstantTimeEq for AffinePoint {
 
 impl ConditionallySelectable for AffinePoint {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
+        ctutils::CtSelect::ct_select(a, b, choice.into())
+    }
+}
+
+impl ctutils::CtEq for AffinePoint {
+    fn ct_eq(&self, other: &Self) -> ctutils::Choice {
+        ConstantTimeEq::ct_eq(self, other).into()
+    }
+}
+
+impl ctutils::CtSelect for AffinePoint {
+    fn ct_select(&self, other: &Self, choice: ctutils::Choice) -> Self {
         // Not really constant time, but this is dev code
-        if choice.into() { *b } else { *a }
+        if choice.to_bool() { *other } else { *self }
     }
 }
 
@@ -613,7 +637,19 @@ impl ConstantTimeEq for ProjectivePoint {
 
 impl ConditionallySelectable for ProjectivePoint {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        if choice.into() { *b } else { *a }
+        ctutils::CtSelect::ct_select(a, b, choice.into())
+    }
+}
+
+impl ctutils::CtEq for ProjectivePoint {
+    fn ct_eq(&self, other: &Self) -> ctutils::Choice {
+        ConstantTimeEq::ct_eq(self, other).into()
+    }
+}
+
+impl ctutils::CtSelect for ProjectivePoint {
+    fn ct_select(&self, other: &Self, choice: ctutils::Choice) -> Self {
+        if choice.to_bool() { *other } else { *self }
     }
 }
 
