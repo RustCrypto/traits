@@ -6,7 +6,7 @@
 use crate::{
     BatchNormalize, Curve, CurveArithmetic, CurveGroup, FieldBytesEncoding, PrimeCurve,
     array::typenum::U32,
-    bigint::{Limb, Odd, U256},
+    bigint::{Limb, Odd, U256, modular::Retrieve},
     ctutils,
     error::{Error, Result},
     ops::{Invert, LinearCombination, Reduce, ShrAssign},
@@ -382,6 +382,14 @@ impl Reduce<U256> for Scalar {
 impl Reduce<FieldBytes> for Scalar {
     fn reduce(_w: &FieldBytes) -> Self {
         todo!()
+    }
+}
+
+impl Retrieve for Scalar {
+    type Output = U256;
+
+    fn retrieve(&self) -> U256 {
+        self.0.to_uint()
     }
 }
 
