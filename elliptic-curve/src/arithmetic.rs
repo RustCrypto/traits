@@ -7,6 +7,7 @@ use crate::{
     point::{AffineCoordinates, NonIdentity},
     scalar::{FromUintUnchecked, IsHigh},
 };
+use bigint::modular::Retrieve;
 use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::DefaultIsZeroes;
@@ -89,6 +90,7 @@ pub trait CurveArithmetic: Curve {
         + PartialOrd
         + Reduce<Self::Uint>
         + Reduce<FieldBytes<Self>>
+        + Retrieve<Output = Self::Uint>
         + TryInto<NonZeroScalar<Self>, Error = Error>
         + ff::Field
         + ff::PrimeField<Repr = FieldBytes<Self>>;
