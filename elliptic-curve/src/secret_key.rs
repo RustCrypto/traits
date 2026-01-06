@@ -10,7 +10,7 @@ mod pkcs8;
 
 use crate::{Curve, Error, FieldBytes, Result, ScalarValue};
 use array::typenum::Unsigned;
-use common::Generate;
+use common::{Generate, InvalidKey, KeySizeUser, TryKeyInit};
 use core::fmt::{self, Debug};
 use rand_core::{CryptoRng, TryCryptoRng};
 use subtle::{Choice, ConstantTimeEq, CtOption};
@@ -276,8 +276,6 @@ where
     }
 }
 
-impl<C> ZeroizeOnDrop for SecretKey<C> where C: Curve {}
-
 impl<C> Drop for SecretKey<C>
 where
     C: Curve,
@@ -286,6 +284,7 @@ where
         self.inner.zeroize();
     }
 }
+impl<C> ZeroizeOnDrop for SecretKey<C> where C: Curve {}
 
 impl<C: Curve> Eq for SecretKey<C> {}
 
@@ -298,13 +297,32 @@ where
     }
 }
 
-impl<C: Curve> Generate for SecretKey<C> {
+impl<C> Generate for SecretKey<C>
+where
+    C: Curve,
+{
     fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(
         rng: &mut R,
     ) -> core::result::Result<Self, R::Error> {
         Ok(Self {
             inner: ScalarValue::<C>::try_generate_from_rng(rng)?,
         })
+    }
+}
+
+impl<C> KeySizeUser for SecretKey<C>
+where
+    C: Curve,
+{
+    type KeySize = C::FieldBytesSize;
+}
+
+impl<C> TryKeyInit for SecretKey<C>
+where
+    C: Curve,
+{
+    fn new(key_bytes: &FieldBytes<C>) -> core::result::Result<Self, InvalidKey> {
+        Self::from_bytes(key_bytes).map_err(|_| InvalidKey)
     }
 }
 
