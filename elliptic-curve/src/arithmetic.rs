@@ -8,6 +8,7 @@ use crate::{
     scalar::{FromUintUnchecked, IsHigh},
 };
 use bigint::modular::Retrieve;
+use common::Generate;
 use core::fmt::Debug;
 use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::DefaultIsZeroes;
@@ -27,6 +28,7 @@ pub trait CurveArithmetic: Curve {
         + DefaultIsZeroes
         + Eq
         + From<NonIdentity<Self::AffinePoint>>
+        + Generate
         + PartialEq
         + Sized
         + Send
@@ -52,6 +54,7 @@ pub trait CurveArithmetic: Curve {
         + DefaultIsZeroes
         + From<Self::AffinePoint>
         + From<NonIdentity<Self::ProjectivePoint>>
+        + Generate
         + Into<Self::AffinePoint>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar)]>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar); 2]>
@@ -78,6 +81,7 @@ pub trait CurveArithmetic: Curve {
         + From<NonZeroScalar<Self>>
         + From<ScalarValue<Self>>
         + FromUintUnchecked<Uint = Self::Uint>
+        + Generate
         + Into<FieldBytes<Self>>
         + Into<ScalarValue<Self>>
         + Into<Self::Uint>

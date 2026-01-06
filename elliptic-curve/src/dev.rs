@@ -4,7 +4,7 @@
 //! the traits in this crate.
 
 use crate::{
-    BatchNormalize, Curve, CurveArithmetic, CurveGroup, FieldBytesEncoding, PrimeCurve,
+    BatchNormalize, Curve, CurveArithmetic, CurveGroup, FieldBytesEncoding, Generate, PrimeCurve,
     array::typenum::U32,
     bigint::{Limb, Odd, U256, modular::Retrieve},
     ctutils,
@@ -31,6 +31,7 @@ use alloc::vec::Vec;
 
 #[cfg(feature = "bits")]
 use ff::PrimeFieldBits;
+use rand_core::TryCryptoRng;
 
 /// Pseudo-coordinate for fixed-based scalar mult output
 pub const PSEUDO_COORDINATE_FIXED_BASE_MUL: [u8; 32] =
@@ -173,6 +174,14 @@ impl PrimeFieldBits for Scalar {
 
     fn char_le_bits() -> ScalarBits {
         MockCurve::ORDER.to_words().into()
+    }
+}
+
+impl Generate for Scalar {
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(
+        rng: &mut R,
+    ) -> core::result::Result<Self, R::Error> {
+        ScalarValue::try_generate_from_rng(rng).map(Self)
     }
 }
 
@@ -548,6 +557,14 @@ impl From<NonIdentity<AffinePoint>> for AffinePoint {
     }
 }
 
+impl Generate for AffinePoint {
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(
+        _rng: &mut R,
+    ) -> core::result::Result<Self, R::Error> {
+        unimplemented!()
+    }
+}
+
 impl FromEncodedPoint<MockCurve> for AffinePoint {
     fn from_encoded_point(encoded_point: &EncodedPoint) -> ctutils::CtOption<Self> {
         let point = if encoded_point.is_identity() {
@@ -683,6 +700,14 @@ impl From<NonIdentity<ProjectivePoint>> for ProjectivePoint {
 impl From<ProjectivePoint> for AffinePoint {
     fn from(point: ProjectivePoint) -> AffinePoint {
         CurveGroup::to_affine(&point)
+    }
+}
+
+impl Generate for ProjectivePoint {
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(
+        _rng: &mut R,
+    ) -> core::result::Result<Self, R::Error> {
+        unimplemented!()
     }
 }
 

@@ -204,6 +204,7 @@ version = "0.14.0-rc.20"
 dependencies = [
  "base16ct",
  "crypto-bigint",
+ "crypto-common",
  "digest",
  "getrandom",
  "hex-literal",
