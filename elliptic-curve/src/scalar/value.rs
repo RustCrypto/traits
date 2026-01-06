@@ -8,13 +8,14 @@ use crate::{
     scalar::{FromUintUnchecked, IsHigh},
 };
 use base16ct::HexDisplay;
+use common::Generate;
 use core::{
     cmp::Ordering,
     fmt,
     ops::{Add, AddAssign, Neg, ShrAssign, Sub, SubAssign},
     str,
 };
-use rand_core::CryptoRng;
+use rand_core::{CryptoRng, TryCryptoRng};
 use subtle::{
     Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
     CtOption,
@@ -62,13 +63,6 @@ where
 
     /// Scalar modulus.
     pub const MODULUS: Odd<C::Uint> = C::ORDER;
-
-    /// Generate a random [`ScalarValue`].
-    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
-        Self {
-            inner: C::Uint::random_mod_vartime(rng, Self::MODULUS.as_nz_ref()),
-        }
-    }
 
     /// Create a new scalar from [`Curve::Uint`].
     pub fn new(uint: C::Uint) -> CtOption<Self> {
@@ -123,6 +117,23 @@ where
     pub fn to_uint(&self) -> C::Uint {
         self.inner
     }
+
+    /// Deprecated: Generate a random [`ScalarValue`].
+    #[deprecated(since = "0.14.0", note = "use the `Generate` trait instead")]
+    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
+        Self::generate_from_rng(rng)
+    }
+}
+
+impl<C> From<u64> for ScalarValue<C>
+where
+    C: Curve,
+{
+    fn from(n: u64) -> Self {
+        Self {
+            inner: C::Uint::from(n),
+        }
+    }
 }
 
 impl<C> FromUintUnchecked for ScalarValue<C>
@@ -133,6 +144,19 @@ where
 
     fn from_uint_unchecked(uint: C::Uint) -> Self {
         Self { inner: uint }
+    }
+}
+
+impl<C> Generate for ScalarValue<C>
+where
+    C: Curve,
+{
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(
+        rng: &mut R,
+    ) -> core::result::Result<Self, R::Error> {
+        Ok(Self {
+            inner: C::Uint::try_random_mod_vartime(rng, Self::MODULUS.as_nz_ref())?,
+        })
     }
 }
 
@@ -261,17 +285,6 @@ where
 {
     fn cmp(&self, other: &Self) -> Ordering {
         self.inner.cmp(&other.inner)
-    }
-}
-
-impl<C> From<u64> for ScalarValue<C>
-where
-    C: Curve,
-{
-    fn from(n: u64) -> Self {
-        Self {
-            inner: C::Uint::from(n),
-        }
     }
 }
 

@@ -7,6 +7,7 @@ use crate::{
     scalar::IsHigh,
 };
 use base16ct::HexDisplay;
+use common::Generate;
 use core::{
     fmt,
     ops::{Deref, Mul, MulAssign, Neg},
@@ -50,45 +51,6 @@ impl<C> NonZeroScalar<C>
 where
     C: CurveArithmetic,
 {
-    /// Generate a random [`NonZeroScalar`].
-    ///
-    /// # Panics
-    ///
-    /// If the system's cryptographically secure RNG has an internal error.
-    #[cfg(feature = "getrandom")]
-    pub fn generate() -> Self {
-        // Use rejection sampling to eliminate invalid values
-        // While this method isn't constant-time, the attacker shouldn't learn
-        // anything about unrelated outputs so long as `rng` is a secure `CryptoRng`.
-        loop {
-            let mut repr = FieldBytes::<C>::default();
-            getrandom::fill(&mut repr).expect("RNG failure");
-            if let Some(result) = Self::from_repr(repr).into() {
-                break result;
-            }
-        }
-    }
-
-    /// Generate a random [`NonZeroScalar`].
-    pub fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
-        // Use rejection sampling to eliminate zero values.
-        // While this method isn't constant-time, the attacker shouldn't learn
-        // anything about unrelated outputs so long as `rng` is a secure `CryptoRng`.
-        loop {
-            if let Some(result) = Self::new(Scalar::<C>::try_from_rng(rng)?).into() {
-                break Ok(result);
-            }
-        }
-    }
-
-    /// Deprecated: Generate a random [`NonZeroScalar`].
-    #[cfg(feature = "arithmetic")]
-    #[deprecated(since = "0.14.0", note = "use `generate` or `try_from_rng` instead")]
-    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
-        let Ok(ret) = Self::try_from_rng(rng);
-        ret
-    }
-
     /// Create a [`NonZeroScalar`] from a scalar.
     pub fn new(scalar: Scalar<C>) -> CtOption<Self> {
         CtOption::new(Self { scalar }, !scalar.is_zero())
@@ -123,6 +85,12 @@ where
         unsafe {
             &*(scalars as *const [NonZeroScalar<C>] as *const [Scalar<C>])
         }
+    }
+
+    /// Deprecated: Generate a random [`NonZeroScalar`].
+    #[deprecated(since = "0.14.0", note = "use the `Generate` trait instead")]
+    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
+        Self::generate_from_rng(rng)
     }
 }
 
@@ -265,6 +233,22 @@ where
         let scalar = sk.as_scalar_value().to_scalar();
         debug_assert!(!bool::from(scalar.is_zero()));
         Self { scalar }
+    }
+}
+
+impl<C> Generate for NonZeroScalar<C>
+where
+    C: CurveArithmetic,
+{
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
+        // Use rejection sampling to eliminate zero values.
+        // While this method isn't constant-time, the attacker shouldn't learn
+        // anything about unrelated outputs so long as `rng` is a secure `CryptoRng`.
+        loop {
+            if let Some(result) = Self::new(Scalar::<C>::try_generate_from_rng(rng)?).into() {
+                break Ok(result);
+            }
+        }
     }
 }
 
