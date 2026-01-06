@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - ".github/workflows/elliptic-curve.yml"
+      - "crypto-common/**"
+      - "digest/**"
       - "elliptic-curve/**"
       - "Cargo.*"
   push:
