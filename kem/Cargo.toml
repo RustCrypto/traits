@@ -17,7 +17,7 @@ Traits for Key Encapsulation Mechanisms (KEMs): public-key cryptosystems designe
 """
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.8", features = ["rand_core"], path = "../crypto-common" }
+crypto-common = { version = "0.2.0-rc.9", features = ["rand_core"], path = "../crypto-common" }
 rand_core = "0.10.0-rc-3"
 
 [features]
