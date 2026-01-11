@@ -66,6 +66,12 @@ impl fmt::Display for Error {
 
 impl core::error::Error for Error {}
 
+impl From<core::num::ParseIntError> for Error {
+    fn from(_: core::num::ParseIntError) -> Error {
+        Error::EncodingInvalid
+    }
+}
+
 #[cfg(feature = "getrandom")]
 impl From<getrandom::Error> for Error {
     fn from(_: getrandom::Error) -> Self {
