@@ -1,6 +1,6 @@
 [package]
 name = "kdf"
-version = "0.1.0-pre.0"
+version = "0.1.0-pre.1"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
