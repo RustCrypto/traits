@@ -11,19 +11,26 @@ Traits which describe the functionality of [password hashing algorithms].
 
 ## About
 
-Provides a `no_std`-friendly implementation of the
-[Password Hashing Competition (PHC) string format specification][PHC]
-(a well-defined subset of the [Modular Crypt Format a.k.a. MCF][MCF]) which
-works in conjunction with the traits this crate defines.
+This crate contains traits for using password hashing algorithms to create and verify password hash strings of the sort
+used by the [`crypt(3)`] API, which typically begin with `${ident}$...`.
 
-## Supported Crates
+It provides first-class support for the
+[Password Hashing Competition (PHC) string format specification][PHC]
+via the [`phc` crate] and can also be used with the
+[Modular Crypt Format (MCF)][MCF])
+via the [`mcf` crate].
+
+## Supported Password Hashing Algorithms
 
 See [RustCrypto/password-hashes] for algorithm implementations which use
 this crate for interoperability:
 
-- [`argon2`] - Argon2 memory hard key derivation function
-- [`pbkdf2`] - Password-Based Key Derivation Function v2
-- [`scrypt`] - scrypt key derivation function
+- [`argon2`]: Argon2 memory hard key derivation function
+- [`balloon-hash`]: PBKDF with proven memory-hard password-hashing and modern design
+- [`pbkdf2`]: Password-Based Key Derivation Function V2
+- [`scrypt`]: scrypt key derivation function
+- [`sha-crypt`]: SHA-crypt legacy password hashing algorithm for `crypt(3)`
+- [`yescrypt`]: yescrypt key derivation (improved version of scrypt)
 
 ## License
 
@@ -56,9 +63,15 @@ dual licensed as above, without any additional terms or conditions.
 [//]: # (general links)
 
 [password hashing algorithms]: https://en.wikipedia.org/wiki/Cryptographic_hash_function#Password_verification
+[`crypt(3)`]: https://en.wikipedia.org/wiki/Crypt_(C)
 [PHC]: https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md
+[`phc` crate]: https://docs.rs/phc
 [MCF]: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
+[`mcf` crate]: https://docs.rs/mcf
 [RustCrypto/password-hashes]: https://github.com/RustCrypto/password-hashes
 [`argon2`]: https://docs.rs/argon2
+[`balloon-hash`]: https://docs.rs/balloon-hash
 [`pbkdf2`]: https://docs.rs/pbkdf2
 [`scrypt`]: https://docs.rs/scrypt
+[`sha-crypt`]: https://docs.rs/sha-crypt
+[`yescrypt`]: https://docs.rs/yescrypt
