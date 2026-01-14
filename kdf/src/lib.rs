@@ -8,6 +8,8 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, unused_qualifications)]
 
+use core::fmt;
+
 /// Key Derivation Function.
 ///
 /// These functions deterministically produce uniformly random outputs suitable as key material.
@@ -25,6 +27,14 @@ pub trait Pbkdf: Kdf {}
 /// Key derivation errors.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Error;
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("KDF error")
+    }
+}
+
+impl core::error::Error for Error {}
 
 /// Result type with the `kdf` crate's [`Error`].
 pub type Result<T> = core::result::Result<T, Error>;
