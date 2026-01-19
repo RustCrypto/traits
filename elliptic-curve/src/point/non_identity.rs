@@ -5,7 +5,7 @@
 use core::ops::{Deref, Mul};
 
 use group::{Group, GroupEncoding, prime::PrimeCurveAffine};
-use rand_core::{CryptoRng, TryCryptoRng};
+use rand_core::{CryptoRng, RngCore, TryCryptoRng, TryRngCore};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "alloc")]
@@ -88,7 +88,7 @@ where
     P: ConditionallySelectable + ConstantTimeEq + CurveGroup + Default,
 {
     /// Generate a random `NonIdentity<ProjectivePoint>`.
-    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
+    pub fn random<R: CryptoRng + RngCore + ?Sized>(rng: &mut R) -> Self {
         loop {
             if let Some(point) = Self::new(P::random(rng)).into() {
                 break point;
@@ -97,7 +97,9 @@ where
     }
 
     /// Generate a random `NonIdentity<ProjectivePoint>`.
-    pub fn try_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
+    pub fn try_from_rng<R: TryCryptoRng + TryRngCore + ?Sized>(
+        rng: &mut R,
+    ) -> Result<Self, R::Error> {
         loop {
             if let Some(point) = Self::new(P::try_from_rng(rng)?).into() {
                 break Ok(point);

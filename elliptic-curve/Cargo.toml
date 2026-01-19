@@ -26,7 +26,7 @@ features = ["hybrid-array", "rand_core", "subtle", "zeroize"]
 array = { package = "hybrid-array", version = "0.4", default-features = false, features = ["zeroize"] }
 base16ct = "1"
 common = { package = "crypto-common", version = "0.2.0-rc.9", features = ["rand_core"], path = "../crypto-common" }
-rand_core = { version = "0.10.0-rc-3", default-features = false }
+rand_core = { version = "0.10.0-rc-4", default-features = false }
 subtle = { version = "2.6", default-features = false }
 zeroize = { version = "1.7", default-features = false }
 
