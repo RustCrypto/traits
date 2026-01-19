@@ -1,6 +1,6 @@
 [package]
 name = "crypto-common"
-version = "0.2.0-rc.9"
+version = "0.2.0-rc.10"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -17,7 +17,7 @@ hybrid-array = "0.4"
 
 # optional dependencies
 getrandom = { version = "0.4.0-rc.0", optional = true, features = ["sys_rng"] }
-rand_core = { version = "0.10.0-rc-3", optional = true }
+rand_core = { version = "0.10.0-rc-4", optional = true }
 
 [features]
 getrandom = ["rand_core", "dep:getrandom"]
