@@ -88,9 +88,9 @@ where
     P: ConditionallySelectable + ConstantTimeEq + CurveGroup + Default,
 {
     /// Generate a random `NonIdentity<ProjectivePoint>`.
-    pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
+    pub fn random<R: CryptoRng + ?Sized>(mut rng: &mut R) -> Self {
         loop {
-            if let Some(point) = Self::new(P::random(rng)).into() {
+            if let Some(point) = Self::new(P::random(&mut rng)).into() {
                 break point;
             }
         }
