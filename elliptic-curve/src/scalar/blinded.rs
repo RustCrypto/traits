@@ -4,7 +4,7 @@ use super::Scalar;
 use crate::{CurveArithmetic, ops::Invert};
 use core::fmt;
 use group::ff::Field;
-use rand_core::CryptoRng;
+use rand_core::{CryptoRng, RngCore};
 use subtle::CtOption;
 use zeroize::Zeroize;
 
@@ -38,10 +38,10 @@ where
     C: CurveArithmetic,
 {
     /// Create a new [`BlindedScalar`] from a scalar and a [`CryptoRng`].
-    pub fn new<R: CryptoRng + ?Sized>(scalar: Scalar<C>, mut rng: &mut R) -> Self {
+    pub fn new<R: CryptoRng + RngCore + ?Sized>(scalar: Scalar<C>, rng: &mut R) -> Self {
         Self {
             scalar,
-            mask: Scalar::<C>::random(&mut rng),
+            mask: Scalar::<C>::random(rng),
         }
     }
 }
