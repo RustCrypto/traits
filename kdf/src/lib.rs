@@ -14,7 +14,8 @@ use core::fmt;
 ///
 /// These functions deterministically produce uniformly random outputs suitable as key material.
 ///
-/// It is recommended for types which impls this trait to also impl [`Default`] whenever possible.
+/// It is recommended for types which implement this trait to also implement [`Default`] whenever
+/// possible.
 pub trait Kdf {
     /// Writes uniformly random data suitable as key material into the entire length of `out`,
     /// derived from the following inputs:
