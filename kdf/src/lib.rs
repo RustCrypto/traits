@@ -13,10 +13,25 @@ use core::fmt;
 /// Key Derivation Function.
 ///
 /// These functions deterministically produce uniformly random outputs suitable as key material.
+///
+/// It is recommended for types which implement this trait to also implement [`Default`] whenever
+/// possible.
 pub trait Kdf {
-    /// Fills `out` with uniformly random data suitable as key material, derived from the input
-    /// `secret` and `salt` values, which map to algorithm-specific inputs.
-    fn derive_key(&self, secret: &[u8], salt: &[u8], out: &mut [u8]) -> Result<()>;
+    /// Writes uniformly random data suitable as key material into the entire length of `out`,
+    /// derived from the following inputs:
+    ///
+    /// - `secret`: this is typically a high-entropy input with at least 128-bits of symmetric
+    ///   strength/randomness, but does not have to be uniformly random (e.g. can be the output of
+    ///   a Diffie-Hellman exchange). For KDFs marked [`Pbkdf`], this parameter is allowed to be a
+    ///   password with a lower entropy, but consumers of these traits MUST bound on [`Pbkdf`]
+    ///   whenever they are expecting the input to be a password.
+    /// - `non_secret`: this value customizes/personalizes the output and can be used to generate
+    ///   multiple unrelated outputs from the same input. Its secrecy is irrelevant, and it can be
+    ///   published to the world if desired. It maps to an algorithm specific parameter which
+    ///   accomplishes this purpose, sometimes called "salt", "info", "context", or "customization".
+    ///   See algorithm-specific documentation for the specific input this maps to for the specific
+    ///   impls for a given algorithm. For KDFs marked [`Pbkdf`] this is always the salt.
+    fn derive_key(&self, secret: &[u8], non_secret: &[u8], out: &mut [u8]) -> Result<()>;
 }
 
 /// Password-Based Key Derivation Functions: KDFs where it's suitable for the input `secret` to be
