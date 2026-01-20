@@ -56,10 +56,7 @@ pub type PasswordHash = phc::PasswordHash;
 #[allow(deprecated)]
 pub type PasswordHashString = phc::PasswordHashString;
 
-use core::{
-    fmt::{Debug, Display},
-    str::FromStr,
-};
+use core::fmt::Debug;
 
 #[cfg(feature = "rand_core")]
 use rand_core::TryCryptoRng;
@@ -122,7 +119,7 @@ pub trait PasswordHasher<H> {
 /// Generic around a password hash to be returned (typically [`PasswordHash`])
 pub trait CustomizedPasswordHasher<H> {
     /// Algorithm-specific parameters.
-    type Params: Clone + Debug + Default + Display + FromStr;
+    type Params: Clone + Debug + Default;
 
     /// Compute a [`PasswordHash`] from the provided password using an
     /// explicit set of customized algorithm parameters as opposed to the
