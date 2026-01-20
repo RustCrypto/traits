@@ -2,15 +2,14 @@
 
 #![cfg(feature = "arithmetic")]
 
+use common::Generate;
 use core::ops::{Deref, Mul};
-
 use group::{Group, GroupEncoding, prime::PrimeCurveAffine};
-use rand_core::{CryptoRng, TryCryptoRng, TryRngCore};
+use rand_core::{CryptoRng, TryCryptoRng};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
-
 #[cfg(feature = "serde")]
 use serdect::serde::{Deserialize, Serialize, de, ser};
 use zeroize::Zeroize;
@@ -56,7 +55,7 @@ where
 impl<P> NonIdentity<P> {
     /// Transform array reference containing [`NonIdentity`] points to an array reference to the
     /// inner point type.
-    pub fn cast_array_as_inner<const N: usize>(points: &[Self; N]) -> &[P; N] {
+    pub fn array_as_inner<const N: usize>(points: &[Self; N]) -> &[P; N] {
         // SAFETY: `NonIdentity` is a `repr(transparent)` newtype for `P` so it's safe to cast to
         // the inner `P` type.
         #[allow(unsafe_code)]
@@ -66,13 +65,26 @@ impl<P> NonIdentity<P> {
     }
 
     /// Transform slice containing [`NonIdentity`] points to a slice of the inner point type.
-    pub fn cast_slice_as_inner(points: &[Self]) -> &[P] {
+    pub fn slice_as_inner(points: &[Self]) -> &[P] {
         // SAFETY: `NonIdentity` is a `repr(transparent)` newtype for `P` so it's safe to cast to
         // the inner `P` type.
         #[allow(unsafe_code)]
         unsafe {
             &*(points as *const [NonIdentity<P>] as *const [P])
         }
+    }
+
+    /// Transform array reference containing [`NonIdentity`] points to an array reference to the
+    /// inner point type.
+    #[deprecated(since = "0.14.0", note = "use `NonIdentity::array_as_inner` instead")]
+    pub fn cast_array_as_inner<const N: usize>(points: &[Self; N]) -> &[P; N] {
+        Self::array_as_inner(points)
+    }
+
+    /// Transform slice containing [`NonIdentity`] points to a slice of the inner point type.
+    #[deprecated(since = "0.14.0", note = "use `NonIdentity::slice_as_inner` instead")]
+    pub fn cast_slice_as_inner(points: &[Self]) -> &[P] {
+        Self::slice_as_inner(points)
     }
 }
 
@@ -88,21 +100,11 @@ where
     P: ConditionallySelectable + ConstantTimeEq + CurveGroup + Default,
 {
     /// Generate a random `NonIdentity<ProjectivePoint>`.
+    #[deprecated(since = "0.14.0", note = "use the `Generate` trait instead")]
     pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
         loop {
             if let Some(point) = Self::new(P::random(rng)).into() {
                 break point;
-            }
-        }
-    }
-
-    /// Generate a random `NonIdentity<ProjectivePoint>`.
-    pub fn try_from_rng<R: TryCryptoRng + TryRngCore + ?Sized>(
-        rng: &mut R,
-    ) -> Result<Self, R::Error> {
-        loop {
-            if let Some(point) = Self::new(P::try_from_rng(rng)?).into() {
-                break Ok(point);
             }
         }
     }
@@ -150,7 +152,7 @@ where
     type Output = [NonIdentity<P::AffineRepr>; N];
 
     fn batch_normalize(points: &[Self; N]) -> [NonIdentity<P::AffineRepr>; N] {
-        let points = Self::cast_array_as_inner::<N>(points);
+        let points = Self::array_as_inner::<N>(points);
         let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
         affine_points.map(|point| NonIdentity { point })
     }
@@ -164,7 +166,7 @@ where
     type Output = Vec<NonIdentity<P::AffineRepr>>;
 
     fn batch_normalize(points: &[Self]) -> Vec<NonIdentity<P::AffineRepr>> {
-        let points = Self::cast_slice_as_inner(points);
+        let points = Self::slice_as_inner(points);
         let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
         affine_points
             .into_iter()
@@ -198,6 +200,19 @@ impl<P> Deref for NonIdentity<P> {
 
     fn deref(&self) -> &Self::Target {
         &self.point
+    }
+}
+
+impl<P> Generate for NonIdentity<P>
+where
+    P: ConditionallySelectable + ConstantTimeEq + Default + Generate,
+{
+    fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
+        loop {
+            if let Some(point) = Self::new(P::try_generate_from_rng(rng)?).into() {
+                break Ok(point);
+            }
+        }
     }
 }
 

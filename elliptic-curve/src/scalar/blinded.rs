@@ -2,11 +2,14 @@
 
 use super::Scalar;
 use crate::{CurveArithmetic, ops::Invert};
+use common::Generate;
 use core::fmt;
-use group::ff::Field;
-use rand_core::CryptoRng;
+use rand_core::{CryptoRng, TryCryptoRng};
 use subtle::CtOption;
 use zeroize::Zeroize;
+
+#[cfg(feature = "getrandom")]
+use common::getrandom::{self, SysRng};
 
 /// Scalar blinded with a randomly generated masking value.
 ///
@@ -37,12 +40,31 @@ impl<C> BlindedScalar<C>
 where
     C: CurveArithmetic,
 {
+    /// Create a new [`BlindedScalar`] using the system's ambient secure RNG.
+    #[cfg(feature = "getrandom")]
+    pub fn new(scalar: Scalar<C>) -> Self {
+        Self::try_new(scalar).expect("RNG error")
+    }
+
+    /// Create a new [`BlindedScalar`] using the system's ambient secure RNG.
+    #[cfg(feature = "getrandom")]
+    pub fn try_new(scalar: Scalar<C>) -> Result<Self, getrandom::Error> {
+        Self::try_new_from_rng(scalar, &mut SysRng)
+    }
+
     /// Create a new [`BlindedScalar`] from a scalar and a [`CryptoRng`].
-    pub fn new<R: CryptoRng + ?Sized>(scalar: Scalar<C>, rng: &mut R) -> Self {
-        Self {
-            scalar,
-            mask: Scalar::<C>::random(rng),
-        }
+    pub fn new_from_rng<R: CryptoRng + ?Sized>(scalar: Scalar<C>, rng: &mut R) -> Self {
+        let Ok(ret) = Self::try_new_from_rng(scalar, rng);
+        ret
+    }
+
+    /// Create a new [`BlindedScalar`] from a scalar and a [`CryptoRng`].
+    pub fn try_new_from_rng<R>(scalar: Scalar<C>, rng: &mut R) -> Result<Self, R::Error>
+    where
+        R: TryCryptoRng + ?Sized,
+    {
+        let mask = Scalar::<C>::try_generate_from_rng(rng)?;
+        Ok(Self { scalar, mask })
     }
 }
 
