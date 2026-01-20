@@ -111,12 +111,6 @@ dependencies = [
 
 [[package]]
 name = "cmov"
-version = "0.4.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d5ce5728ecb5285a5dd35f02a6a8e34e0828e0b38e8e632e249a3fe3f320211"
-
-[[package]]
-name = "cmov"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df1888fb431ee159b513b5c2f249e03f1c9d788f7bd842927619dbeb88764039"
@@ -153,7 +147,7 @@ version = "0.7.0-rc.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f9f9a78b88bb8255ec59a81423aa92ada22f96883f9ae59dcb68613907636ae5"
 dependencies = [
- "ctutils 0.4.0",
+ "ctutils",
  "getrandom",
  "hybrid-array",
  "num-traits",
@@ -173,20 +167,11 @@ dependencies = [
 
 [[package]]
 name = "ctutils"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c67c81499f542d1dd38c6a2a2fe825f4dd4bca5162965dd2eea0c8119873d3c"
-dependencies = [
- "cmov 0.4.6",
-]
-
-[[package]]
-name = "ctutils"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1005a6d4446f5120ef475ad3d2af2b30c49c2c9c6904258e3bb30219bebed5e4"
 dependencies = [
- "cmov 0.5.1",
+ "cmov",
  "subtle",
 ]
 
@@ -215,7 +200,7 @@ dependencies = [
 
 [[package]]
 name = "elliptic-curve"
-version = "0.14.0-rc.22"
+version = "0.14.0-rc.23"
 dependencies = [
  "base16ct",
  "crypto-bigint",
@@ -480,12 +465,12 @@ dependencies = [
 
 [[package]]
 name = "sec1"
-version = "0.8.0-rc.11"
+version = "0.8.0-rc.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2568531a8ace88b848310caa98fb2115b151ef924d54aa523e659c21b9d32d71"
+checksum = "5b54617aeb7e34ace1a4b72ba79bb6297e48285dc0cce064dc063ddcbf538996"
 dependencies = [
  "base16ct",
- "ctutils 0.3.1",
+ "ctutils",
  "der",
  "hybrid-array",
  "serdect",
