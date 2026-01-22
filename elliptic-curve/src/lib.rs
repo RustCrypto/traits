@@ -162,7 +162,7 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
     ///
     /// This is typically the same as `Self::Uint::ByteSize` but for curves
     /// with an unusual field modulus (e.g. P-224, P-521) it may be different.
-    type FieldBytesSize: ArraySize + Add + Eq;
+    type FieldBytesSize: ArraySize + Add + Debug + Eq;
 
     /// Integer type used to represent field elements of this elliptic curve.
     type Uint: bigint::ArrayEncoding
