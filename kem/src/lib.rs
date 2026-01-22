@@ -8,7 +8,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, unused_qualifications, missing_debug_implementations)]
 
-pub use crypto_common::{Generate, KeyInit, KeySizeUser, typenum::consts};
+pub use crypto_common::{Generate, KeyExport, KeySizeUser, TryKeyInit, typenum::consts};
 
 use rand_core::TryCryptoRng;
 
@@ -16,7 +16,7 @@ use rand_core::TryCryptoRng;
 ///
 /// Often, this will just be a public key. However, it can also be a bundle of public keys, or it
 /// can include a sender's private key for authenticated encapsulation.
-pub trait Encapsulate<EK, SS> {
+pub trait Encapsulate<EK, SS>: TryKeyInit + KeyExport {
     /// Encapsulation error
     type Error: core::error::Error;
 
