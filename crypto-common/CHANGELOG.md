@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Sealed `BlockSizes` trait implemented for types from `U1` to `U255`
 - `Generate` trait ([#2096])
+- `KeyExport` trait ([#2213])
 
 ### Changed
 - `BlockUser::BlockSize` is now bounded by the `BlockSizes` trait
@@ -20,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
 [#2096]: https://github.com/RustCrypto/traits/pull/2096
+[#2213]: https://github.com/RustCrypto/traits/pull/2213
 
 ## 0.1.7 (2025-11-12)
 ### Changed

@@ -156,6 +156,12 @@ pub trait AlgorithmName {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result;
 }
 
+/// Serialize a key to a byte array.
+pub trait KeyExport: KeySizeUser {
+    /// Serialize this key as a byte array.
+    fn to_bytes(&self) -> Key<Self>;
+}
+
 /// Types which can be initialized from a key.
 pub trait KeyInit: KeySizeUser + Sized {
     /// Create new value from fixed size key.
