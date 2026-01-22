@@ -12,24 +12,24 @@ pub use crypto_common::{Generate, KeyExport, KeySizeUser, TryKeyInit, typenum::c
 
 use rand_core::TryCryptoRng;
 
+#[cfg(feature = "getrandom")]
+use {crypto_common::getrandom::SysRng, rand_core::TryRngCore};
+
 /// Encapsulator for shared secrets.
 ///
 /// Often, this will just be a public key. However, it can also be a bundle of public keys, or it
 /// can include a sender's private key for authenticated encapsulation.
 pub trait Encapsulate<EK, SS>: TryKeyInit + KeyExport {
-    /// Encapsulation error
-    type Error: core::error::Error;
-
     /// Encapsulates a fresh shared secret
-    fn encapsulate_with_rng<R: TryCryptoRng + ?Sized>(
-        &self,
-        rng: &mut R,
-    ) -> Result<(EK, SS), Self::Error>;
+    fn encapsulate_with_rng<R>(&self, rng: &mut R) -> Result<(EK, SS), R::Error>
+    where
+        R: TryCryptoRng + ?Sized;
 
     /// Encapsulate a fresh shared secret generated using the system's secure RNG.
     #[cfg(feature = "getrandom")]
-    fn encapsulate(&self) -> Result<(EK, SS), Self::Error> {
-        self.encapsulate_with_rng(&mut crypto_common::getrandom::SysRng)
+    fn encapsulate(&self) -> (EK, SS) {
+        let Ok(ret) = self.encapsulate_with_rng(&mut SysRng.unwrap_err());
+        ret
     }
 }
 
@@ -44,11 +44,8 @@ pub trait Decapsulate<EK, SS> {
     /// Encapsulator which corresponds to this decapsulator.
     type Encapsulator: Encapsulate<EK, SS>;
 
-    /// Decapsulation error
-    type Error: core::error::Error;
-
     /// Decapsulates the given encapsulated key
-    fn decapsulate(&self, encapsulated_key: &EK) -> Result<SS, Self::Error>;
+    fn decapsulate(&self, encapsulated_key: &EK) -> SS;
 
     /// Retrieve the encapsulator associated with this decapsulator.
     fn encapsulator(&self) -> Self::Encapsulator;
