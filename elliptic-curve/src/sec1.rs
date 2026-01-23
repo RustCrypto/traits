@@ -4,11 +4,12 @@
 
 pub use sec1::point::{Coordinates, ModulusSize, Tag};
 
-use crate::{Curve, FieldBytesSize, Result, SecretKey, ctutils::CtOption};
-use array::Array;
+use crate::{Curve, Error, FieldBytesSize, Result, SecretKey, array::Array, ctutils::CtOption};
 
 #[cfg(feature = "arithmetic")]
-use crate::{AffinePoint, CurveArithmetic, Error};
+use crate::{AffinePoint, CurveArithmetic};
+#[cfg(feature = "alloc")]
+use {crate::point::PointCompression, alloc::boxed::Box};
 
 /// Encoded elliptic curve point with point compression.
 pub type CompressedPoint<C> = Array<u8, CompressedPointSize<C>>;
@@ -17,7 +18,7 @@ pub type CompressedPoint<C> = Array<u8, CompressedPointSize<C>>;
 pub type CompressedPointSize<C> = <FieldBytesSize<C> as ModulusSize>::CompressedPointSize;
 
 /// Encoded elliptic curve point sized appropriately for a given curve.
-pub type EncodedPoint<C> = sec1::point::EncodedPoint<FieldBytesSize<C>>;
+pub type EncodedPoint<C> = ::sec1::point::EncodedPoint<FieldBytesSize<C>>;
 
 /// Encoded elliptic curve point *without* point compression.
 pub type UncompressedPoint<C> = Array<u8, UncompressedPointSize<C>>;
@@ -25,30 +26,61 @@ pub type UncompressedPoint<C> = Array<u8, UncompressedPointSize<C>>;
 /// Size of an uncompressed elliptic curve point.
 pub type UncompressedPointSize<C> = <FieldBytesSize<C> as ModulusSize>::UncompressedPointSize;
 
-/// Trait for deserializing a value from a SEC1 encoded curve point.
-///
-/// This is intended for use with the `AffinePoint` type for a given elliptic curve.
+/// Decode curve point using the `Octet-String-to-Elliptic-Curve-Point` conversion described in
+/// [SEC 1: Elliptic Curve Cryptography (Version 2.0)](https://www.secg.org/sec1-v2.pdf)
+/// §2.3.4 (page 11).
 pub trait FromEncodedPoint<C>
 where
     Self: Sized,
     C: Curve,
     FieldBytesSize<C>: ModulusSize,
 {
-    /// Deserialize the type this trait is impl'd on from an [`EncodedPoint`].
+    /// Decode curve point from a SEC1 [`EncodedPoint`].
     fn from_encoded_point(point: &EncodedPoint<C>) -> CtOption<Self>;
+
+    /// Decode curve point from the provided SEC1 encoding (compressed, uncompressed, or
+    /// identity) using the `Octet-String-to-Elliptic-Curve-Point` conversion.
+    fn from_sec1_bytes(bytes: &[u8]) -> Result<Self> {
+        let point = EncodedPoint::<C>::from_bytes(bytes)?;
+        Self::from_encoded_point(&point).into_option().ok_or(Error)
+    }
 }
 
-/// Trait for serializing a value to a SEC1 encoded curve point.
-///
-/// This is intended for use with the `AffinePoint` type for a given elliptic curve.
+/// Encode curve point using the `Elliptic-Curve-Point-to-Octet-String` conversion described in
+/// [SEC 1: Elliptic Curve Cryptography (Version 2.0)](https://www.secg.org/sec1-v2.pdf)
+/// §2.3.3 (page 10).
 pub trait ToEncodedPoint<C>
 where
     C: Curve,
     FieldBytesSize<C>: ModulusSize,
 {
-    /// Serialize this value as a SEC1 [`EncodedPoint`], optionally applying
-    /// point compression.
+    /// Serialize curve point as a SEC1 [`EncodedPoint`], optionally applying point compression
+    /// according to the `compress` flag.
     fn to_encoded_point(&self, compress: bool) -> EncodedPoint<C>;
+
+    /// Serialize curve point as a [`CompressedPoint`].
+    fn to_compressed_point(&self) -> CompressedPoint<C> {
+        let mut ret = CompressedPoint::<C>::default();
+        ret.copy_from_slice(self.to_encoded_point(true).as_bytes());
+        ret
+    }
+
+    /// Serialize curve point as a [`CompressedPoint`].
+    fn to_uncompressed_point(&self) -> UncompressedPoint<C> {
+        let mut ret = UncompressedPoint::<C>::default();
+        ret.copy_from_slice(self.to_encoded_point(false).as_bytes());
+        ret
+    }
+
+    /// Encode curve point using the `Elliptic-Curve-Point-to-Octet-String` conversion and the
+    /// point compression default for this curve as specified by the [`PointCompression`] trait.
+    #[cfg(feature = "alloc")]
+    fn to_sec1_bytes(&self) -> Box<[u8]>
+    where
+        C: PointCompression,
+    {
+        self.to_encoded_point(C::COMPRESS_POINTS).to_bytes()
+    }
 }
 
 /// Trait for serializing a value to a SEC1 encoded curve point with compaction.
