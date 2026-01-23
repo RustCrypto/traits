@@ -17,11 +17,11 @@ Traits for Key Encapsulation Mechanisms (KEMs): public-key cryptosystems designe
 """
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.12", features = ["rand_core"] }
+common = { package = "crypto-common", version = "0.2.0-rc.12", features = ["rand_core"] }
 rand_core = "0.10.0-rc-5"
 
 [features]
-getrandom = ["crypto-common/getrandom"]
+getrandom = ["common/getrandom"]
 
 [package.metadata.docs.rs]
 all-features = true

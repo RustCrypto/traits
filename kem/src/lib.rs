@@ -8,12 +8,14 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, unused_qualifications, missing_debug_implementations)]
 
-pub use crypto_common::{Generate, KeyExport, KeySizeUser, TryKeyInit, typenum::consts};
+pub use common::{
+    self, Generate, InvalidKey, Key, KeyExport, KeyInit, KeySizeUser, TryKeyInit, typenum::consts,
+};
 
 use rand_core::TryCryptoRng;
 
 #[cfg(feature = "getrandom")]
-use {crypto_common::getrandom::SysRng, rand_core::TryRngCore};
+use {common::getrandom, rand_core::TryRngCore};
 
 /// Encapsulator for shared secrets.
 ///
@@ -28,8 +30,9 @@ pub trait Encapsulate<EK, SS>: TryKeyInit + KeyExport {
     /// Encapsulate a fresh shared secret generated using the system's secure RNG.
     #[cfg(feature = "getrandom")]
     fn encapsulate(&self) -> (EK, SS) {
-        let Ok(ret) = self.encapsulate_with_rng(&mut SysRng.unwrap_err());
-        ret
+        match self.encapsulate_with_rng(&mut getrandom::SysRng.unwrap_err()) {
+            Ok(ret) => ret,
+        }
     }
 }
 
