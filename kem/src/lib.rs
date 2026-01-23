@@ -22,20 +22,20 @@ use {common::getrandom, rand_core::TryRngCore};
 /// Ciphertext message (a.k.a. "encapsulated key") produced by [`Encapsulate::encapsulate`] which is
 /// an encrypted [`SharedSecret`] that can be decrypted using [`Decapsulate::decapsulate`].
 ///
-/// `K` is expected to be a type that impls [`Kem`], such as an encapsulator or decapsulator.
-pub type Ciphertext<K> = array::Array<u8, <K as Kem>::CiphertextSize>;
+/// `K` is expected to be a type that impls [`KemParams`], such as an encapsulator or decapsulator.
+pub type Ciphertext<K> = array::Array<u8, <K as KemParams>::CiphertextSize>;
 
 /// Shared secret: plaintext produced after decapsulation by [`Decapsulate::decapsulate`] which is
 /// also returned by [`Encapsulate::encapsulate`].
 ///
-/// `K` is expected to be a type that impls [`Kem`], such as an encapsulator or decapsulator.
-pub type SharedSecret<K> = array::Array<u8, <K as Kem>::SharedSecretSize>;
+/// `K` is expected to be a type that impls [`KemParams`], such as an encapsulator or decapsulator.
+pub type SharedSecret<K> = array::Array<u8, <K as KemParams>::SharedSecretSize>;
 
-/// Key encapsulation mechanism.
+/// Key encapsulation mechanism parameters: sizes of the ciphertext and decrypted plaintext.
 ///
 /// This trait is impl'd by types that impl either [`Encapsulate`] or [`Decapsulate`] and defines
 /// the sizes of the encapsulated key and shared secret.
-pub trait Kem {
+pub trait KemParams {
     /// Size of the ciphertext (a.k.a. "encapsulated key") produced by [`Encapsulate::encapsulate`].
     type CiphertextSize: ArraySize;
 
@@ -47,7 +47,7 @@ pub trait Kem {
 ///
 /// Often, this will just be a public key. However, it can also be a bundle of public keys, or it
 /// can include a sender's private key for authenticated encapsulation.
-pub trait Encapsulate: Kem + TryKeyInit + KeyExport {
+pub trait Encapsulate: KemParams + TryKeyInit + KeyExport {
     /// Encapsulates a fresh [`SharedSecret`] generated using the supplied random number
     /// generator `R`.
     fn encapsulate_with_rng<R: TryCryptoRng + ?Sized>(
@@ -67,21 +67,21 @@ pub trait Encapsulate: Kem + TryKeyInit + KeyExport {
 /// Trait for decapsulators, which is a supertrait bound of both [`Decapsulate`] and
 /// [`TryDecapsulate`].
 pub trait Decapsulator:
-    Kem<
-        CiphertextSize = <Self::Encapsulator as Kem>::CiphertextSize,
-        SharedSecretSize = <Self::Encapsulator as Kem>::SharedSecretSize,
+    KemParams<
+        CiphertextSize = <Self::Encapsulator as KemParams>::CiphertextSize,
+        SharedSecretSize = <Self::Encapsulator as KemParams>::SharedSecretSize,
     >
 {
     /// Encapsulator which corresponds to this decapsulator.
-    type Encapsulator: Encapsulate + Clone + Kem;
+    type Encapsulator: Encapsulate + Clone + KemParams;
 
     /// Retrieve the encapsulator associated with this decapsulator.
     fn encapsulator(&self) -> &Self::Encapsulator;
 }
 
-impl<K: Decapsulator> Kem for K {
-    type CiphertextSize = <K::Encapsulator as Kem>::CiphertextSize;
-    type SharedSecretSize = <K::Encapsulator as Kem>::SharedSecretSize;
+impl<K: Decapsulator> KemParams for K {
+    type CiphertextSize = <K::Encapsulator as KemParams>::CiphertextSize;
+    type SharedSecretSize = <K::Encapsulator as KemParams>::SharedSecretSize;
 }
 
 /// Decapsulator for encapsulated keys, with an associated `Encapsulator` bounded by the
