@@ -292,7 +292,7 @@ version = "0.1.0-pre.1"
 
 [[package]]
 name = "kem"
-version = "0.4.0-rc.5"
+version = "0.3.0-rc.0"
 dependencies = [
  "crypto-common",
  "rand_core",
