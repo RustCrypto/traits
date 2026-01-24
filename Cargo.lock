@@ -253,8 +253,9 @@ checksum = "e6d5a32815ae3f33302d95fdcb2ce17862f8c65363dcfd29360480ba1001fc9c"
 
 [[package]]
 name = "getrandom"
-version = "0.4.0-rc.0"
-source = "git+https://github.com/rust-random/getrandom?branch=rand_core-v0.10.0-rc-6#fd7b890b0340d5b9ba2f043686c99945030c6184"
+version = "0.4.0-rc.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74f70a332ddf75e5e5e43284304179ba02f391f82f692f030b08a8378adf3c99"
 dependencies = [
  "cfg-if",
  "libc",
