@@ -14,7 +14,7 @@ pub use common::{
 
 use common::array::{self, ArraySize};
 use core::{array::TryFromSliceError, convert::Infallible};
-use rand_core::TryCryptoRng;
+use rand_core::CryptoRng;
 
 #[cfg(feature = "getrandom")]
 use common::getrandom::{SysRng, rand_core::UnwrapErr};
@@ -50,17 +50,14 @@ pub trait KemParams {
 pub trait Encapsulate: KemParams + TryKeyInit + KeyExport {
     /// Encapsulates a fresh [`SharedSecret`] generated using the supplied random number
     /// generator `R`.
-    fn encapsulate_with_rng<R: TryCryptoRng + ?Sized>(
-        &self,
-        rng: &mut R,
-    ) -> Result<(Ciphertext<Self>, SharedSecret<Self>), R::Error>;
+    fn encapsulate_with_rng<R>(&self, rng: &mut R) -> (Ciphertext<Self>, SharedSecret<Self>)
+    where
+        R: CryptoRng + ?Sized;
 
     /// Encapsulate a fresh shared secret generated using the system's secure RNG.
     #[cfg(feature = "getrandom")]
     fn encapsulate(&self) -> (Ciphertext<Self>, SharedSecret<Self>) {
-        match self.encapsulate_with_rng(&mut UnwrapErr(SysRng)) {
-            Ok(ret) => ret,
-        }
+        self.encapsulate_with_rng(&mut UnwrapErr(SysRng))
     }
 }
 
