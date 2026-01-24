@@ -1,6 +1,9 @@
 use hybrid_array::{Array, ArraySize};
 use rand_core::{CryptoRng, TryCryptoRng};
 
+#[cfg(feature = "getrandom")]
+use getrandom::{SysRng, rand_core::UnwrapErr};
+
 /// Secure random generation.
 pub trait Generate: Sized {
     /// Generate random key using the provided [`TryCryptoRng`].
@@ -20,7 +23,7 @@ pub trait Generate: Sized {
     /// failure.
     #[cfg(feature = "getrandom")]
     fn try_generate() -> Result<Self, getrandom::Error> {
-        Self::try_generate_from_rng(&mut getrandom::SysRng)
+        Self::try_generate_from_rng(&mut SysRng)
     }
 
     /// Randomly generate a value of this type using the system's ambient cryptographically secure
@@ -33,7 +36,7 @@ pub trait Generate: Sized {
     /// This shouldn't happen on most modern operating systems.
     #[cfg(feature = "getrandom")]
     fn generate() -> Self {
-        Self::try_generate().expect("RNG failure")
+        Self::generate_from_rng(&mut UnwrapErr(SysRng))
     }
 }
 
