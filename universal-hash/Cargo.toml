@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Traits which describe the functionality of universal hash functions (UHFs)"
 
 [dependencies]
-crypto-common = "0.2.0-rc.12"
+crypto-common = "0.2.0-rc.13"
 subtle = { version = "2.4", default-features = false }
 
 [package.metadata.docs.rs]
