@@ -12,7 +12,7 @@ use crate::{
     error::{Error, Result},
     ops::{Invert, LinearCombination, Reduce, ShrAssign},
     point::{AffineCoordinates, NonIdentity},
-    rand_core::{TryCryptoRng, TryRngCore},
+    rand_core::{TryCryptoRng, TryRng},
     scalar::{FromUintUnchecked, IsHigh},
     sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
@@ -96,7 +96,7 @@ impl Field for Scalar {
     const ZERO: Self = Self(ScalarValue::ZERO);
     const ONE: Self = Self(ScalarValue::ONE);
 
-    fn try_from_rng<R: TryRngCore + ?Sized>(rng: &mut R) -> core::result::Result<Self, R::Error> {
+    fn try_from_rng<R: TryRng + ?Sized>(rng: &mut R) -> core::result::Result<Self, R::Error> {
         let mut bytes = FieldBytes::default();
 
         loop {
@@ -733,7 +733,7 @@ impl TryFrom<ProjectivePoint> for NonIdentity<ProjectivePoint> {
 impl group::Group for ProjectivePoint {
     type Scalar = Scalar;
 
-    fn try_from_rng<R: TryRngCore + ?Sized>(_rng: &mut R) -> core::result::Result<Self, R::Error> {
+    fn try_from_rng<R: TryRng + ?Sized>(_rng: &mut R) -> core::result::Result<Self, R::Error> {
         unimplemented!();
     }
 
