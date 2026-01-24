@@ -22,4 +22,3 @@ signature = { path = "signature" }
 crypto-bigint = { git = "https://github.com/RustCrypto/crypto-bigint" }
 rustcrypto-ff = { git = "https://github.com/RustCrypto/ff", branch = "rand_core/v0.10.0-rc-6" }
 rustcrypto-group = { git = "https://github.com/RustCrypto/group", branch = "rand_core/v0.10.0-rc-6" }
-getrandom = { git = "https://github.com/rust-random/getrandom", branch = "rand_core-v0.10.0-rc-6" }
