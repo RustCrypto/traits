@@ -525,8 +525,9 @@ checksum = "70765ff7112b0fb2d272d24d9a2f907fc206211304328fe58b2db15a5649ef28"
 
 [[package]]
 name = "rustcrypto-ff"
-version = "0.14.0-pre.0"
-source = "git+https://github.com/RustCrypto/ff?branch=rand_core%2Fv0.10.0-rc-6#57b8472fdad985bf574fa1007b5e3f7fa40cb4c9"
+version = "0.14.0-pre.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36fdf8f956089df8343b9479045c026932f9eb004d0f32d8497b4d133b316a66"
 dependencies = [
  "bitvec",
  "rand_core",
@@ -537,7 +538,8 @@ dependencies = [
 [[package]]
 name = "rustcrypto-ff_derive"
 version = "0.14.0-pre.0"
-source = "git+https://github.com/RustCrypto/ff?branch=rand_core%2Fv0.10.0-rc-6#57b8472fdad985bf574fa1007b5e3f7fa40cb4c9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2aef88cb4ddb3b1c83beff963f9197607dac780cc39a09f19c041dacbb0b6a5"
 dependencies = [
  "addchain",
  "num-bigint",
@@ -550,8 +552,9 @@ dependencies = [
 
 [[package]]
 name = "rustcrypto-group"
-version = "0.14.0-pre.0"
-source = "git+https://github.com/RustCrypto/group?branch=rand_core%2Fv0.10.0-rc-6#255a57629d11c69e5721037dc9c451586b219189"
+version = "0.14.0-pre.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df76d08c12814c794ffe95ac788b48081cccb607fade4ed746825d29791ce538"
 dependencies = [
  "rand_core",
  "rustcrypto-ff",
@@ -560,9 +563,9 @@ dependencies = [
 
 [[package]]
 name = "sec1"
-version = "0.8.0-rc.12"
+version = "0.8.0-rc.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b54617aeb7e34ace1a4b72ba79bb6297e48285dc0cce064dc063ddcbf538996"
+checksum = "7a2400ed44a13193820aa528a19f376c3843141a8ce96ff34b11104cc79763f2"
 dependencies = [
  "base16ct",
  "ctutils",
