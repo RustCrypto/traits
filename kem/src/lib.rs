@@ -17,7 +17,7 @@ use core::{array::TryFromSliceError, convert::Infallible};
 use rand_core::TryCryptoRng;
 
 #[cfg(feature = "getrandom")]
-use {common::getrandom, rand_core::TryRngCore};
+use common::getrandom::{SysRng, rand_core::UnwrapErr};
 
 /// Ciphertext message (a.k.a. "encapsulated key") produced by [`Encapsulate::encapsulate`] which is
 /// an encrypted [`SharedSecret`] that can be decrypted using [`Decapsulate::decapsulate`].
@@ -58,7 +58,7 @@ pub trait Encapsulate: KemParams + TryKeyInit + KeyExport {
     /// Encapsulate a fresh shared secret generated using the system's secure RNG.
     #[cfg(feature = "getrandom")]
     fn encapsulate(&self) -> (Ciphertext<Self>, SharedSecret<Self>) {
-        match self.encapsulate_with_rng(&mut getrandom::SysRng.unwrap_err()) {
+        match self.encapsulate_with_rng(&mut UnwrapErr(SysRng)) {
             Ok(ret) => ret,
         }
     }
