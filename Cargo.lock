@@ -706,7 +706,7 @@ checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
 
 [[package]]
 name = "universal-hash"
-version = "0.6.0-rc.7"
+version = "0.6.0-rc.8"
 dependencies = [
  "crypto-common",
  "subtle",
