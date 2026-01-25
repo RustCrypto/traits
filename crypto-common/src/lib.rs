@@ -20,7 +20,7 @@ pub use hybrid_array as array;
 pub use hybrid_array::typenum;
 
 #[cfg(feature = "getrandom")]
-pub use getrandom;
+pub use getrandom::{self, SysRng};
 #[cfg(feature = "rand_core")]
 pub use {generate::Generate, rand_core};
 
@@ -32,6 +32,10 @@ use hybrid_array::{
 
 #[cfg(feature = "rand_core")]
 use rand_core::CryptoRng;
+
+/// [`CryptoRng`] interface for the system's preferred random number source that panics on error.
+#[cfg(feature = "getrandom")]
+pub type UnwrapSysRng = rand_core::UnwrapErr<SysRng>;
 
 /// Block on which [`BlockSizeUser`] implementors operate.
 pub type Block<B> = Array<u8, <B as BlockSizeUser>::BlockSize>;
