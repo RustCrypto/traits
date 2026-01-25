@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `hybrid-array` to v0.2.0-pre.8 ([#1438])
 - Bump `crypto-common` and `hybrid-array` ([#1469])
 - Bump `hybrid-array` to v0.2.0-rc.4 ([#1493])
-- bump crypto-common to v0.2.0-pre.5 ([#1496])
+- Bump `crypto-common` to v0.2.0-pre.5 ([#1496])
+- Re-export of `crypto-common` moved to `universal_hash::common` ([#2237])
 
 ### Fixed
 - Fix `missing_debug_implementations` for some crates ([#1407])
@@ -32,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#1493]: https://github.com/RustCrypto/traits/pull/1493
 [#1496]: https://github.com/RustCrypto/traits/pull/1496
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
+[#2237]: https://github.com/RustCrypto/traits/pull/2237
 
 ## 0.5.1 (2023-05-19)
 ### Changed

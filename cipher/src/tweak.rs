@@ -1,7 +1,7 @@
 //! Traits used to define functionality of [tweakable block ciphers][1].
 //!
 //! [1]: https://people.eecs.berkeley.edu/~daw/papers/tweak-crypto02.pdf
-use crypto_common::{
+use common::{
     Block, BlockSizeUser,
     array::{Array, ArraySize},
 };

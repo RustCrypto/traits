@@ -8,7 +8,7 @@
 #![forbid(unsafe_code)]
 #![warn(rust_2018_idioms, missing_debug_implementations)]
 
-pub use crypto_common as common;
+pub use common;
 
 #[cfg(feature = "aead")]
 pub use aead;

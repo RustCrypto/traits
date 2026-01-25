@@ -16,7 +16,7 @@ such as AES-GCM as ChaCha20Poly1305, which provide a high-level API
 """
 
 [dependencies]
-crypto-common = "0.2.0-rc.13"
+common = { version = "0.2.0-rc.13", package = "crypto-common" }
 inout = "0.2.2"
 
 # optional dependencies
@@ -28,8 +28,8 @@ bytes = { version = "1", optional = true, default-features = false }
 default = ["rand_core"]
 alloc = []
 dev = ["blobby", "alloc"]
-getrandom = ["crypto-common/getrandom"]
-rand_core = ["crypto-common/rand_core"]
+getrandom = ["common/getrandom"]
+rand_core = ["common/rand_core"]
 
 [package.metadata.docs.rs]
 all-features = true

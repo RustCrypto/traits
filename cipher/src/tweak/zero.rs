@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use crypto_common::{Block, BlockSizes, ParBlocksSizeUser, array::ArraySize};
+use common::{Block, BlockSizes, ParBlocksSizeUser, array::ArraySize};
 
 use super::{
     TweakBlockCipherDecBackend, TweakBlockCipherDecClosure, TweakBlockCipherDecrypt,

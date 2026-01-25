@@ -4,7 +4,7 @@
 //! for ciphers implementation.
 
 use crate::block::{BlockModeDecrypt, BlockModeEncrypt};
-use crypto_common::Block;
+use common::Block;
 use inout::{InOutBuf, NotEqualError};
 
 mod core_api;

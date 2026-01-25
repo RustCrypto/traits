@@ -19,8 +19,8 @@ extern crate alloc;
 #[cfg(feature = "dev")]
 pub mod dev;
 
-pub use crypto_common::{
-    Key, KeyInit, KeySizeUser,
+pub use common::{
+    self, Key, KeyInit, KeySizeUser,
     array::{self, typenum::consts},
 };
 
@@ -29,11 +29,11 @@ pub use arrayvec;
 #[cfg(feature = "bytes")]
 pub use bytes;
 #[cfg(feature = "rand_core")]
-pub use crypto_common::{Generate, rand_core};
+pub use common::{Generate, rand_core};
 pub use inout;
 
+use common::array::{Array, ArraySize, typenum::Unsigned};
 use core::fmt;
-use crypto_common::array::{Array, ArraySize, typenum::Unsigned};
 use inout::InOutBuf;
 
 #[cfg(feature = "alloc")]

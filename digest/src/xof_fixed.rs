@@ -1,9 +1,9 @@
 use core::fmt;
 use core::marker::PhantomData;
 
-use crypto_common::array::ArraySize;
-use crypto_common::hazmat::SerializableState;
-use crypto_common::{BlockSizeUser, KeyInit, KeySizeUser, OutputSizeUser, Reset};
+use common::array::ArraySize;
+use common::hazmat::SerializableState;
+use common::{BlockSizeUser, KeyInit, KeySizeUser, OutputSizeUser, Reset};
 
 use crate::{
     CollisionResistance, CustomizedInit, ExtendableOutput, ExtendableOutputReset, FixedOutput,
@@ -67,7 +67,7 @@ impl<T: ExtendableOutput + KeySizeUser, S: ArraySize> KeySizeUser for XofFixedWr
 }
 
 impl<T: ExtendableOutput + KeyInit, S: ArraySize> KeyInit for XofFixedWrapper<T, S> {
-    fn new(key: &crypto_common::Key<Self>) -> Self {
+    fn new(key: &common::Key<Self>) -> Self {
         Self {
             hash: T::new(key),
             size: PhantomData,
@@ -92,13 +92,13 @@ impl<T: ExtendableOutput, S: ArraySize> OutputSizeUser for XofFixedWrapper<T, S>
 }
 
 impl<T: ExtendableOutput + Update, S: ArraySize> FixedOutput for XofFixedWrapper<T, S> {
-    fn finalize_into(self, out: &mut crypto_common::Output<Self>) {
+    fn finalize_into(self, out: &mut common::Output<Self>) {
         self.hash.finalize_xof_into(out);
     }
 }
 
 impl<T: ExtendableOutputReset, S: ArraySize> FixedOutputReset for XofFixedWrapper<T, S> {
-    fn finalize_into_reset(&mut self, out: &mut crypto_common::Output<Self>) {
+    fn finalize_into_reset(&mut self, out: &mut common::Output<Self>) {
         self.hash.finalize_xof_reset_into(out);
     }
 }
@@ -137,13 +137,13 @@ impl<T: ExtendableOutput + SerializableState, S: ArraySize> SerializableState
 {
     type SerializedStateSize = T::SerializedStateSize;
 
-    fn serialize(&self) -> crypto_common::hazmat::SerializedState<Self> {
+    fn serialize(&self) -> common::hazmat::SerializedState<Self> {
         self.hash.serialize()
     }
 
     fn deserialize(
-        serialized_state: &crypto_common::hazmat::SerializedState<Self>,
-    ) -> Result<Self, crypto_common::hazmat::DeserializeStateError> {
+        serialized_state: &common::hazmat::SerializedState<Self>,
+    ) -> Result<Self, common::hazmat::DeserializeStateError> {
         T::deserialize(serialized_state).map(|hash| Self {
             hash,
             size: PhantomData,

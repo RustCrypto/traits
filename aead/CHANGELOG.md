@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Added
+- Re-export `crypto_common` as `common` ([#2237])
+
 ### Fixed
 - Minor documentation error in `AeadCore::TagSize` ([#1351])
 - Fixup `hybrid-array` migration ([#1531])
@@ -43,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#1531]: https://github.com/RustCrypto/traits/pull/1531
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
 [#1999]: https://github.com/RustCrypto/traits/pull/1999
+[#2237]: https://github.com/RustCrypto/traits/pull/2237
 
 ## 0.5.2 (2023-04-02)
 ### Added

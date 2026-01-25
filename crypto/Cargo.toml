@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Facade crate for all of the RustCrypto traits (e.g. `aead`, `cipher`, `digest`)"
 
 [dependencies]
-crypto-common = { version = "0.2.0-rc.13", path = "../crypto-common", default-features = false }
+common = { version = "0.2.0-rc.13", package = "crypto-common", path = "../crypto-common", default-features = false }
 
 # optional dependencies
 aead = { version = "0.6.0-rc.5", path = "../aead", optional = true }
@@ -26,8 +26,8 @@ universal-hash = { version = "0.6.0-rc.4", path = "../universal-hash", optional 
 
 [features]
 std = ["elliptic-curve/std"]
-getrandom = ["crypto-common/getrandom"]
-rand_core = ["crypto-common/rand_core"]
+getrandom = ["common/getrandom"]
+rand_core = ["common/rand_core"]
 
 [package.metadata.docs.rs]
 all-features = true

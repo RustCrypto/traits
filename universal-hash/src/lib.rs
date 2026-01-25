@@ -8,13 +8,16 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms, missing_debug_implementations)]
 
-pub use crypto_common::{
+pub use common::{
     self, Block, Key, KeyInit, ParBlocks, Reset, array,
     typenum::{self, consts},
 };
 
+#[deprecated(since = "0.6.0", note = "use `universal_hash::common` instead")]
+pub use common as crypto_common;
+
+use common::{BlockSizeUser, BlockSizes, ParBlocksSizeUser, array::Array};
 use core::slice;
-use crypto_common::{BlockSizeUser, BlockSizes, ParBlocksSizeUser, array::Array};
 use subtle::ConstantTimeEq;
 use typenum::Unsigned;
 

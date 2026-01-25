@@ -5,10 +5,10 @@ use super::{
     errors::StreamCipherError,
 };
 use block_buffer::ReadBuffer;
-use core::fmt;
-use crypto_common::{
+use common::{
     Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser, array::Array, typenum::Unsigned,
 };
+use core::fmt;
 use inout::InOutBuf;
 #[cfg(feature = "zeroize")]
 use zeroize::ZeroizeOnDrop;

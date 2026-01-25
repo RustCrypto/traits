@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the OID type parameter from `CtOutWrapper` ([#1799])
 - Implementations of the `SerializableState` trait ([#1953])
 - `new_test!` and `new_mac_test!` macros ([#1958])
+- Re-export of `crypto-common` moved to `digest::common` ([#2237])
 
 ### Removed
 - `Mac::new`, `Mac::new_from_slice`, and `Mac::generate_key` methods ([#1173])
@@ -36,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#1953]: https://github.com/RustCrypto/traits/pull/1953
 [#1958]: https://github.com/RustCrypto/traits/pull/1958
 [#2043]: https://github.com/RustCrypto/traits/pull/2043
+[#2237]: https://github.com/RustCrypto/traits/pull/2237
 
 ## 0.10.7 (2023-05-19)
 ### Changed
