@@ -24,9 +24,9 @@ extern crate alloc;
 
 #[cfg(feature = "dev")]
 pub use blobby;
-pub use crypto_common;
+pub use common;
 #[cfg(feature = "rand_core")]
-pub use crypto_common::rand_core;
+pub use common::rand_core;
 pub use inout;
 #[cfg(feature = "block-padding")]
 pub use inout::block_padding;
@@ -43,10 +43,13 @@ pub use block::*;
 pub use stream::*;
 pub use tweak::*;
 
-pub use crypto_common::{
+pub use common::{
     AlgorithmName, Block, BlockSizeUser, InnerIvInit, InvalidLength, Iv, IvSizeUser, IvState, Key,
     KeyInit, KeyIvInit, KeySizeUser, ParBlocks, ParBlocksSizeUser,
     array::{self, Array},
     typenum::{self, consts},
 };
 pub use inout::{InOut, InOutBuf};
+
+#[deprecated(since = "0.5.0", note = "use `cipher::common` instead")]
+pub use common as crypto_common;

@@ -3,7 +3,7 @@ use crate::{
     Aead, AeadInOut, Payload, Tag, TagPosition, array::typenum::Unsigned, inout::InOutBuf,
 };
 pub use blobby;
-use crypto_common::KeyInit;
+use common::KeyInit;
 
 /// AEAD test vector
 #[derive(Debug, Clone, Copy)]

@@ -6,10 +6,10 @@
 use crate::{Digest, HashMarker, InvalidOutputSize};
 
 pub use block_buffer::{Eager, Lazy};
-pub use crypto_common::{AlgorithmName, Block, BlockSizeUser, OutputSizeUser, Reset};
+pub use common::{AlgorithmName, Block, BlockSizeUser, OutputSizeUser, Reset};
 
 use block_buffer::{BlockBuffer, BufferKind};
-use crypto_common::Output;
+use common::Output;
 
 mod ct_variable;
 pub use ct_variable::CtOutWrapper;

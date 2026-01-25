@@ -38,7 +38,7 @@
 extern crate alloc;
 
 #[cfg(feature = "rand_core")]
-pub use crypto_common::rand_core;
+pub use common::rand_core;
 
 #[cfg(feature = "zeroize")]
 pub use zeroize;
@@ -59,16 +59,16 @@ mod xof_fixed;
 
 #[cfg(feature = "block-api")]
 pub use block_buffer;
+pub use common;
 #[cfg(feature = "oid")]
 pub use const_oid;
-pub use crypto_common;
 
 #[cfg(feature = "const-oid")]
 pub use crate::digest::DynDigestWithOid;
 pub use crate::digest::{Digest, DynDigest, HashMarker};
 #[cfg(feature = "mac")]
-pub use crypto_common::{InnerInit, InvalidLength, Key, KeyInit};
-pub use crypto_common::{Output, OutputSizeUser, Reset, array, typenum, typenum::consts};
+pub use common::{InnerInit, InvalidLength, Key, KeyInit};
+pub use common::{Output, OutputSizeUser, Reset, array, typenum, typenum::consts};
 #[cfg(feature = "mac")]
 pub use mac::{CtOutput, Mac, MacError, MacMarker};
 pub use xof_fixed::XofFixedWrapper;
@@ -80,8 +80,11 @@ pub use xof_fixed::XofFixedWrapper;
 )]
 pub use block_api as core_api;
 
+#[deprecated(since = "0.11.0", note = "use `digest::common` instead")]
+pub use common as crypto_common;
+
+use common::typenum::Unsigned;
 use core::fmt;
-use crypto_common::typenum::Unsigned;
 
 /// Types which consume data with byte granularity.
 pub trait Update {

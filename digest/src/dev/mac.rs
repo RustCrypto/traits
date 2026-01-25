@@ -1,4 +1,4 @@
-use crate::{FixedOutputReset, Mac, crypto_common::KeyInit};
+use crate::{FixedOutputReset, Mac, common::KeyInit};
 
 /// Tag truncation side used in MAC tests
 #[derive(Clone, Copy, Debug)]

@@ -1,6 +1,6 @@
 use super::StreamCipherError;
 use crate::{array::Array, typenum::Unsigned};
-use crypto_common::{Block, BlockSizeUser, BlockSizes, ParBlocks, ParBlocksSizeUser};
+use common::{Block, BlockSizeUser, BlockSizes, ParBlocks, ParBlocksSizeUser};
 use inout::{InOut, InOutBuf};
 
 /// Trait implemented by stream cipher backends.

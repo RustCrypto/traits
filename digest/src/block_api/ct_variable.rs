@@ -5,13 +5,13 @@ use super::{
 #[cfg(feature = "mac")]
 use crate::MacMarker;
 use crate::{CollisionResistance, CustomizedInit, HashMarker};
-use core::{fmt, marker::PhantomData};
-use crypto_common::{
+use common::{
     Block, BlockSizeUser, OutputSizeUser,
     array::{Array, ArraySize},
     hazmat::{DeserializeStateError, SerializableState, SerializedState},
     typenum::{IsLessOrEqual, True},
 };
+use core::{fmt, marker::PhantomData};
 
 /// Wrapper around [`VariableOutputCore`] which selects output size at compile time.
 #[derive(Clone)]

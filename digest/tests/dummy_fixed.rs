@@ -8,8 +8,8 @@ mod block_api {
             AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, FixedOutputCore,
             UpdateCore,
         },
+        common::hazmat::{DeserializeStateError, SerializableState, SerializedState},
         consts::U8,
-        crypto_common::hazmat::{DeserializeStateError, SerializableState, SerializedState},
     };
 
     /// Core of primitive XOR hasher for testing purposes

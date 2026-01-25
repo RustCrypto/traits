@@ -12,7 +12,7 @@
 
 #[cfg(all(feature = "block-padding", feature = "alloc"))]
 use alloc::{vec, vec::Vec};
-use crypto_common::{Block, BlockSizeUser};
+use common::{Block, BlockSizeUser};
 use inout::{InOut, InOutBuf, NotEqualError};
 #[cfg(feature = "block-padding")]
 use inout::{
@@ -136,8 +136,8 @@ pub trait BlockCipherEncrypt: BlockSizeUser + Sized {
     #[inline]
     fn encrypt_padded_vec<P: Padding>(&self, msg: &[u8]) -> Vec<u8> {
         use block_padding::{NoPadding, ZeroPadding};
+        use common::typenum::Unsigned;
         use core::any::TypeId;
-        use crypto_common::typenum::Unsigned;
 
         let bs = Self::BlockSize::USIZE;
         let msg_len = msg.len();
@@ -404,8 +404,8 @@ pub trait BlockModeEncrypt: BlockSizeUser + Sized {
     #[inline]
     fn encrypt_padded_vec<P: Padding>(self, msg: &[u8]) -> Vec<u8> {
         use block_padding::{NoPadding, ZeroPadding};
+        use common::typenum::Unsigned;
         use core::any::TypeId;
-        use crypto_common::typenum::Unsigned;
 
         let bs = Self::BlockSize::USIZE;
         let msg_len = msg.len();

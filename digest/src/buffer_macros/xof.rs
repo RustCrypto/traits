@@ -111,10 +111,10 @@ macro_rules! buffer_xof {
         impl_inner: $name:ident($core_ty:ty);
         AlgorithmName $($trait_name:ident)*;
     ) => {
-        impl $crate::crypto_common::AlgorithmName for $name {
+        impl $crate::common::AlgorithmName for $name {
             #[inline]
             fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
-                <$core_ty as $crate::crypto_common::AlgorithmName>::write_alg_name(f)
+                <$core_ty as $crate::common::AlgorithmName>::write_alg_name(f)
             }
         }
 
@@ -181,7 +181,7 @@ macro_rules! buffer_xof {
         BlockSizeUser $($trait_name:ident)*;
     ) => {
         impl $crate::block_api::BlockSizeUser for $name {
-            type BlockSize = <$core_ty as $crate::crypto_common::BlockSizeUser>::BlockSize;
+            type BlockSize = <$core_ty as $crate::common::BlockSizeUser>::BlockSize;
         }
 
         $crate::buffer_xof!(impl_inner: $name($core_ty); $($trait_name)*;);
@@ -281,9 +281,9 @@ macro_rules! buffer_xof {
         impl_inner: $name:ident($core_ty:ty);
         SerializableState $($trait_name:ident)*;
     ) => {
-        impl $crate::crypto_common::hazmat::SerializableState for $name {
+        impl $crate::common::hazmat::SerializableState for $name {
             type SerializedStateSize = $crate::typenum::Sum<
-                <$core_ty as $crate::crypto_common::hazmat::SerializableState>::SerializedStateSize,
+                <$core_ty as $crate::common::hazmat::SerializableState>::SerializedStateSize,
                 $crate::block_buffer::SerializedBufferSize<
                     <$core_ty as $crate::block_api::BlockSizeUser>::BlockSize,
                     <$core_ty as $crate::block_api::BufferKindUser>::BufferKind,
@@ -291,7 +291,7 @@ macro_rules! buffer_xof {
             >;
 
             #[inline]
-            fn serialize(&self) -> $crate::crypto_common::hazmat::SerializedState<Self> {
+            fn serialize(&self) -> $crate::common::hazmat::SerializedState<Self> {
                 let serialized_core = self.core.serialize();
                 let serialized_buf = self.buffer.serialize();
                 serialized_core.concat(serialized_buf)
@@ -299,9 +299,9 @@ macro_rules! buffer_xof {
 
             #[inline]
             fn deserialize(
-                serialized_state: &$crate::crypto_common::hazmat::SerializedState<Self>,
-            ) -> Result<Self, $crate::crypto_common::hazmat::DeserializeStateError> {
-                use $crate::crypto_common::hazmat::{SerializableState, DeserializeStateError};
+                serialized_state: &$crate::common::hazmat::SerializedState<Self>,
+            ) -> Result<Self, $crate::common::hazmat::DeserializeStateError> {
+                use $crate::common::hazmat::{SerializableState, DeserializeStateError};
 
                 let (serialized_core, serialized_buf) = serialized_state
                     .split_ref::<<$core_ty as SerializableState>::SerializedStateSize>();

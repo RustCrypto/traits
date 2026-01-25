@@ -132,10 +132,10 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         AlgorithmName $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::crypto_common::AlgorithmName for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::common::AlgorithmName for $name$(< $( $lt ),+ >)? {
             #[inline]
             fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
-                <$core_ty as $crate::crypto_common::AlgorithmName>::write_alg_name(f)
+                <$core_ty as $crate::common::AlgorithmName>::write_alg_name(f)
             }
         }
 
@@ -150,7 +150,7 @@ macro_rules! buffer_fixed {
         BlockSizeUser $($trait_name:ident)*;
     ) => {
         impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::block_api::BlockSizeUser for $name$(< $( $lt ),+ >)? {
-            type BlockSize = <$core_ty as $crate::crypto_common::BlockSizeUser>::BlockSize;
+            type BlockSize = <$core_ty as $crate::common::BlockSizeUser>::BlockSize;
         }
 
         $crate::buffer_fixed!(impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty); $($trait_name)*;);
@@ -334,15 +334,15 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         InnerInit $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::crypto_common::InnerUser for $name$(< $( $lt ),+ >)? {
-            type Inner = <$core_ty as $crate::crypto_common::InnerUser>::Inner;
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::common::InnerUser for $name$(< $( $lt ),+ >)? {
+            type Inner = <$core_ty as $crate::common::InnerUser>::Inner;
         }
 
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::crypto_common::InnerInit for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::common::InnerInit for $name$(< $( $lt ),+ >)? {
             #[inline]
             fn inner_init(inner: Self::Inner) -> Self {
                 Self {
-                    core: <$core_ty as $crate::crypto_common::InnerInit>::inner_init(inner),
+                    core: <$core_ty as $crate::common::InnerInit>::inner_init(inner),
                     buffer: Default::default(),
                 }
             }
@@ -358,8 +358,8 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         KeyInit $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::crypto_common::KeySizeUser for $name$(< $( $lt ),+ >)? {
-            type KeySize = <$core_ty as $crate::crypto_common::KeySizeUser>::KeySize;
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::common::KeySizeUser for $name$(< $( $lt ),+ >)? {
+            type KeySize = <$core_ty as $crate::common::KeySizeUser>::KeySize;
         }
 
         impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::KeyInit for $name$(< $( $lt ),+ >)? {
@@ -426,9 +426,9 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         SerializableState $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::crypto_common::hazmat::SerializableState for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::common::hazmat::SerializableState for $name$(< $( $lt ),+ >)? {
             type SerializedStateSize = $crate::typenum::Sum<
-                <$core_ty as $crate::crypto_common::hazmat::SerializableState>::SerializedStateSize,
+                <$core_ty as $crate::common::hazmat::SerializableState>::SerializedStateSize,
                 $crate::block_buffer::SerializedBufferSize<
                     <$core_ty as $crate::block_api::BlockSizeUser>::BlockSize,
                     <$core_ty as $crate::block_api::BufferKindUser>::BufferKind,
@@ -436,7 +436,7 @@ macro_rules! buffer_fixed {
             >;
 
             #[inline]
-            fn serialize(&self) -> $crate::crypto_common::hazmat::SerializedState<Self> {
+            fn serialize(&self) -> $crate::common::hazmat::SerializedState<Self> {
                 let serialized_core = self.core.serialize();
                 let serialized_buf = self.buffer.serialize();
                 serialized_core.concat(serialized_buf)
@@ -444,9 +444,9 @@ macro_rules! buffer_fixed {
 
             #[inline]
             fn deserialize(
-                serialized_state: &$crate::crypto_common::hazmat::SerializedState<Self>,
-            ) -> Result<Self, $crate::crypto_common::hazmat::DeserializeStateError> {
-                use $crate::crypto_common::hazmat::{SerializableState, DeserializeStateError};
+                serialized_state: &$crate::common::hazmat::SerializedState<Self>,
+            ) -> Result<Self, $crate::common::hazmat::DeserializeStateError> {
+                use $crate::common::hazmat::{SerializableState, DeserializeStateError};
 
                 let (serialized_core, serialized_buf) = serialized_state
                     .split_ref::<<$core_ty as SerializableState>::SerializedStateSize>();

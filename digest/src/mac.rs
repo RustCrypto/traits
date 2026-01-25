@@ -1,8 +1,8 @@
 use crate::{FixedOutput, FixedOutputReset, Update};
-use crypto_common::{Output, OutputSizeUser, Reset};
+use common::{Output, OutputSizeUser, Reset};
 
+use common::typenum::Unsigned;
 use core::fmt;
-use crypto_common::typenum::Unsigned;
 use subtle::{Choice, ConstantTimeEq};
 
 /// Marker trait for Message Authentication algorithms.

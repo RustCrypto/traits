@@ -1,4 +1,4 @@
-use crypto_common::{Block, BlockSizeUser, ParBlocks, ParBlocksSizeUser, typenum::Unsigned};
+use common::{Block, BlockSizeUser, ParBlocks, ParBlocksSizeUser, typenum::Unsigned};
 use inout::{InOut, InOutBuf};
 
 /// Trait implemented by block cipher mode encryption backends.
