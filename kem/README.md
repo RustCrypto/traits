@@ -7,68 +7,14 @@
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
 
-This crate provides a common set of traits for [key encapsulation mechanisms][1]—algorithms for non-interactively establishing secrets between peers. This is intended to be implemented by libraries which produce or contain implementations of key encapsulation mechanisms, and used by libraries which want to produce or consume encapsulated secrets while generically supporting any compatible backend.
+## About
 
-The crate exposes two traits, `Encapsulate` and `Decapsulate`, which are both generic over the encapsulated key type and the shared secret type. They are also agnostic about the structure of `Self`. For example, a simple Saber implementation may just impl `Encapsulate` for a single public key:
-```rust
-// Must make a newtype to implement the trait
-struct MyPubkey(SaberPublicKey);
+This crate provides a common set of traits for [key encapsulation mechanisms][1]—algorithms for
+non-interactively establishing secrets between peers.
 
-impl Encapsulate<SaberEncappedKey, SaberSharedSecret> for MyPubkey {
-    // Encapsulation is infallible
-    type Error = !;
-
-    fn encapsulate_with_rng<R: TryCryptoRng + ?Sized>(
-        &self,
-        csprng: &mut R,
-    ) -> Result<(SaberEncappedKey, SaberSharedSecret), !> {
-        let (ss, ek) = saber_encapsulate(&csprng, &self.0);
-        Ok((ek, ss))
-    }
-}
-```
-And on the other end of complexity, an [X3DH](https://www.signal.org/docs/specifications/x3dh/) implementation might impl `Encapsulate` for a public key bundle plus a sender identity key:
-```rust
-struct PubkeyBundle {
-    ik: IdentityPubkey,
-    spk: SignedPrePubkey,
-    sig: Signature,
-    opk: OneTimePrePubkey,
-}
-
-// Encap context is the recipient's pubkeys and the sender's identity key
-struct EncapContext(PubkeyBundle, IdentityPrivkey);
-
-impl Encapsulate<EphemeralKey, SharedSecret> for EncapContext {
-    // Encapsulation fails if signature verification fails
-    type Error = SigError;
-
-    fn encapsulate_with_rng<R: TryCryptoRng + ?Sized>(
-        &self,
-        csprng: &mut R,
-    ) -> Result<(EphemeralKey, SharedSecret), Self::Error> {
-        // Make a new ephemeral key. This will be the encapped key
-        let ek = EphemeralKey::gen(&mut csprng);
-
-        // Deconstruct the recipient's pubkey bundle
-        let PubkeyBundle {
-            ref ik,
-            ref spk,
-            ref sig,
-            ref opk,
-        } = self.0;
-        let my_ik = &self.1;
-
-        // Verify the signature
-        self.0.verify(&sig, &some_sig_pubkey)?;
-
-        // Do the X3DH operation to get the shared secret
-        let shared_secret = x3dh_a(sig, my_ik, spk, &ek, ik, opk)?;
-
-        Ok((ek, shared_secret))
-    }
-}
-```
+This is intended to be implemented by libraries which produce or contain implementations of key
+encapsulation mechanisms, and used by libraries which want to produce or consume encapsulated
+secrets while generically supporting any compatible backend.
 
 ## License
 
