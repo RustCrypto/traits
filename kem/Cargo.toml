@@ -1,6 +1,6 @@
 [package]
 name = "kem"
-version = "0.3.0-rc.2"
+version = "0.3.0-rc.3"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -25,7 +25,3 @@ getrandom = ["common/getrandom"]
 
 [package.metadata.docs.rs]
 all-features = true
-
-# TODO(tarcieri): make README.md an actually valid example
-[lib]
-doctest = false
