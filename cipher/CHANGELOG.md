@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Seeking implementation in the stream cipher wrapper ([#2052])
 
 ### Removed
-- `BlockCipherEncrypt::encrypt_padded*` and `BlockCipherDecrypt::decrypt_padded*` methods ([#2245])
+- `BlockCipherEncrypt::encrypt_padded*` and `BlockCipherDecrypt::decrypt_padded*` methods.
+  Users of the ECB mode should use the `ecb-mode` crate instead. ([#2245])
 
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
 [#2052]: https://github.com/RustCrypto/traits/pull/2052
