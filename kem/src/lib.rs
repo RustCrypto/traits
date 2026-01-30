@@ -47,7 +47,7 @@ pub trait Kem: Copy + Clone + Debug + Default + Eq + Ord + Send + Sync + 'static
 
     /// KEM encryption key (i.e. public key) which encrypts shared secrets into ciphertexts which
     /// can be decrypted by [`Kem::DecapsulationKey`].
-    type EncapsulationKey: Encapsulate<Self> + Clone;
+    type EncapsulationKey: Encapsulate<Self> + Clone + Debug + Eq;
 
     /// Size of the shared key/secret returned by both encapsulation and decapsulation.
     type SharedKeySize: ArraySize;
@@ -66,7 +66,7 @@ pub trait Kem: Copy + Clone + Debug + Default + Eq + Ord + Send + Sync + 'static
 
     /// Generate a random KEM keypair using the system's secure RNG.
     #[cfg(feature = "getrandom")]
-    fn generate_keypair(&self) -> (Self::DecapsulationKey, Self::EncapsulationKey) {
+    fn generate_keypair() -> (Self::DecapsulationKey, Self::EncapsulationKey) {
         Self::generate_keypair_from_rng(&mut UnwrapErr(SysRng))
     }
 }
