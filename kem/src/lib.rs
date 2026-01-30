@@ -46,11 +46,11 @@ pub type SharedSecret<K> = array::Array<u8, <K as Kem>::SharedSecretSize>;
 pub trait Kem: Copy + Clone + Debug + Default + Eq + Ord + Send + Sync + 'static {
     /// KEM decryption key (i.e. private key) which can decrypt encrypted shared secret ciphertexts
     /// which were encrypted by [`Kem::EncapsulationKey`].
-    type DecapsulationKey: Decapsulate<Self> + Generate;
+    type DecapsulationKey: TryDecapsulate<Self> + Generate;
 
     /// KEM encryption key (i.e. public key) which encrypts shared secrets into ciphertexts which
     /// can be decrypted by [`Kem::DecapsulationKey`].
-    type EncapsulationKey: Encapsulate<Self> + Clone + for<'a> From<&'a Self::DecapsulationKey>;
+    type EncapsulationKey: Encapsulate<Self> + Clone;
 
     /// Size of the ciphertext (a.k.a. "encapsulated key") produced by [`Self::EncapsulationKey`].
     type CiphertextSize: ArraySize;
@@ -63,7 +63,7 @@ pub trait Kem: Copy + Clone + Debug + Default + Eq + Ord + Send + Sync + 'static
         rng: &mut R,
     ) -> (Self::DecapsulationKey, Self::EncapsulationKey) {
         let dk = Self::DecapsulationKey::generate_from_rng(rng);
-        let ek = Self::EncapsulationKey::from(&dk);
+        let ek = dk.as_ref().clone();
         (dk, ek)
     }
 
@@ -92,13 +92,6 @@ pub trait Encapsulate<K: Kem>: TryKeyInit + KeyExport {
     }
 }
 
-/// Trait for decapsulators, which is a supertrait bound of both [`Decapsulate`] and
-/// [`TryDecapsulate`].
-pub trait Decapsulator<K: Kem> {
-    /// Retrieve the encapsulator associated with this decapsulator.
-    fn encapsulator(&self) -> &K::EncapsulationKey;
-}
-
 /// Decapsulator for encapsulated keys, with an associated `Encapsulator` bounded by the
 /// [`Encapsulate`] trait.
 ///
@@ -108,7 +101,7 @@ pub trait Decapsulator<K: Kem> {
 ///
 /// When possible (i.e. for software / non-HSM implementations) types which impl this trait should
 /// also impl the [`Generate`] trait to support key generation.
-pub trait Decapsulate<K: Kem>: Decapsulator<K> + TryDecapsulate<K, Error = Infallible> {
+pub trait Decapsulate<K: Kem>: TryDecapsulate<K, Error = Infallible> {
     /// Decapsulates the given [`Ciphertext`] a.k.a. "encapsulated key".
     fn decapsulate(&self, ct: &Ciphertext<K>) -> SharedSecret<K>;
 
@@ -126,7 +119,7 @@ pub trait Decapsulate<K: Kem>: Decapsulator<K> + TryDecapsulate<K, Error = Infal
 ///
 /// Prefer to implement the [`Decapsulate`] trait if possible. See that trait's documentation for
 /// more information.
-pub trait TryDecapsulate<K: Kem>: Decapsulator<K> {
+pub trait TryDecapsulate<K: Kem>: AsRef<K::EncapsulationKey> {
     /// Decapsulation error
     type Error: core::error::Error;
 
