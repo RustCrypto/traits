@@ -19,6 +19,9 @@ use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 #[cfg(feature = "arithmetic")]
 use crate::{CurveArithmetic, NonZeroScalar, PublicKey};
 
+#[cfg(feature = "ecdh")]
+use crate::ecdh;
+
 #[cfg(feature = "pem")]
 use pem_rfc7468::{self as pem, PemLabel};
 
@@ -170,6 +173,17 @@ where
     /// Serialize raw secret scalar as a big endian integer.
     pub fn to_bytes(&self) -> FieldBytes<C> {
         self.inner.to_bytes()
+    }
+
+    /// Perform Elliptic Curve Diffie-Hellman with the given public key, returning a shared secret.
+    ///
+    /// See the documentation in the [`ecdh`] module for more information.
+    #[cfg(feature = "ecdh")]
+    pub fn diffie_hellman(self, public_key: &PublicKey<C>) -> ecdh::SharedSecret<C>
+    where
+        C: CurveArithmetic,
+    {
+        ecdh::diffie_hellman(self.to_nonzero_scalar(), public_key.as_affine())
     }
 
     /// Deserialize secret key encoded in the SEC1 ASN.1 DER `ECPrivateKey` format.
