@@ -179,7 +179,7 @@ where
     ///
     /// See the documentation in the [`ecdh`] module for more information.
     #[cfg(feature = "ecdh")]
-    pub fn diffie_hellman(self, public_key: &PublicKey<C>) -> ecdh::SharedSecret<C>
+    pub fn diffie_hellman(&self, public_key: &PublicKey<C>) -> ecdh::SharedSecret<C>
     where
         C: CurveArithmetic,
     {
