@@ -2,7 +2,7 @@
 
 use crate::{
     AffinePoint, CurveArithmetic, CurveGroup, Error, NonZeroScalar, ProjectivePoint, Result,
-    point::NonIdentity,
+    SecretKey, point::NonIdentity,
 };
 use core::fmt::Debug;
 use group::Group;
@@ -290,6 +290,24 @@ where
 {
     fn from(value: &PublicKey<C>) -> Self {
         PublicKey::to_nonidentity(value)
+    }
+}
+
+impl<C> From<SecretKey<C>> for PublicKey<C>
+where
+    C: CurveArithmetic,
+{
+    fn from(secret_key: SecretKey<C>) -> Self {
+        secret_key.public_key()
+    }
+}
+
+impl<C> From<&SecretKey<C>> for PublicKey<C>
+where
+    C: CurveArithmetic,
+{
+    fn from(secret_key: &SecretKey<C>) -> PublicKey<C> {
+        secret_key.public_key()
     }
 }
 
