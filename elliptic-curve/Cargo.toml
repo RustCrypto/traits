@@ -33,7 +33,6 @@ zeroize = { version = "1.7", default-features = false }
 # optional dependencies
 digest = { version = "0.11.0-rc.8", optional = true }
 ff = { version = "=0.14.0-pre.1", package = "rustcrypto-ff", optional = true, default-features = false }
-getrandom = { version = "0.4.0-rc.1", optional = true }
 group = { version = "=0.14.0-pre.1", package = "rustcrypto-group", optional = true, default-features = false }
 hkdf = { version = "0.13.0-rc.3", optional = true, default-features = false }
 hex-literal = { version = "1", optional = true }
@@ -70,7 +69,7 @@ critical-section = ["basepoint-table", "once_cell/critical-section"]
 bits = ["arithmetic", "ff/bits"]
 dev = ["arithmetic", "dep:hex-literal", "pem", "pkcs8"]
 ecdh = ["arithmetic", "digest", "dep:hkdf"]
-getrandom = ["dep:getrandom", "arithmetic", "bigint/getrandom", "common/getrandom"]
+getrandom = ["arithmetic", "bigint/getrandom", "common/getrandom"]
 group = ["dep:group", "ff"]
 pkcs8 = ["dep:pkcs8", "sec1"]
 pem = ["dep:pem-rfc7468", "alloc", "arithmetic", "pkcs8/pem", "sec1/pem"]
