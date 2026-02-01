@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.3.0 (UNRELEASED)
 ### Changed
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
+- Bump `rand_core` to v0.10 ([#2250])
 
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
+[#2250]: https://github.com/RustCrypto/traits/pull/2250
 
 ## 0.2.0 (2022-05-26)
 ### Added

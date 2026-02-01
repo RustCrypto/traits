@@ -1,6 +1,6 @@
 [package]
 name = "cipher"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.7"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Traits for describing block ciphers and stream ciphers"
 
 [dependencies]
-common = { version = "0.2.0-rc.13", package = "crypto-common" }
+common = { version = "0.2.0-rc.14", package = "crypto-common" }
 inout = "0.2.2"
 
 # optional dependencies

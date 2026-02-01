@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `crypto-common` to v0.2.0-pre.5 ([#1496])
 - Re-export of `crypto-common` moved to `universal_hash::common` ([#2237])
 
+
 ### Fixed
 - Fix `missing_debug_implementations` for some crates ([#1407])
 
