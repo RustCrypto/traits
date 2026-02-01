@@ -1,6 +1,6 @@
 [package]
 name = "signature"
-version = "3.0.0-rc.9"
+version = "3.0.0-rc.10"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
