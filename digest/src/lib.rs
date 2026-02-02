@@ -73,16 +73,6 @@ pub use common::{Output, OutputSizeUser, Reset, array, typenum, typenum::consts}
 pub use mac::{CtOutput, Mac, MacError, MacMarker};
 pub use xof_fixed::XofFixedWrapper;
 
-#[cfg(feature = "block-api")]
-#[deprecated(
-    since = "0.11.0",
-    note = "`digest::core_api` has been replaced by `digest::block_api`"
-)]
-pub use block_api as core_api;
-
-#[deprecated(since = "0.11.0", note = "use `digest::common` instead")]
-pub use common as crypto_common;
-
 use common::typenum::Unsigned;
 use core::fmt;
 
