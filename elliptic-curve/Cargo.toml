@@ -1,6 +1,6 @@
 [package]
 name = "elliptic-curve"
-version = "0.14.0-rc.27"
+version = "0.14.0-rc.28"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
