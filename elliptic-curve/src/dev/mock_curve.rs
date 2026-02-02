@@ -14,7 +14,7 @@ use crate::{
     point::{AffineCoordinates, NonIdentity},
     rand_core::{TryCryptoRng, TryRng},
     scalar::{FromUintUnchecked, IsHigh},
-    sec1::{CompressedPoint, FromEncodedPoint, ToEncodedPoint},
+    sec1::{CompressedPoint, FromSec1Point, ToSec1Point},
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     zeroize::DefaultIsZeroes,
 };
@@ -37,7 +37,7 @@ pub const PSEUDO_COORDINATE_FIXED_BASE_MUL: [u8; 32] =
     hex!("deadbeef00000000000000000000000000000000000000000000000000000001");
 
 /// SEC1 encoded point.
-pub type EncodedPoint = crate::sec1::EncodedPoint<MockCurve>;
+pub type Sec1Point = crate::sec1::Sec1Point<MockCurve>;
 
 /// Field element bytes.
 pub type FieldBytes = crate::FieldBytes<MockCurve>;
@@ -488,8 +488,8 @@ pub enum AffinePoint {
     /// Base point.
     Generator,
 
-    /// Point corresponding to a given [`EncodedPoint`].
-    Other(EncodedPoint),
+    /// Point corresponding to a given [`Sec1Point`].
+    Other(Sec1Point),
 }
 
 impl AffineCoordinates for AffinePoint {
@@ -564,8 +564,8 @@ impl Generate for AffinePoint {
     }
 }
 
-impl FromEncodedPoint<MockCurve> for AffinePoint {
-    fn from_encoded_point(encoded_point: &EncodedPoint) -> ctutils::CtOption<Self> {
+impl FromSec1Point<MockCurve> for AffinePoint {
+    fn from_sec1_point(encoded_point: &Sec1Point) -> ctutils::CtOption<Self> {
         let point = if encoded_point.is_identity() {
             Self::Identity
         } else {
@@ -576,10 +576,10 @@ impl FromEncodedPoint<MockCurve> for AffinePoint {
     }
 }
 
-impl ToEncodedPoint<MockCurve> for AffinePoint {
-    fn to_encoded_point(&self, compress: bool) -> EncodedPoint {
+impl ToSec1Point<MockCurve> for AffinePoint {
+    fn to_sec1_point(&self, compress: bool) -> Sec1Point {
         match self {
-            Self::FixedBaseOutput(scalar) => EncodedPoint::from_affine_coordinates(
+            Self::FixedBaseOutput(scalar) => Sec1Point::from_affine_coordinates(
                 &scalar.to_repr(),
                 &PSEUDO_COORDINATE_FIXED_BASE_MUL.into(),
                 false,
@@ -710,14 +710,14 @@ impl Generate for ProjectivePoint {
     }
 }
 
-impl FromEncodedPoint<MockCurve> for ProjectivePoint {
-    fn from_encoded_point(_point: &EncodedPoint) -> ctutils::CtOption<Self> {
+impl FromSec1Point<MockCurve> for ProjectivePoint {
+    fn from_sec1_point(_point: &Sec1Point) -> ctutils::CtOption<Self> {
         unimplemented!();
     }
 }
 
-impl ToEncodedPoint<MockCurve> for ProjectivePoint {
-    fn to_encoded_point(&self, _compress: bool) -> EncodedPoint {
+impl ToSec1Point<MockCurve> for ProjectivePoint {
+    fn to_sec1_point(&self, _compress: bool) -> Sec1Point {
         unimplemented!();
     }
 }
@@ -758,14 +758,14 @@ impl group::GroupEncoding for AffinePoint {
     type Repr = CompressedPoint<MockCurve>;
 
     fn from_bytes(bytes: &Self::Repr) -> CtOption<Self> {
-        EncodedPoint::from_bytes(bytes)
+        Sec1Point::from_bytes(bytes)
             .map(|point| ctutils::CtOption::new(point, ctutils::Choice::TRUE))
             .unwrap_or_else(|_| {
                 let is_identity =
                     ctutils::CtEq::ct_eq(bytes.as_slice(), Self::Repr::default().as_slice());
-                ctutils::CtOption::new(EncodedPoint::identity(), is_identity)
+                ctutils::CtOption::new(Sec1Point::identity(), is_identity)
             })
-            .and_then(|point| Self::from_encoded_point(&point))
+            .and_then(|point| Self::from_sec1_point(&point))
             .into()
     }
 
@@ -774,7 +774,7 @@ impl group::GroupEncoding for AffinePoint {
     }
 
     fn to_bytes(&self) -> Self::Repr {
-        let encoded = self.to_encoded_point(true);
+        let encoded = self.to_sec1_point(true);
         let mut result = CompressedPoint::<MockCurve>::default();
         result[..encoded.len()].copy_from_slice(encoded.as_bytes());
         result
