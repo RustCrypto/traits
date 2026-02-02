@@ -29,7 +29,7 @@ use pem_rfc7468::{self as pem, PemLabel};
 use {
     crate::{
         FieldBytesSize,
-        sec1::{EncodedPoint, ModulusSize, ValidatePublicKey},
+        sec1::{ModulusSize, Sec1Point, ValidatePublicKey},
     },
     sec1::der::{self, Decode, oid::AssociatedOid},
 };
@@ -38,7 +38,7 @@ use {
 use {
     crate::{
         AffinePoint,
-        sec1::{FromEncodedPoint, ToEncodedPoint},
+        sec1::{FromSec1Point, ToSec1Point},
     },
     alloc::vec::Vec,
     sec1::der::Encode,
@@ -203,11 +203,11 @@ where
     pub fn to_sec1_der(&self) -> der::Result<Zeroizing<Vec<u8>>>
     where
         C: AssociatedOid + CurveArithmetic,
-        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+        AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
         FieldBytesSize<C>: ModulusSize,
     {
         let private_key_bytes = Zeroizing::new(self.to_bytes());
-        let public_key_bytes = self.public_key().to_encoded_point(false);
+        let public_key_bytes = self.public_key().to_sec1_point(false);
         let parameters = sec1::EcParameters::NamedCurve(C::OID);
 
         let ec_private_key = Zeroizing::new(
@@ -252,7 +252,7 @@ where
     pub fn to_sec1_pem(&self, line_ending: pem::LineEnding) -> Result<Zeroizing<String>>
     where
         C: AssociatedOid + CurveArithmetic,
-        AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+        AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
         FieldBytesSize<C>: ModulusSize,
     {
         self.to_sec1_der()
@@ -355,12 +355,12 @@ where
 impl<C> sec1::EncodeEcPrivateKey for SecretKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
     FieldBytesSize<C>: ModulusSize,
 {
     fn to_sec1_der(&self) -> sec1::Result<der::SecretDocument> {
         let private_key_bytes = Zeroizing::new(self.to_bytes());
-        let public_key_bytes = self.public_key().to_encoded_point(false);
+        let public_key_bytes = self.public_key().to_sec1_point(false);
 
         Ok(der::SecretDocument::encode_msg(&sec1::EcPrivateKey {
             private_key: &private_key_bytes,
@@ -389,7 +389,7 @@ where
             .map_err(|_| der::Tag::OctetString.value_error())?;
 
         if let Some(pk_bytes) = sec1_private_key.public_key {
-            let pk = EncodedPoint::<C>::from_bytes(pk_bytes)
+            let pk = Sec1Point::<C>::from_bytes(pk_bytes)
                 .map_err(|_| der::Tag::BitString.value_error())?;
 
             if C::validate_public_key(&secret_key, &pk).is_err() {

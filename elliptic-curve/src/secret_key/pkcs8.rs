@@ -14,7 +14,7 @@ use sec1::EcPrivateKey;
 use {
     crate::{
         AffinePoint, CurveArithmetic,
-        sec1::{FromEncodedPoint, ToEncodedPoint},
+        sec1::{FromSec1Point, ToSec1Point},
     },
     pkcs8::{
         EncodePrivateKey,
@@ -63,7 +63,7 @@ where
 impl<C> EncodePrivateKey for SecretKey<C>
 where
     C: AssociatedOid + CurveArithmetic,
-    AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
+    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
     FieldBytesSize<C>: ModulusSize,
 {
     fn to_pkcs8_der(&self) -> pkcs8::Result<der::SecretDocument> {
@@ -73,7 +73,7 @@ where
         };
 
         let private_key_bytes = Zeroizing::new(self.to_bytes());
-        let public_key_bytes = self.public_key().to_encoded_point(false);
+        let public_key_bytes = self.public_key().to_sec1_point(false);
 
         let ec_private_key = Zeroizing::new(
             EcPrivateKey {
