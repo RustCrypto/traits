@@ -13,9 +13,6 @@ pub use common::{
     typenum::{self, consts},
 };
 
-#[deprecated(since = "0.6.0", note = "use `universal_hash::common` instead")]
-pub use common as crypto_common;
-
 use common::{BlockSizeUser, BlockSizes, ParBlocksSizeUser, array::Array};
 use core::slice;
 use subtle::ConstantTimeEq;

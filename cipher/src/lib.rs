@@ -50,6 +50,3 @@ pub use common::{
     typenum::{self, consts},
 };
 pub use inout::{InOut, InOutBuf};
-
-#[deprecated(since = "0.5.0", note = "use `cipher::common` instead")]
-pub use common as crypto_common;
