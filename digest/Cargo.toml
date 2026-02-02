@@ -1,6 +1,6 @@
 [package]
 name = "digest"
-version = "0.11.0-rc.10"
+version = "0.11.0-rc.11"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
