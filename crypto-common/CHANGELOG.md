@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `BlockUser::BlockSize` is now bounded by the `BlockSizes` trait
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
 - Bump `rand_core` to v0.10 ([#2250])
+- Bump `getrandom` to v0.4 ([#2258])
 
 ### Removed
 - `generate_*` and `try_generate_*` methods from KeyInit and KeyIvInit traits.
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#2096]: https://github.com/RustCrypto/traits/pull/2096
 [#2213]: https://github.com/RustCrypto/traits/pull/2213
 [#2250]: https://github.com/RustCrypto/traits/pull/2250
+[#2258]: https://github.com/RustCrypto/traits/pull/2258
 
 ## 0.1.7 (2025-11-12)
 ### Changed
