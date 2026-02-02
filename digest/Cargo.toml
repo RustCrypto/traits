@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Traits for cryptographic hash functions and message authentication codes"
 
 [dependencies]
-common = { version = "0.2.0-rc.14", package = "crypto-common" }
+common = { version = "0.2.0-rc.15", package = "crypto-common" }
 
 # optional dependencies
 block-buffer = { version = "0.11", optional = true }
