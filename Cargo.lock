@@ -161,9 +161,9 @@ dependencies = [
 
 [[package]]
 name = "crypto-bigint"
-version = "0.7.0-rc.24"
+version = "0.7.0-rc.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51312f2b7fae18a144261dcc5c32b0de4bc7e50225d1c0b5a30e0312831da20d"
+checksum = "cba9eeeb213f7fd29353032f71f7c173e5f6d95d85151cb3a47197b0ea7e8be7"
 dependencies = [
  "cpubits",
  "ctutils",
@@ -301,18 +301,18 @@ checksum = "e712f64ec3850b98572bffac52e2c6f282b29fe6c5fa6d42334b30be438d95c1"
 
 [[package]]
 name = "hkdf"
-version = "0.13.0-rc.4"
+version = "0.13.0-rc.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1493605868fc7d216afa78a26956d56f5c0a12dbdb8ee4fe9e0b70a28ec7d57"
+checksum = "cbb55385998ae66b8d2d5143c05c94b9025ab863966f0c94ce7a5fde30105092"
 dependencies = [
  "hmac",
 ]
 
 [[package]]
 name = "hmac"
-version = "0.13.0-rc.4"
+version = "0.13.0-rc.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9956e202a691c5c86c60303a421f66f93f44b29433407b7c43cf2bebadc750e"
+checksum = "ef451d73f36d8a3f93ad32c332ea01146c9650e1ec821a9b0e46c01277d544f8"
 dependencies = [
  "digest",
 ]
@@ -531,9 +531,9 @@ checksum = "0c8d0fd677905edcbeedbf2edb6494d676f0e98d54d5cf9bda0b061cb8fb8aba"
 
 [[package]]
 name = "rustcrypto-ff"
-version = "0.14.0-pre.1"
+version = "0.14.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36fdf8f956089df8343b9479045c026932f9eb004d0f32d8497b4d133b316a66"
+checksum = "c5db129183b2c139d7d87d08be57cba626c715789db17aec65c8866bfd767d1f"
 dependencies = [
  "bitvec",
  "rand_core",
@@ -543,9 +543,9 @@ dependencies = [
 
 [[package]]
 name = "rustcrypto-ff_derive"
-version = "0.14.0-pre.0"
+version = "0.14.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2aef88cb4ddb3b1c83beff963f9197607dac780cc39a09f19c041dacbb0b6a5"
+checksum = "4cda22ea03582974ab5687fc131eba2dc78e258e7eef4d7e01bcd0522ed79f66"
 dependencies = [
  "addchain",
  "num-bigint",
@@ -558,9 +558,9 @@ dependencies = [
 
 [[package]]
 name = "rustcrypto-group"
-version = "0.14.0-pre.1"
+version = "0.14.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df76d08c12814c794ffe95ac788b48081cccb607fade4ed746825d29791ce538"
+checksum = "57c4b1463f274a3ff6fb2f44da43e576cb9424367bd96f185ead87b52fe00523"
 dependencies = [
  "rand_core",
  "rustcrypto-ff",
