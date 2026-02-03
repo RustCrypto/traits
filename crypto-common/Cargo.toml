@@ -1,6 +1,6 @@
 [package]
 name = "crypto-common"
-version = "0.2.0-rc.15"
+version = "0.2.0"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -10,7 +10,7 @@ repository = "https://github.com/RustCrypto/traits"
 license = "MIT OR Apache-2.0"
 keywords = ["crypto", "traits"]
 categories = ["cryptography", "no-std"]
-description = "Common cryptographic traits"
+description = "Common traits used by cryptographic algorithms"
 
 [dependencies]
 hybrid-array = "0.4.7"
