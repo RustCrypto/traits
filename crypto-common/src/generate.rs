@@ -7,9 +7,13 @@ use getrandom::{SysRng, rand_core::UnwrapErr};
 /// Secure random generation.
 pub trait Generate: Sized {
     /// Generate random key using the provided [`TryCryptoRng`].
+    ///
+    /// # Errors
+    /// Returns `R::Error` in the event the provided RNG `R` experiences an internal failure.
     fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error>;
 
     /// Generate random key using the provided [`CryptoRng`].
+    #[must_use]
     fn generate_from_rng<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
         let Ok(ret) = Self::try_generate_from_rng(rng);
         ret
@@ -35,6 +39,7 @@ pub trait Generate: Sized {
     ///
     /// This shouldn't happen on most modern operating systems.
     #[cfg(feature = "getrandom")]
+    #[must_use]
     fn generate() -> Self {
         Self::generate_from_rng(&mut UnwrapErr(SysRng))
     }
