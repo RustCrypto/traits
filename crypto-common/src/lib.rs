@@ -64,6 +64,7 @@ pub trait BlockSizeUser {
 
     /// Return block size in bytes.
     #[inline(always)]
+    #[must_use]
     fn block_size() -> usize {
         Self::BlockSize::USIZE
     }
@@ -103,6 +104,7 @@ pub trait OutputSizeUser {
 
     /// Return output size in bytes.
     #[inline(always)]
+    #[must_use]
     fn output_size() -> usize {
         Self::OutputSize::USIZE
     }
@@ -117,6 +119,7 @@ pub trait KeySizeUser {
 
     /// Return key size in bytes.
     #[inline(always)]
+    #[must_use]
     fn key_size() -> usize {
         Self::KeySize::USIZE
     }
@@ -131,6 +134,7 @@ pub trait IvSizeUser {
 
     /// Return IV size in bytes.
     #[inline(always)]
+    #[must_use]
     fn iv_size() -> usize {
         Self::IvSize::USIZE
     }
@@ -153,6 +157,10 @@ pub trait Reset {
 /// Trait which stores algorithm name constant, used in `Debug` implementations.
 pub trait AlgorithmName {
     /// Write algorithm name into `f`.
+    ///
+    /// # Errors
+    /// `fmt::Result` is only intended for cases where an error occurs writing to the underlying
+    /// I/O stream.
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result;
 }
 
@@ -168,6 +176,10 @@ pub trait KeyInit: KeySizeUser + Sized {
     fn new(key: &Key<Self>) -> Self;
 
     /// Create new value from variable size key.
+    ///
+    /// # Errors
+    /// Returns [`InvalidLength`] in the event the length of the provided slice is not equal to
+    /// `<Self as KeySizeUser>::KeySize::USIZE`.
     #[inline]
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
         <&Key<Self>>::try_from(key)
@@ -198,6 +210,9 @@ pub trait KeyIvInit: KeySizeUser + IvSizeUser + Sized {
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self;
 
     /// Create new value from variable length key and nonce.
+    ///
+    /// # Errors
+    /// Returns [`InvalidLength`] in the event that `key` and/or `iv` are not the expected length.
     #[inline]
     fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidLength> {
         let key = <&Key<Self>>::try_from(key).map_err(|_| InvalidLength)?;
@@ -295,6 +310,9 @@ pub trait InnerIvInit: InnerUser + IvSizeUser + Sized {
     fn inner_iv_init(inner: Self::Inner, iv: &Iv<Self>) -> Self;
 
     /// Initialize value using `inner` and `iv` slice.
+    ///
+    /// # Errors
+    /// Returns [`InvalidLength`]  in the event that `iv` is not the expected length.
     #[inline]
     fn inner_iv_slice_init(inner: Self::Inner, iv: &[u8]) -> Result<Self, InvalidLength> {
         let iv = <&Iv<Self>>::try_from(iv).map_err(|_| InvalidLength)?;

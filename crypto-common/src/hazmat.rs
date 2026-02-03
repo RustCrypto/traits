@@ -1,5 +1,5 @@
 use crate::array::{
-    self, Array, ArraySize,
+    Array, ArraySize, sizes,
     typenum::{Diff, Prod, Sum, U1, U2, U4, U8, U16, Unsigned},
 };
 use core::{convert::TryInto, default::Default, fmt};
@@ -49,7 +49,11 @@ where
 
     /// Serialize and return internal state.
     fn serialize(&self) -> SerializedState<Self>;
+
     /// Create an object from serialized internal state.
+    ///
+    /// # Errors
+    /// If the serialized state could not be deserialized successfully.
     fn deserialize(serialized_state: &SerializedState<Self>)
     -> Result<Self, DeserializeStateError>;
 }
@@ -79,10 +83,10 @@ impl_seializable_state_unsigned!(u64, U8);
 impl_seializable_state_unsigned!(u128, U16);
 
 macro_rules! impl_serializable_state_u8_array {
-    ($($n: ty),*) => {
+    ($($n: ident),*) => {
         $(
-            impl SerializableState for [u8; <$n>::USIZE] {
-                type SerializedStateSize = $n;
+            impl SerializableState for [u8; sizes::$n::USIZE] {
+                type SerializedStateSize = sizes::$n;
 
                 fn serialize(&self) -> SerializedState<Self> {
                     (*self).into()
@@ -99,9 +103,9 @@ macro_rules! impl_serializable_state_u8_array {
 }
 
 macro_rules! impl_serializable_state_type_array {
-    ($type: ty, $type_size: ty, $n: ty) => {
-        impl SerializableState for [$type; <$n>::USIZE] {
-            type SerializedStateSize = Prod<$n, $type_size>;
+    ($type: ty, $type_size: ty, $n: ident) => {
+        impl SerializableState for [$type; sizes::$n::USIZE] {
+            type SerializedStateSize = Prod<sizes::$n, $type_size>;
 
             fn serialize(&self) -> SerializedState<Self> {
                 let mut serialized_state = SerializedState::<Self>::default();
@@ -118,7 +122,7 @@ macro_rules! impl_serializable_state_type_array {
             fn deserialize(
                 serialized_state: &SerializedState<Self>,
             ) -> Result<Self, DeserializeStateError> {
-                let mut array = [0; <$n>::USIZE];
+                let mut array = [0; sizes::$n::USIZE];
                 for (val, chunk) in array
                     .iter_mut()
                     .zip(serialized_state.chunks_exact(<$type_size>::USIZE))
@@ -132,7 +136,7 @@ macro_rules! impl_serializable_state_type_array {
 }
 
 macro_rules! impl_serializable_state_u16_array {
-    ($($n: ty),*) => {
+    ($($n: ident),*) => {
         $(
             impl_serializable_state_type_array!(u16, U2, $n);
         )*
@@ -140,7 +144,7 @@ macro_rules! impl_serializable_state_u16_array {
 }
 
 macro_rules! impl_serializable_state_u32_array {
-    ($($n: ty),*) => {
+    ($($n: ident),*) => {
         $(
             impl_serializable_state_type_array!(u32, U4, $n);
         )*
@@ -148,7 +152,7 @@ macro_rules! impl_serializable_state_u32_array {
 }
 
 macro_rules! impl_serializable_state_u64_array {
-    ($($n: ty),*) => {
+    ($($n: ident),*) => {
         $(
             impl_serializable_state_type_array!(u64, U8, $n);
         )*
@@ -156,7 +160,7 @@ macro_rules! impl_serializable_state_u64_array {
 }
 
 macro_rules! impl_serializable_state_u128_array {
-    ($($n: ty),*) => {
+    ($($n: ident),*) => {
         $(
             impl_serializable_state_type_array!(u128, U8, $n);
         )*
@@ -164,196 +168,196 @@ macro_rules! impl_serializable_state_u128_array {
 }
 
 impl_serializable_state_u8_array! {
-    array::typenum::U1,
-    array::typenum::U2,
-    array::typenum::U3,
-    array::typenum::U4,
-    array::typenum::U5,
-    array::typenum::U6,
-    array::typenum::U7,
-    array::typenum::U8,
-    array::typenum::U9,
-    array::typenum::U10,
-    array::typenum::U11,
-    array::typenum::U12,
-    array::typenum::U13,
-    array::typenum::U14,
-    array::typenum::U15,
-    array::typenum::U16,
-    array::typenum::U17,
-    array::typenum::U18,
-    array::typenum::U19,
-    array::typenum::U20,
-    array::typenum::U21,
-    array::typenum::U22,
-    array::typenum::U23,
-    array::typenum::U24,
-    array::typenum::U25,
-    array::typenum::U26,
-    array::typenum::U27,
-    array::typenum::U28,
-    array::typenum::U29,
-    array::typenum::U30,
-    array::typenum::U31,
-    array::typenum::U32,
-    array::typenum::U33,
-    array::typenum::U34,
-    array::typenum::U35,
-    array::typenum::U36,
-    array::typenum::U37,
-    array::typenum::U38,
-    array::typenum::U39,
-    array::typenum::U40,
-    array::typenum::U41,
-    array::typenum::U42,
-    array::typenum::U43,
-    array::typenum::U44,
-    array::typenum::U45,
-    array::typenum::U46,
-    array::typenum::U47,
-    array::typenum::U48,
-    array::typenum::U49,
-    array::typenum::U50,
-    array::typenum::U51,
-    array::typenum::U52,
-    array::typenum::U53,
-    array::typenum::U54,
-    array::typenum::U55,
-    array::typenum::U56,
-    array::typenum::U57,
-    array::typenum::U58,
-    array::typenum::U59,
-    array::typenum::U60,
-    array::typenum::U61,
-    array::typenum::U62,
-    array::typenum::U63,
-    array::typenum::U64,
-    array::typenum::U96,
-    array::typenum::U128,
-    array::typenum::U192,
-    array::typenum::U256,
-    array::typenum::U384,
-    array::typenum::U448,
-    array::typenum::U512,
-    array::typenum::U768,
-    array::typenum::U896,
-    array::typenum::U1024,
-    array::typenum::U2048,
-    array::typenum::U4096,
-    array::typenum::U8192
+    U1,
+    U2,
+    U3,
+    U4,
+    U5,
+    U6,
+    U7,
+    U8,
+    U9,
+    U10,
+    U11,
+    U12,
+    U13,
+    U14,
+    U15,
+    U16,
+    U17,
+    U18,
+    U19,
+    U20,
+    U21,
+    U22,
+    U23,
+    U24,
+    U25,
+    U26,
+    U27,
+    U28,
+    U29,
+    U30,
+    U31,
+    U32,
+    U33,
+    U34,
+    U35,
+    U36,
+    U37,
+    U38,
+    U39,
+    U40,
+    U41,
+    U42,
+    U43,
+    U44,
+    U45,
+    U46,
+    U47,
+    U48,
+    U49,
+    U50,
+    U51,
+    U52,
+    U53,
+    U54,
+    U55,
+    U56,
+    U57,
+    U58,
+    U59,
+    U60,
+    U61,
+    U62,
+    U63,
+    U64,
+    U96,
+    U128,
+    U192,
+    U256,
+    U384,
+    U448,
+    U512,
+    U768,
+    U896,
+    U1024,
+    U2048,
+    U4096,
+    U8192
 }
 
 impl_serializable_state_u16_array! {
-    array::typenum::U1,
-    array::typenum::U2,
-    array::typenum::U3,
-    array::typenum::U4,
-    array::typenum::U5,
-    array::typenum::U6,
-    array::typenum::U7,
-    array::typenum::U8,
-    array::typenum::U9,
-    array::typenum::U10,
-    array::typenum::U11,
-    array::typenum::U12,
-    array::typenum::U13,
-    array::typenum::U14,
-    array::typenum::U15,
-    array::typenum::U16,
-    array::typenum::U17,
-    array::typenum::U18,
-    array::typenum::U19,
-    array::typenum::U20,
-    array::typenum::U21,
-    array::typenum::U22,
-    array::typenum::U23,
-    array::typenum::U24,
-    array::typenum::U25,
-    array::typenum::U26,
-    array::typenum::U27,
-    array::typenum::U28,
-    array::typenum::U29,
-    array::typenum::U30,
-    array::typenum::U31,
-    array::typenum::U32,
-    array::typenum::U48,
-    array::typenum::U96,
-    array::typenum::U128,
-    array::typenum::U192,
-    array::typenum::U256,
-    array::typenum::U384,
-    array::typenum::U448,
-    array::typenum::U512,
-    array::typenum::U2048,
-    array::typenum::U4096
+    U1,
+    U2,
+    U3,
+    U4,
+    U5,
+    U6,
+    U7,
+    U8,
+    U9,
+    U10,
+    U11,
+    U12,
+    U13,
+    U14,
+    U15,
+    U16,
+    U17,
+    U18,
+    U19,
+    U20,
+    U21,
+    U22,
+    U23,
+    U24,
+    U25,
+    U26,
+    U27,
+    U28,
+    U29,
+    U30,
+    U31,
+    U32,
+    U48,
+    U96,
+    U128,
+    U192,
+    U256,
+    U384,
+    U448,
+    U512,
+    U2048,
+    U4096
 }
 
 impl_serializable_state_u32_array! {
-    array::typenum::U1,
-    array::typenum::U2,
-    array::typenum::U3,
-    array::typenum::U4,
-    array::typenum::U5,
-    array::typenum::U6,
-    array::typenum::U7,
-    array::typenum::U8,
-    array::typenum::U9,
-    array::typenum::U10,
-    array::typenum::U11,
-    array::typenum::U12,
-    array::typenum::U13,
-    array::typenum::U14,
-    array::typenum::U15,
-    array::typenum::U16,
-    array::typenum::U24,
-    array::typenum::U32,
-    array::typenum::U48,
-    array::typenum::U64,
-    array::typenum::U96,
-    array::typenum::U128,
-    array::typenum::U192,
-    array::typenum::U256,
-    array::typenum::U512,
-    array::typenum::U1024,
-    array::typenum::U2048
+    U1,
+    U2,
+    U3,
+    U4,
+    U5,
+    U6,
+    U7,
+    U8,
+    U9,
+    U10,
+    U11,
+    U12,
+    U13,
+    U14,
+    U15,
+    U16,
+    U24,
+    U32,
+    U48,
+    U64,
+    U96,
+    U128,
+    U192,
+    U256,
+    U512,
+    U1024,
+    U2048
 }
 
 impl_serializable_state_u64_array! {
-    array::typenum::U1,
-    array::typenum::U2,
-    array::typenum::U3,
-    array::typenum::U4,
-    array::typenum::U5,
-    array::typenum::U6,
-    array::typenum::U7,
-    array::typenum::U8,
-    array::typenum::U12,
-    array::typenum::U16,
-    array::typenum::U24,
-    array::typenum::U32,
-    array::typenum::U48,
-    array::typenum::U64,
-    array::typenum::U96,
-    array::typenum::U128,
-    array::typenum::U256,
-    array::typenum::U512,
-    array::typenum::U1024
+    U1,
+    U2,
+    U3,
+    U4,
+    U5,
+    U6,
+    U7,
+    U8,
+    U12,
+    U16,
+    U24,
+    U32,
+    U48,
+    U64,
+    U96,
+    U128,
+    U256,
+    U512,
+    U1024
 }
 
 impl_serializable_state_u128_array! {
-    array::typenum::U1,
-    array::typenum::U2,
-    array::typenum::U3,
-    array::typenum::U4,
-    array::typenum::U6,
-    array::typenum::U8,
-    array::typenum::U12,
-    array::typenum::U16,
-    array::typenum::U24,
-    array::typenum::U32,
-    array::typenum::U48,
-    array::typenum::U64,
-    array::typenum::U128,
-    array::typenum::U256,
-    array::typenum::U512
+    U1,
+    U2,
+    U3,
+    U4,
+    U6,
+    U8,
+    U12,
+    U16,
+    U24,
+    U32,
+    U48,
+    U64,
+    U128,
+    U256,
+    U512
 }
