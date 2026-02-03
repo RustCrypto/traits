@@ -7,11 +7,10 @@
 [![Project Chat][chat-image]][chat-link]
 [![Build Status][build-image]][build-link]
 
-Traits which define the functionality of [block ciphers], [block modes] and
-[stream ciphers].
+Traits which define the functionality of [block ciphers], [block modes] and [stream ciphers].
 
-See [RustCrypto/block-ciphers] and [RustCrypto/stream-ciphers] for algorithm
-implementations which use these traits.
+See [RustCrypto/block-ciphers] and [RustCrypto/stream-ciphers] for algorithm implementations which
+use these traits.
 
 ## SemVer Policy
 
