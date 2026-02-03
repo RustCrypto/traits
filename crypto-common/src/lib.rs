@@ -277,14 +277,13 @@ pub trait TryKeyInit: KeySizeUser + Sized {
     /// Create new value from a fixed-size key.
     ///
     /// # Errors
-    /// - if the key is considered invalid according to rules specific to the implementing type
+    /// If the key is considered invalid according to rules specific to the implementing type.
     fn new(key: &Key<Self>) -> Result<Self, InvalidKey>;
 
     /// Create new value from a variable size key.
     ///
     /// # Errors
-    /// - if the provided slice is the wrong length
-    /// - if the key is considered invalid by [`TryKeyInit::new`]
+    /// If the key is considered invalid according to rules specific to the implementing type.
     #[inline]
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidKey> {
         <&Key<Self>>::try_from(key)
