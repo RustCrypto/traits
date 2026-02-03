@@ -1,7 +1,16 @@
-//! This crate provides traits which describe functionality of cryptographic hash
-//! functions and Message Authentication algorithms.
+#![no_std]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![doc = include_str!("../README.md")]
+#![forbid(unsafe_code)]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg"
+)]
+#![warn(missing_docs, rust_2018_idioms, missing_debug_implementations)]
+
+//! ## Structure
 //!
-//! Traits in this repository are organized into the following levels:
+//! Traits in this crate are organized into the following levels:
 //!
 //! - **High-level convenience traits**: [`Digest`], [`DynDigest`], [`Mac`].
 //!   Wrappers around lower-level traits for most common use-cases. Users should
@@ -23,15 +32,6 @@
 //! see the [`digest-io`] crate for `std::io`-compatibility wrappers.
 //!
 //! [`digest-io`]: https://docs.rs/digest-io
-
-#![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg))]
-#![forbid(unsafe_code)]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/6ee8e381/logo.svg"
-)]
-#![warn(missing_docs, rust_2018_idioms, missing_debug_implementations)]
 
 #[cfg(feature = "alloc")]
 #[macro_use]
