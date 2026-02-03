@@ -12,5 +12,6 @@ extend-ignore-re = [
 ]
 
 [default.extend-words]
+consts = "consts"
 # Authenticated Key Exchange
 "AKE" = "AKE"
