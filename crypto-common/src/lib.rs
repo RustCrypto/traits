@@ -368,29 +368,6 @@ where
     }
 }
 
-// Unfortunately this blanket impl is impossible without mutually
-// exclusive traits, see: https://github.com/rust-lang/rfcs/issues/1053
-// or at the very least without: https://github.com/rust-lang/rust/issues/20400
-/*
-impl<T> KeyIvInit for T
-where
-    T: InnerInit,
-    T::Inner: KeyIvInit,
-{
-    #[inline]
-    fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self {
-        Self::inner_init(T::Inner::new(key, iv))
-    }
-
-    #[inline]
-    fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidLength> {
-        T::Inner::new_from_slice(key)
-            .map_err(|_| InvalidLength)
-            .map(Self::inner_init)
-    }
-}
-*/
-
 /// Error type for [`TryKeyInit`] for cases where the provided bytes do not correspond to a
 /// valid key.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
