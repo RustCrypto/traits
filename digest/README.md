@@ -39,7 +39,7 @@ hasher.update(data);
 hasher.update("String data");
 // Note that calling `finalize()` consumes hasher
 let hash = hasher.finalize();
-println!("Result: {:x}", hash);
+println!("Result: {:?}", hash);
 ```
 
 In this example `hash` has type [`Array<u8, U32>`][2], which is a generic
@@ -49,19 +49,23 @@ Alternatively you can use chained approach, which is equivalent to the previous
 example:
 
 ```rust
+use sha2::{Sha256, Digest};
+
 let hash = Sha256::new()
     .chain_update(b"Hello world!")
     .chain_update("String data")
     .finalize();
 
-println!("Result: {:x}", hash);
+println!("Result: {:?}", hash);
 ```
 
 If the whole message is available you also can use convenience `digest` method:
 
 ```rust
+use sha2::{Sha256, Digest};
+
 let hash = Sha256::digest(b"my message");
-println!("Result: {:x}", hash);
+println!("Result: {:?}", hash);
 ```
 
 ### Generic code

@@ -7,7 +7,8 @@
 [![Project Chat][chat-image]][chat-link]
 [![Build Status][build-image]][build-link]
 
-Traits which define the functionality of [block ciphers] and [stream ciphers].
+Traits which define the functionality of [block ciphers], [block modes] and
+[stream ciphers].
 
 See [RustCrypto/block-ciphers] and [RustCrypto/stream-ciphers] for algorithm
 implementations which use these traits.
@@ -48,6 +49,7 @@ dual licensed as above, without any additional terms or conditions.
 [//]: # (general links)
 
 [block ciphers]: https://en.wikipedia.org/wiki/Block_cipher
+[block modes]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
 [stream ciphers]: https://en.wikipedia.org/wiki/Stream_cipher
 [RustCrypto/block-ciphers]: https://github.com/RustCrypto/block-ciphers
 [RustCrypto/stream-ciphers]: https://github.com/RustCrypto/stream-ciphers
