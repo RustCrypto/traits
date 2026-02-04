@@ -3,7 +3,6 @@ on:
   push:
     tags: [
       'aead-v*',
-      'async-signature-v*',
       'cipher-v*',
       'crypto-common-v*',
       'crypto-v*',
