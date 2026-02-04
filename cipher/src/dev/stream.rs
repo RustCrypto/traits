@@ -1,4 +1,7 @@
 //! Development-related functionality for stream ciphers
+
+#![allow(clippy::missing_errors_doc)]
+
 use crate::{KeyIvInit, StreamCipher};
 
 /// Stream cipher test vector

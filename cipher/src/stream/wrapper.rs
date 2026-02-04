@@ -108,6 +108,7 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
 }
 
 impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
+    #[allow(clippy::unwrap_in_result)]
     fn try_current_pos<SN: SeekNum>(&self) -> Result<SN, OverflowError> {
         let pos = u8::try_from(self.buffer.get_pos())
             .expect("buffer position is always smaller than 256");
@@ -175,8 +176,8 @@ impl<T: StreamCipherCore + ZeroizeOnDrop> ZeroizeOnDrop for StreamCipherCoreWrap
 // Assert that `ReadBuffer` implements `ZeroizeOnDrop`
 #[cfg(feature = "zeroize")]
 const _: () = {
-    #[allow(dead_code)]
+    #[allow(dead_code, trivial_casts)]
     fn check_buffer<BS: crate::array::ArraySize>(v: &ReadBuffer<BS>) {
-        let _ = v as &dyn crate::zeroize::ZeroizeOnDrop;
+        let _ = v as &dyn ZeroizeOnDrop;
     }
 };

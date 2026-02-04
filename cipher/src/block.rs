@@ -70,6 +70,7 @@ pub trait BlockCipherEncrypt: BlockSizeUser + Sized {
 
     /// Encrypt blocks buffer-to-buffer.
     ///
+    /// # Errors
     /// Returns [`NotEqualError`] if provided `in_blocks` and `out_blocks`
     /// have different lengths.
     #[inline]
@@ -123,6 +124,7 @@ pub trait BlockCipherDecrypt: BlockSizeUser {
 
     /// Decrypt blocks buffer-to-buffer.
     ///
+    /// # Errors
     /// Returns [`NotEqualError`] if provided `in_blocks` and `out_blocks`
     /// have different lengths.
     #[inline]
@@ -192,6 +194,7 @@ pub trait BlockModeEncrypt: BlockSizeUser + Sized {
 
     /// Encrypt blocks buffer-to-buffer.
     ///
+    /// # Errors
     /// Returns [`NotEqualError`] if provided `in_blocks` and `out_blocks`
     /// have different lengths.
     #[inline]
@@ -206,6 +209,7 @@ pub trait BlockModeEncrypt: BlockSizeUser + Sized {
 
     /// Pad input and encrypt. Returns resulting ciphertext slice.
     ///
+    /// # Errors
     /// Returns [`PadError`] if length of output buffer is not sufficient.
     #[cfg(feature = "block-padding")]
     #[inline]
@@ -223,6 +227,7 @@ pub trait BlockModeEncrypt: BlockSizeUser + Sized {
 
     /// Pad input and encrypt in-place. Returns resulting ciphertext slice.
     ///
+    /// # Errors
     /// Returns [`PadError`] if length of output buffer is not sufficient.
     #[cfg(feature = "block-padding")]
     #[inline]
@@ -233,6 +238,7 @@ pub trait BlockModeEncrypt: BlockSizeUser + Sized {
 
     /// Pad input and encrypt buffer-to-buffer. Returns resulting ciphertext slice.
     ///
+    /// # Errors
     /// Returns [`PadError`] if length of output buffer is not sufficient.
     #[cfg(feature = "block-padding")]
     #[inline]
@@ -262,12 +268,11 @@ pub trait BlockModeEncrypt: BlockSizeUser + Sized {
 
         let pad_type_id = TypeId::of::<P>();
         let buf_blocks_len = if pad_type_id == TypeId::of::<NoPadding>() {
-            if msg_len % bs != 0 {
-                panic!(
-                    "NoPadding is used with a {msg_len}‑byte message,
-                    which is not a multiple of the {bs}‑byte cipher block size"
-                );
-            }
+            assert!(
+                msg_len % bs == 0,
+                "NoPadding is used with a {msg_len}‑byte message,
+                which is not a multiple of the {bs}‑byte cipher block size"
+            );
             msg_len / bs
         } else if pad_type_id == TypeId::of::<ZeroPadding>() {
             msg_len.div_ceil(bs)
@@ -329,6 +334,7 @@ pub trait BlockModeDecrypt: BlockSizeUser + Sized {
 
     /// Decrypt blocks buffer-to-buffer.
     ///
+    /// # Errors
     /// Returns [`NotEqualError`] if provided `in_blocks` and `out_blocks`
     /// have different lengths.
     #[inline]
@@ -343,6 +349,7 @@ pub trait BlockModeDecrypt: BlockSizeUser + Sized {
 
     /// Decrypt input and unpad it. Returns resulting plaintext slice.
     ///
+    /// # Errors
     /// Returns [`block_padding::Error`] if padding is malformed or if input length is
     /// not multiple of `Self::BlockSize`.
     #[cfg(feature = "block-padding")]
@@ -361,6 +368,7 @@ pub trait BlockModeDecrypt: BlockSizeUser + Sized {
 
     /// Decrypt input and unpad it in-place. Returns resulting plaintext slice.
     ///
+    /// # Errors
     /// Returns [`block_padding::Error`] if padding is malformed or if input length is
     /// not multiple of `Self::BlockSize`.
     #[cfg(feature = "block-padding")]
@@ -372,6 +380,7 @@ pub trait BlockModeDecrypt: BlockSizeUser + Sized {
     /// Decrypt input and unpad it buffer-to-buffer. Returns resulting
     /// plaintext slice.
     ///
+    /// # Errors
     /// Returns [`block_padding::Error`] if padding is malformed or if input length is
     /// not multiple of `Self::BlockSize`.
     #[cfg(feature = "block-padding")]
@@ -393,6 +402,7 @@ pub trait BlockModeDecrypt: BlockSizeUser + Sized {
     /// Decrypt input and unpad it in a newly allocated Vec. Returns resulting
     /// plaintext `Vec`.
     ///
+    /// # Errors
     /// Returns [`block_padding::Error`] if padding is malformed or if input length is
     /// not multiple of `Self::BlockSize`.
     #[cfg(all(feature = "block-padding", feature = "alloc"))]

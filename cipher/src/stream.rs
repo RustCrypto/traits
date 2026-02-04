@@ -70,6 +70,9 @@ pub trait AsyncStreamCipher: Sized {
     }
 
     /// Encrypt data from buffer to buffer.
+    ///
+    /// # Errors
+    /// Returns [`NotEqualError`] if provided `in_buf` and `out_buf` have different lengths.
     fn encrypt_b2b(self, in_buf: &[u8], out_buf: &mut [u8]) -> Result<(), NotEqualError>
     where
         Self: BlockModeEncrypt,
@@ -78,6 +81,9 @@ pub trait AsyncStreamCipher: Sized {
     }
 
     /// Decrypt data from buffer to buffer.
+    ///
+    /// # Errors
+    /// Returns [`NotEqualError`] if provided `in_buf` and `out_buf` have different lengths.
     fn decrypt_b2b(self, in_buf: &[u8], out_buf: &mut [u8]) -> Result<(), NotEqualError>
     where
         Self: BlockModeDecrypt,
@@ -110,30 +116,42 @@ pub trait AsyncStreamCipher: Sized {
 /// and the seeking methods defined in the [`StreamCipherSeek`] trait.
 pub trait StreamCipher {
     /// Check that the cipher can generate a keystream with a length of `data_len` bytes.
+    ///
+    /// # Errors
+    /// Returns [`StreamCipherError`] in the event it cannot.
     fn check_remaining(&self, data_len: usize) -> Result<(), StreamCipherError>;
 
     /// Apply keystream to `inout` without checking for keystream repetition.
     ///
-    /// # WARNING
+    /// <div><class = "warning">
+    /// <b>WARNING<b>
+    ///
     /// This method should be used with extreme caution! Triggering keystream repetition can expose
     /// the stream cipher to chosen plaintext attacks.
+    /// </div>
     fn unchecked_apply_keystream_inout(&mut self, buf: InOutBuf<'_, '_, u8>);
 
     /// Apply keystream to `buf` without checking for keystream repetition.
     ///
-    /// # WARNING
+    /// <div><class = "warning">
+    /// <b>WARNING<b>
+    ///
     /// This method should be used with extreme caution! Triggering keystream repetition can expose
     /// the stream cipher to chosen plaintext attacks.
+    /// </div>
     fn unchecked_write_keystream(&mut self, buf: &mut [u8]);
 
     /// Apply keystream to data behind `buf` without checking for keystream repetition.
     ///
-    /// # WARNING
+    /// <div><class = "warning">
+    /// <b>WARNING<b>
+    ///
     /// This method should be used with extreme caution! Triggering keystream repetition can expose
     /// the stream cipher to chosen plaintext attacks.
+    /// </div>
     #[inline]
     fn unchecked_apply_keystream(&mut self, buf: &mut [u8]) {
-        self.unchecked_apply_keystream_inout(buf.into())
+        self.unchecked_apply_keystream_inout(buf.into());
     }
 
     /// Apply keystream to data buffer-to-buffer without checking for keystream repetition.
@@ -141,11 +159,15 @@ pub trait StreamCipher {
     /// It will XOR generated keystream with data from the `input` buffer
     /// and will write result to the `output` buffer.
     ///
+    /// # Errors
     /// Returns [`NotEqualError`] if the `input` and `output` buffers have different lengths.
     ///
-    /// # WARNING
+    /// <div><class = "warning">
+    /// <b>WARNING<b>
+    ///
     /// This method should be used with extreme caution! Triggering keystream repetition can expose
     /// the stream cipher to chosen plaintext attacks.
+    /// </div>
     #[inline]
     fn unchecked_apply_keystream_b2b(
         &mut self,
@@ -159,6 +181,7 @@ pub trait StreamCipher {
 
     /// Apply keystream to `inout` data.
     ///
+    /// # Errors
     /// If the end of the keystream is reached with the given buffer length,
     /// the method will return [`StreamCipherError`] without modifying `buf`.
     fn try_apply_keystream_inout(
@@ -172,6 +195,7 @@ pub trait StreamCipher {
 
     /// Apply keystream to data behind `buf`.
     ///
+    /// # Errors
     /// If the end of the keystream is reached with the given buffer length,
     /// the method will return [`StreamCipherError`] without modifying `buf`.
     #[inline]
@@ -184,6 +208,7 @@ pub trait StreamCipher {
     /// It will XOR generated keystream with data from the `input` buffer
     /// and will write result to the `output` buffer.
     ///
+    /// # Errors
     /// Returns [`StreamCipherError`] without modifying the buffers if the `input` and `output`
     /// buffers have different lengths, or if the end of the keystream is reached with
     /// the given data length.
@@ -200,6 +225,7 @@ pub trait StreamCipher {
 
     /// Write keystream to `buf`.
     ///
+    /// # Errors
     /// If the end of the keystream is reached with the given buffer length,
     /// the method will return [`StreamCipherError`] without modifying `buf`.
     #[inline]
@@ -218,7 +244,8 @@ pub trait StreamCipher {
     /// If the end of the keystream is reached with the given buffer length.
     #[inline]
     fn apply_keystream_inout(&mut self, buf: InOutBuf<'_, '_, u8>) {
-        self.try_apply_keystream_inout(buf).unwrap();
+        self.try_apply_keystream_inout(buf)
+            .expect("end of keystream reached");
     }
 
     /// Apply keystream to data in-place.
@@ -230,7 +257,8 @@ pub trait StreamCipher {
     /// If the end of the keystream is reached with the given buffer length.
     #[inline]
     fn apply_keystream(&mut self, buf: &mut [u8]) {
-        self.try_apply_keystream(buf).unwrap();
+        self.try_apply_keystream(buf)
+            .expect("end of keystream reached");
     }
 
     /// Apply keystream to data buffer-to-buffer.
@@ -246,7 +274,7 @@ pub trait StreamCipher {
         let Ok(buf) = InOutBuf::new(input, output) else {
             panic!("Lengths of input and output buffers are not equal to each other!");
         };
-        self.apply_keystream_inout(buf)
+        self.apply_keystream_inout(buf);
     }
 
     /// Write keystream to `buf`.
@@ -255,7 +283,8 @@ pub trait StreamCipher {
     /// If the end of the keystream is reached with the given buffer length.
     #[inline]
     fn write_keystream(&mut self, buf: &mut [u8]) {
-        self.try_write_keystream(buf).unwrap();
+        self.try_write_keystream(buf)
+            .expect("end of keystream reached");
     }
 }
 
@@ -266,11 +295,13 @@ pub trait StreamCipher {
 pub trait StreamCipherSeek {
     /// Try to get current keystream position in bytes.
     ///
+    /// # Errors
     /// Returns [`OverflowError`] if the position value can not be represented by type `T`.
     fn try_current_pos<T: SeekNum>(&self) -> Result<T, OverflowError>;
 
     /// Try to seek to the provided position in bytes.
     ///
+    /// # Errors
     /// Returns [`StreamCipherError`] if the position value is bigger than keystream length.
     fn try_seek<T: SeekNum>(&mut self, pos: T) -> Result<(), StreamCipherError>;
 
@@ -279,7 +310,8 @@ pub trait StreamCipherSeek {
     /// # Panics
     /// If the position value can not be represented by type `T`.
     fn current_pos<T: SeekNum>(&self) -> T {
-        self.try_current_pos().unwrap()
+        self.try_current_pos()
+            .expect("position cannot be represented by `T`")
     }
 
     /// Seek to the provided keystream position in bytes.
@@ -287,7 +319,8 @@ pub trait StreamCipherSeek {
     /// # Panics
     /// If the position value is bigger than keystream length.
     fn seek<T: SeekNum>(&mut self, pos: T) {
-        self.try_seek(pos).unwrap()
+        self.try_seek(pos)
+            .expect("position value bigger than keystream length");
     }
 }
 
@@ -299,12 +332,12 @@ impl<C: StreamCipher> StreamCipher for &mut C {
 
     #[inline]
     fn unchecked_apply_keystream_inout(&mut self, buf: InOutBuf<'_, '_, u8>) {
-        C::unchecked_apply_keystream_inout(self, buf)
+        C::unchecked_apply_keystream_inout(self, buf);
     }
 
     #[inline]
     fn unchecked_write_keystream(&mut self, buf: &mut [u8]) {
-        C::unchecked_write_keystream(self, buf)
+        C::unchecked_write_keystream(self, buf);
     }
 }
 
@@ -316,6 +349,9 @@ impl<C: StreamCipher> StreamCipher for &mut C {
 pub trait SeekNum: Sized {
     /// Try to get position for block number `block`, byte position inside
     /// block `byte`, and block size `bs`.
+    ///
+    /// # Errors
+    /// Returns [`OverflowError`] in the event of a counter overflow.
     fn from_block_byte<T: StreamCipherCounter>(
         block: T,
         byte: u8,
@@ -323,6 +359,9 @@ pub trait SeekNum: Sized {
     ) -> Result<Self, OverflowError>;
 
     /// Try to get block number and bytes position for given block size `bs`.
+    ///
+    /// # Errors
+    /// Returns [`OverflowError`] in the event of a counter overflow.
     fn into_block_byte<T: StreamCipherCounter>(self, bs: u8) -> Result<(T, u8), OverflowError>;
 }
 

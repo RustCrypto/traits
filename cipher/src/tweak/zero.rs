@@ -65,7 +65,7 @@ where
         self.f.call(&BackendWrapper {
             backend,
             _pd: PhantomData,
-        })
+        });
     }
 }
 
@@ -78,7 +78,7 @@ where
         self.f.call(&BackendWrapper {
             backend,
             _pd: PhantomData,
-        })
+        });
     }
 }
 

@@ -1,3 +1,5 @@
+//! Stream cipher tests.
+
 use cipher::{
     BlockSizeUser, IvSizeUser, KeyIvInit, KeySizeUser, ParBlocksSizeUser, StreamCipherBackend,
     StreamCipherClosure, StreamCipherCore, StreamCipherSeekCore,
@@ -9,6 +11,8 @@ const KEY: [u8; 4] = hex!("00010203");
 const IV: [u8; 4] = hex!("04050607");
 
 /// Core of dummy insecure stream cipher.
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
 pub struct DummyStreamCipherCore {
     key_iv: u64,
     pos: u64,
