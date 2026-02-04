@@ -27,11 +27,21 @@ jobs:
       - uses: rust-lang/crates-io-auth-action@v1
         id: auth
 
-      - name: Extract Crate Name
+      - name: Extract Crate Name and Version
         run: |
           TAG_NAME="${{ github.ref_name }}"
-          echo $TAG_NAME
-          echo "CRATE_NAME=${TAG_NAME%-v*}" >> $GITHUB_ENV
+          CRATE_NAME=${TAG_NAME%-v*}
+          CRATE_VERSION=${TAG_NAME##*-v}
+          echo $CRATE_NAME $CRATE_VERSION
+          echo "CRATE_NAME=${CRATE_NAME}" >> $GITHUB_ENV
+          echo "CRATE_VERSION=${CRATE_VERSION}" >> $GITHUB_ENV
+
+      - name: Check crate version
+        working-directory: ${{ env.CRATE_NAME }}
+        run: |
+          CRATE_TOML_VERSION=$(grep "^version =" Cargo.toml | cut -d'"' -f2)
+          echo $CRATE_TOML_VERSION
+          [[ $CRATE_TOML_VERSION == $CRATE_VERSION ]]
 
       - name: Publish
         working-directory: ${{ env.CRATE_NAME }}
