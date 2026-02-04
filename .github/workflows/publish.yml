@@ -19,7 +19,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: release
+    environment: publish
     permissions:
       id-token: write
     steps:
