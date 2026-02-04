@@ -1,0 +1,40 @@
+name: Publish to crates.io
+on:
+  push:
+    tags: [
+      'aead-v*',
+      'async-signature-v*',
+      'cipher-v*',
+      'crypto-common-v*',
+      'crypto-v*',
+      'digest-v*',
+      'elliptic-curve-v*',
+      'kdf-v*',
+      'kem-v*',
+      'password-hash-v*',
+      'signature-v*',
+      'universal-hash-v*',
+    ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+
+      - name: Extract Crate Name
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          echo $TAG_NAME
+          echo "CRATE_NAME=${TAG_NAME%-v*}" >> $GITHUB_ENV
+
+      - name: Publish
+        working-directory: ${{ env.CRATE_NAME }}
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: cargo publish
