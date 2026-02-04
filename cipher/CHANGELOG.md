@@ -16,11 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - `BlockCipherEncrypt::encrypt_padded*` and `BlockCipherDecrypt::decrypt_padded*` methods.
   Users of the ECB mode should use the `ecb-mode` crate instead. ([#2245])
+- `AsyncStreamCipher` trait ([#2280])
 
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
 [#2052]: https://github.com/RustCrypto/traits/pull/2052
 [#2237]: https://github.com/RustCrypto/traits/pull/2237
 [#2245]: https://github.com/RustCrypto/traits/pull/2245
+[#2280]: https://github.com/RustCrypto/traits/pull/2280
 
 ## 0.4.4 (2022-03-09)
 ### Changed
