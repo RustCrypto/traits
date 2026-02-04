@@ -5,23 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.5.0 (UNRELEASED)
+## 0.5.0 (2026-02-04)
+### Added
+- Traits for tweakable block ciphers ([#1721])
+- Methods for writing keystream ([#1907])
+
 ### Changed
+- Replaced `generic-array` with `hybrid-array` ([#1358])
+- Rename `BlockCipher*`/`BlockMode*` ([#1482])
+  - `BlockEncrypt` => `BlockCipherEncrypt`
+  - `BlockDecrypt` => `BlockCipherDecrypt`
+  - `BlockEncryptMut` => `BlockModeEncrypt`
+  - `BlockDecryptMut` => `BlockModeDecrypt`
+- Split `BlockBackend` traits into 4 specific traits: ([#1636])
+  - `BlockCipherEncBackend`
+  - `BlockCipherDecBackend`
+  - `BlockModeEncBackend`
+  - `BlockModeDecBackend`
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
-- Re-export of `crypto-common` moved to `cipher::common` ([#2237])
+- Use `block_buffer::ReadBuffer` in `StreamCipherCoreWrapper` ([#1959])
+- Re-export of `crypto-common` moved to `cipher::common` ([#2237], [#2260])
+- `crypto-common` dependency bumped to v0.2 ([#2276])
+- `blobby` requirement bumped to v0.4 ([#2147])
+- `inout` dependency bumped to v0.2.2 ([#2149])
 
 ### Fixed
+- Bugs in `StreamCipherCoreWrapper` trait implementations ([#1421])
 - Seeking implementation in the stream cipher wrapper ([#2052])
 
 ### Removed
+- `std` feature ([#1691])
 - `BlockCipherEncrypt::encrypt_padded*` and `BlockCipherDecrypt::decrypt_padded*` methods.
   Users of the ECB mode should use the `ecb-mode` crate instead. ([#2245])
 - `AsyncStreamCipher` trait ([#2280])
 
+[#1358]: https://github.com/RustCrypto/traits/pull/1358
+[#1421]: https://github.com/RustCrypto/traits/pull/1421
+[#1482]: https://github.com/RustCrypto/traits/pull/1482
+[#1636]: https://github.com/RustCrypto/traits/pull/1636
+[#1691]: https://github.com/RustCrypto/traits/pull/1691
+[#1721]: https://github.com/RustCrypto/traits/pull/1721
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
+[#1907]: https://github.com/RustCrypto/traits/pull/1907
+[#1959]: https://github.com/RustCrypto/traits/pull/1959
 [#2052]: https://github.com/RustCrypto/traits/pull/2052
+[#2147]: https://github.com/RustCrypto/traits/pull/2147
+[#2149]: https://github.com/RustCrypto/traits/pull/2149
 [#2237]: https://github.com/RustCrypto/traits/pull/2237
 [#2245]: https://github.com/RustCrypto/traits/pull/2245
+[#2260]: https://github.com/RustCrypto/traits/pull/2260
+[#2276]: https://github.com/RustCrypto/traits/pull/2276
 [#2280]: https://github.com/RustCrypto/traits/pull/2280
 
 ## 0.4.4 (2022-03-09)
