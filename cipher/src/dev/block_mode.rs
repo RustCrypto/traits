@@ -1,5 +1,7 @@
 //! Development-related functionality for block modes
 
+#![allow(clippy::missing_errors_doc)]
+
 use crate::{BlockModeDecrypt, BlockModeEncrypt, KeyIvInit, inout::InOutBuf};
 
 const MAX_MSG_LEN: usize = 1 << 12;

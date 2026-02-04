@@ -28,11 +28,13 @@ hex-literal = "1"
 alloc = []
 block-padding = ["inout/block-padding"]
 stream-wrapper = ["block-buffer"]
-# Enable random key and IV generation methods
 getrandom = ["common/getrandom"]
 rand_core = ["common/rand_core"]
 dev = ["blobby"]
 zeroize = ["dep:zeroize", "common/zeroize", "block-buffer?/zeroize"]
+
+[lints]
+workspace = true
 
 [package.metadata.docs.rs]
 all-features = true

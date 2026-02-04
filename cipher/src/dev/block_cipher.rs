@@ -1,5 +1,7 @@
 //! Development-related functionality for block ciphers
 
+#![allow(clippy::missing_errors_doc)]
+
 use crate::{Block, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 
 /// Block cipher test vector
@@ -24,6 +26,7 @@ fn encrypt_test_inner<C: BlockCipherEncrypt>(
         return Err("single block encryption failure");
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     let mut blocks1: [Block<C>; 101] = core::array::from_fn(|i| {
         let mut block = pt.clone();
         block[0] ^= i as u8;
@@ -54,6 +57,7 @@ fn decrypt_test_inner<C: BlockCipherDecrypt>(
         return Err("single block decryption failure");
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     let mut blocks1: [Block<C>; 101] = core::array::from_fn(|i| {
         let mut block = ct.clone();
         block[0] ^= i as u8;

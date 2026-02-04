@@ -92,7 +92,8 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
     ///
     /// Consumes cipher since it may consume the final keystream block only partially.
     ///
-    /// Returns an error if the number of remaining blocks is not sufficient
+    /// # Errors
+    /// Returns [`StreamCipherError`] if the number of remaining blocks is not sufficient
     /// for processing of the input data.
     #[inline]
     fn try_apply_keystream_partial(
@@ -138,7 +139,8 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
     /// input data.
     #[inline]
     fn apply_keystream_partial(self, buf: InOutBuf<'_, '_, u8>) {
-        self.try_apply_keystream_partial(buf).unwrap()
+        self.try_apply_keystream_partial(buf)
+            .expect("number of remaining blocks insufficient");
     }
 }
 
