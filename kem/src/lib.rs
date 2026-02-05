@@ -43,11 +43,11 @@ pub type Ciphertext<K> = array::Array<u8, <K as Kem>::CiphertextSize>;
 pub trait Kem: Copy + Clone + Debug + Default + Eq + Ord + Send + Sync + 'static {
     /// KEM decryption key (i.e. private key) which can decrypt encrypted shared secret ciphertexts
     /// which were encrypted by [`Kem::EncapsulationKey`].
-    type DecapsulationKey: TryDecapsulate<Self> + Generate;
+    type DecapsulationKey: TryDecapsulate<Kem = Self> + Generate;
 
     /// KEM encryption key (i.e. public key) which encrypts shared secrets into ciphertexts which
     /// can be decrypted by [`Kem::DecapsulationKey`].
-    type EncapsulationKey: Encapsulate<Self> + Clone + Debug + Eq;
+    type EncapsulationKey: Encapsulate<Kem = Self> + Clone + Debug + Eq;
 
     /// Size of the shared key/secret returned by both encapsulation and decapsulation.
     type SharedKeySize: ArraySize;
@@ -60,7 +60,7 @@ pub trait Kem: Copy + Clone + Debug + Default + Eq + Ord + Send + Sync + 'static
         rng: &mut R,
     ) -> (Self::DecapsulationKey, Self::EncapsulationKey) {
         let dk = Self::DecapsulationKey::generate_from_rng(rng);
-        let ek = dk.as_ref().clone();
+        let ek = dk.encapsulation_key().clone();
         (dk, ek)
     }
 
@@ -75,18 +75,31 @@ pub trait Kem: Copy + Clone + Debug + Default + Eq + Ord + Send + Sync + 'static
 ///
 /// Often, this will just be a public key. However, it can also be a bundle of public keys, or it
 /// can include a sender's private key for authenticated encapsulation.
-pub trait Encapsulate<K: Kem>: TryKeyInit + KeyExport {
+pub trait Encapsulate: TryKeyInit + KeyExport {
+    /// KEM algorithm this encapsulator is for.
+    type Kem: Kem;
+
     /// Encapsulates a fresh [`SharedKey`] generated using the supplied random number
     /// generator `R`.
-    fn encapsulate_with_rng<R>(&self, rng: &mut R) -> (Ciphertext<K>, SharedKey<K>)
+    fn encapsulate_with_rng<R>(&self, rng: &mut R) -> (Ciphertext<Self::Kem>, SharedKey<Self::Kem>)
     where
         R: CryptoRng + ?Sized;
 
     /// Encapsulate a fresh shared secret generated using the system's secure RNG.
     #[cfg(feature = "getrandom")]
-    fn encapsulate(&self) -> (Ciphertext<K>, SharedKey<K>) {
+    fn encapsulate(&self) -> (Ciphertext<Self::Kem>, SharedKey<Self::Kem>) {
         self.encapsulate_with_rng(&mut UnwrapErr(SysRng))
     }
+}
+
+/// Decapsulator with an associated encapsulation key which can be used for encrypting shared keys
+/// that this decapsulator can decrypt.
+pub trait Decapsulator {
+    /// KEM algorithm this decapsulator is for.
+    type Kem: Kem;
+
+    /// Encapsulation key which can encrypt ciphertexts this decapsulator can decrypt.
+    fn encapsulation_key(&self) -> &EncapsulationKey<Self::Kem>;
 }
 
 /// Decapsulator for encapsulated keys, with an associated `Encapsulator` bounded by the
@@ -98,15 +111,15 @@ pub trait Encapsulate<K: Kem>: TryKeyInit + KeyExport {
 ///
 /// When possible (i.e. for software / non-HSM implementations) types which impl this trait should
 /// also impl the [`Generate`] trait to support key generation.
-pub trait Decapsulate<K: Kem>: TryDecapsulate<K, Error = Infallible> {
+pub trait Decapsulate: TryDecapsulate<Error = Infallible> {
     /// Decapsulates the given [`Ciphertext`] a.k.a. "encapsulated key".
-    fn decapsulate(&self, ct: &Ciphertext<K>) -> SharedKey<K>;
+    fn decapsulate(&self, ct: &Ciphertext<Self::Kem>) -> SharedKey<Self::Kem>;
 
     /// Decapsulate the given byte slice containing a  [`Ciphertext`] a.k.a. "encapsulated key".
     ///
     /// # Errors
     /// - If the length of `ct` is not equal to `<Self as Kem>::CiphertextSize`.
-    fn decapsulate_slice(&self, ct: &[u8]) -> Result<SharedKey<K>, TryFromSliceError> {
+    fn decapsulate_slice(&self, ct: &[u8]) -> Result<SharedKey<Self::Kem>, TryFromSliceError> {
         ct.try_into().map(|ct| self.decapsulate(&ct))
     }
 }
@@ -116,18 +129,21 @@ pub trait Decapsulate<K: Kem>: TryDecapsulate<K, Error = Infallible> {
 ///
 /// Prefer to implement the [`Decapsulate`] trait if possible. See that trait's documentation for
 /// more information.
-pub trait TryDecapsulate<K: Kem>: AsRef<K::EncapsulationKey> {
+pub trait TryDecapsulate: Decapsulator {
     /// Decapsulation error
     type Error: core::error::Error;
 
     /// Decapsulates the given [`Ciphertext`] a.k.a. "encapsulated key".
-    fn try_decapsulate(&self, ct: &Ciphertext<K>) -> Result<SharedKey<K>, Self::Error>;
+    fn try_decapsulate(
+        &self,
+        ct: &Ciphertext<Self::Kem>,
+    ) -> Result<SharedKey<Self::Kem>, Self::Error>;
 
     /// Decapsulate the given byte slice containing a  [`Ciphertext`] a.k.a. "encapsulated key".
     ///
     /// # Errors
     /// - If the length of `ct` is not equal to `<Self as Kem>::CiphertextSize`.
-    fn try_decapsulate_slice(&self, ct: &[u8]) -> Result<SharedKey<K>, Self::Error>
+    fn try_decapsulate_slice(&self, ct: &[u8]) -> Result<SharedKey<Self::Kem>, Self::Error>
     where
         Self::Error: From<TryFromSliceError>,
     {
@@ -135,14 +151,16 @@ pub trait TryDecapsulate<K: Kem>: AsRef<K::EncapsulationKey> {
     }
 }
 
-impl<D, K> TryDecapsulate<K> for D
+impl<D> TryDecapsulate for D
 where
-    D: Decapsulate<K>,
-    K: Kem,
+    D: Decapsulate + Decapsulator,
 {
     type Error = Infallible;
 
-    fn try_decapsulate(&self, ct: &Ciphertext<K>) -> Result<SharedKey<K>, Infallible> {
+    fn try_decapsulate(
+        &self,
+        ct: &Ciphertext<Self::Kem>,
+    ) -> Result<SharedKey<Self::Kem>, Infallible> {
         Ok(self.decapsulate(ct))
     }
 }
