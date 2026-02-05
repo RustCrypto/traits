@@ -20,6 +20,9 @@ use rand_core::CryptoRng;
 #[cfg(feature = "getrandom")]
 use common::getrandom::{SysRng, rand_core::UnwrapErr};
 
+/// Seed value which can be used to deterministically initialize a KEM keypair.
+pub type Seed<K> = array::Array<u8, <K as FromSeed>::SeedSize>;
+
 /// KEM decryption key (i.e. private key) which can decrypt encrypted shared secret ciphertexts
 /// which were encrypted by [`EncapsulationKey<K>`].
 pub type DecapsulationKey<K> = <K as Kem>::DecapsulationKey;
@@ -58,37 +61,44 @@ pub trait Kem: Copy + Clone + Debug + Default + Eq + Ord + Send + Sync + 'static
     /// Generate a random KEM keypair using the provided random number generator.
     fn generate_keypair_from_rng<R: CryptoRng>(
         rng: &mut R,
-    ) -> (Self::DecapsulationKey, Self::EncapsulationKey) {
-        let dk = Self::DecapsulationKey::generate_from_rng(rng);
+    ) -> (DecapsulationKey<Self>, EncapsulationKey<Self>) {
+        let dk = DecapsulationKey::<Self>::generate_from_rng(rng);
         let ek = dk.encapsulation_key().clone();
         (dk, ek)
     }
 
     /// Generate a random KEM keypair using the system's secure RNG.
     #[cfg(feature = "getrandom")]
-    fn generate_keypair() -> (Self::DecapsulationKey, Self::EncapsulationKey) {
+    fn generate_keypair() -> (DecapsulationKey<Self>, EncapsulationKey<Self>) {
         Self::generate_keypair_from_rng(&mut UnwrapErr(SysRng))
     }
 }
 
-/// Encapsulator for shared secrets.
+/// Initialize a KEM from a [`Seed`].
 ///
-/// Often, this will just be a public key. However, it can also be a bundle of public keys, or it
-/// can include a sender's private key for authenticated encapsulation.
-pub trait Encapsulate: TryKeyInit + KeyExport {
-    /// KEM algorithm this encapsulator is for.
-    type Kem: Kem;
+/// Many KEMs support a fully deterministic and infallible initialization from a short seed value.
+///
+/// This trait is blanket impl'd for any [`Kem`] whose [`DecapsulationKey`] impls the [`KeyInit`]
+/// trait.
+pub trait FromSeed: Kem {
+    /// Size of the seed value in bytes.
+    type SeedSize: ArraySize;
 
-    /// Encapsulates a fresh [`SharedKey`] generated using the supplied random number
-    /// generator `R`.
-    fn encapsulate_with_rng<R>(&self, rng: &mut R) -> (Ciphertext<Self::Kem>, SharedKey<Self::Kem>)
-    where
-        R: CryptoRng + ?Sized;
+    /// Using the provided seed value, create a KEM keypair.
+    fn from_seed(seed: &Seed<Self>) -> (DecapsulationKey<Self>, EncapsulationKey<Self>);
+}
 
-    /// Encapsulate a fresh shared secret generated using the system's secure RNG.
-    #[cfg(feature = "getrandom")]
-    fn encapsulate(&self) -> (Ciphertext<Self::Kem>, SharedKey<Self::Kem>) {
-        self.encapsulate_with_rng(&mut UnwrapErr(SysRng))
+impl<K> FromSeed for K
+where
+    K: Kem,
+    K::DecapsulationKey: KeyInit,
+{
+    type SeedSize = <K::DecapsulationKey as KeySizeUser>::KeySize;
+
+    fn from_seed(seed: &Seed<Self>) -> (DecapsulationKey<Self>, EncapsulationKey<Self>) {
+        let dk = DecapsulationKey::<Self>::new(seed);
+        let ek = dk.encapsulation_key().clone();
+        (dk, ek)
     }
 }
 
@@ -162,5 +172,26 @@ where
         ct: &Ciphertext<Self::Kem>,
     ) -> Result<SharedKey<Self::Kem>, Infallible> {
         Ok(self.decapsulate(ct))
+    }
+}
+
+/// Encapsulator for shared secrets.
+///
+/// Often, this will just be a public key. However, it can also be a bundle of public keys, or it
+/// can include a sender's private key for authenticated encapsulation.
+pub trait Encapsulate: TryKeyInit + KeyExport {
+    /// KEM algorithm this encapsulator is for.
+    type Kem: Kem;
+
+    /// Encapsulates a fresh [`SharedKey`] generated using the supplied random number
+    /// generator `R`.
+    fn encapsulate_with_rng<R>(&self, rng: &mut R) -> (Ciphertext<Self::Kem>, SharedKey<Self::Kem>)
+    where
+        R: CryptoRng + ?Sized;
+
+    /// Encapsulate a fresh shared secret generated using the system's secure RNG.
+    #[cfg(feature = "getrandom")]
+    fn encapsulate(&self) -> (Ciphertext<Self::Kem>, SharedKey<Self::Kem>) {
+        self.encapsulate_with_rng(&mut UnwrapErr(SysRng))
     }
 }
