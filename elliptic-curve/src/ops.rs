@@ -179,7 +179,7 @@ where
     /// that it may leak the value of the points and/or scalars due to
     /// variable-time behavior.
     fn lincomb_vartime(points_and_scalars: &PointsAndScalars) -> Self {
-        lincomb(points_and_scalars)
+        Self::lincomb(points_and_scalars)
     }
 }
 
