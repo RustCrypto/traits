@@ -3,7 +3,7 @@ use common::{Output, OutputSizeUser, Reset};
 
 use common::typenum::Unsigned;
 use core::fmt;
-use subtle::{Choice, ConstantTimeEq};
+use subtle::ConstantTimeEq;
 
 /// Marker trait for Message Authentication algorithms.
 pub trait MacMarker {}
@@ -215,17 +215,10 @@ impl<'a, T: OutputSizeUser> From<&'a Output<T>> for CtOutput<T> {
     }
 }
 
-impl<T: OutputSizeUser> ConstantTimeEq for CtOutput<T> {
-    #[inline(always)]
-    fn ct_eq(&self, other: &Self) -> Choice {
-        self.bytes.ct_eq(&other.bytes)
-    }
-}
-
 impl<T: OutputSizeUser> PartialEq for CtOutput<T> {
     #[inline(always)]
-    fn eq(&self, x: &CtOutput<T>) -> bool {
-        self.ct_eq(x).into()
+    fn eq(&self, other: &CtOutput<T>) -> bool {
+        self.bytes.ct_eq(&other.bytes).into()
     }
 }
 
