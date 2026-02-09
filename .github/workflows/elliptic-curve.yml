@@ -62,18 +62,9 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,digest,ecdh,pem,pkcs8,sec1,serde
 
   minimal-versions:
-    # Temporarily disabled until elliptic-curve 0.14.0 is published
-    if: false
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: RustCrypto/actions/cargo-cache@master
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: nightly
-      - uses: RustCrypto/actions/cargo-hack-install@master
-      - run: cargo update -Z minimal-versions
-      - run: cargo +stable build --release --all-features
+    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+    with:
+      working-directory: ${{ github.workflow }}
 
   test:
     runs-on: ubuntu-latest

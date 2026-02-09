@@ -41,11 +41,10 @@ jobs:
           targets: ${{ matrix.target }}
       - run: cargo build --target ${{ matrix.target }}
 
-  # TODO(tarcieri): re-enable when `getrandom` has a crate release with `sys_rng`
-  # minimal-versions:
-  #  uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
-  #  with:
-  #    working-directory: ${{ github.workflow }}
+  minimal-versions:
+    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+    with:
+      working-directory: ${{ github.workflow }}
 
   test:
     runs-on: ubuntu-latest
