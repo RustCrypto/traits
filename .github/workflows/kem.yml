@@ -3,6 +3,7 @@ name: kem
 on:
   pull_request:
     paths:
+      - ".github/workflows/kem.yml"
       - "kem/**"
       - "Cargo.*"
   push:

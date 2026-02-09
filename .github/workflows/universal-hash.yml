@@ -3,6 +3,7 @@ name: universal-hash
 on:
   pull_request:
     paths:
+      - ".github/workflows/universal-hash.yml"
       - "universal-hash/**"
       - "Cargo.*"
   push:

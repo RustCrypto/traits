@@ -3,6 +3,7 @@ name: digest
 on:
   pull_request:
     paths:
+      - ".github/workflows/digest.yml"
       - "digest/**"
       - "Cargo.*"
   push:

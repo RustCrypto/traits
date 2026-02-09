@@ -7,9 +7,6 @@ on:
       - '**/CHANGELOG.md'
   push:
     branches: master
-    paths-ignore:
-      - '**/README.md'
-      - '**/CHANGELOG.md'
 
 env:
   CARGO_INCREMENTAL: 0

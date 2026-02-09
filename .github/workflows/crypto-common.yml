@@ -3,6 +3,7 @@ name: crypto-common
 on:
   pull_request:
     paths:
+      - ".github/workflows/crypto-common.yml"
       - "crypto-common/**"
       - "Cargo.*"
   push:

@@ -3,6 +3,7 @@ name: aead
 on:
   pull_request:
     paths:
+      - ".github/workflows/aead.yml"
       - "aead/**"
       - "Cargo.*"
   push:

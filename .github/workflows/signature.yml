@@ -3,6 +3,7 @@ name: signature
 on:
   pull_request:
     paths:
+      - ".github/workflows/signature.yml"
       - "signature/**"
       - "Cargo.*"
   push:
