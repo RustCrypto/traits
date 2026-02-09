@@ -3,6 +3,7 @@ name: aead
 on:
   pull_request:
     paths:
+      - ".github/workflows/aead.yml"
       - "aead/**"
       - "Cargo.*"
   push:
@@ -47,11 +48,10 @@ jobs:
       # - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features heapless
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features rand_core
 
-  # TODO(tarcieri): re-enable after next `crypto-common` release
-  #  minimal-versions:
-  #    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
-  #    with:
-  #        working-directory: ${{ github.workflow }}
+  minimal-versions:
+    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+    with:
+      working-directory: ${{ github.workflow }}
 
   test:
     runs-on: ubuntu-latest

@@ -44,19 +44,10 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --features rand_core
       - run: cargo build --target ${{ matrix.target }} --features block-padding
 
-  # TODO: use the reusable workflow after this crate will be part of the
-  # root workspace
   minimal-versions:
-    if: false # disabled until we stop using pre-releases
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: RustCrypto/actions/cargo-cache@master
-      - uses: dtolnay/rust-toolchain@nightly
-      - uses: RustCrypto/actions/cargo-hack-install@master
-      - run: cargo update -Z minimal-versions
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo hack test --release --feature-powerset
+    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+    with:
+      working-directory: ${{ github.workflow }}
 
   test:
     runs-on: ubuntu-latest

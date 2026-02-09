@@ -3,6 +3,7 @@ name: signature
 on:
   pull_request:
     paths:
+      - ".github/workflows/signature.yml"
       - "signature/**"
       - "Cargo.*"
   push:
@@ -44,7 +45,6 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features rand_core
 
   minimal-versions:
-    if: false # disabled until we stop using pre-releases
     uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
     with:
       working-directory: ${{ github.workflow }}
