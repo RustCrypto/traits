@@ -151,8 +151,7 @@ macro_rules! stream_cipher_bench {
             Init: {
                 use $crate::KeyInit;
                 let key = test::black_box(Default::default());
-                let iv = test::black_box(Default::default());
-                <$cipher>::new(&key, &iv)
+                <$cipher>::new(&key)
             };
             $($name $bs;)*
         );
