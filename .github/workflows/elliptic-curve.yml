@@ -65,6 +65,7 @@ jobs:
     uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
     with:
       working-directory: ${{ github.workflow }}
+      stable-cmd: cargo check --all-features
 
   test:
     runs-on: ubuntu-latest
