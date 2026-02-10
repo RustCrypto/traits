@@ -212,7 +212,7 @@ where
     C: CurveArithmetic,
 {
     fn from(scalar: &NonZeroScalar<C>) -> ScalarValue<C> {
-        ScalarValue::from_bytes(&scalar.to_repr()).unwrap()
+        scalar.scalar.into()
     }
 }
 
