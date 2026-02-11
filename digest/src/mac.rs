@@ -36,10 +36,16 @@ pub trait Mac: OutputSizeUser + Sized {
         Self: Reset;
 
     /// Check if tag/code value is correct for the processed input.
+    ///
+    /// # Errors
+    /// Returns [`MacError`] if `tag` is not valid.
     fn verify(self, tag: &Output<Self>) -> Result<(), MacError>;
 
     /// Check if tag/code value is correct for the processed input and reset
     /// [`Mac`] instance.
+    ///
+    /// # Errors
+    /// Returns [`MacError`] if `tag` is not valid.
     fn verify_reset(&mut self, tag: &Output<Self>) -> Result<(), MacError>
     where
         Self: FixedOutputReset;
@@ -47,15 +53,15 @@ pub trait Mac: OutputSizeUser + Sized {
     /// Check truncated tag correctness using all bytes
     /// of calculated tag.
     ///
-    /// Returns `Error` if `tag` is not valid or not equal in length
-    /// to MAC's output.
+    /// # Errors
+    /// Returns [`MacError`] if `tag` is not valid or not equal in length to this MAC's output.
     fn verify_slice(self, tag: &[u8]) -> Result<(), MacError>;
 
     /// Check truncated tag correctness using all bytes
     /// of calculated tag and reset [`Mac`] instance.
     ///
-    /// Returns `Error` if `tag` is not valid or not equal in length
-    /// to MAC's output.
+    /// # Errors
+    /// Returns [`MacError`] if `tag` is not valid or not equal in length to MAC's output.
     fn verify_slice_reset(&mut self, tag: &[u8]) -> Result<(), MacError>
     where
         Self: FixedOutputReset;
@@ -63,12 +69,14 @@ pub trait Mac: OutputSizeUser + Sized {
     /// Check truncated tag correctness using left side bytes
     /// (i.e. `tag[..n]`) of calculated tag.
     ///
+    /// # Errors
     /// Returns `Error` if `tag` is not valid or empty.
     fn verify_truncated_left(self, tag: &[u8]) -> Result<(), MacError>;
 
     /// Check truncated tag correctness using right side bytes
     /// (i.e. `tag[n..]`) of calculated tag.
     ///
+    /// # Errors
     /// Returns `Error` if `tag` is not valid or empty.
     fn verify_truncated_right(self, tag: &[u8]) -> Result<(), MacError>;
 }
@@ -103,7 +111,7 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
     where
         Self: Reset,
     {
-        Reset::reset(self)
+        Reset::reset(self);
     }
 
     #[inline]
@@ -236,7 +244,7 @@ impl<T: OutputSizeUser> Drop for CtOutput<T> {
         #[cfg(feature = "zeroize")]
         {
             use zeroize::Zeroize;
-            self.bytes.zeroize()
+            self.bytes.zeroize();
         }
     }
 }

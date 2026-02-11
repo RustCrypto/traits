@@ -1,3 +1,5 @@
+//! Tests against a pseudo-hash.
+
 #![cfg(feature = "block-api")]
 
 mod block_api {
@@ -11,6 +13,9 @@ mod block_api {
         common::hazmat::{DeserializeStateError, SerializableState, SerializedState},
         consts::U8,
     };
+
+    #[cfg(feature = "zeroize")]
+    use zeroize::Zeroize;
 
     /// Core of primitive XOR hasher for testing purposes
     #[derive(Clone, Default, Debug)]
@@ -41,7 +46,7 @@ mod block_api {
     impl UpdateCore for FixedHashCore {
         fn update_blocks(&mut self, blocks: &[Block<Self>]) {
             for block in blocks {
-                self.state ^= u64::from_le_bytes(block.0)
+                self.state ^= u64::from_le_bytes(block.0);
             }
         }
     }
@@ -76,10 +81,9 @@ mod block_api {
         }
     }
 
-    #[cfg(feature = "zeroize")]
     impl Drop for FixedHashCore {
         fn drop(&mut self) {
-            use zeroize::Zeroize;
+            #[cfg(feature = "zeroize")]
             self.state.zeroize();
         }
     }

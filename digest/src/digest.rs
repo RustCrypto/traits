@@ -114,7 +114,7 @@ impl<D: FixedOutput + Default + Update + HashMarker> Digest for D {
     where
         Self: Reset,
     {
-        Reset::reset(self)
+        Reset::reset(self);
     }
 
     #[inline]
@@ -148,6 +148,7 @@ pub trait DynDigest {
     /// Retrieve result and consume boxed hasher instance
     #[cfg(feature = "alloc")]
     #[allow(clippy::boxed_local)]
+    #[must_use]
     fn finalize(mut self: Box<Self>) -> Box<[u8]> {
         let mut result = vec![0; self.output_size()];
         self.finalize_into_reset(&mut result).unwrap();
@@ -156,12 +157,14 @@ pub trait DynDigest {
 
     /// Write result into provided array and consume the hasher instance.
     ///
-    /// Returns error if buffer length is not equal to `output_size`.
+    /// # Errors
+    /// If buffer length is not equal to `output_size`.
     fn finalize_into(self, buf: &mut [u8]) -> Result<(), InvalidBufferSize>;
 
     /// Write result into provided array and reset the hasher instance.
     ///
-    /// Returns error if buffer length is not equal to `output_size`.
+    /// # Errors
+    /// If buffer length is not equal to `output_size`.
     fn finalize_into_reset(&mut self, out: &mut [u8]) -> Result<(), InvalidBufferSize>;
 
     /// Reset hasher instance to its initial state.
