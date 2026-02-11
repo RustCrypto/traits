@@ -451,7 +451,7 @@ where
     fn from_str(hex: &str) -> Result<Self> {
         let mut bytes = FieldBytes::<C>::default();
         base16ct::mixed::decode(hex, &mut bytes)?;
-        Self::from_slice(&bytes)
+        Self::from_bytes(&bytes).into_option().ok_or(Error)
     }
 }
 
@@ -479,6 +479,8 @@ where
     {
         let mut bytes = FieldBytes::<C>::default();
         serdect::array::deserialize_hex_or_bin(&mut bytes, deserializer)?;
-        Self::from_slice(&bytes).map_err(|_| de::Error::custom("scalar out of range"))
+        Self::from_bytes(&bytes)
+            .into_option()
+            .ok_or_else(|| de::Error::custom("scalar out of range"))
     }
 }
