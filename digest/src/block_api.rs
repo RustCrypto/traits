@@ -96,6 +96,7 @@ pub trait VariableOutputCore: UpdateCore + OutputSizeUser + BufferKindUser + Siz
 
     /// Initialize hasher state for given output size.
     ///
+    /// # Errors
     /// Returns [`InvalidOutputSize`] if `output_size` is not valid for
     /// the algorithm, e.g. if it's bigger than the [`OutputSize`]
     /// associated type.

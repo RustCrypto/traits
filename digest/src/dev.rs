@@ -1,5 +1,7 @@
 //! Development-related functionality
 
+#![allow(clippy::missing_errors_doc)]
+
 pub use blobby;
 
 mod fixed;

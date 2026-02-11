@@ -83,7 +83,7 @@ impl<T: ExtendableOutput + Reset, S: ArraySize> Reset for XofFixedWrapper<T, S> 
 
 impl<T: ExtendableOutput + Update, S: ArraySize> Update for XofFixedWrapper<T, S> {
     fn update(&mut self, data: &[u8]) {
-        self.hash.update(data)
+        self.hash.update(data);
     }
 }
 
