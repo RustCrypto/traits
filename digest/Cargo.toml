@@ -17,9 +17,9 @@ common = { version = "0.2", package = "crypto-common" }
 
 # optional dependencies
 block-buffer = { version = "0.11", optional = true }
-subtle = { version = "2.4", default-features = false, optional = true }
 blobby = { version = "0.4", optional = true }
 const-oid = { version = "0.10", optional = true }
+ctutils = { version = "0.4", optional = true }
 zeroize = { version = "1.7", optional = true, default-features = false }
 
 [dev-dependencies]
@@ -28,7 +28,7 @@ sha2 = "0.11.0-rc.5"
 [features]
 default = ["block-api"]
 block-api = ["block-buffer"] # Enable block API traits
-mac = ["subtle"] # Enable MAC traits
+mac = ["dep:ctutils"] # Enable MAC traits
 rand_core = ["common/rand_core"] # Enable random key generation methods
 getrandom = ["common/getrandom", "rand_core"]
 oid = ["const-oid"]

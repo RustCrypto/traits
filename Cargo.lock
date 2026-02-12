@@ -222,8 +222,8 @@ dependencies = [
  "block-buffer",
  "const-oid",
  "crypto-common",
+ "ctutils",
  "sha2",
- "subtle",
  "zeroize",
 ]
 

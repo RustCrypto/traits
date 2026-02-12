@@ -102,6 +102,8 @@ jobs:
       MIRIFLAGS: "-Zmiri-symbolic-alignment-check -Zmiri-strict-provenance"
     steps:
       - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly-2026-02-11 # pinned due to rust-lang/miri#4855
       - run: rustup component add miri && cargo miri setup
       - run: cargo miri test --all-features
