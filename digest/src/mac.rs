@@ -3,7 +3,7 @@ use common::{Output, OutputSizeUser, Reset};
 
 use common::typenum::Unsigned;
 use core::fmt;
-use subtle::ConstantTimeEq;
+use ctutils::CtEq;
 
 /// Marker trait for Message Authentication algorithms.
 pub trait MacMarker {}
