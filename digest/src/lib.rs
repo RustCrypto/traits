@@ -63,7 +63,7 @@ pub use common;
 #[cfg(feature = "oid")]
 pub use const_oid;
 
-#[cfg(feature = "const-oid")]
+#[cfg(feature = "oid")]
 pub use crate::digest::DynDigestWithOid;
 pub use crate::digest::{Digest, DynDigest, HashMarker};
 #[cfg(feature = "mac")]
