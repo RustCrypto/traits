@@ -27,14 +27,14 @@ sha2 = "0.11.0-rc.5"
 
 [features]
 default = ["block-api"]
-block-api = ["block-buffer"] # Enable block API traits
+alloc = []
+block-api = ["dep:block-buffer"] # Enable block API traits
+dev = ["blobby"]
+getrandom = ["common/getrandom", "rand_core"]
 mac = ["dep:ctutils"] # Enable MAC traits
 rand_core = ["common/rand_core"] # Enable random key generation methods
-getrandom = ["common/getrandom", "rand_core"]
-oid = ["const-oid"]
+oid = ["dep:const-oid"]
 zeroize = ["dep:zeroize", "block-buffer?/zeroize"]
-alloc = []
-dev = ["blobby"]
 
 [lints]
 workspace = true
