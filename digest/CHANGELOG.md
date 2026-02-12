@@ -5,26 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.11.0 (UNRELEASED)
+## 0.11.0 (2026-02-12)
 ### Added
 - `CustomizedInit` trait ([#1334])
+- `SerializableState` support ([#1369])
+- `DynDigestWithOid` wrapper trait ([#1390])
 - `VariableOutputCoreCustomized` trait ([#1787], [#2043])
 - `buffer_fixed`, `buffer_ct_variable`, `buffer_rt_variable`, and `buffer_xof` macros ([#1799])
+- `XofFixedWrapper` ([#1815])
 - `CollisionResistance` trait ([#1820])
+- `CoreProxy::compose/decompose` methods ([#1898])
+- `EagerHash` trait ([#2014])
 
 ### Changed
+- Replaced `generic-array` with `hybrid-array` ([#1358])
 - `crypto-common` dependency bumped to v0.2 ([#1173])
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
+- Bump `const-oid` dependency to v0.10 ([#1772])
+- `digest::core_api` renamed to `digest::block_api` ([#1799])
 - `CtVariableCoreWrapper` renamed to `CtOutWrapper` ([#1799])
 - Removed the OID type parameter from `CtOutWrapper` ([#1799])
 - Implementations of the `SerializableState` trait ([#1953])
 - `new_test!` and `new_mac_test!` macros ([#1958])
+- Bump `block-buffer` to v0.11 ([#2082])
 - Re-export of `crypto-common` moved to `digest::common` ([#2237])
+- Bump `crypto-common` to v0.2 ([#2276])
+- Replace `subtle` with `ctutils` ([#2301])
 
 ### Removed
 - `Mac::new`, `Mac::new_from_slice`, and `Mac::generate_key` methods ([#1173])
 - `CoreWrapper`, `RtVariableCoreWrapper`, and `XofReaderCoreWrapper` types ([#1799])
-- `HashReader` and `HashWriter` are moved to the `digest-io` crate ([#1809])
 - `io::Write/Read` implementations in favor of the `digest_io::IoWrapper` type ([#1809])
 - `VariableOutput` trait ([#2043])
 - Implementation of `subtle::ConstantTimeEq` for `CtOutput`. Note that implementation of
@@ -32,15 +42,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#1173]: https://github.com/RustCrypto/traits/pull/1173
 [#1334]: https://github.com/RustCrypto/traits/pull/1334
+[#1358]: https://github.com/RustCrypto/traits/pull/1358
+[#1369]: https://github.com/RustCrypto/traits/pull/1369
+[#1390]: https://github.com/RustCrypto/traits/pull/1390
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
+[#1772]: https://github.com/RustCrypto/traits/pull/1772
+[#1787]: https://github.com/RustCrypto/traits/pull/1787
 [#1799]: https://github.com/RustCrypto/traits/pull/1799
 [#1809]: https://github.com/RustCrypto/traits/pull/1809
+[#1815]: https://github.com/RustCrypto/traits/pull/1815
 [#1820]: https://github.com/RustCrypto/traits/pull/1820
+[#1898]: https://github.com/RustCrypto/traits/pull/1898
 [#1953]: https://github.com/RustCrypto/traits/pull/1953
 [#1958]: https://github.com/RustCrypto/traits/pull/1958
+[#2014]: https://github.com/RustCrypto/traits/pull/2014
 [#2043]: https://github.com/RustCrypto/traits/pull/2043
+[#2082]: https://github.com/RustCrypto/traits/pull/2082
 [#2237]: https://github.com/RustCrypto/traits/pull/2237
+[#2276]: https://github.com/RustCrypto/traits/pull/2276
 [#2292]: https://github.com/RustCrypto/traits/pull/2292
+[#2301]: https://github.com/RustCrypto/traits/pull/2301
 
 ## 0.10.7 (2023-05-19)
 ### Changed
