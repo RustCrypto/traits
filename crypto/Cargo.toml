@@ -18,7 +18,7 @@ common = { version = "0.2", package = "crypto-common", path = "../crypto-common"
 # optional dependencies
 aead = { version = "0.6.0-rc.5", path = "../aead", optional = true }
 cipher = { version = "0.5", path = "../cipher", optional = true }
-digest = { version = "0.11.0-rc.5", path = "../digest", optional = true, features = ["mac"] }
+digest = { version = "0.11", path = "../digest", optional = true, features = ["mac"] }
 elliptic-curve = { version = "0.14.0-rc.17", path = "../elliptic-curve", optional = true }
 password-hash = { version = "0.6.0-rc.6", path = "../password-hash", optional = true }
 signature = { version = "3.0.0-rc.6", path = "../signature", optional = true, default-features = false }
