@@ -18,7 +18,7 @@ and public/secret keys composed thereof.
 
 [dependencies.bigint]
 package = "crypto-bigint"
-version = "0.7.0-rc.25"
+version = "0.7.0-rc.27"
 default-features = false
 features = ["hybrid-array", "rand_core", "subtle", "zeroize"]
 
