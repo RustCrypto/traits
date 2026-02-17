@@ -78,6 +78,10 @@ where
     }
 
     /// Decode [`ScalarValue`] from a big endian byte slice.
+    ///
+    /// # Errors
+    /// - if `slice` is not sized appropriately for [`Self::MODULUS`].
+    /// - if the decoded scalar field element overflows [`Self::MODULUS`].
     pub fn from_slice(slice: &[u8]) -> Result<Self> {
         let bytes = Array::try_from(slice).map_err(|_| Error)?;
         Self::from_bytes(&bytes).into_option().ok_or(Error)

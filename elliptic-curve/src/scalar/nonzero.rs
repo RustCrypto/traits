@@ -83,7 +83,7 @@ where
         // cast to the inner scalar type.
         #[allow(unsafe_code)]
         unsafe {
-            &*(scalars as *const [NonZeroScalar<C>] as *const [Scalar<C>])
+            &*(core::ptr::from_ref(scalars) as *const [Scalar<C>])
         }
     }
 

@@ -42,6 +42,14 @@ where
         where
             Point: ConditionallySelectable + Default + Group,
         {
+            // Ensure basepoint table contains the expected number of entries for the scalar's size
+            const {
+                assert!(
+                    N as u32 == 1 + Point::Scalar::NUM_BITS / 8,
+                    "incorrectly sized basepoint table"
+                );
+            }
+
             let mut generator = Point::generator();
             let mut res = [LookupTable::<Point>::default(); N];
 
@@ -56,12 +64,6 @@ where
 
             res
         }
-
-        // Ensure basepoint table contains the expected number of entries for the scalar's size
-        assert!(
-            N as u32 == 1 + Point::Scalar::NUM_BITS / 8,
-            "incorrectly sized basepoint table"
-        );
 
         Self {
             tables: LazyLock::new(init_table),

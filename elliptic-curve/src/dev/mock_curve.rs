@@ -757,6 +757,7 @@ impl group::Group for ProjectivePoint {
 impl group::GroupEncoding for AffinePoint {
     type Repr = CompressedPoint<MockCurve>;
 
+    #[allow(clippy::map_unwrap_or)]
     fn from_bytes(bytes: &Self::Repr) -> CtOption<Self> {
         Sec1Point::from_bytes(bytes)
             .map(|point| ctutils::CtOption::new(point, ctutils::Choice::TRUE))

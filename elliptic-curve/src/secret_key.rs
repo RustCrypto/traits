@@ -136,6 +136,9 @@ where
     }
 
     /// Deserialize secret key from an encoded secret scalar.
+    ///
+    /// # Errors
+    /// Returns [`Error`] if `bytes` overflows the scalar modulus.
     pub fn from_bytes(bytes: &FieldBytes<C>) -> Result<Self> {
         let inner = ScalarValue::<C>::from_bytes(bytes)
             .into_option()
@@ -157,6 +160,11 @@ where
     ///
     /// NOTE: this function is variable-time with respect to the input length. To avoid a timing
     /// sidechannel, always ensure that the input has been pre-padded to `C::FieldBytesSize`.
+    ///
+    /// # Errors
+    /// - if `slice` is shorter than [`Self::MIN_SIZE`].
+    /// - if `slice` is not sized appropriately for the scalar modulus.
+    /// - if the decoded scalar field element overflows the scalar modulus.
     pub fn from_slice(slice: &[u8]) -> Result<Self> {
         if let Ok(field_bytes) = <&FieldBytes<C>>::try_from(slice) {
             Self::from_bytes(field_bytes)
@@ -187,6 +195,10 @@ where
     }
 
     /// Deserialize secret key encoded in the SEC1 ASN.1 DER `ECPrivateKey` format.
+    ///
+    /// # Errors
+    /// - if `der_bytes` does not encode a valid SEC1 private key
+    /// - if the contained document does not encode a valid key for this curve
     #[cfg(feature = "sec1")]
     pub fn from_sec1_der(der_bytes: &[u8]) -> Result<Self>
     where
@@ -199,6 +211,9 @@ where
     }
 
     /// Serialize secret key in the SEC1 ASN.1 DER `ECPrivateKey` format.
+    ///
+    /// # Errors
+    /// If an internal error occurs encoding this key.
     #[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
     pub fn to_sec1_der(&self) -> der::Result<Zeroizing<Vec<u8>>>
     where
@@ -229,6 +244,10 @@ where
     /// ```text
     /// -----BEGIN EC PRIVATE KEY-----
     /// ```
+    ///
+    /// # Errors
+    /// - if the document cannot be decoded as PEM
+    /// - if the PEM document does not encode a valid private key for this curve
     #[cfg(feature = "pem")]
     pub fn from_sec1_pem(s: &str) -> Result<Self>
     where
@@ -248,6 +267,9 @@ where
     /// with the given [`pem::LineEnding`].
     ///
     /// Pass `Default::default()` to use the OS's native line endings.
+    ///
+    /// # Errors
+    /// If an internal error occurs encoding this key.
     #[cfg(feature = "pem")]
     pub fn to_sec1_pem(&self, line_ending: pem::LineEnding) -> Result<Zeroizing<String>>
     where

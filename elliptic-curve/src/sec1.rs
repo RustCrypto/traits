@@ -44,6 +44,11 @@ where
 
     /// Decode curve point from the provided SEC1 encoding (compressed, uncompressed, or
     /// identity) using the `Octet-String-to-Elliptic-Curve-Point` conversion.
+    ///
+    /// # Errors
+    /// - if `bytes` does not begin with a valid SEC1 tag
+    /// - if `bytes` is not the appropriate length for its SEC1 tag
+    /// - if `bytes` does not encode the coordinate(s) of a valid elliptic curve point
     fn from_sec1_bytes(bytes: &[u8]) -> Result<Self> {
         let point = Sec1Point::<C>::from_bytes(bytes)?;
         Self::from_sec1_point(&point).into_option().ok_or(Error)
@@ -155,15 +160,17 @@ where
 /// Validate that the given [`Sec1Point`] represents the encoded public key
 /// value of the given secret.
 ///
-/// Curve implementations which also impl [`CurveArithmetic`] will receive
-/// a blanket default impl of this trait.
+/// Curve implementations which also impl [`CurveArithmetic`] will receive a blanket default impl of
+/// this trait.
 pub trait ValidatePublicKey
 where
     Self: Curve,
     FieldBytesSize<Self>: ModulusSize,
 {
-    /// Validate that the given [`Sec1Point`] is a valid public key for the
-    /// provided secret value.
+    /// Validate that the given [`Sec1Point`] is a valid public key for the provided secret value.
+    ///
+    /// # Errors
+    /// If the given SEC1 point does not represent the correct public key for this secret key.
     #[allow(unused_variables)]
     fn validate_public_key(
         secret_key: &SecretKey<Self>,

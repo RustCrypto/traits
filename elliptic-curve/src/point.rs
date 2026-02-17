@@ -63,6 +63,7 @@ pub trait BatchNormalize<Points: ?Sized> {
 /// Double a point (i.e. add it to itself)
 pub trait Double {
     /// Double this point.
+    #[must_use]
     fn double(&self) -> Self;
 }
 

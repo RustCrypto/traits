@@ -75,5 +75,8 @@ pkcs8 = ["dep:pkcs8", "sec1"]
 pem = ["dep:pem-rfc7468", "alloc", "arithmetic", "pkcs8/pem", "sec1/pem"]
 serde = ["dep:serdect", "alloc", "pkcs8", "sec1/serde"]
 
+[lints]
+workspace = true
+
 [package.metadata.docs.rs]
 features = ["basepoint-table", "bits", "ecdh", "pem", "std"]

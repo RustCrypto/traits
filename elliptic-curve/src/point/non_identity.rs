@@ -70,7 +70,7 @@ impl<P> NonIdentity<P> {
         // the inner `P` type.
         #[allow(unsafe_code)]
         unsafe {
-            &*(points as *const [NonIdentity<P>] as *const [P])
+            &*(core::ptr::from_ref(points) as *const [P])
         }
     }
 
