@@ -158,6 +158,9 @@ pub trait Aead: AeadCore {
     /// AES-GCM-SIV, ChaCha20Poly1305). [`Aead`] implementations which do not
     /// use a postfix tag will need to override this to correctly assemble the
     /// ciphertext message.
+    ///
+    /// # Errors
+    /// AEAD algorithm implementations may return an error if the plaintext or AAD are too long.
     fn encrypt<'msg, 'aad>(
         &self,
         nonce: &Nonce<Self>,
@@ -181,6 +184,11 @@ pub trait Aead: AeadCore {
     /// AES-GCM-SIV, ChaCha20Poly1305). [`Aead`] implementations which do not
     /// use a postfix tag will need to override this to correctly parse the
     /// ciphertext message.
+    ///
+    /// # Errors
+    /// - if the `ciphertext` is inauthentic (i.e. tag verification failure)
+    /// - if the `ciphertext` is too long
+    /// - if the `aad` is too long
     fn decrypt<'msg, 'aad>(
         &self,
         nonce: &Nonce<Self>,
@@ -217,6 +225,9 @@ impl<T: AeadInOut> Aead for T {
 /// In-place and inout AEAD trait which handles the authentication tag as a return value/separate parameter.
 pub trait AeadInOut: AeadCore {
     /// Encrypt the data in the provided [`InOutBuf`], returning the authentication tag.
+    ///
+    /// # Errors
+    /// AEAD algorithm implementations may return an error if the plaintext or AAD are too long.
     fn encrypt_inout_detached(
         &self,
         nonce: &Nonce<Self>,
@@ -226,7 +237,12 @@ pub trait AeadInOut: AeadCore {
 
     /// Decrypt the data in the provided [`InOutBuf`], returning an error in the event the
     /// provided authentication tag is invalid for the given ciphertext (i.e. ciphertext
-    /// is modified/unauthentic)
+    /// is modified/unauthentic).
+    ///
+    /// # Errors
+    /// - if the `ciphertext` is inauthentic (i.e. tag verification failure)
+    /// - if the `ciphertext` is too long
+    /// - if the `aad` is too long
     fn decrypt_inout_detached(
         &self,
         nonce: &Nonce<Self>,
@@ -242,6 +258,7 @@ pub trait AeadInOut: AeadCore {
     /// The exact size needed is cipher-dependent, but generally includes
     /// the size of an authentication tag.
     ///
+    /// # Errors
     /// Returns an error if the buffer has insufficient capacity to store the
     /// resulting ciphertext message.
     fn encrypt_in_place(
@@ -275,6 +292,9 @@ pub trait AeadInOut: AeadCore {
     ///
     /// The buffer will be truncated to the length of the original plaintext
     /// message upon success.
+    ///
+    /// # Errors
+    /// - if the `ciphertext` is inauthentic (i.e. tag verification failure)
     fn decrypt_in_place(
         &self,
         nonce: &Nonce<Self>,
@@ -306,6 +326,7 @@ pub trait AeadInOut: AeadCore {
 ///
 /// NOTE: deprecated! Please migrate to [`AeadInOut`].
 #[deprecated(since = "0.6.0", note = "use `AeadInOut` instead")]
+#[allow(clippy::missing_errors_doc)]
 pub trait AeadInPlace: AeadCore {
     /// Encrypt the given buffer containing a plaintext message in-place.
     #[deprecated(since = "0.6.0", note = "use `AeadInOut::encrypt_in_place` instead")]
@@ -435,10 +456,13 @@ pub trait Buffer: AsRef<[u8]> + AsMut<[u8]> {
         self.as_ref().is_empty()
     }
 
-    /// Extend this buffer from the given slice
+    /// Extend this buffer from the given slice.
+    ///
+    /// # Errors
+    /// If the buffer has insufficient capacity.
     fn extend_from_slice(&mut self, other: &[u8]) -> Result<()>;
 
-    /// Truncate this buffer to the given size
+    /// Truncate this buffer to the given size.
     fn truncate(&mut self, len: usize);
 }
 

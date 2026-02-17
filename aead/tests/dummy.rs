@@ -1,14 +1,26 @@
 //! This module defines dummy (horribly insecure!) AEAD implementations
 //! to test implementation of the AEAD traits and helper macros in the `dev` module.
+
 #![cfg(feature = "dev")]
+#![allow(missing_docs, reason = "tests")]
+#![allow(clippy::trivially_copy_pass_by_ref, reason = "tests")]
+#![allow(clippy::unwrap_used, reason = "tests")]
+
 use aead::{
     AeadCore, AeadInOut, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag, TagPosition,
     array::Array, consts::U8,
 };
+use core::fmt;
 use inout::InOutBuf;
 
 struct DummyAead {
     key: [u8; 8],
+}
+
+impl fmt::Debug for DummyAead {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("DummyAead").finish_non_exhaustive()
+    }
 }
 
 impl DummyAead {
@@ -92,6 +104,7 @@ impl DummyAead {
     }
 }
 
+#[derive(Debug)]
 pub struct PrefixDummyAead(DummyAead);
 
 impl KeySizeUser for PrefixDummyAead {
@@ -131,6 +144,7 @@ impl AeadInOut for PrefixDummyAead {
     }
 }
 
+#[derive(Debug)]
 pub struct PostfixDummyAead(DummyAead);
 
 impl KeySizeUser for PostfixDummyAead {
