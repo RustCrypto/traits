@@ -31,5 +31,8 @@ dev = ["blobby", "alloc"]
 getrandom = ["common/getrandom"]
 rand_core = ["common/rand_core"]
 
+[lints]
+workspace = true
+
 [package.metadata.docs.rs]
 all-features = true

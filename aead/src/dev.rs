@@ -1,4 +1,9 @@
 //! Development-related functionality
+
+#![allow(clippy::missing_errors_doc, reason = "dev module")]
+#![allow(clippy::missing_panics_doc, reason = "dev module")]
+#![allow(clippy::unwrap_in_result, reason = "dev module")]
+
 use crate::{
     Aead, AeadInOut, Payload, Tag, TagPosition, array::typenum::Unsigned, inout::InOutBuf,
 };
@@ -21,6 +26,7 @@ pub struct TestVector {
 }
 
 /// Run AEAD test for the provided passing test vector
+#[allow(clippy::cast_possible_truncation)]
 pub fn pass_test<C: AeadInOut + KeyInit>(
     &TestVector {
         key,
