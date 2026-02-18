@@ -56,6 +56,7 @@ pub trait Digest: OutputSizeUser {
     fn digest(data: impl AsRef<[u8]>) -> Output<Self>;
 }
 
+#[cfg(feature = "blanket-impls")]
 impl<D: FixedOutput + Default + Update + HashMarker> Digest for D {
     #[inline]
     fn new() -> Self {

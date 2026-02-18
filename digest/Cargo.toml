@@ -26,9 +26,10 @@ zeroize = { version = "1.7", optional = true, default-features = false }
 sha2 = "0.11.0-rc.5"
 
 [features]
-default = ["block-api"]
+default = ["block-api", "blanket-impls"]
 alloc = []
 block-api = ["dep:block-buffer"] # Enable block API traits
+blanket-impls = [] # Enable blanket implementations of Digest and other traits
 dev = ["blobby"]
 getrandom = ["common/getrandom", "rand_core"]
 mac = ["dep:ctutils"] # Enable MAC traits
