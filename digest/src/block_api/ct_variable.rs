@@ -5,6 +5,7 @@ use super::{
 #[cfg(feature = "mac")]
 use crate::MacMarker;
 use crate::{CollisionResistance, CustomizedInit, HashMarker};
+use block_buffer::BlockSizes;
 use common::{
     Block, BlockSizeUser, OutputSizeUser,
     array::{Array, ArraySize},
@@ -19,6 +20,7 @@ pub struct CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
+    T::BlockSize: BlockSizes,
 {
     inner: T,
     _out: PhantomData<OutSize>,
@@ -27,6 +29,7 @@ where
 impl<T, OutSize> HashMarker for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + HashMarker,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
 }
@@ -35,6 +38,7 @@ where
 impl<T, OutSize> MacMarker for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + MacMarker,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
 }
@@ -42,6 +46,7 @@ where
 impl<T, OutSize> CollisionResistance for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + CollisionResistance,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     type CollisionResistance = T::CollisionResistance;
@@ -50,6 +55,7 @@ where
 impl<T, OutSize> BlockSizeUser for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     type BlockSize = T::BlockSize;
@@ -58,6 +64,7 @@ where
 impl<T, OutSize> UpdateCore for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     #[inline]
@@ -69,6 +76,7 @@ where
 impl<T, OutSize> OutputSizeUser for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     type OutputSize = OutSize;
@@ -77,6 +85,7 @@ where
 impl<T, OutSize> BufferKindUser for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     type BufferKind = T::BufferKind;
@@ -85,6 +94,7 @@ where
 impl<T, OutSize> FixedOutputCore for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     #[inline]
@@ -107,6 +117,7 @@ where
 impl<T, OutSize> Default for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     #[inline]
@@ -121,6 +132,7 @@ where
 impl<T, OutSize> CustomizedInit for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCoreCustomized,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     #[inline]
@@ -135,6 +147,7 @@ where
 impl<T, OutSize> Reset for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     #[inline]
@@ -146,6 +159,7 @@ where
 impl<T, OutSize> AlgorithmName for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + AlgorithmName,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -159,6 +173,7 @@ where
 impl<T, OutSize> zeroize::ZeroizeOnDrop for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + zeroize::ZeroizeOnDrop,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
 }
@@ -166,6 +181,7 @@ where
 impl<T, OutSize> fmt::Debug for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + AlgorithmName,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -176,6 +192,7 @@ where
 impl<T, OutSize> SerializableState for CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore + SerializableState,
+    T::BlockSize: BlockSizes,
     OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
 {
     type SerializedStateSize = <T as SerializableState>::SerializedStateSize;

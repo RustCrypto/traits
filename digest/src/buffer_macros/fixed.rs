@@ -163,7 +163,9 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         OutputSizeUser $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::OutputSizeUser for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::OutputSizeUser for $name$(< $( $lt ),+ >)?
+        where <Self as $crate::block_api::BlockSizeUser>::BlockSize: $crate::block_buffer::BlockSizes,
+        {
             type OutputSize = <$core_ty as $crate::block_api::OutputSizeUser>::OutputSize;
         }
 
@@ -177,7 +179,9 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         CoreProxy $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::block_api::CoreProxy for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::block_api::CoreProxy for $name$(< $( $lt ),+ >)?
+        where <Self as $crate::block_api::BlockSizeUser>::BlockSize: $crate::block_buffer::BlockSizes,
+        {
             type Core = $core_ty;
             fn compose(core: Self::Core, buffer: $crate::block_api::Buffer<Self::Core>) -> Self {
                 Self { core, buffer }
@@ -198,7 +202,9 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         Update $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::Update for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::Update for $name$(< $( $lt ),+ >)?
+        where <Self as $crate::block_api::BlockSizeUser>::BlockSize: $crate::block_buffer::BlockSizes,
+        {
             #[inline]
             fn update(&mut self, data: &[u8]) {
                 let Self { core, buffer } = self;
@@ -218,7 +224,9 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         FixedOutput $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::FixedOutput for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::FixedOutput for $name$(< $( $lt ),+ >)?
+        where <Self as $crate::block_api::BlockSizeUser>::BlockSize: $crate::block_buffer::BlockSizes,
+        {
             #[inline]
             fn finalize_into(mut self, out: &mut $crate::Output<Self>) {
                 let Self { core, buffer } = &mut self;
@@ -276,7 +284,9 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         Clone $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? Clone for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? Clone for $name$(< $( $lt ),+ >)?
+        where <Self as $crate::block_api::BlockSizeUser>::BlockSize: $crate::block_buffer::BlockSizes,
+        {
             #[inline]
             fn clone(&self) -> Self {
                 Self {
@@ -362,7 +372,9 @@ macro_rules! buffer_fixed {
             type KeySize = <$core_ty as $crate::common::KeySizeUser>::KeySize;
         }
 
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::KeyInit for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::KeyInit for $name$(< $( $lt ),+ >)?
+        where <Self as $crate::block_api::BlockSizeUser>::BlockSize: $crate::block_buffer::BlockSizes,
+        {
             #[inline]
             fn new(key: &$crate::Key<Self>) -> Self {
                 Self {
@@ -389,7 +401,9 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         Reset $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::Reset for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::Reset for $name$(< $( $lt ),+ >)?
+        where <Self as $crate::block_api::BlockSizeUser>::BlockSize: $crate::block_buffer::BlockSizes,
+        {
             #[inline]
             fn reset(&mut self) {
                 $crate::Reset::reset(&mut self.core);
@@ -407,7 +421,9 @@ macro_rules! buffer_fixed {
         ($core_ty:ty);
         FixedOutputReset $($trait_name:ident)*;
     ) => {
-        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::FixedOutputReset for $name$(< $( $lt ),+ >)? {
+        impl$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? $crate::FixedOutputReset for $name$(< $( $lt ),+ >)?
+        where <Self as $crate::block_api::BlockSizeUser>::BlockSize: $crate::block_buffer::BlockSizes,
+        {
             #[inline]
             fn finalize_into_reset(&mut self, out: &mut $crate::Output<Self>) {
                 let Self { core, buffer } = self;

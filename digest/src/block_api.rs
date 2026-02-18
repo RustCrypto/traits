@@ -8,7 +8,7 @@ use crate::{Digest, HashMarker, InvalidOutputSize};
 pub use block_buffer::{Eager, Lazy};
 pub use common::{AlgorithmName, Block, BlockSizeUser, OutputSizeUser, Reset};
 
-use block_buffer::{BlockBuffer, BufferKind};
+use block_buffer::{BlockBuffer, BlockSizes, BufferKind};
 use common::Output;
 
 mod ct_variable;
@@ -31,7 +31,10 @@ pub trait BufferKindUser: BlockSizeUser {
 }
 
 /// Trait implemented by eager hashes which expose their block-level core.
-pub trait EagerHash: BlockSizeUser + Digest {
+pub trait EagerHash: BlockSizeUser + Digest
+where
+    <Self::Core as BlockSizeUser>::BlockSize: BlockSizes,
+{
     /// Block-level core type of the hash.
     type Core: HashMarker
         + UpdateCore
@@ -52,19 +55,26 @@ where
         + BufferKindUser<BufferKind = Eager>
         + Default
         + Clone,
+    <<T as CoreProxy>::Core as BlockSizeUser>::BlockSize: BlockSizes,
 {
     type Core = T::Core;
 }
 
 /// Core trait for hash functions with fixed output size.
-pub trait FixedOutputCore: UpdateCore + BufferKindUser + OutputSizeUser {
+pub trait FixedOutputCore: UpdateCore + BufferKindUser + OutputSizeUser
+where
+    Self::BlockSize: BlockSizes,
+{
     /// Finalize state using remaining data stored in the provided block buffer,
     /// write result into provided array and leave `self` in a dirty state.
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>);
 }
 
 /// Core trait for hash functions with extendable (XOF) output size.
-pub trait ExtendableOutputCore: UpdateCore + BufferKindUser {
+pub trait ExtendableOutputCore: UpdateCore + BufferKindUser
+where
+    Self::BlockSize: BlockSizes,
+{
     /// XOF reader core state.
     type ReaderCore: XofReaderCore;
 
@@ -90,7 +100,10 @@ pub trait XofReaderCore: BlockSizeUser {
 /// [`finalize_variable_core`]: VariableOutputCore::finalize_variable_core
 /// [`new`]: VariableOutputCore::new
 /// [`TRUNC_SIDE`]: VariableOutputCore::TRUNC_SIDE
-pub trait VariableOutputCore: UpdateCore + OutputSizeUser + BufferKindUser + Sized {
+pub trait VariableOutputCore: UpdateCore + OutputSizeUser + BufferKindUser + Sized
+where
+    Self::BlockSize: BlockSizes,
+{
     /// Side which should be used in a truncated result.
     const TRUNC_SIDE: TruncSide;
 
@@ -115,7 +128,10 @@ pub trait VariableOutputCore: UpdateCore + OutputSizeUser + BufferKindUser + Siz
 }
 
 /// Trait adding customization string to hash functions with variable output.
-pub trait VariableOutputCoreCustomized: VariableOutputCore {
+pub trait VariableOutputCoreCustomized: VariableOutputCore
+where
+    Self::BlockSize: BlockSizes,
+{
     /// Create new hasher instance with the given customization string and output size.
     fn new_customized(customization: &[u8], output_size: usize) -> Self;
 }
@@ -131,7 +147,10 @@ pub enum TruncSide {
 }
 
 /// A proxy trait to the core block-level type.
-pub trait CoreProxy {
+pub trait CoreProxy
+where
+    <Self::Core as BlockSizeUser>::BlockSize: BlockSizes,
+{
     /// Core block-level type.
     type Core: BufferKindUser;
 

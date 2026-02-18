@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use common::{Block, BlockSizes, ParBlocksSizeUser, array::ArraySize};
+use common::{Block, ParBlocksSizeUser, array::ArraySize};
 
 use super::{
     TweakBlockCipherDecBackend, TweakBlockCipherDecClosure, TweakBlockCipherDecrypt,
@@ -43,20 +43,20 @@ impl<C: TweakBlockCipherDecrypt> BlockCipherDecrypt for ZeroTweak<C> {
 
 /// Wrapper around non-tweakble block cipher closures which implements the tweakable
 /// block cipher closure traits using zero tweak.
-struct ClosureWrapper<TS: ArraySize, BS: BlockSizes, F> {
+struct ClosureWrapper<TS: ArraySize, BS: ArraySize, F> {
     f: F,
     _pd: PhantomData<(TS, BS)>,
 }
 
-impl<TS: ArraySize, BS: BlockSizes, F> BlockSizeUser for ClosureWrapper<TS, BS, F> {
+impl<TS: ArraySize, BS: ArraySize, F> BlockSizeUser for ClosureWrapper<TS, BS, F> {
     type BlockSize = BS;
 }
 
-impl<TS: ArraySize, BS: BlockSizes, F> TweakSizeUser for ClosureWrapper<TS, BS, F> {
+impl<TS: ArraySize, BS: ArraySize, F> TweakSizeUser for ClosureWrapper<TS, BS, F> {
     type TweakSize = TS;
 }
 
-impl<TS: ArraySize, BS: BlockSizes, F> TweakBlockCipherEncClosure for ClosureWrapper<TS, BS, F>
+impl<TS: ArraySize, BS: ArraySize, F> TweakBlockCipherEncClosure for ClosureWrapper<TS, BS, F>
 where
     F: BlockCipherEncClosure<BlockSize = BS>,
 {
@@ -69,7 +69,7 @@ where
     }
 }
 
-impl<TS: ArraySize, BS: BlockSizes, F> TweakBlockCipherDecClosure for ClosureWrapper<TS, BS, F>
+impl<TS: ArraySize, BS: ArraySize, F> TweakBlockCipherDecClosure for ClosureWrapper<TS, BS, F>
 where
     F: BlockCipherDecClosure<BlockSize = BS>,
 {
@@ -84,20 +84,20 @@ where
 
 /// Wrapper around tweakable block cipher backend which implements non-tweakable
 /// block cipher backend traits using zero tweak.
-struct BackendWrapper<'a, BS: BlockSizes, B> {
+struct BackendWrapper<'a, BS: ArraySize, B> {
     backend: &'a B,
     _pd: PhantomData<BS>,
 }
 
-impl<BS: BlockSizes, B> BlockSizeUser for BackendWrapper<'_, BS, B> {
+impl<BS: ArraySize, B> BlockSizeUser for BackendWrapper<'_, BS, B> {
     type BlockSize = BS;
 }
 
-impl<BS: BlockSizes, B> ParBlocksSizeUser for BackendWrapper<'_, BS, B> {
+impl<BS: ArraySize, B> ParBlocksSizeUser for BackendWrapper<'_, BS, B> {
     type ParBlocksSize = U1;
 }
 
-impl<BS: BlockSizes, B> BlockCipherEncBackend for BackendWrapper<'_, BS, B>
+impl<BS: ArraySize, B> BlockCipherEncBackend for BackendWrapper<'_, BS, B>
 where
     B: TweakBlockCipherEncBackend<BlockSize = BS>,
 {
@@ -107,7 +107,7 @@ where
     }
 }
 
-impl<BS: BlockSizes, B> BlockCipherDecBackend for BackendWrapper<'_, BS, B>
+impl<BS: ArraySize, B> BlockCipherDecBackend for BackendWrapper<'_, BS, B>
 where
     B: TweakBlockCipherDecBackend<BlockSize = BS>,
 {
