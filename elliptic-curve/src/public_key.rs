@@ -91,7 +91,10 @@ impl<C> PublicKey<C>
 where
     C: CurveArithmetic,
 {
-    /// Convert an [`AffinePoint`] into a [`PublicKey`]
+    /// Convert an [`AffinePoint`] into a [`PublicKey`].
+    ///
+    /// # Errors
+    /// - if `point` is the additive identity.
     pub fn from_affine(point: AffinePoint<C>) -> Result<Self> {
         if ProjectivePoint::<C>::from(point).is_identity().into() {
             Err(Error)
@@ -115,6 +118,10 @@ where
     /// 2.3.3 (page 10).
     ///
     /// <http://www.secg.org/sec1-v2.pdf>
+    ///
+    /// # Errors
+    /// - if `bytes` is not a valid SEC1 encoding of an elliptic curve point.
+    /// - if the decoded curve point is the additive identity.
     #[cfg(feature = "sec1")]
     pub fn from_sec1_bytes(bytes: &[u8]) -> Result<Self>
     where

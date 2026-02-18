@@ -154,7 +154,7 @@ where
     C: CurveArithmetic,
 {
     fn zeroize(&mut self) {
-        self.scalar.zeroize()
+        self.scalar.zeroize();
     }
 }
 
@@ -255,6 +255,6 @@ impl<C: Curve> ZeroizeOnDrop for SharedSecret<C> {}
 
 impl<C: Curve> Drop for SharedSecret<C> {
     fn drop(&mut self) {
-        self.secret_bytes.zeroize()
+        self.secret_bytes.zeroize();
     }
 }

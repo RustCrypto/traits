@@ -1,6 +1,7 @@
 //! PKCS#8 tests
 
 #![cfg(all(feature = "dev", feature = "pkcs8"))]
+#![allow(clippy::unwrap_used)]
 
 use elliptic_curve::{
     dev::{PublicKey, SecretKey},
