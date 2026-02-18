@@ -24,22 +24,41 @@ pub trait UpdateCore: BlockSizeUser {
     fn update_blocks(&mut self, blocks: &[Block<Self>]);
 }
 
+/// Sub-trait of [`BlockSizeUser`] implemented if `BlockSize` is
+/// bigger than `U0` and smaller than `U256`.
+///
+/// This trait relies on the hack suggested [here][0] to work around
+/// the long standing Rust issue regarding non-propagation of `where` bounds.
+///
+/// [0]: https://github.com/rust-lang/rust/issues/20671#issuecomment-1905186183
+pub trait SmallBlockSizeUser:
+    BlockSizeUser<BlockSize = <Self as SmallBlockSizeUser>::_BlockSize>
+{
+    /// Helper associated type equal to `Self::BlockSize`.
+    type _BlockSize: BlockSizes;
+}
+
+impl<T: BlockSizeUser> SmallBlockSizeUser for T
+where
+    T::BlockSize: BlockSizes,
+{
+    type _BlockSize = T::BlockSize;
+}
+
 /// Types which use [`BlockBuffer`] functionality.
-pub trait BufferKindUser: BlockSizeUser {
+pub trait BufferKindUser: SmallBlockSizeUser {
     /// Block buffer kind over which type operates.
     type BufferKind: BufferKind;
 }
 
 /// Trait implemented by eager hashes which expose their block-level core.
-pub trait EagerHash: BlockSizeUser + Digest
-where
-    <Self::Core as BlockSizeUser>::BlockSize: BlockSizes,
-{
+pub trait EagerHash: SmallBlockSizeUser + Digest {
     /// Block-level core type of the hash.
     type Core: HashMarker
         + UpdateCore
         + FixedOutputCore
-        + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
+        // + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
+        + SmallBlockSizeUser<_BlockSize = <Self as SmallBlockSizeUser>::_BlockSize>
         + BufferKindUser<BufferKind = Eager>
         + Default
         + Clone;
@@ -47,34 +66,27 @@ where
 
 impl<T> EagerHash for T
 where
-    T: CoreProxy + BlockSizeUser + Digest,
+    T: CoreProxy + SmallBlockSizeUser + Digest,
     <T as CoreProxy>::Core: HashMarker
         + UpdateCore
         + FixedOutputCore
-        + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
+        + SmallBlockSizeUser<_BlockSize = <T as SmallBlockSizeUser>::_BlockSize>
         + BufferKindUser<BufferKind = Eager>
         + Default
         + Clone,
-    <<T as CoreProxy>::Core as BlockSizeUser>::BlockSize: BlockSizes,
 {
     type Core = T::Core;
 }
 
 /// Core trait for hash functions with fixed output size.
-pub trait FixedOutputCore: UpdateCore + BufferKindUser + OutputSizeUser
-where
-    Self::BlockSize: BlockSizes,
-{
+pub trait FixedOutputCore: UpdateCore + BufferKindUser + OutputSizeUser {
     /// Finalize state using remaining data stored in the provided block buffer,
     /// write result into provided array and leave `self` in a dirty state.
     fn finalize_fixed_core(&mut self, buffer: &mut Buffer<Self>, out: &mut Output<Self>);
 }
 
 /// Core trait for hash functions with extendable (XOF) output size.
-pub trait ExtendableOutputCore: UpdateCore + BufferKindUser
-where
-    Self::BlockSize: BlockSizes,
-{
+pub trait ExtendableOutputCore: UpdateCore + BufferKindUser {
     /// XOF reader core state.
     type ReaderCore: XofReaderCore;
 
@@ -100,10 +112,7 @@ pub trait XofReaderCore: BlockSizeUser {
 /// [`finalize_variable_core`]: VariableOutputCore::finalize_variable_core
 /// [`new`]: VariableOutputCore::new
 /// [`TRUNC_SIDE`]: VariableOutputCore::TRUNC_SIDE
-pub trait VariableOutputCore: UpdateCore + OutputSizeUser + BufferKindUser + Sized
-where
-    Self::BlockSize: BlockSizes,
-{
+pub trait VariableOutputCore: UpdateCore + OutputSizeUser + BufferKindUser + Sized {
     /// Side which should be used in a truncated result.
     const TRUNC_SIDE: TruncSide;
 
@@ -128,10 +137,7 @@ where
 }
 
 /// Trait adding customization string to hash functions with variable output.
-pub trait VariableOutputCoreCustomized: VariableOutputCore
-where
-    Self::BlockSize: BlockSizes,
-{
+pub trait VariableOutputCoreCustomized: VariableOutputCore {
     /// Create new hasher instance with the given customization string and output size.
     fn new_customized(customization: &[u8], output_size: usize) -> Self;
 }
@@ -147,10 +153,7 @@ pub enum TruncSide {
 }
 
 /// A proxy trait to the core block-level type.
-pub trait CoreProxy
-where
-    <Self::Core as BlockSizeUser>::BlockSize: BlockSizes,
-{
+pub trait CoreProxy {
     /// Core block-level type.
     type Core: BufferKindUser;
 
