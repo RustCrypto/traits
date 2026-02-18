@@ -27,6 +27,7 @@ pub fn xof_reset_test<D: ExtendableOutputReset + Default + Debug + Clone>(
     buf.iter_mut().for_each(|b| *b = 0);
 
     // Test that it works when accepting the message in chunks
+    hasher2.reset();
     for n in 1..core::cmp::min(17, input.len()) {
         let mut hasher = D::default();
         for chunk in input.chunks(n) {
