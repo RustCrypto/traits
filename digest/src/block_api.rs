@@ -34,7 +34,7 @@ pub trait UpdateCore: BlockSizeUser {
 pub trait SmallBlockSizeUser:
     BlockSizeUser<BlockSize = <Self as SmallBlockSizeUser>::_BlockSize>
 {
-    /// Helper associated type equal to `Self::BlockSize`.
+    /// Helper associated type equal to `<Self as BlockSizeUser>::BlockSize`.
     type _BlockSize: BlockSizes;
 }
 
@@ -57,7 +57,6 @@ pub trait EagerHash: SmallBlockSizeUser + Digest {
     type Core: HashMarker
         + UpdateCore
         + FixedOutputCore
-        // + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
         + SmallBlockSizeUser<_BlockSize = <Self as SmallBlockSizeUser>::_BlockSize>
         + BufferKindUser<BufferKind = Eager>
         + Default
