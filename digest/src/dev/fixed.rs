@@ -20,6 +20,7 @@ pub fn fixed_reset_test<D: FixedOutputReset + Clone + Default + HashMarker>(
     }
 
     // Test that it works when accepting the message in chunks
+    hasher2.reset();
     for n in 1..core::cmp::min(17, input.len()) {
         let mut hasher = D::new();
         for chunk in input.chunks(n) {
