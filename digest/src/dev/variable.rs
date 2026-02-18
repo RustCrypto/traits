@@ -26,6 +26,7 @@ pub fn variable_reset_test<D: VariableOutputReset + Clone>(
     buf.iter_mut().for_each(|b| *b = 0);
 
     // Test that it works when accepting the message in chunks
+    hasher2.reset();
     for n in 1..core::cmp::min(17, input.len()) {
         let mut hasher = D::new(output.len()).unwrap();
         for chunk in input.chunks(n) {
