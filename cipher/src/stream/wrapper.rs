@@ -4,7 +4,7 @@ use super::{
     OverflowError, SeekNum, StreamCipher, StreamCipherCore, StreamCipherSeek, StreamCipherSeekCore,
     errors::StreamCipherError,
 };
-use block_buffer::ReadBuffer;
+use block_buffer::{BlockSizes, ReadBuffer};
 use common::{
     Iv, IvSizeUser, Key, KeyInit, KeyIvInit, KeySizeUser, array::Array, typenum::Unsigned,
 };
@@ -16,12 +16,20 @@ use zeroize::ZeroizeOnDrop;
 /// Buffering wrapper around a [`StreamCipherCore`] implementation.
 ///
 /// It handles data buffering and implements the slice-based traits.
-pub struct StreamCipherCoreWrapper<T: StreamCipherCore> {
+pub struct StreamCipherCoreWrapper<T>
+where
+    T: StreamCipherCore,
+    T::BlockSize: BlockSizes,
+{
     core: T,
     buffer: ReadBuffer<T::BlockSize>,
 }
 
-impl<T: StreamCipherCore + Clone> Clone for StreamCipherCoreWrapper<T> {
+impl<T> Clone for StreamCipherCoreWrapper<T>
+where
+    T: StreamCipherCore + Clone,
+    T::BlockSize: BlockSizes,
+{
     #[inline]
     fn clone(&self) -> Self {
         Self {
@@ -31,14 +39,22 @@ impl<T: StreamCipherCore + Clone> Clone for StreamCipherCoreWrapper<T> {
     }
 }
 
-impl<T: StreamCipherCore + fmt::Debug> fmt::Debug for StreamCipherCoreWrapper<T> {
+impl<T> fmt::Debug for StreamCipherCoreWrapper<T>
+where
+    T: StreamCipherCore + fmt::Debug,
+    T::BlockSize: BlockSizes,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("StreamCipherCoreWrapper")
             .finish_non_exhaustive()
     }
 }
 
-impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
+impl<T> StreamCipherCoreWrapper<T>
+where
+    T: StreamCipherCore,
+    T::BlockSize: BlockSizes,
+{
     /// Initialize from a [`StreamCipherCore`] instance.
     pub fn from_core(core: T) -> Self {
         Self {
@@ -53,7 +69,11 @@ impl<T: StreamCipherCore> StreamCipherCoreWrapper<T> {
     }
 }
 
-impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
+impl<T> StreamCipher for StreamCipherCoreWrapper<T>
+where
+    T: StreamCipherCore,
+    T::BlockSize: BlockSizes,
+{
     #[inline]
     fn check_remaining(&self, data_len: usize) -> Result<(), StreamCipherError> {
         let Some(rem_blocks) = self.core.remaining_blocks() else {
@@ -107,7 +127,11 @@ impl<T: StreamCipherCore> StreamCipher for StreamCipherCoreWrapper<T> {
     }
 }
 
-impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
+impl<T> StreamCipherSeek for StreamCipherCoreWrapper<T>
+where
+    T: StreamCipherSeekCore,
+    T::BlockSize: BlockSizes,
+{
     #[allow(clippy::unwrap_in_result)]
     fn try_current_pos<SN: SeekNum>(&self) -> Result<SN, OverflowError> {
         let pos = u8::try_from(self.buffer.get_pos())
@@ -142,15 +166,27 @@ impl<T: StreamCipherSeekCore> StreamCipherSeek for StreamCipherCoreWrapper<T> {
 // not work properly without mutually exclusive traits, see:
 // https://github.com/rust-lang/rfcs/issues/1053
 
-impl<T: KeySizeUser + StreamCipherCore> KeySizeUser for StreamCipherCoreWrapper<T> {
+impl<T> KeySizeUser for StreamCipherCoreWrapper<T>
+where
+    T: KeySizeUser + StreamCipherCore,
+    T::BlockSize: BlockSizes,
+{
     type KeySize = T::KeySize;
 }
 
-impl<T: IvSizeUser + StreamCipherCore> IvSizeUser for StreamCipherCoreWrapper<T> {
+impl<T> IvSizeUser for StreamCipherCoreWrapper<T>
+where
+    T: IvSizeUser + StreamCipherCore,
+    T::BlockSize: BlockSizes,
+{
     type IvSize = T::IvSize;
 }
 
-impl<T: KeyIvInit + StreamCipherCore> KeyIvInit for StreamCipherCoreWrapper<T> {
+impl<T> KeyIvInit for StreamCipherCoreWrapper<T>
+where
+    T: KeyIvInit + StreamCipherCore,
+    T::BlockSize: BlockSizes,
+{
     #[inline]
     fn new(key: &Key<Self>, iv: &Iv<Self>) -> Self {
         Self {
@@ -160,7 +196,11 @@ impl<T: KeyIvInit + StreamCipherCore> KeyIvInit for StreamCipherCoreWrapper<T> {
     }
 }
 
-impl<T: KeyInit + StreamCipherCore> KeyInit for StreamCipherCoreWrapper<T> {
+impl<T> KeyInit for StreamCipherCoreWrapper<T>
+where
+    T: KeyInit + StreamCipherCore,
+    T::BlockSize: BlockSizes,
+{
     #[inline]
     fn new(key: &Key<Self>) -> Self {
         Self {
@@ -171,13 +211,18 @@ impl<T: KeyInit + StreamCipherCore> KeyInit for StreamCipherCoreWrapper<T> {
 }
 
 #[cfg(feature = "zeroize")]
-impl<T: StreamCipherCore + ZeroizeOnDrop> ZeroizeOnDrop for StreamCipherCoreWrapper<T> {}
+impl<T> ZeroizeOnDrop for StreamCipherCoreWrapper<T>
+where
+    T: StreamCipherCore + ZeroizeOnDrop,
+    T::BlockSize: BlockSizes,
+{
+}
 
 // Assert that `ReadBuffer` implements `ZeroizeOnDrop`
 #[cfg(feature = "zeroize")]
 const _: () = {
     #[allow(dead_code, trivial_casts)]
-    fn check_buffer<BS: crate::array::ArraySize>(v: &ReadBuffer<BS>) {
+    fn check_buffer<BS: BlockSizes>(v: &ReadBuffer<BS>) {
         let _ = v as &dyn ZeroizeOnDrop;
     }
 };

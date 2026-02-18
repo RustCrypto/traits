@@ -57,3 +57,4 @@ unused_qualifications = "warn"
 crypto-common = { path = "crypto-common" }
 digest = { path = "digest" }
 signature = { path = "signature" }
+block-buffer = { git = "https://github.com/RustCrypto/utils", branch = "block-buffer/block-sizes" }

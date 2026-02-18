@@ -8,7 +8,7 @@ use crate::{Digest, HashMarker, InvalidOutputSize};
 pub use block_buffer::{Eager, Lazy};
 pub use common::{AlgorithmName, Block, BlockSizeUser, OutputSizeUser, Reset};
 
-use block_buffer::{BlockBuffer, BufferKind};
+use block_buffer::{BlockBuffer, BlockSizes, BufferKind};
 use common::Output;
 
 mod ct_variable;
@@ -24,19 +24,40 @@ pub trait UpdateCore: BlockSizeUser {
     fn update_blocks(&mut self, blocks: &[Block<Self>]);
 }
 
+/// Sub-trait of [`BlockSizeUser`] implemented if `BlockSize` is
+/// bigger than `U0` and smaller than `U256`.
+///
+/// This trait relies on the hack suggested [here][0] to work around
+/// the long standing Rust issue regarding non-propagation of `where` bounds.
+///
+/// [0]: https://github.com/rust-lang/rust/issues/20671#issuecomment-1905186183
+pub trait SmallBlockSizeUser:
+    BlockSizeUser<BlockSize = <Self as SmallBlockSizeUser>::_BlockSize>
+{
+    /// Helper associated type equal to `<Self as BlockSizeUser>::BlockSize`.
+    type _BlockSize: BlockSizes;
+}
+
+impl<T: BlockSizeUser> SmallBlockSizeUser for T
+where
+    T::BlockSize: BlockSizes,
+{
+    type _BlockSize = T::BlockSize;
+}
+
 /// Types which use [`BlockBuffer`] functionality.
-pub trait BufferKindUser: BlockSizeUser {
+pub trait BufferKindUser: SmallBlockSizeUser {
     /// Block buffer kind over which type operates.
     type BufferKind: BufferKind;
 }
 
 /// Trait implemented by eager hashes which expose their block-level core.
-pub trait EagerHash: BlockSizeUser + Digest {
+pub trait EagerHash: SmallBlockSizeUser + Digest {
     /// Block-level core type of the hash.
     type Core: HashMarker
         + UpdateCore
         + FixedOutputCore
-        + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
+        + SmallBlockSizeUser<_BlockSize = <Self as SmallBlockSizeUser>::_BlockSize>
         + BufferKindUser<BufferKind = Eager>
         + Default
         + Clone;
@@ -44,11 +65,11 @@ pub trait EagerHash: BlockSizeUser + Digest {
 
 impl<T> EagerHash for T
 where
-    T: CoreProxy + BlockSizeUser + Digest,
+    T: CoreProxy + SmallBlockSizeUser + Digest,
     <T as CoreProxy>::Core: HashMarker
         + UpdateCore
         + FixedOutputCore
-        + BlockSizeUser<BlockSize = <Self as BlockSizeUser>::BlockSize>
+        + SmallBlockSizeUser<_BlockSize = <T as SmallBlockSizeUser>::_BlockSize>
         + BufferKindUser<BufferKind = Eager>
         + Default
         + Clone,
