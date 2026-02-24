@@ -6,12 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## 0.5.1 (UNRELEASED)
+### Changed
+- Block sizes no longer bounded by `crypto_common::BlockSizes` ([#2309])
+- `StreamCipherCoreWrapper` is now bounded by `block_buffer::BlockSizes`
+  instead of `crypto_common::BlockSizes` ([#2309])
+- Bump `block-buffer` dependency to v0.12 ([#2309])
+
 ### Fixed
 - `Key:` option in the `stream_cipher_bench` macro ([#2290])
 
 [#2290]: https://github.com/RustCrypto/traits/pull/2290
+[#2309]: https://github.com/RustCrypto/traits/pull/2309
 
-## 0.5.0 (2026-02-04)
+## 0.5.0 (2026-02-04) [YANKED]
 ### Added
 - Traits for tweakable block ciphers ([#1721])
 - Methods for writing keystream ([#1907])
