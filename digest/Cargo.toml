@@ -16,7 +16,7 @@ description = "Traits for cryptographic hash functions and message authenticatio
 common = { version = "0.2", package = "crypto-common" }
 
 # optional dependencies
-block-buffer = { version = "0.11", optional = true }
+block-buffer = { version = "0.12", optional = true }
 blobby = { version = "0.4", optional = true }
 const-oid = { version = "0.10", optional = true }
 ctutils = { version = "0.4", optional = true }
