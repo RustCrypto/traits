@@ -33,7 +33,8 @@ use serdect::serde::{Deserialize, Serialize, de, ser};
 /// In the context of ECC, it's useful for ensuring that scalar multiplication
 /// cannot result in the point at infinity.
 #[derive(Clone)]
-#[repr(transparent)] // SAFETY: needed for `unsafe` safety invariants below
+// `repr` is needed for `unsafe` safety invariants below
+#[repr(transparent)]
 pub struct NonZeroScalar<C>
 where
     C: CurveArithmetic,
