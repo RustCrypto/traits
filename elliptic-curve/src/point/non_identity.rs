@@ -23,7 +23,8 @@ use crate::{BatchNormalize, CurveArithmetic, CurveGroup, NonZeroScalar, Scalar};
 /// In the context of ECC, it's useful for ensuring that certain arithmetic
 /// cannot result in the identity point.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[repr(transparent)] // SAFETY: needed for `unsafe` safety invariants below
+// `repr` is needed for `unsafe` safety invariants below
+#[repr(transparent)]
 pub struct NonIdentity<P> {
     point: P,
 }
