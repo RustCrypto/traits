@@ -22,7 +22,7 @@ inout = "0.2.2"
 # optional dependencies
 arrayvec = { version = "0.7", optional = true, default-features = false }
 blobby = { version = "0.4", optional = true }
-bytes = { version = "1", optional = true, default-features = false }
+bytes = { version = "1.11.1", optional = true, default-features = false }
 
 [features]
 default = ["rand_core"]
