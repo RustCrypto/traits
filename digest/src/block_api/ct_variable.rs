@@ -14,7 +14,6 @@ use common::{
 use core::{fmt, marker::PhantomData};
 
 /// Wrapper around [`VariableOutputCore`] which selects output size at compile time.
-#[derive(Clone)]
 pub struct CtOutWrapper<T, OutSize>
 where
     T: VariableOutputCore,
@@ -22,6 +21,19 @@ where
 {
     inner: T,
     _out: PhantomData<OutSize>,
+}
+
+impl<T, OutSize> Clone for CtOutWrapper<T, OutSize>
+where
+    T: VariableOutputCore + Clone,
+    OutSize: ArraySize + IsLessOrEqual<T::OutputSize, Output = True>,
+{
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            _out: PhantomData,
+        }
+    }
 }
 
 impl<T, OutSize> HashMarker for CtOutWrapper<T, OutSize>

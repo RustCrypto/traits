@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.11.0 (2026-02-13)
+## 0.11.1 (UNRELEASED)
+### Added
+- `SmallBlockSizeUser` helper trait. The trait is a sub-trait of `BlockSizeUser`
+  with `BlockSize` bounded by `block_buffer::BlockSizes`. ([#2309])
+
+### Changed
+- `BufferKindUser` is now a sub-trait of `SmallBlockSizeUser` ([#2309])
+
+[#2309]: https://github.com/RustCrypto/traits/pull/2309
+
+## 0.11.0 (2026-02-13) [YANKED]
 ### Added
 - `CustomizedInit` trait ([#1334])
 - `SerializableState` support ([#1369])

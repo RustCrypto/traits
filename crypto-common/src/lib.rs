@@ -58,7 +58,7 @@ pub type SubBlockSize<T, B> = Diff<T, <B as BlockSizeUser>::BlockSize>;
 /// Types which process data in blocks.
 pub trait BlockSizeUser {
     /// Size of the block in bytes.
-    type BlockSize: BlockSizes;
+    type BlockSize: ArraySize;
 
     /// Return block size in bytes.
     #[inline(always)]
@@ -74,19 +74,6 @@ impl<T: BlockSizeUser> BlockSizeUser for &T {
 
 impl<T: BlockSizeUser> BlockSizeUser for &mut T {
     type BlockSize = T::BlockSize;
-}
-
-/// Trait implemented for supported block sizes, i.e. for types from `U1` to `U255`.
-pub trait BlockSizes: ArraySize + sealed::BlockSizes {}
-
-impl<T: ArraySize + sealed::BlockSizes> BlockSizes for T {}
-
-mod sealed {
-    use crate::typenum::{IsLess, NonZero, True, U256, Unsigned};
-
-    pub trait BlockSizes {}
-
-    impl<T: Unsigned> BlockSizes for T where Self: IsLess<U256, Output = True> + NonZero {}
 }
 
 /// Types which can process blocks in parallel.

@@ -1,4 +1,4 @@
-use common::{Block, BlockSizeUser, BlockSizes, array::ArraySize};
+use common::{Block, BlockSizeUser, array::ArraySize};
 use inout::InOut;
 
 use super::{
@@ -7,20 +7,20 @@ use super::{
 };
 
 /// Closure used in methods which operate over separate blocks.
-pub(super) struct BlockCtx<'a, TS: ArraySize, BS: BlockSizes> {
+pub(super) struct BlockCtx<'a, TS: ArraySize, BS: ArraySize> {
     pub tweak: &'a Tweak<Self>,
     pub block: InOut<'a, 'a, Block<Self>>,
 }
 
-impl<TS: ArraySize, BS: BlockSizes> BlockSizeUser for BlockCtx<'_, TS, BS> {
+impl<TS: ArraySize, BS: ArraySize> BlockSizeUser for BlockCtx<'_, TS, BS> {
     type BlockSize = BS;
 }
 
-impl<TS: ArraySize, BS: BlockSizes> TweakSizeUser for BlockCtx<'_, TS, BS> {
+impl<TS: ArraySize, BS: ArraySize> TweakSizeUser for BlockCtx<'_, TS, BS> {
     type TweakSize = TS;
 }
 
-impl<TS: ArraySize, BS: BlockSizes> TweakBlockCipherEncClosure for BlockCtx<'_, TS, BS> {
+impl<TS: ArraySize, BS: ArraySize> TweakBlockCipherEncClosure for BlockCtx<'_, TS, BS> {
     #[inline]
     fn call<B>(self, backend: &B)
     where
@@ -30,7 +30,7 @@ impl<TS: ArraySize, BS: BlockSizes> TweakBlockCipherEncClosure for BlockCtx<'_, 
     }
 }
 
-impl<TS: ArraySize, BS: BlockSizes> TweakBlockCipherDecClosure for BlockCtx<'_, TS, BS> {
+impl<TS: ArraySize, BS: ArraySize> TweakBlockCipherDecClosure for BlockCtx<'_, TS, BS> {
     #[inline]
     fn call<B>(self, backend: &B)
     where

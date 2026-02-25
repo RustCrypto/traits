@@ -13,7 +13,10 @@ pub use common::{
     typenum::{self, consts},
 };
 
-use common::{BlockSizeUser, BlockSizes, ParBlocksSizeUser, array::Array};
+use common::{
+    BlockSizeUser, ParBlocksSizeUser,
+    array::{Array, ArraySize},
+};
 use core::slice;
 use subtle::ConstantTimeEq;
 use typenum::Unsigned;
@@ -56,15 +59,15 @@ pub trait UniversalHash: BlockSizeUser + Sized {
     /// Update hash function state with the provided block.
     #[inline]
     fn update(&mut self, blocks: &[Block<Self>]) {
-        struct Ctx<'a, BS: BlockSizes> {
+        struct Ctx<'a, BS: ArraySize> {
             blocks: &'a [Block<Self>],
         }
 
-        impl<BS: BlockSizes> BlockSizeUser for Ctx<'_, BS> {
+        impl<BS: ArraySize> BlockSizeUser for Ctx<'_, BS> {
             type BlockSize = BS;
         }
 
-        impl<BS: BlockSizes> UhfClosure for Ctx<'_, BS> {
+        impl<BS: ArraySize> UhfClosure for Ctx<'_, BS> {
             #[inline(always)]
             fn call<B: UhfBackend<BlockSize = BS>>(self, backend: &mut B) {
                 let pb = B::ParBlocksSize::USIZE;

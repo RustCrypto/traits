@@ -1,6 +1,9 @@
 use super::StreamCipherError;
-use crate::{array::Array, typenum::Unsigned};
-use common::{Block, BlockSizeUser, BlockSizes, ParBlocks, ParBlocksSizeUser};
+use crate::{
+    array::{Array, ArraySize},
+    typenum::Unsigned,
+};
+use common::{Block, BlockSizeUser, ParBlocks, ParBlocksSizeUser};
 use inout::{InOut, InOutBuf};
 
 /// Trait implemented by stream cipher backends.
@@ -197,26 +200,28 @@ macro_rules! impl_counter {
 
 impl_counter! { u32 u64 u128 }
 
-struct WriteBlockCtx<'a, BS: BlockSizes> {
+struct WriteBlockCtx<'a, BS: ArraySize> {
     block: &'a mut Block<Self>,
 }
-impl<BS: BlockSizes> BlockSizeUser for WriteBlockCtx<'_, BS> {
+impl<BS: ArraySize> BlockSizeUser for WriteBlockCtx<'_, BS> {
     type BlockSize = BS;
 }
-impl<BS: BlockSizes> StreamCipherClosure for WriteBlockCtx<'_, BS> {
+impl<BS: ArraySize> StreamCipherClosure for WriteBlockCtx<'_, BS> {
     #[inline(always)]
     fn call<B: StreamCipherBackend<BlockSize = BS>>(self, backend: &mut B) {
         backend.gen_ks_block(self.block);
     }
 }
 
-struct WriteBlocksCtx<'a, BS: BlockSizes> {
+struct WriteBlocksCtx<'a, BS: ArraySize> {
     blocks: &'a mut [Block<Self>],
 }
-impl<BS: BlockSizes> BlockSizeUser for WriteBlocksCtx<'_, BS> {
+
+impl<BS: ArraySize> BlockSizeUser for WriteBlocksCtx<'_, BS> {
     type BlockSize = BS;
 }
-impl<BS: BlockSizes> StreamCipherClosure for WriteBlocksCtx<'_, BS> {
+
+impl<BS: ArraySize> StreamCipherClosure for WriteBlocksCtx<'_, BS> {
     #[inline(always)]
     fn call<B: StreamCipherBackend<BlockSize = BS>>(self, backend: &mut B) {
         if B::ParBlocksSize::USIZE > 1 {
@@ -233,15 +238,15 @@ impl<BS: BlockSizes> StreamCipherClosure for WriteBlocksCtx<'_, BS> {
     }
 }
 
-struct ApplyBlockCtx<'inp, 'out, BS: BlockSizes> {
+struct ApplyBlockCtx<'inp, 'out, BS: ArraySize> {
     block: InOut<'inp, 'out, Block<Self>>,
 }
 
-impl<BS: BlockSizes> BlockSizeUser for ApplyBlockCtx<'_, '_, BS> {
+impl<BS: ArraySize> BlockSizeUser for ApplyBlockCtx<'_, '_, BS> {
     type BlockSize = BS;
 }
 
-impl<BS: BlockSizes> StreamCipherClosure for ApplyBlockCtx<'_, '_, BS> {
+impl<BS: ArraySize> StreamCipherClosure for ApplyBlockCtx<'_, '_, BS> {
     #[inline(always)]
     fn call<B: StreamCipherBackend<BlockSize = BS>>(mut self, backend: &mut B) {
         let mut t = Default::default();
@@ -250,15 +255,15 @@ impl<BS: BlockSizes> StreamCipherClosure for ApplyBlockCtx<'_, '_, BS> {
     }
 }
 
-struct ApplyBlocksCtx<'inp, 'out, BS: BlockSizes> {
+struct ApplyBlocksCtx<'inp, 'out, BS: ArraySize> {
     blocks: InOutBuf<'inp, 'out, Block<Self>>,
 }
 
-impl<BS: BlockSizes> BlockSizeUser for ApplyBlocksCtx<'_, '_, BS> {
+impl<BS: ArraySize> BlockSizeUser for ApplyBlocksCtx<'_, '_, BS> {
     type BlockSize = BS;
 }
 
-impl<BS: BlockSizes> StreamCipherClosure for ApplyBlocksCtx<'_, '_, BS> {
+impl<BS: ArraySize> StreamCipherClosure for ApplyBlocksCtx<'_, '_, BS> {
     #[inline(always)]
     #[allow(clippy::needless_range_loop)]
     fn call<B: StreamCipherBackend<BlockSize = BS>>(self, backend: &mut B) {

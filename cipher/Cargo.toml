@@ -1,6 +1,6 @@
 [package]
 name = "cipher"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -18,7 +18,7 @@ inout = "0.2.2"
 
 # optional dependencies
 blobby = { version = "0.4", optional = true }
-block-buffer = { version = "0.11", optional = true }
+block-buffer = { version = "0.12", optional = true }
 zeroize = { version = "1.8", optional = true, default-features = false }
 
 [dev-dependencies]
