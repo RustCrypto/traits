@@ -13,12 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `hybrid-array` dependency to v0.2 ([#1469])
 - Re-export of `crypto-common` moved to `universal_hash::common` ([#2237])
 
-### Fixed
-- `missing_debug_implementations` lint ([#1407])
-
 [#1370]: https://github.com/RustCrypto/traits/pull/1370
 [#1385]: https://github.com/RustCrypto/traits/pull/1385
-[#1407]: https://github.com/RustCrypto/traits/pull/1407
 [#1469]: https://github.com/RustCrypto/traits/pull/1469
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
 [#2237]: https://github.com/RustCrypto/traits/pull/2237
