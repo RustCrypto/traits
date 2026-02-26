@@ -129,6 +129,9 @@ pub trait UniversalHash: BlockSizeUser + Sized {
     ///
     /// This is useful when constructing Message Authentication Codes (MACs)
     /// from universal hash functions.
+    ///
+    /// # Errors
+    /// If the `expected` value does not match the computed one.
     #[inline]
     fn verify(self, expected: &Block<Self>) -> Result<(), Error> {
         if self.finalize().ct_eq(expected).into() {
