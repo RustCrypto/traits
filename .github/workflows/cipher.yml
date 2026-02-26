@@ -45,7 +45,7 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --features block-padding
 
   minimal-versions:
-    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+    uses: baloo/actions/.github/workflows/minimal-versions.yml@baloo/push-rltrkwrvmqru
     with:
       working-directory: ${{ github.workflow }}
 

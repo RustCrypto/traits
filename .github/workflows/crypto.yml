@@ -45,7 +45,7 @@ jobs:
                --features aead,cipher,digest,elliptic-curve,signature,universal-hash
 
   minimal-versions:
-    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+    uses: baloo/actions/.github/workflows/minimal-versions.yml@baloo/push-rltrkwrvmqru
     with:
       working-directory: ${{ github.workflow }}
 
