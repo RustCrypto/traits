@@ -17,6 +17,7 @@ on:
 
 jobs:
   publish:
+    if: false
     runs-on: ubuntu-latest
     environment: publish
     permissions:

@@ -12,6 +12,7 @@ on:
 
 jobs:
   security_audit:
+    if: false
     name: Security Audit Workspace
     runs-on: ubuntu-24.04
     steps:

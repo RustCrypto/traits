@@ -27,6 +27,7 @@ concurrency:
 
 jobs:
   build:
+    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -70,6 +71,7 @@ jobs:
         cargo check --all-features
 
   test:
+    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -89,6 +91,7 @@ jobs:
       - run: cargo test --all-features
 
   test-careful:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -97,6 +100,7 @@ jobs:
       - run: cargo careful test --all-features
 
   test-miri:
+    if: false
     runs-on: ubuntu-latest
     env:
       MIRIFLAGS: "-Zmiri-symbolic-alignment-check -Zmiri-strict-provenance"

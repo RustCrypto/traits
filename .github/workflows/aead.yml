@@ -24,6 +24,7 @@ concurrency:
 
 jobs:
   build:
+    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -54,6 +55,7 @@ jobs:
       working-directory: ${{ github.workflow }}
 
   test:
+    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:

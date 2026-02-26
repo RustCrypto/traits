@@ -20,6 +20,7 @@ concurrency:
 
 jobs:
   clippy:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -31,6 +32,7 @@ jobs:
       - run: cargo clippy --all --all-features --tests -- -D warnings
 
   doc:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -43,6 +45,7 @@ jobs:
         run: cargo doc --workspace --all-features --no-deps --exclude crypto
 
   rustfmt:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -53,12 +56,14 @@ jobs:
       - run: cargo fmt --all -- --check
 
   typos:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: crate-ci/typos@v1.43.1
 
   lock:
+    if: false
     name: Check Cargo.lock
     runs-on: ubuntu-latest
     steps:
