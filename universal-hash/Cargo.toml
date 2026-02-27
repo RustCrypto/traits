@@ -16,5 +16,8 @@ description = "Traits which describe the functionality of universal hash functio
 common = { version = "0.2", package = "crypto-common" }
 subtle = { version = "2.4", default-features = false }
 
+[lints]
+workspace = true
+
 [package.metadata.docs.rs]
 all-features = true
