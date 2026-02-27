@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#2309]: https://github.com/RustCrypto/traits/pull/2309
 
 ## 0.11.0 (2026-02-13) [YANKED]
+Note: this version was yanked because v0.11.1 introduces breaking changes.
+Users should migrate to `digest` v0.11.1 and `crypto-common` v0.2.1 using `cargo update`.
+
 ### Added
 - `CustomizedInit` trait ([#1334])
 - `SerializableState` support ([#1369])
