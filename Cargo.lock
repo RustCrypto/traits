@@ -736,7 +736,7 @@ name = "universal-hash"
 version = "0.6.0"
 dependencies = [
  "crypto-common",
- "subtle",
+ "ctutils",
 ]
 
 [[package]]
