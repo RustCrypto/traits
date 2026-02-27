@@ -1,6 +1,8 @@
 # RustCrypto: Traits
 
-[![Project Chat][chat-image]][chat-link] ![Apache2/MIT licensed][license-image] [![dependency status][deps-image]][deps-link]
+[![Project Chat][chat-image]][chat-link]
+![Apache2/MIT licensed][license-image]
+[![dependency status][deps-image]][deps-link]
 
 Collection of traits which describe functionality of cryptographic primitives.
 
@@ -9,7 +11,6 @@ Collection of traits which describe functionality of cryptographic primitives.
 | Name                | Algorithm | Crates.io | Docs  | MSRV |
 |---------------------|-----------|:---------:|:-----:|:----:|
 | [`aead`]            | [Authenticated encryption]    | [![crates.io](https://img.shields.io/crates/v/aead.svg)](https://crates.io/crates/aead) | [![Documentation](https://docs.rs/aead/badge.svg)](https://docs.rs/aead) | ![MSRV 1.85][msrv-1.85] |
-| [`async‑signature`] | [Digital signature]           | [![crates.io](https://img.shields.io/crates/v/async-signature.svg)](https://crates.io/crates/async-signature) | [![Documentation](https://docs.rs/async-signature/badge.svg)](https://docs.rs/async-signature) | ![MSRV 1.85][msrv-1.85] |
 | [`cipher`]          | [Block] and [stream cipher]   | [![crates.io](https://img.shields.io/crates/v/cipher.svg)](https://crates.io/crates/cipher) | [![Documentation](https://docs.rs/cipher/badge.svg)](https://docs.rs/cipher) | ![MSRV 1.85][msrv-1.85] |
 | [`crypto‑common`]      | Common cryptographic traits | [![crates.io](https://img.shields.io/crates/v/crypto-common.svg)](https://crates.io/crates/crypto-common) | [![Documentation](https://docs.rs/crypto-common/badge.svg)](https://docs.rs/crypto-common) | ![MSRV 1.85][msrv-1.85] |
 | [`digest`]          | [Cryptographic hash function] | [![crates.io](https://img.shields.io/crates/v/digest.svg)](https://crates.io/crates/digest) | [![Documentation](https://docs.rs/digest/badge.svg)](https://docs.rs/digest) | ![MSRV 1.85][msrv-1.85] |
@@ -50,7 +51,6 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [//]: # (crates)
 
 [`aead`]: ./aead
-[`async‑signature`]: ./signature/async
 [`cipher`]: ./cipher
 [`crypto‑common`]: ./crypto-common
 [`crypto`]: ./crypto
