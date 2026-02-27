@@ -50,7 +50,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [//]: # (crates)
 
 [`aead`]: ./aead
-[`async‑signature`]: ./signature/async
+[`async‑signature`]: ./async-signature
 [`cipher`]: ./cipher
 [`crypto‑common`]: ./crypto-common
 [`crypto`]: ./crypto
