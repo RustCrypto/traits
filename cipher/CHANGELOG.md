@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#2309]: https://github.com/RustCrypto/traits/pull/2309
 
 ## 0.5.0 (2026-02-04) [YANKED]
+Note: this version was yanked because v0.5.1 introduces breaking changes.
+Users should migrate to `cipher` v0.5.1 and `crypto-common` v0.2.1 using `cargo update`.
+
 ### Added
 - Traits for tweakable block ciphers ([#1721])
 - Methods for writing keystream ([#1907])
