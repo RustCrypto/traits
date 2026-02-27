@@ -13,8 +13,8 @@ categories = ["cryptography", "no-std"]
 description = "Traits which describe the functionality of universal hash functions (UHFs)"
 
 [dependencies]
+ctutils = "0.4"
 common = { version = "0.2", package = "crypto-common" }
-subtle = { version = "2.4", default-features = false }
 
 [lints]
 workspace = true

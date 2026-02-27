@@ -18,7 +18,7 @@ use common::{
     array::{Array, ArraySize},
 };
 use core::slice;
-use subtle::ConstantTimeEq;
+use ctutils::CtEq;
 use typenum::Unsigned;
 
 /// Trait implemented by UHF backends.
