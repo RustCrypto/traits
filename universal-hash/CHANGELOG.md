@@ -8,14 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.6.0 (2026-02-26)
 ### Changed
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
-- Migrate to `doc_auto_cfg` ([#1370])
+- Replaced `generic-array` with `hybrid-array` ([#1385])
 - Bump `crypto-common` dependency to v0.2 ([#1385])
-- Bump `hybrid-array` dependency to v0.2 ([#1469])
 - Re-export of `crypto-common` moved to `universal_hash::common` ([#2237])
 
-[#1370]: https://github.com/RustCrypto/traits/pull/1370
 [#1385]: https://github.com/RustCrypto/traits/pull/1385
-[#1469]: https://github.com/RustCrypto/traits/pull/1469
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
 [#2237]: https://github.com/RustCrypto/traits/pull/2237
 
