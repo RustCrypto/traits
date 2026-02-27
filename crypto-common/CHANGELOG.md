@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#2309]: https://github.com/RustCrypto/traits/pull/2309
 
-## 0.2.0 (2026-02-04)
+## 0.2.0 (2026-02-04) [YANKED]
 ### Added
 - Sealed `BlockSizes` trait implemented for types from `U1` to `U255` ([#1172])
 - `SerializableState` trait under `hazmat` module ([#1369])
