@@ -377,6 +377,12 @@ name = "kdf"
 version = "0.1.0"
 
 [[package]]
+name = "kdf"
+version = "0.1.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c47f30a65a0a4e5d66cb07522714cd3eeafda0afac011e6797d1fbd939098bc5"
+
+[[package]]
 name = "kem"
 version = "0.3.0-rc.6"
 dependencies = [
@@ -445,6 +451,13 @@ checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 dependencies = [
  "critical-section",
  "portable-atomic",
+]
+
+[[package]]
+name = "pake"
+version = "0.0.0"
+dependencies = [
+ "kdf 0.1.0-pre.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
