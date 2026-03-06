@@ -55,3 +55,58 @@ pub trait DigestVerifier<D: Update, S> {
         signature: &S,
     ) -> Result<(), Error>;
 }
+
+/// Asynchronously verify the provided message bytestring using `Self`.
+///
+/// This trait is an async equivalent of the [`Verifier`] trait.
+pub trait AsyncVerifier<S> {
+    /// Asynchronously verify that the provided signature for a given message
+    /// bytestring is authentic.
+    ///
+    /// Returns `Error` if it is inauthentic, or otherwise returns `()`.
+    async fn verify_async(&self, msg: &[u8], signature: &S) -> Result<(), Error>;
+}
+
+impl<S, T> AsyncVerifier<S> for T
+where
+    T: Verifier<S>,
+{
+    async fn verify_async(&self, msg: &[u8], signature: &S) -> Result<(), Error> {
+        self.verify(msg, signature)
+    }
+}
+
+/// Asynchronous equivalent of [`MultipartVerifier`] where the message is
+/// provided in non-contiguous byte slices.
+///
+/// This trait is an async equivalent of the [`MultipartVerifier`] trait.
+pub trait AsyncMultipartVerifier<S> {
+    /// Async equivalent of [`MultipartVerifier::multipart_verify()`] where the
+    /// message is provided in non-contiguous byte slices.
+    async fn multipart_verify_async(&self, msg: &[&[u8]], signature: &S) -> Result<(), Error>;
+}
+
+impl<S, T> AsyncMultipartVerifier<S> for T
+where
+    T: MultipartVerifier<S>,
+{
+    async fn multipart_verify_async(&self, msg: &[&[u8]], signature: &S) -> Result<(), Error> {
+        self.multipart_verify(msg, signature)
+    }
+}
+
+/// Asynchronously verify the provided signature for the given prehashed
+/// message `Digest` is authentic.
+#[cfg(feature = "digest")]
+pub trait AsyncDigestVerifier<D: Update, S> {
+    /// Asynchronously verify the signature against the received `Digest`
+    /// output, by updating it with the message.
+    ///
+    /// The given function can be invoked multiple times. It is expected that
+    /// in each invocation the `Digest` is updated with the entire equal message.
+    async fn verify_digest_async<F: AsyncFn(&mut D) -> Result<(), Error>>(
+        &self,
+        f: F,
+        signature: &S,
+    ) -> Result<(), Error>;
+}
