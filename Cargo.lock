@@ -467,14 +467,14 @@ dependencies = [
 
 [[package]]
 name = "phc"
-version = "0.6.0-rc.1"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71d390c5fe8d102c2c18ff39f1e72b9ad5996de282c2d831b0312f56910f5508"
+checksum = "44dc769b75f93afdddd8c7fa12d685292ddeff1e66f7f0f3a234cf1818afe892"
 dependencies = [
  "base64ct",
+ "ctutils",
  "getrandom",
  "rand_core",
- "subtle",
 ]
 
 [[package]]
