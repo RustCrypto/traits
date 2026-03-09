@@ -224,26 +224,6 @@ where
     }
 }
 
-/// Trait for password hashing algorithms which support the legacy
-/// [Modular Crypt Format (MCF)][MCF].
-///
-/// [MCF]: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
-#[cfg(feature = "phc")]
-pub trait McfHasher {
-    /// Upgrade an MCF hash to a PHC hash. MCF follow this rough format:
-    ///
-    /// ```text
-    /// $<id>$<content>
-    /// ```
-    ///
-    /// MCF hashes are otherwise largely unstructured and parsed according to
-    /// algorithm-specific rules so hashers must parse a raw string themselves.
-    ///
-    /// # Errors
-    /// Returns errors if the the hash couldn't be converted
-    fn upgrade_mcf_hash(&self, hash: &str) -> Result<phc::PasswordHash>;
-}
-
 /// Generate a random salt value of the recommended length using the system's secure RNG.
 ///
 /// # Panics
