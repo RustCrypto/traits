@@ -26,5 +26,8 @@ alloc = ["phc?/alloc"]
 getrandom = ["dep:getrandom", "phc?/getrandom"]
 rand_core = ["dep:rand_core", "phc?/rand_core"]
 
+[lints]
+workspace = true
+
 [package.metadata.docs.rs]
 all-features = true
