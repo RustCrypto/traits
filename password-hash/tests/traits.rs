@@ -1,6 +1,7 @@
 //! Password hashing tests
 
 #![cfg(feature = "phc")]
+#![allow(missing_copy_implementations, missing_debug_implementations)]
 
 use core::{fmt::Display, str::FromStr};
 use password_hash::{CustomizedPasswordHasher, Error, PasswordHasher, Result};
@@ -58,7 +59,7 @@ impl PasswordHasher<PasswordHash> for StubPasswordHasher {
 pub struct StubParams;
 
 impl Display for StubParams {
-    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         Ok(())
     }
 }
