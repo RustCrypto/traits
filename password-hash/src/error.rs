@@ -39,6 +39,9 @@ pub enum Error {
     /// Invalid password.
     PasswordInvalid,
 
+    /// Random number generator failure.
+    RngFailure,
+
     /// Invalid salt.
     SaltInvalid,
 
@@ -58,6 +61,7 @@ impl fmt::Display for Error {
             Self::ParamInvalid { name } => write!(f, "invalid parameter: {name:?}"),
             Self::ParamsInvalid => write!(f, "invalid parameters"),
             Self::PasswordInvalid => write!(f, "invalid password"),
+            Self::RngFailure => write!(f, "rng failure"),
             Self::SaltInvalid => write!(f, "invalid salt"),
             Self::Version => write!(f, "invalid algorithm version"),
         }
@@ -69,8 +73,7 @@ impl core::error::Error for Error {}
 #[cfg(feature = "getrandom")]
 impl From<getrandom::Error> for Error {
     fn from(_: getrandom::Error) -> Self {
-        // TODO(tarcieri): should we have a specific variant for RNGs errors?
-        Error::Crypto
+        Error::RngFailure
     }
 }
 
