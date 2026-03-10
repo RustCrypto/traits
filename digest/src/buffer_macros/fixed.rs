@@ -65,8 +65,7 @@ macro_rules! buffer_fixed {
     };
 
     // Implements the set of traits common for MAC functions:
-    // `Debug`, `BlockSizeUser`, `OutputSizeUser`, `CoreProxy`, `Update`, `FixedOutput`,
-    // `Clone`, `MacMarker`.
+    // `Debug`, `BlockSizeUser`, `OutputSizeUser`, `CoreProxy`, `Update`, `FixedOutput`, `MacMarker`
     (
         impl_inner: $name:ident
         $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
@@ -75,13 +74,13 @@ macro_rules! buffer_fixed {
     ) => {
         $crate::buffer_fixed!(
             impl_inner: $name$(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)?($core_ty);
-            BaseFixedTraits Clone MacMarker $($trait_name)*;
+            BaseFixedTraits MacMarker $($trait_name)*;
         );
     };
 
     // Implements the set of traits common for resettable MAC functions:
     // `Debug`, `BlockSizeUser`, `OutputSizeUser`, `CoreProxy`, `Update`, `FixedOutput`,
-    // `Clone`, `MacMarker`, `Reset`, `FixedOutputReset`.
+    // `MacMarker`, `Reset`, `FixedOutputReset`.
     (
         impl_inner: $name:ident
         $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)?
