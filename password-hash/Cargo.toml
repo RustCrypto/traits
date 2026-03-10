@@ -1,6 +1,6 @@
 [package]
 name = "password-hash"
-version = "0.6.0-rc.12"
+version = "0.6.0"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
@@ -12,7 +12,7 @@ categories = ["authentication", "cryptography", "no-std"]
 keywords = ["crypt", "mcf", "password", "pbkdf", "phc"]
 description = """
 Traits which describe the functionality of password hashing algorithms, with optional support for a
-`no_std`-friendly implementation of the PHC string format, as well as generic support for other
+`no_std`/`no_alloc`-friendly implementation of the PHC string format, as well as generic support for other
 formats (e.g. Modular Crypt Format)
 """
 

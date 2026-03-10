@@ -5,15 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.6.0 (UNRELEASED)
+## 0.6.0 (2026-03-10)
+### Added
+- Generic `H` param to traits to support multiple string formats e.g. PHC, MCF ([#2110])
+- Implement `From<phc::Error>` for `Error` ([#2124])
+- `rand_core` feature ([#2126])
+- Salt generating helper functions `(try_)generate_salt` ([#2128])
+- `Error::RngFailure` variant ([#2337])
+
 ### Changed
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
-- Bump `rand_core` to v0.10 ([#2250])
+- Extract `CustomizedPasswordHasher` trait ([#2105])
 - Bump `getrandom` to v0.4 ([#2258])
 
+### Removed
+- `Encoding` enum ([#2102])
+- PHC types moved to the `phc` crate, which is re-exported as `password_hash::phc` when the `phc`
+  crate feature is enabled ([#2103], [#2116]):
+  - `Ident`
+  - `Output`
+  - `ParamsString`
+  - `PasswordHash`
+  - `PasswordHashString`
+  - `Salt`
+  - `SaltString`
+  - `Value`
+- `McfHasher` trait ([#2334])
+
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
-[#2250]: https://github.com/RustCrypto/traits/pull/2250
+[#2102]: https://github.com/RustCrypto/traits/pull/2102
+[#2103]: https://github.com/RustCrypto/traits/pull/2103
+[#2105]: https://github.com/RustCrypto/traits/pull/2105
+[#2110]: https://github.com/RustCrypto/traits/pull/2110
+[#2116]: https://github.com/RustCrypto/traits/pull/2116
+[#2124]: https://github.com/RustCrypto/traits/pull/2124
+[#2126]: https://github.com/RustCrypto/traits/pull/2126
+[#2128]: https://github.com/RustCrypto/traits/pull/2128
 [#2258]: https://github.com/RustCrypto/traits/pull/2258
+[#2334]: https://github.com/RustCrypto/traits/pull/2334
+[#2337]: https://github.com/RustCrypto/traits/pull/2337
 
 ## 0.5.0 (2023-03-04)
 ### Added
