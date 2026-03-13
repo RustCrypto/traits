@@ -8,9 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.11.2 (UNRELEASED)
 ### Changed
 - Do not implement `Clone` as part of `(Reset)MacTraits` in the `buffer_fixed!` macro ([#2341])
-- Make `EagerHash` sub-trait of `Clone` ([#2341])
+- `EagerHash` trait to be a sub-trait of `Clone` ([#2341])
 
-[#2341]: https://github.com/RustCrypto/traits/pull/2341/changes
+[#2341]: https://github.com/RustCrypto/traits/pull/2341
 
 ## 0.11.1 (2026-02-25) [YANKED]
 Note: this version was yanked because v0.11.2 introduces minor breaking changes
