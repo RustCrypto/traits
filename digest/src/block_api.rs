@@ -52,7 +52,7 @@ pub trait BufferKindUser: SmallBlockSizeUser {
 }
 
 /// Trait implemented by eager hashes which expose their block-level core.
-pub trait EagerHash: SmallBlockSizeUser + Digest {
+pub trait EagerHash: SmallBlockSizeUser + Digest + Clone {
     /// Block-level core type of the hash.
     type Core: HashMarker
         + UpdateCore
@@ -65,7 +65,7 @@ pub trait EagerHash: SmallBlockSizeUser + Digest {
 
 impl<T> EagerHash for T
 where
-    T: CoreProxy + SmallBlockSizeUser + Digest,
+    T: CoreProxy + SmallBlockSizeUser + Digest + Clone,
     <T as CoreProxy>::Core: HashMarker
         + UpdateCore
         + FixedOutputCore
