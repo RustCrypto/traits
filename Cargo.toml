@@ -57,4 +57,3 @@ unused_qualifications = "warn"
 crypto-common = { path = "crypto-common" }
 digest = { path = "digest" }
 signature = { path = "signature" }
-hmac = { git = "https://github.com/RustCrypto/MACs" }
