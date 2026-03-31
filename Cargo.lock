@@ -180,7 +180,6 @@ dependencies = [
  "hybrid-array",
  "num-traits",
  "rand_core",
- "subtle",
  "zeroize",
 ]
 
@@ -234,6 +233,7 @@ dependencies = [
  "base16ct",
  "crypto-bigint",
  "crypto-common",
+ "ctutils",
  "digest",
  "hex-literal",
  "hkdf",
@@ -329,11 +329,11 @@ dependencies = [
 
 [[package]]
 name = "hybrid-array"
-version = "0.4.8"
+version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8655f91cd07f2b9d0c24137bd650fe69617773435ee5ec83022377777ce65ef1"
+checksum = "3944cf8cf766b40e2a1a333ee5e9b563f854d5fa49d6a8ca2764e97c6eddb214"
 dependencies = [
- "subtle",
+ "ctutils",
  "typenum",
  "zeroize",
 ]
@@ -541,9 +541,9 @@ checksum = "0c8d0fd677905edcbeedbf2edb6494d676f0e98d54d5cf9bda0b061cb8fb8aba"
 
 [[package]]
 name = "rustcrypto-ff"
-version = "0.14.0-rc.0"
+version = "0.14.0-rc.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5db129183b2c139d7d87d08be57cba626c715789db17aec65c8866bfd767d1f"
+checksum = "fd2a8adb347447693cd2ba0d218c4b66c62da9b0a5672b17b981e4291ec65ff6"
 dependencies = [
  "bitvec",
  "rand_core",
@@ -568,9 +568,9 @@ dependencies = [
 
 [[package]]
 name = "rustcrypto-group"
-version = "0.14.0-rc.0"
+version = "0.14.0-rc.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57c4b1463f274a3ff6fb2f44da43e576cb9424367bd96f185ead87b52fe00523"
+checksum = "369f9b61aa45933c062c9f6b5c3c50ab710687eca83dd3802653b140b43f85ed"
 dependencies = [
  "rand_core",
  "rustcrypto-ff",
@@ -579,16 +579,15 @@ dependencies = [
 
 [[package]]
 name = "sec1"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f46b9a5ab87780a3189a1d704766579517a04ad59de653b7aad7d38e8a15f7dc"
+checksum = "d56d437c2f19203ce5f7122e507831de96f3d2d4d3be5af44a0b0a09d8a80e4d"
 dependencies = [
  "base16ct",
  "ctutils",
  "der",
  "hybrid-array",
  "serdect",
- "subtle",
  "zeroize",
 ]
 

@@ -3,10 +3,12 @@
 pub use bigint::{Invert, Reduce};
 pub use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Shr, ShrAssign, Sub, SubAssign};
 
-use crate::CurveGroup;
+use crate::{
+    CurveGroup,
+    ctutils::{Choice, CtOption},
+};
 use core::iter;
 use ff::Field;
-use subtle::{Choice, CtOption};
 
 #[cfg(feature = "alloc")]
 use alloc::{borrow::ToOwned, vec::Vec};
@@ -90,7 +92,7 @@ fn invert<T: Field>(scalar: T) -> (T, Choice) {
     let choice = scalar.is_some();
     let scalar = scalar.unwrap_or(T::default());
 
-    (scalar, choice)
+    (scalar, choice.into())
 }
 
 /// Implements "Montgomery's trick", a trick for computing many modular inverses at once.

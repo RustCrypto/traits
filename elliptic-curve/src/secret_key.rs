@@ -8,12 +8,14 @@
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
 mod pkcs8;
 
-use crate::{Curve, Error, FieldBytes, Result, ScalarValue};
+use crate::{
+    Curve, Error, FieldBytes, Result, ScalarValue,
+    ctutils::{Choice, CtEq, CtOption},
+};
 use array::typenum::Unsigned;
 use common::{Generate, InvalidKey, KeySizeUser, TryKeyInit};
 use core::fmt::{self, Debug};
 use rand_core::{CryptoRng, TryCryptoRng};
-use subtle::{Choice, ConstantTimeEq, CtOption};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 #[cfg(feature = "arithmetic")]
@@ -293,7 +295,7 @@ where
     }
 }
 
-impl<C> ConstantTimeEq for SecretKey<C>
+impl<C> CtEq for SecretKey<C>
 where
     C: Curve,
 {

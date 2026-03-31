@@ -2,6 +2,7 @@
 
 use crate::{
     CurveArithmetic, Error, FieldBytes, PrimeCurve, Scalar, ScalarValue, SecretKey,
+    ctutils::{Choice, CtEq, CtOption, CtSelect},
     ops::{self, BatchInvert, Invert, Reduce, ReduceNonZero},
     point::NonIdentity,
     scalar::IsHigh,
@@ -15,7 +16,6 @@ use core::{
 };
 use ff::{Field, PrimeField};
 use rand_core::{CryptoRng, TryCryptoRng};
-use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
 #[cfg(feature = "alloc")]
@@ -28,7 +28,7 @@ use serdect::serde::{Deserialize, Serialize, de, ser};
 ///
 /// This type ensures that its value is not zero, ala `core::num::NonZero*`.
 /// To do this, the generic `S` type must impl both `Default` and
-/// `ConstantTimeEq`, with the requirement that `S::default()` returns 0.
+/// `CtEq`, with the requirement that `S::default()` returns 0.
 ///
 /// In the context of ECC, it's useful for ensuring that scalar multiplication
 /// cannot result in the point at infinity.
@@ -54,12 +54,12 @@ where
 {
     /// Create a [`NonZeroScalar`] from a scalar.
     pub fn new(scalar: Scalar<C>) -> CtOption<Self> {
-        CtOption::new(Self { scalar }, !scalar.is_zero())
+        CtOption::new(Self { scalar }, (!scalar.is_zero()).into())
     }
 
     /// Decode a [`NonZeroScalar`] from a big endian-serialized field element.
     pub fn from_repr(repr: FieldBytes<C>) -> CtOption<Self> {
-        Scalar::<C>::from_repr(repr).and_then(Self::new)
+        CtOption::from(Scalar::<C>::from_repr(repr)).and_then(Self::new)
     }
 
     /// Create a [`NonZeroScalar`] from a `C::Uint`.
@@ -145,18 +145,18 @@ where
     }
 }
 
-impl<C> ConditionallySelectable for NonZeroScalar<C>
+impl<C> CtSelect for NonZeroScalar<C>
 where
     C: CurveArithmetic,
 {
-    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
+    fn ct_select(&self, other: &Self, choice: Choice) -> Self {
         Self {
-            scalar: Scalar::<C>::conditional_select(&a.scalar, &b.scalar, choice),
+            scalar: self.scalar.ct_select(&other.scalar, choice),
         }
     }
 }
 
-impl<C> ConstantTimeEq for NonZeroScalar<C>
+impl<C> CtEq for NonZeroScalar<C>
 where
     C: CurveArithmetic,
 {
