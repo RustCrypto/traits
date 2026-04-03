@@ -49,6 +49,17 @@
 //! # }
 //! ```
 //!
+//! ## Serialization
+//!
+//! The [`KeyInit`] and [`KeyExport`] traits can be used to load and store encoded decapsulation
+//! and encapsulation keys from their byte serialization.
+//!
+//! Decapsulation keys are often initialized from a compact representation known as a [`Seed`].
+//! The [`FromSeed`] trait provides an extension to the [`Kem`] trait for initializing keypairs
+//! from a seed value. We recommend the [`KeyInit`] and [`KeyExport`] trait impls on
+//! decapsulation keys operate on seed values when there is a choice of multiple key formats
+//! (e.g. expanded decapsulation keys).
+//!
 //! [RFC 9180]: https://www.rfc-editor.org/info/rfc9180
 
 pub use common::{
