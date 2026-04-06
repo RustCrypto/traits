@@ -31,12 +31,12 @@ pub fn mac_test<M: Mac + KeyInit + Clone>(
         return Err("Failed to initialize MAC instance");
     };
 
-    raw_mac_test(mac0, input, tag, trunc_side)
+    initialized_mac_test(mac0, input, tag, trunc_side)
 }
 
 /// Run the MAC test directly on an initialized MAC.
 /// This is useful for when custom initialization is needed
-pub fn raw_mac_test<M: Mac + Clone>(
+pub fn initialized_mac_test<M: Mac + Clone>(
     mac0: M,
     input: &[u8],
     tag: &[u8],
