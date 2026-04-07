@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.6.0 (2026-03-10)
+## 0.6.1 (2026-04-07)
+### Changed
+- Bounds for blanket impl of `PasswordVerifier` for `phc::PasswordHash` [BREAKING] ([#2370])
+
+[#2370]: https://github.com/RustCrypto/traits/pull/2370
+
+## 0.6.0 (2026-03-10) [YANKED]
+
+NOTE: this release was yanked to accommodate breaking changes introduced in v0.6.1.
+
 ### Added
 - Generic `H` param to traits to support multiple string formats e.g. PHC, MCF ([#2110])
 - Implement `From<phc::Error>` for `Error` ([#2124])
