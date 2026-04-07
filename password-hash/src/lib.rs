@@ -196,7 +196,7 @@ pub trait PasswordVerifier<H: ?Sized> {
 #[cfg(feature = "phc")]
 impl<T: CustomizedPasswordHasher<phc::PasswordHash>> PasswordVerifier<phc::PasswordHash> for T
 where
-    T::Params: for<'a> TryFrom<&'a phc::ParamsString, Error = Error>,
+    T::Params: for<'a> TryFrom<&'a phc::PasswordHash, Error = Error>,
 {
     fn verify_password(&self, password: &[u8], hash: &phc::PasswordHash) -> Result<()> {
         #[allow(clippy::single_match)]
@@ -207,7 +207,7 @@ where
                     salt,
                     Some(hash.algorithm.as_str()),
                     hash.version,
-                    T::Params::try_from(&hash.params)?,
+                    T::Params::try_from(hash)?,
                 )?;
 
                 if let Some(computed_output) = &computed_hash.hash {
