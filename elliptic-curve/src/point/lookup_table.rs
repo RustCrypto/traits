@@ -3,8 +3,8 @@
 
 #![cfg(feature = "arithmetic")]
 
+use ctutils::{Choice, CtAssign, CtEq};
 use group::Group;
-use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
 
 /// Internal constant for the number of entries in a [`LookupTable`].
 ///
@@ -13,6 +13,7 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
 const LUT_SIZE: usize = 8;
 
 /// Lookup table containing precomputed values `[p, 2p, 3p, ..., 8p]`
+// TODO(tarcieri): impl `ctutils::CtLookup`
 #[derive(Clone, Copy, Debug, Default)]
 pub struct LookupTable<Point> {
     points: [Point; LUT_SIZE],
@@ -20,7 +21,7 @@ pub struct LookupTable<Point> {
 
 impl<Point> LookupTable<Point>
 where
-    Point: ConditionallySelectable + Group,
+    Point: CtAssign + Group,
 {
     /// Number of entries in the lookup table.
     pub const SIZE: usize = LUT_SIZE;
@@ -53,12 +54,12 @@ where
         #[allow(clippy::cast_possible_truncation)]
         for j in 1..(LUT_SIZE + 1) {
             let c = (xabs as u8).ct_eq(&(j as u8));
-            t.conditional_assign(&self.points[j - 1], c);
+            t.ct_assign(&self.points[j - 1], c);
         }
         // Now t == |x| * p.
 
         let neg_mask = Choice::from((xmask & 1) as u8);
-        t.conditional_assign(&-t, neg_mask);
+        t.ct_assign(&-t, neg_mask);
         // Now t == x * p.
 
         t

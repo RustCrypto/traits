@@ -8,14 +8,12 @@ use crate::{
     BatchNormalize, Curve, CurveArithmetic, CurveGroup, FieldBytesEncoding, Generate, PrimeCurve,
     array::typenum::U32,
     bigint::{Limb, Odd, U256, modular::Retrieve},
-    ctutils,
     error::{Error, Result},
     ops::{Invert, LinearCombination, Reduce, ShrAssign},
     point::{AffineCoordinates, NonIdentity},
     rand_core::{TryCryptoRng, TryRng},
     scalar::{FromUintUnchecked, IsHigh},
     sec1::{CompressedPoint, FromSec1Point, ToSec1Point},
-    subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     zeroize::DefaultIsZeroes,
 };
 use core::{
@@ -23,6 +21,7 @@ use core::{
     iter::{Product, Sum},
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
+use ctutils::{Choice, CtEq, CtOption, CtSelect};
 use ff::{Field, PrimeField};
 use hex_literal::hex;
 use pkcs8::AssociatedOid;
@@ -107,8 +106,8 @@ impl Field for Scalar {
         }
     }
 
-    fn is_zero(&self) -> Choice {
-        self.0.is_zero()
+    fn is_zero(&self) -> subtle::Choice {
+        self.0.is_zero().into()
     }
 
     fn square(&self) -> Self {
@@ -119,15 +118,15 @@ impl Field for Scalar {
         self.add(self)
     }
 
-    fn invert(&self) -> CtOption<Self> {
+    fn invert(&self) -> subtle::CtOption<Self> {
         unimplemented!();
     }
 
-    fn sqrt(&self) -> CtOption<Self> {
+    fn sqrt(&self) -> subtle::CtOption<Self> {
         unimplemented!();
     }
 
-    fn sqrt_ratio(_num: &Self, _div: &Self) -> (Choice, Self) {
+    fn sqrt_ratio(_num: &Self, _div: &Self) -> (subtle::Choice, Self) {
         unimplemented!();
     }
 }
@@ -146,16 +145,16 @@ impl PrimeField for Scalar {
     const ROOT_OF_UNITY_INV: Self = Self::ZERO; // BOGUS!
     const DELTA: Self = Self::ZERO; // BOGUS!
 
-    fn from_repr(bytes: FieldBytes) -> CtOption<Self> {
-        ScalarValue::from_bytes(&bytes).map(Self)
+    fn from_repr(bytes: FieldBytes) -> subtle::CtOption<Self> {
+        ScalarValue::from_bytes(&bytes).map(Self).into()
     }
 
     fn to_repr(&self) -> FieldBytes {
         self.0.to_bytes()
     }
 
-    fn is_odd(&self) -> Choice {
-        self.0.is_odd()
+    fn is_odd(&self) -> subtle::Choice {
+        self.0.is_odd().into()
     }
 }
 
@@ -190,27 +189,27 @@ impl AsRef<Scalar> for Scalar {
     }
 }
 
-impl ConditionallySelectable for Scalar {
-    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        Self(ScalarValue::conditional_select(&a.0, &b.0, choice))
-    }
-}
-
-impl ConstantTimeEq for Scalar {
+impl CtEq for Scalar {
     fn ct_eq(&self, other: &Self) -> Choice {
         self.0.ct_eq(&other.0)
     }
 }
 
-impl ctutils::CtEq for Scalar {
-    fn ct_eq(&self, other: &Self) -> ctutils::Choice {
-        ctutils::CtEq::ct_eq(&self.0, &other.0)
+impl CtSelect for Scalar {
+    fn ct_select(&self, other: &Self, choice: Choice) -> Self {
+        Self(self.0.ct_select(&other.0, choice))
     }
 }
 
-impl ctutils::CtSelect for Scalar {
-    fn ct_select(&self, other: &Self, choice: ctutils::Choice) -> Self {
-        Self(self.0.ct_select(&other.0, choice))
+impl subtle::ConstantTimeEq for Scalar {
+    fn ct_eq(&self, other: &Self) -> subtle::Choice {
+        CtEq::ct_eq(&self.0, &other.0).into()
+    }
+}
+
+impl subtle::ConditionallySelectable for Scalar {
+    fn conditional_select(a: &Self, b: &Self, choice: subtle::Choice) -> Self {
+        a.ct_select(b, choice.into())
     }
 }
 
@@ -382,7 +381,7 @@ impl Reduce<U256> for Scalar {
     fn reduce(w: &U256) -> Self {
         let (r, underflow) = w.borrowing_sub(&MockCurve::ORDER, Limb::ZERO);
         let underflow = Choice::from((underflow.0 >> (Limb::BITS - 1)) as u8);
-        let reduced = U256::conditional_select(w, &r, !underflow);
+        let reduced = w.ct_select(&r, !underflow);
         Self(ScalarValue::new(reduced).unwrap())
     }
 }
@@ -516,7 +515,7 @@ impl AffineCoordinates for AffinePoint {
     }
 }
 
-impl ConstantTimeEq for AffinePoint {
+impl CtEq for AffinePoint {
     fn ct_eq(&self, other: &Self) -> Choice {
         match (self, other) {
             (Self::FixedBaseOutput(scalar), Self::FixedBaseOutput(other_scalar)) => {
@@ -529,22 +528,22 @@ impl ConstantTimeEq for AffinePoint {
     }
 }
 
-impl ConditionallySelectable for AffinePoint {
-    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        ctutils::CtSelect::ct_select(a, b, choice.into())
-    }
-}
-
-impl ctutils::CtEq for AffinePoint {
-    fn ct_eq(&self, other: &Self) -> ctutils::Choice {
-        ConstantTimeEq::ct_eq(self, other).into()
-    }
-}
-
-impl ctutils::CtSelect for AffinePoint {
-    fn ct_select(&self, other: &Self, choice: ctutils::Choice) -> Self {
+impl CtSelect for AffinePoint {
+    fn ct_select(&self, other: &Self, choice: Choice) -> Self {
         // Not really constant time, but this is dev code
         if choice.to_bool() { *other } else { *self }
+    }
+}
+
+impl subtle::ConstantTimeEq for AffinePoint {
+    fn ct_eq(&self, other: &Self) -> subtle::Choice {
+        CtEq::ct_eq(self, other).into()
+    }
+}
+
+impl subtle::ConditionallySelectable for AffinePoint {
+    fn conditional_select(a: &Self, b: &Self, choice: subtle::Choice) -> Self {
+        CtSelect::ct_select(a, b, choice.into())
     }
 }
 
@@ -565,14 +564,14 @@ impl Generate for AffinePoint {
 }
 
 impl FromSec1Point<MockCurve> for AffinePoint {
-    fn from_sec1_point(encoded_point: &Sec1Point) -> ctutils::CtOption<Self> {
+    fn from_sec1_point(encoded_point: &Sec1Point) -> CtOption<Self> {
         let point = if encoded_point.is_identity() {
             Self::Identity
         } else {
             Self::Other(*encoded_point)
         };
 
-        ctutils::CtOption::new(point, ctutils::Choice::TRUE)
+        CtOption::new(point, Choice::TRUE)
     }
 }
 
@@ -646,7 +645,7 @@ impl BatchNormalize<[ProjectivePoint]> for ProjectivePoint {
     }
 }
 
-impl ConstantTimeEq for ProjectivePoint {
+impl CtEq for ProjectivePoint {
     fn ct_eq(&self, other: &Self) -> Choice {
         match (self, other) {
             (Self::FixedBaseOutput(scalar), Self::FixedBaseOutput(other_scalar)) => {
@@ -659,21 +658,21 @@ impl ConstantTimeEq for ProjectivePoint {
     }
 }
 
-impl ConditionallySelectable for ProjectivePoint {
-    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        ctutils::CtSelect::ct_select(a, b, choice.into())
-    }
-}
-
-impl ctutils::CtEq for ProjectivePoint {
-    fn ct_eq(&self, other: &Self) -> ctutils::Choice {
-        ConstantTimeEq::ct_eq(self, other).into()
-    }
-}
-
-impl ctutils::CtSelect for ProjectivePoint {
-    fn ct_select(&self, other: &Self, choice: ctutils::Choice) -> Self {
+impl CtSelect for ProjectivePoint {
+    fn ct_select(&self, other: &Self, choice: Choice) -> Self {
         if choice.to_bool() { *other } else { *self }
+    }
+}
+
+impl subtle::ConditionallySelectable for ProjectivePoint {
+    fn conditional_select(a: &Self, b: &Self, choice: subtle::Choice) -> Self {
+        CtSelect::ct_select(a, b, choice.into())
+    }
+}
+
+impl subtle::ConstantTimeEq for ProjectivePoint {
+    fn ct_eq(&self, other: &Self) -> subtle::Choice {
+        CtEq::ct_eq(self, other).into()
     }
 }
 
@@ -711,7 +710,7 @@ impl Generate for ProjectivePoint {
 }
 
 impl FromSec1Point<MockCurve> for ProjectivePoint {
-    fn from_sec1_point(_point: &Sec1Point) -> ctutils::CtOption<Self> {
+    fn from_sec1_point(_point: &Sec1Point) -> CtOption<Self> {
         unimplemented!();
     }
 }
@@ -745,8 +744,9 @@ impl group::Group for ProjectivePoint {
         Self::Generator
     }
 
-    fn is_identity(&self) -> Choice {
-        Choice::from(u8::from(self == &Self::Identity))
+    fn is_identity(&self) -> subtle::Choice {
+        // WARNING: variable-time! This is for mock/testing purposes only!
+        subtle::Choice::from(u8::from(self == &Self::Identity))
     }
 
     fn double(&self) -> Self {
@@ -758,19 +758,18 @@ impl group::GroupEncoding for AffinePoint {
     type Repr = CompressedPoint<MockCurve>;
 
     #[allow(clippy::map_unwrap_or)]
-    fn from_bytes(bytes: &Self::Repr) -> CtOption<Self> {
+    fn from_bytes(bytes: &Self::Repr) -> subtle::CtOption<Self> {
         Sec1Point::from_bytes(bytes)
-            .map(|point| ctutils::CtOption::new(point, ctutils::Choice::TRUE))
+            .map(|point| CtOption::new(point, Choice::TRUE))
             .unwrap_or_else(|_| {
-                let is_identity =
-                    ctutils::CtEq::ct_eq(bytes.as_slice(), Self::Repr::default().as_slice());
-                ctutils::CtOption::new(Sec1Point::identity(), is_identity)
+                let is_identity = CtEq::ct_eq(bytes.as_slice(), Self::Repr::default().as_slice());
+                CtOption::new(Sec1Point::identity(), is_identity)
             })
             .and_then(|point| Self::from_sec1_point(&point))
             .into()
     }
 
-    fn from_bytes_unchecked(bytes: &Self::Repr) -> CtOption<Self> {
+    fn from_bytes_unchecked(bytes: &Self::Repr) -> subtle::CtOption<Self> {
         Self::from_bytes(bytes)
     }
 
@@ -785,11 +784,11 @@ impl group::GroupEncoding for AffinePoint {
 impl group::GroupEncoding for ProjectivePoint {
     type Repr = CompressedPoint<MockCurve>;
 
-    fn from_bytes(bytes: &Self::Repr) -> CtOption<Self> {
+    fn from_bytes(bytes: &Self::Repr) -> subtle::CtOption<Self> {
         <AffinePoint as group::GroupEncoding>::from_bytes(bytes).map(Into::into)
     }
 
-    fn from_bytes_unchecked(bytes: &Self::Repr) -> CtOption<Self> {
+    fn from_bytes_unchecked(bytes: &Self::Repr) -> subtle::CtOption<Self> {
         Self::from_bytes(bytes)
     }
 

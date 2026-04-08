@@ -10,8 +10,10 @@ pub use {self::non_identity::NonIdentity, lookup_table::LookupTable};
 #[cfg(feature = "basepoint-table")]
 pub use self::basepoint_table::BasepointTable;
 
-use crate::{Curve, FieldBytes};
-use subtle::{Choice, CtOption};
+use crate::{
+    Curve, FieldBytes,
+    ctutils::{Choice, CtOption},
+};
 
 #[cfg(feature = "arithmetic")]
 use crate::CurveArithmetic;

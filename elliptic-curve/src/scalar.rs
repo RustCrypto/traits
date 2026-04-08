@@ -12,7 +12,7 @@ pub use self::value::ScalarValue;
 pub use self::{blinded::BlindedScalar, nonzero::NonZeroScalar};
 
 use bigint::Integer;
-use subtle::Choice;
+use ctutils::Choice;
 
 #[cfg(feature = "arithmetic")]
 use crate::CurveArithmetic;

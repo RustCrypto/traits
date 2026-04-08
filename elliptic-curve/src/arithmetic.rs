@@ -2,7 +2,7 @@
 
 use crate::{
     Curve, CurveGroup, Error, FieldBytes, Group, NonZeroScalar, PrimeCurve, ScalarValue,
-    ctutils::{CtEq, CtSelect},
+    ctutils::{CtEq, CtOption, CtSelect},
     ops::{Invert, LinearCombination, Mul, Reduce},
     point::{AffineCoordinates, NonIdentity},
     scalar::{FromUintUnchecked, IsHigh},
@@ -10,7 +10,6 @@ use crate::{
 use bigint::modular::Retrieve;
 use common::Generate;
 use core::fmt::Debug;
-use subtle::{ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::DefaultIsZeroes;
 
 /// Elliptic curve with an arithmetic implementation.
@@ -19,8 +18,6 @@ pub trait CurveArithmetic: Curve {
     type AffinePoint: 'static
         + AffineCoordinates<FieldRepr = FieldBytes<Self>>
         + Copy
-        + ConditionallySelectable
-        + ConstantTimeEq
         + CtEq
         + CtSelect
         + Debug
@@ -46,9 +43,7 @@ pub trait CurveArithmetic: Curve {
     /// - [`Sized`]
     /// - [`Send`]
     /// - [`Sync`]
-    type ProjectivePoint: ConditionallySelectable
-        + ConstantTimeEq
-        + CtEq
+    type ProjectivePoint: CtEq
         + CtSelect
         + Default
         + DefaultIsZeroes
@@ -68,8 +63,8 @@ pub trait CurveArithmetic: Curve {
     /// - `'static`
     /// - [`Copy`]
     /// - [`Clone`]
-    /// - [`ConditionallySelectable`]
-    /// - [`ConstantTimeEq`]
+    /// - [`CtSelect`]
+    /// - [`CtEq`]
     /// - [`Debug`]
     /// - [`Default`]
     /// - [`Send`]

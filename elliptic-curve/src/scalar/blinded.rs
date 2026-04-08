@@ -1,11 +1,10 @@
 //! Random blinding support for [`Scalar`]
 
 use super::Scalar;
-use crate::{CurveArithmetic, ops::Invert};
+use crate::{CurveArithmetic, ctutils::CtOption, ops::Invert};
 use common::Generate;
 use core::fmt;
 use rand_core::{CryptoRng, TryCryptoRng};
-use subtle::CtOption;
 use zeroize::Zeroize;
 
 #[cfg(feature = "getrandom")]

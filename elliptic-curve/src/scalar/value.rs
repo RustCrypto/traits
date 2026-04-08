@@ -4,7 +4,7 @@ use crate::{
     Curve, Error, FieldBytes, FieldBytesEncoding, Result,
     array::Array,
     bigint::{AddMod, ConstOne, ConstZero, Integer, Limb, NegMod, Odd, RandomMod, SubMod, Zero},
-    ctutils::{self, CtEq, CtGt, CtLt, CtSelect},
+    ctutils::{Choice, CtEq, CtGt, CtLt, CtOption, CtSelect},
     scalar::{FromUintUnchecked, IsHigh},
 };
 use base16ct::HexDisplay;
@@ -16,10 +16,6 @@ use core::{
     str,
 };
 use rand_core::{CryptoRng, TryCryptoRng};
-use subtle::{
-    Choice, ConditionallySelectable, ConstantTimeEq, ConstantTimeGreater, ConstantTimeLess,
-    CtOption,
-};
 use zeroize::DefaultIsZeroes;
 
 #[cfg(feature = "arithmetic")]
@@ -66,10 +62,7 @@ where
 
     /// Create a new scalar from [`Curve::Uint`].
     pub fn new(uint: C::Uint) -> CtOption<Self> {
-        CtOption::new(
-            Self { inner: uint },
-            CtLt::ct_lt(&uint, &Self::MODULUS).into(),
-        )
+        CtOption::new(Self { inner: uint }, CtLt::ct_lt(&uint, &Self::MODULUS))
     }
 
     /// Decode [`ScalarValue`] from a serialized field element
@@ -99,17 +92,17 @@ where
 
     /// Is this [`ScalarValue`] value equal to zero?
     pub fn is_zero(&self) -> Choice {
-        self.inner.is_zero().into()
+        self.inner.is_zero()
     }
 
     /// Is this [`ScalarValue`] value even?
     pub fn is_even(&self) -> Choice {
-        self.inner.is_even().into()
+        self.inner.is_even()
     }
 
     /// Is this [`ScalarValue`] value odd?
     pub fn is_odd(&self) -> Choice {
-        self.inner.is_odd().into()
+        self.inner.is_odd()
     }
 
     /// Encode [`ScalarValue`] as a serialized field element.
@@ -185,70 +178,12 @@ where
     }
 }
 
-impl<C> ConditionallySelectable for ScalarValue<C>
-where
-    C: Curve,
-{
-    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        Self {
-            inner: C::Uint::ct_select(&a.inner, &b.inner, choice.into()),
-        }
-    }
-}
-
-impl<C> ConstantTimeEq for ScalarValue<C>
-where
-    C: Curve,
-{
-    fn ct_eq(&self, other: &Self) -> Choice {
-        self.inner.ct_eq(&other.inner).into()
-    }
-}
-
-impl<C> ConstantTimeLess for ScalarValue<C>
-where
-    C: Curve,
-{
-    fn ct_lt(&self, other: &Self) -> Choice {
-        self.inner.ct_lt(&other.inner).into()
-    }
-}
-
-impl<C> ConstantTimeGreater for ScalarValue<C>
-where
-    C: Curve,
-{
-    fn ct_gt(&self, other: &Self) -> Choice {
-        self.inner.ct_gt(&other.inner).into()
-    }
-}
-
-impl<C> CtSelect for ScalarValue<C>
-where
-    C: Curve,
-{
-    fn ct_select(&self, other: &Self, choice: ctutils::Choice) -> Self {
-        Self {
-            inner: C::Uint::ct_select(&self.inner, &other.inner, choice),
-        }
-    }
-}
-
 impl<C> CtEq for ScalarValue<C>
 where
     C: Curve,
 {
-    fn ct_eq(&self, other: &Self) -> ctutils::Choice {
+    fn ct_eq(&self, other: &Self) -> Choice {
         self.inner.ct_eq(&other.inner)
-    }
-}
-
-impl<C> CtGt for ScalarValue<C>
-where
-    C: Curve,
-{
-    fn ct_gt(&self, other: &Self) -> ctutils::Choice {
-        self.inner.ct_gt(&other.inner)
     }
 }
 
@@ -256,8 +191,66 @@ impl<C> CtLt for ScalarValue<C>
 where
     C: Curve,
 {
-    fn ct_lt(&self, other: &Self) -> ctutils::Choice {
+    fn ct_lt(&self, other: &Self) -> Choice {
         self.inner.ct_lt(&other.inner)
+    }
+}
+
+impl<C> CtGt for ScalarValue<C>
+where
+    C: Curve,
+{
+    fn ct_gt(&self, other: &Self) -> Choice {
+        self.inner.ct_gt(&other.inner)
+    }
+}
+
+impl<C> CtSelect for ScalarValue<C>
+where
+    C: Curve,
+{
+    fn ct_select(&self, other: &Self, choice: Choice) -> Self {
+        Self {
+            inner: C::Uint::ct_select(&self.inner, &other.inner, choice),
+        }
+    }
+}
+
+impl<C> subtle::ConstantTimeEq for ScalarValue<C>
+where
+    C: Curve,
+{
+    fn ct_eq(&self, other: &Self) -> subtle::Choice {
+        self.inner.ct_eq(&other.inner).into()
+    }
+}
+
+impl<C> subtle::ConstantTimeGreater for ScalarValue<C>
+where
+    C: Curve,
+{
+    fn ct_gt(&self, other: &Self) -> subtle::Choice {
+        self.inner.ct_gt(&other.inner).into()
+    }
+}
+
+impl<C> subtle::ConstantTimeLess for ScalarValue<C>
+where
+    C: Curve,
+{
+    fn ct_lt(&self, other: &Self) -> subtle::Choice {
+        self.inner.ct_lt(&other.inner).into()
+    }
+}
+
+impl<C> subtle::ConditionallySelectable for ScalarValue<C>
+where
+    C: Curve,
+{
+    fn conditional_select(a: &Self, b: &Self, choice: subtle::Choice) -> Self {
+        Self {
+            inner: C::Uint::ct_select(&a.inner, &b.inner, choice.into()),
+        }
     }
 }
 
@@ -415,7 +408,7 @@ where
 {
     fn is_high(&self) -> Choice {
         let n_2 = Self::MODULUS.get() >> 1u32;
-        self.inner.ct_gt(&n_2).into()
+        self.inner.ct_gt(&n_2)
     }
 }
 

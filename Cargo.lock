@@ -180,7 +180,6 @@ dependencies = [
  "hybrid-array",
  "num-traits",
  "rand_core",
- "subtle",
  "zeroize",
 ]
 
@@ -234,6 +233,7 @@ dependencies = [
  "base16ct",
  "crypto-bigint",
  "crypto-common",
+ "ctutils",
  "digest",
  "hex-literal",
  "hkdf",
@@ -333,7 +333,7 @@ version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3944cf8cf766b40e2a1a333ee5e9b563f854d5fa49d6a8ca2764e97c6eddb214"
 dependencies = [
- "subtle",
+ "ctutils",
  "typenum",
  "zeroize",
 ]
@@ -588,7 +588,6 @@ dependencies = [
  "der",
  "hybrid-array",
  "serdect",
- "subtle",
  "zeroize",
 ]
 

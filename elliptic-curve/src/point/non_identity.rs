@@ -4,15 +4,15 @@
 
 use common::Generate;
 use core::ops::{Deref, Mul};
+use ctutils::{Choice, CtEq, CtOption, CtSelect};
 use group::{Group, GroupEncoding, prime::PrimeCurveAffine};
 use rand_core::{CryptoRng, TryCryptoRng};
-use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
+use zeroize::Zeroize;
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 #[cfg(feature = "serde")]
 use serdect::serde::{Deserialize, Serialize, de, ser};
-use zeroize::Zeroize;
 
 use crate::{BatchNormalize, CurveArithmetic, CurveGroup, NonZeroScalar, Scalar};
 
@@ -22,7 +22,7 @@ use crate::{BatchNormalize, CurveArithmetic, CurveGroup, NonZeroScalar, Scalar};
 ///
 /// In the context of ECC, it's useful for ensuring that certain arithmetic
 /// cannot result in the identity point.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 // `repr` is needed for `unsafe` safety invariants below
 #[repr(transparent)]
 pub struct NonIdentity<P> {
@@ -31,11 +31,12 @@ pub struct NonIdentity<P> {
 
 impl<P> NonIdentity<P>
 where
-    P: ConditionallySelectable + ConstantTimeEq + Default,
+    P: CtSelect + CtEq + Default,
 {
     /// Create a [`NonIdentity`] from a point.
     pub fn new(point: P) -> CtOption<Self> {
-        CtOption::new(Self { point }, !point.ct_eq(&P::default()))
+        let is_identity = point.ct_eq(&P::default());
+        CtOption::new(Self { point }, !is_identity)
     }
 
     pub(crate) fn new_unchecked(point: P) -> Self {
@@ -45,11 +46,11 @@ where
 
 impl<P> NonIdentity<P>
 where
-    P: ConditionallySelectable + ConstantTimeEq + Default + GroupEncoding,
+    P: CtEq + CtSelect + Default + GroupEncoding + subtle::ConditionallySelectable,
 {
     /// Decode a [`NonIdentity`] from its encoding.
     pub fn from_repr(repr: &P::Repr) -> CtOption<Self> {
-        Self::from_bytes(repr)
+        Self::from_bytes(repr).into()
     }
 }
 
@@ -98,7 +99,7 @@ impl<P: Copy> NonIdentity<P> {
 
 impl<P> NonIdentity<P>
 where
-    P: ConditionallySelectable + ConstantTimeEq + CurveGroup + Default,
+    P: CtSelect + CtEq + CurveGroup + Default,
 {
     /// Generate a random `NonIdentity<ProjectivePoint>`.
     #[deprecated(since = "0.14.0", note = "use the `Generate` trait instead")]
@@ -176,23 +177,34 @@ where
     }
 }
 
-impl<P> ConditionallySelectable for NonIdentity<P>
+impl<P> CtEq for NonIdentity<P>
 where
-    P: ConditionallySelectable,
+    P: CtEq,
 {
-    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.point.ct_eq(&other.point)
+    }
+}
+
+impl<P> CtSelect for NonIdentity<P>
+where
+    P: CtSelect,
+{
+    fn ct_select(&self, other: &Self, choice: Choice) -> Self {
         Self {
-            point: P::conditional_select(&a.point, &b.point, choice),
+            point: self.point.ct_select(&other.point, choice),
         }
     }
 }
 
-impl<P> ConstantTimeEq for NonIdentity<P>
+impl<P> subtle::ConditionallySelectable for NonIdentity<P>
 where
-    P: ConstantTimeEq,
+    P: Copy + CtSelect,
 {
-    fn ct_eq(&self, other: &Self) -> Choice {
-        self.point.ct_eq(&other.point)
+    fn conditional_select(a: &Self, b: &Self, choice: subtle::Choice) -> Self {
+        Self {
+            point: a.point.ct_select(&b.point, choice.into()),
+        }
     }
 }
 
@@ -206,7 +218,7 @@ impl<P> Deref for NonIdentity<P> {
 
 impl<P> Generate for NonIdentity<P>
 where
-    P: ConditionallySelectable + ConstantTimeEq + Default + Generate,
+    P: CtSelect + CtEq + Default + Generate,
 {
     fn try_generate_from_rng<R: TryCryptoRng + ?Sized>(rng: &mut R) -> Result<Self, R::Error> {
         loop {
@@ -219,16 +231,18 @@ where
 
 impl<P> GroupEncoding for NonIdentity<P>
 where
-    P: ConditionallySelectable + ConstantTimeEq + Default + GroupEncoding,
+    P: CtEq + Default + GroupEncoding + subtle::ConditionallySelectable,
 {
     type Repr = P::Repr;
 
-    fn from_bytes(bytes: &Self::Repr) -> CtOption<Self> {
-        let point = P::from_bytes(bytes);
-        point.and_then(|point| CtOption::new(Self { point }, !point.ct_eq(&P::default())))
+    fn from_bytes(bytes: &Self::Repr) -> subtle::CtOption<Self> {
+        // TODO(tarcieri): convert to `ctutils`, use `CtOption::filter_by`
+        P::from_bytes(bytes).and_then(|point| {
+            subtle::CtOption::new(Self { point }, (!point.ct_eq(&P::default())).into())
+        })
     }
 
-    fn from_bytes_unchecked(bytes: &Self::Repr) -> CtOption<Self> {
+    fn from_bytes_unchecked(bytes: &Self::Repr) -> subtle::CtOption<Self> {
         P::from_bytes_unchecked(bytes).map(|point| Self { point })
     }
 
@@ -303,7 +317,7 @@ where
 #[cfg(feature = "serde")]
 impl<'de, P> Deserialize<'de> for NonIdentity<P>
 where
-    P: ConditionallySelectable + ConstantTimeEq + Default + Deserialize<'de> + GroupEncoding,
+    P: CtSelect + CtEq + Default + Deserialize<'de> + GroupEncoding,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

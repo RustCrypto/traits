@@ -6,9 +6,8 @@
 #[cfg(not(any(feature = "critical-section", feature = "std")))]
 compile_error!("`basepoint-table` feature requires either `critical-section` or `std`");
 
-use crate::point::LookupTable;
+use crate::{ctutils::CtAssign, point::LookupTable};
 use group::Group;
-use subtle::ConditionallySelectable;
 use {core::ops::Deref, ff::PrimeField};
 
 #[cfg(feature = "critical-section")]
@@ -30,7 +29,7 @@ pub struct BasepointTable<Point, const N: usize> {
 
 impl<Point, const N: usize> BasepointTable<Point, N>
 where
-    Point: ConditionallySelectable + Default + Group,
+    Point: CtAssign + Default + Group,
 {
     /// Create a new [`BasepointTable`] which is lazily initialized on first use and can be bound
     /// to a constant.
@@ -40,7 +39,7 @@ where
         /// Inner function to initialize the table.
         fn init_table<Point, const N: usize>() -> [LookupTable<Point>; N]
         where
-            Point: ConditionallySelectable + Default + Group,
+            Point: CtAssign + Default + Group,
         {
             // Ensure basepoint table contains the expected number of entries for the scalar's size
             const {
@@ -73,7 +72,7 @@ where
 
 impl<Point, const N: usize> Default for BasepointTable<Point, N>
 where
-    Point: ConditionallySelectable + Default + Group,
+    Point: CtAssign + Default + Group,
 {
     fn default() -> Self {
         Self::new()
