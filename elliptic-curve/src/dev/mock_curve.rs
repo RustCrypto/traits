@@ -10,7 +10,10 @@ use crate::{
     bigint::{Limb, Odd, U256, modular::Retrieve},
     ctutils,
     error::{Error, Result},
-    ops::{Invert, LinearCombination, Reduce, ShrAssign},
+    ops::{
+        Add, AddAssign, Invert, LinearCombination, Mul, MulAssign, MulVartime, Neg, Reduce,
+        ShrAssign, Sub, SubAssign,
+    },
     point::{AffineCoordinates, NonIdentity},
     rand_core::{TryCryptoRng, TryRng},
     scalar::{FromUintUnchecked, IsHigh},
@@ -21,7 +24,6 @@ use crate::{
 use core::{
     array,
     iter::{Product, Sum},
-    ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 use ff::{Field, PrimeField};
 use hex_literal::hex;
@@ -296,10 +298,22 @@ impl Mul<AffinePoint> for Scalar {
     }
 }
 
+impl MulVartime<AffinePoint> for Scalar {
+    fn mul_vartime(self, _other: AffinePoint) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
 impl Mul<&AffinePoint> for Scalar {
     type Output = ProjectivePoint;
 
     fn mul(self, _other: &AffinePoint) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
+impl MulVartime<&AffinePoint> for Scalar {
+    fn mul_vartime(self, _other: &AffinePoint) -> ProjectivePoint {
         unimplemented!();
     }
 }
@@ -312,10 +326,22 @@ impl Mul<ProjectivePoint> for Scalar {
     }
 }
 
+impl MulVartime<ProjectivePoint> for Scalar {
+    fn mul_vartime(self, _other: ProjectivePoint) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
 impl Mul<&ProjectivePoint> for Scalar {
     type Output = ProjectivePoint;
 
     fn mul(self, _other: &ProjectivePoint) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
+impl MulVartime<&ProjectivePoint> for Scalar {
+    fn mul_vartime(self, _other: &ProjectivePoint) -> ProjectivePoint {
         unimplemented!();
     }
 }

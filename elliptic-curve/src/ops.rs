@@ -183,6 +183,21 @@ where
     }
 }
 
+/// Variable-time equivalent of the [`Mul`] trait.
+///
+/// Should always compute the same results as [`Mul`], but may provide a faster implementation.
+///
+/// <div class="warning">
+/// <b>Security Warning</b>
+///
+/// Variable-time operations should only be used on non-secret values, and may potentially leak
+/// secret values!
+/// </div>
+pub trait MulVartime<Rhs = Self>: Mul<Rhs> {
+    /// Multiply `self` by `rhs` in variable-time.
+    fn mul_vartime(self, rhs: Rhs) -> <Self as Mul<Rhs>>::Output;
+}
+
 /// Modular reduction to a non-zero output.
 ///
 /// This trait is primarily intended for use by curve implementations such
