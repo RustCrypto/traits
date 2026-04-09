@@ -101,10 +101,10 @@ pub(super) mod vartime {
     use core::ops::Mul;
     use group::{Group, WnafBase, WnafScalar};
 
-    /// Associate a precomputed `VARTIME_BASEPOINT_TABLE` constant with a curve point.
-    pub trait PointWithVartimeBasepointTable<const WINDOW_SIZE: usize>: Group {
+    /// Associate a precomputed `BASEPOINT_TABLE_VARTIME` constant with a curve point.
+    pub trait PointWithBasepointTableVartime<const WINDOW_SIZE: usize>: Group {
         /// Basepoint table for this curve.
-        const VARTIME_BASEPOINT_TABLE: &'static VartimeBasepointTable<Self, WINDOW_SIZE>;
+        const BASEPOINT_TABLE_VARTIME: &'static BasepointTableVartime<Self, WINDOW_SIZE>;
     }
 
     /// Window table for a curve's base point (a.k.a. generator) precomputed to improve the speed of
@@ -123,12 +123,12 @@ pub(super) mod vartime {
     /// - `critical-section`: leverages `once_cell::sync::Lazy` via the `critical-section` crate,
     ///   enabling the feature to be used in `no_std` contexts.
     #[derive(Debug)]
-    pub struct VartimeBasepointTable<Point: Group, const WINDOW_SIZE: usize> {
+    pub struct BasepointTableVartime<Point: Group, const WINDOW_SIZE: usize> {
         table: LazyLock<WnafBase<Point, WINDOW_SIZE>>,
     }
 
-    impl<Point: Group, const WINDOW_SIZE: usize> VartimeBasepointTable<Point, WINDOW_SIZE> {
-        /// Create a new [`VartimeBasepointTable`] which is lazily initialized on first use and can
+    impl<Point: Group, const WINDOW_SIZE: usize> BasepointTableVartime<Point, WINDOW_SIZE> {
+        /// Create a new [`BasepointTableVartime`] which is lazily initialized on first use and can
         /// be bound to a constant.
         ///
         /// Computed using the `Point`'s [`Group::generator`] as the base point.
@@ -153,7 +153,7 @@ pub(super) mod vartime {
         }
     }
 
-    impl<Point: Group, const WINDOW_SIZE: usize> Default for VartimeBasepointTable<Point, WINDOW_SIZE> {
+    impl<Point: Group, const WINDOW_SIZE: usize> Default for BasepointTableVartime<Point, WINDOW_SIZE> {
         fn default() -> Self {
             Self::new()
         }
