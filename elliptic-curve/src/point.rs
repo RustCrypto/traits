@@ -8,7 +8,7 @@ mod non_identity;
 pub use {self::non_identity::NonIdentity, lookup_table::LookupTable};
 
 #[cfg(feature = "basepoint-table")]
-pub use self::basepoint_table::BasepointTable;
+pub use self::basepoint_table::{BasepointTable, PointWithBasepointTable};
 
 use crate::{Curve, FieldBytes};
 use subtle::{Choice, CtOption};

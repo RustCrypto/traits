@@ -6,7 +6,7 @@
 #[cfg(not(any(feature = "critical-section", feature = "std")))]
 compile_error!("`basepoint-table` feature requires either `critical-section` or `std`");
 
-use crate::point::LookupTable;
+use super::LookupTable;
 use group::Group;
 use subtle::ConditionallySelectable;
 use {core::ops::Deref, ff::PrimeField};
@@ -15,6 +15,12 @@ use {core::ops::Deref, ff::PrimeField};
 use once_cell::sync::Lazy as LazyLock;
 #[cfg(all(feature = "std", not(feature = "critical-section")))]
 use std::sync::LazyLock;
+
+/// Associate a precomputed `BASEPOINT_TABLE` constant with a curve point.
+pub trait PointWithBasepointTable<const WINDOW_SIZE: usize>: Group {
+    /// Basepoint table for this curve.
+    const BASEPOINT_TABLE: &'static BasepointTable<Self, WINDOW_SIZE>;
+}
 
 /// Precomputed lookup table of multiples of a base point, a.k.a. generator.
 ///
