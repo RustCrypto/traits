@@ -30,11 +30,11 @@ pub trait PointWithBasepointTable<const WINDOW_SIZE: usize>: Group {
 /// - `critical-section`: leverages `once_cell::sync::Lazy` via the `critical-section` crate,
 ///   enabling the feature to be used in `no_std` contexts.
 #[derive(Debug)]
-pub struct BasepointTable<Point, const N: usize> {
-    tables: LazyLock<[LookupTable<Point>; N]>,
+pub struct BasepointTable<Point, const WINDOW_SIZE: usize> {
+    tables: LazyLock<[LookupTable<Point>; WINDOW_SIZE]>,
 }
 
-impl<Point, const N: usize> BasepointTable<Point, N>
+impl<Point, const WINDOW_SIZE: usize> BasepointTable<Point, WINDOW_SIZE>
 where
     Point: ConditionallySelectable + Default + Group,
 {
@@ -77,7 +77,7 @@ where
     }
 }
 
-impl<Point, const N: usize> Default for BasepointTable<Point, N>
+impl<Point, const WINDOW_SIZE: usize> Default for BasepointTable<Point, WINDOW_SIZE>
 where
     Point: ConditionallySelectable + Default + Group,
 {
@@ -86,11 +86,76 @@ where
     }
 }
 
-impl<Point, const N: usize> Deref for BasepointTable<Point, N> {
-    type Target = [LookupTable<Point>; N];
+impl<Point, const WINDOW_SIZE: usize> Deref for BasepointTable<Point, WINDOW_SIZE> {
+    type Target = [LookupTable<Point>; WINDOW_SIZE];
 
     #[inline]
-    fn deref(&self) -> &[LookupTable<Point>; N] {
+    fn deref(&self) -> &[LookupTable<Point>; WINDOW_SIZE] {
         &self.tables
+    }
+}
+
+#[cfg(feature = "alloc")]
+pub(super) mod vartime {
+    use super::LazyLock;
+    use core::ops::Mul;
+    use group::{Group, WnafBase, WnafScalar};
+
+    /// Associate a precomputed `VARTIME_BASEPOINT_TABLE` constant with a curve point.
+    pub trait PointWithVartimeBasepointTable<const WINDOW_SIZE: usize>: Group {
+        /// Basepoint table for this curve.
+        const VARTIME_BASEPOINT_TABLE: &'static VartimeBasepointTable<Self, WINDOW_SIZE>;
+    }
+
+    /// Window table for a curve's base point (a.k.a. generator) precomputed to improve the speed of
+    /// variable-time scalar multiplication.
+    ///
+    /// <div class = "warning">
+    /// <b>Security Warning</b>
+    ///
+    /// Variable-time scalar multiplication can potentially leak secret values and should NOT be
+    /// used with them.
+    /// </div>
+    ///
+    /// This type leverages lazy computation, and requires one of the following crate features to be
+    /// enabled in order to work:
+    /// - `std`: leverages `std::sync::LazyLock`
+    /// - `critical-section`: leverages `once_cell::sync::Lazy` via the `critical-section` crate,
+    ///   enabling the feature to be used in `no_std` contexts.
+    #[derive(Debug)]
+    pub struct VartimeBasepointTable<Point: Group, const WINDOW_SIZE: usize> {
+        table: LazyLock<WnafBase<Point, WINDOW_SIZE>>,
+    }
+
+    impl<Point: Group, const WINDOW_SIZE: usize> VartimeBasepointTable<Point, WINDOW_SIZE> {
+        /// Create a new [`VartimeBasepointTable`] which is lazily initialized on first use and can
+        /// be bound to a constant.
+        ///
+        /// Computed using the `Point`'s [`Group::generator`] as the base point.
+        pub const fn new() -> Self {
+            /// Inner function to initialize the wNAF context.
+            fn init_wnaf<Point, const N: usize>() -> WnafBase<Point, N>
+            where
+                Point: Group,
+            {
+                WnafBase::new(Point::generator())
+            }
+
+            Self {
+                table: LazyLock::new(init_wnaf),
+            }
+        }
+
+        /// Multiply `Point::generator` by the given scalar in variable-time, using the precomputed
+        /// window table to accelerate the scalar multiplication.
+        pub fn mul(&self, scalar: &Point::Scalar) -> Point {
+            self.table.mul(&WnafScalar::new(scalar))
+        }
+    }
+
+    impl<Point: Group, const WINDOW_SIZE: usize> Default for VartimeBasepointTable<Point, WINDOW_SIZE> {
+        fn default() -> Self {
+            Self::new()
+        }
     }
 }
