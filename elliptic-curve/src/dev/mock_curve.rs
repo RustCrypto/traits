@@ -274,9 +274,10 @@ impl SubAssign<&Scalar> for Scalar {
     }
 }
 
+crate::scalar_mul_impls!(MockCurve, Scalar);
+
 impl Mul<Scalar> for Scalar {
     type Output = Scalar;
-
     fn mul(self, _other: Scalar) -> Scalar {
         unimplemented!();
     }
@@ -286,62 +287,6 @@ impl Mul<&Scalar> for Scalar {
     type Output = Scalar;
 
     fn mul(self, _other: &Scalar) -> Scalar {
-        unimplemented!();
-    }
-}
-
-impl Mul<AffinePoint> for Scalar {
-    type Output = ProjectivePoint;
-
-    fn mul(self, _other: AffinePoint) -> ProjectivePoint {
-        unimplemented!();
-    }
-}
-
-impl MulVartime<AffinePoint> for Scalar {
-    fn mul_vartime(self, _other: AffinePoint) -> ProjectivePoint {
-        unimplemented!();
-    }
-}
-
-impl Mul<&AffinePoint> for Scalar {
-    type Output = ProjectivePoint;
-
-    fn mul(self, _other: &AffinePoint) -> ProjectivePoint {
-        unimplemented!();
-    }
-}
-
-impl MulVartime<&AffinePoint> for Scalar {
-    fn mul_vartime(self, _other: &AffinePoint) -> ProjectivePoint {
-        unimplemented!();
-    }
-}
-
-impl Mul<ProjectivePoint> for Scalar {
-    type Output = ProjectivePoint;
-
-    fn mul(self, _other: ProjectivePoint) -> ProjectivePoint {
-        unimplemented!();
-    }
-}
-
-impl MulVartime<ProjectivePoint> for Scalar {
-    fn mul_vartime(self, _other: ProjectivePoint) -> ProjectivePoint {
-        unimplemented!();
-    }
-}
-
-impl Mul<&ProjectivePoint> for Scalar {
-    type Output = ProjectivePoint;
-
-    fn mul(self, _other: &ProjectivePoint) -> ProjectivePoint {
-        unimplemented!();
-    }
-}
-
-impl MulVartime<&ProjectivePoint> for Scalar {
-    fn mul_vartime(self, _other: &ProjectivePoint) -> ProjectivePoint {
         unimplemented!();
     }
 }
@@ -619,6 +564,34 @@ impl ToSec1Point<MockCurve> for AffinePoint {
             }
             _ => unimplemented!(),
         }
+    }
+}
+
+impl Mul<Scalar> for AffinePoint {
+    type Output = ProjectivePoint;
+
+    fn mul(self, _scalar: Scalar) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
+impl Mul<&Scalar> for AffinePoint {
+    type Output = ProjectivePoint;
+
+    fn mul(self, _scalar: &Scalar) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
+impl MulVartime<Scalar> for AffinePoint {
+    fn mul_vartime(self, _scalar: Scalar) -> ProjectivePoint {
+        unimplemented!()
+    }
+}
+
+impl MulVartime<&Scalar> for AffinePoint {
+    fn mul_vartime(self, _scalar: &Scalar) -> ProjectivePoint {
+        unimplemented!()
     }
 }
 
@@ -979,6 +952,26 @@ impl Mul<&Scalar> for ProjectivePoint {
 
     fn mul(self, scalar: &Scalar) -> ProjectivePoint {
         self * *scalar
+    }
+}
+
+impl Mul<&Scalar> for &ProjectivePoint {
+    type Output = ProjectivePoint;
+
+    fn mul(self, _scalar: &Scalar) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
+impl MulVartime<Scalar> for ProjectivePoint {
+    fn mul_vartime(self, _scalar: Scalar) -> ProjectivePoint {
+        unimplemented!()
+    }
+}
+
+impl MulVartime<&Scalar> for ProjectivePoint {
+    fn mul_vartime(self, _scalar: &Scalar) -> ProjectivePoint {
+        unimplemented!()
     }
 }
 

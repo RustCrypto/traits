@@ -69,7 +69,7 @@ macro_rules! scalar_from_impls {
     };
 }
 
-/// Writes a series of `Mul` impls for an elliptic curve's scalar field
+/// Writes a series of `Mul` impls for an elliptic curve's scalar field.
 #[macro_export]
 macro_rules! scalar_mul_impls {
     ($curve:path, $scalar:ty) => {
@@ -142,6 +142,86 @@ macro_rules! scalar_mul_impls {
             #[inline]
             fn mul(self, rhs: &$crate::ProjectivePoint<$curve>) -> $crate::ProjectivePoint<$curve> {
                 rhs * self
+            }
+        }
+
+        impl $crate::ops::MulVartime<$crate::AffinePoint<$curve>> for $scalar {
+            #[inline]
+            fn mul_vartime(
+                self,
+                rhs: $crate::AffinePoint<$curve>,
+            ) -> $crate::ProjectivePoint<$curve> {
+                $crate::ops::MulVartime::mul_vartime(rhs, self)
+            }
+        }
+
+        impl $crate::ops::MulVartime<&$crate::AffinePoint<$curve>> for $scalar {
+            #[inline]
+            fn mul_vartime(
+                self,
+                rhs: &$crate::AffinePoint<$curve>,
+            ) -> $crate::ProjectivePoint<$curve> {
+                $crate::ops::MulVartime::mul_vartime(*rhs, &self)
+            }
+        }
+
+        impl $crate::ops::MulVartime<$crate::AffinePoint<$curve>> for &$scalar {
+            #[inline]
+            fn mul_vartime(
+                self,
+                rhs: $crate::AffinePoint<$curve>,
+            ) -> $crate::ProjectivePoint<$curve> {
+                $crate::ops::MulVartime::mul_vartime(rhs, self)
+            }
+        }
+
+        impl $crate::ops::MulVartime<&$crate::AffinePoint<$curve>> for &$scalar {
+            #[inline]
+            fn mul_vartime(
+                self,
+                rhs: &$crate::AffinePoint<$curve>,
+            ) -> $crate::ProjectivePoint<$curve> {
+                $crate::ops::MulVartime::mul_vartime(*rhs, self)
+            }
+        }
+
+        impl $crate::ops::MulVartime<$crate::ProjectivePoint<$curve>> for $scalar {
+            #[inline]
+            fn mul_vartime(
+                self,
+                rhs: $crate::ProjectivePoint<$curve>,
+            ) -> $crate::ProjectivePoint<$curve> {
+                $crate::ops::MulVartime::mul_vartime(rhs, self)
+            }
+        }
+
+        impl $crate::ops::MulVartime<&$crate::ProjectivePoint<$curve>> for $scalar {
+            #[inline]
+            fn mul_vartime(
+                self,
+                rhs: &$crate::ProjectivePoint<$curve>,
+            ) -> $crate::ProjectivePoint<$curve> {
+                $crate::ops::MulVartime::mul_vartime(*rhs, &self)
+            }
+        }
+
+        impl $crate::ops::MulVartime<$crate::ProjectivePoint<$curve>> for &$scalar {
+            #[inline]
+            fn mul_vartime(
+                self,
+                rhs: $crate::ProjectivePoint<$curve>,
+            ) -> $crate::ProjectivePoint<$curve> {
+                $crate::ops::MulVartime::mul_vartime(rhs, self)
+            }
+        }
+
+        impl $crate::ops::MulVartime<&$crate::ProjectivePoint<$curve>> for &$scalar {
+            #[inline]
+            fn mul_vartime(
+                self,
+                rhs: &$crate::ProjectivePoint<$curve>,
+            ) -> $crate::ProjectivePoint<$curve> {
+                $crate::ops::MulVartime::mul_vartime(*rhs, self)
             }
         }
     };

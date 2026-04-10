@@ -29,6 +29,8 @@ pub trait CurveArithmetic: Curve {
         + Eq
         + From<NonIdentity<Self::AffinePoint>>
         + Generate
+        + MulVartime<Self::Scalar>
+        + for<'a> MulVartime<&'a Self::Scalar>
         + PartialEq
         + Sized
         + Send
@@ -58,6 +60,8 @@ pub trait CurveArithmetic: Curve {
         + Into<Self::AffinePoint>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar)]>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar); 2]>
+        + MulVartime<Self::Scalar>
+        + for<'a> MulVartime<&'a Self::Scalar>
         + TryInto<NonIdentity<Self::ProjectivePoint>, Error = Error>
         + CurveGroup<AffineRepr = Self::AffinePoint>
         + Group<Scalar = Self::Scalar>;
