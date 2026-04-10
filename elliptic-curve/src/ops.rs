@@ -6,6 +6,7 @@ pub use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Shr, ShrAssign, Sub, Su
 use crate::CurveGroup;
 use core::iter;
 use ff::Field;
+use group::Group;
 use subtle::{Choice, CtOption};
 
 #[cfg(feature = "alloc")]
@@ -196,6 +197,35 @@ where
 pub trait MulVartime<Rhs = Self>: Mul<Rhs> {
     /// Multiply `self` by `rhs` in variable-time.
     fn mul_vartime(self, rhs: Rhs) -> <Self as Mul<Rhs>>::Output;
+}
+
+/// Variable-time multiplication by the generator of the curve group.
+///
+/// <div class="warning">
+/// <b>Security Warning</b>
+///
+/// Variable-time operations should only be used on non-secret values, and may potentially leak
+/// secret values!
+/// </div>
+pub trait MulByGeneratorVartime: Group + for<'a> MulVartime<&'a Self::Scalar> {
+    /// Multiply by the generator of the prime-order subgroup.
+    ///
+    /// Variable-time equivalent of [`Group::mul_by_generator`].
+    fn mul_by_generator_vartime(scalar: &Self::Scalar) -> Self {
+        Self::generator().mul_vartime(scalar)
+    }
+
+    /// Multiply `a` by the generator of the prime-order subgroup, adding the result to the point
+    /// `B` multiplied by the scalar `b`, i.e. compute `aG + bB`.
+    ///
+    /// This operation is the core of many signature verification algorithms.
+    fn mul_by_generator_and_mul_add_point_vartime(
+        a: &Self::Scalar,
+        b_scalar: &Self::Scalar,
+        b_point: &Self,
+    ) -> Self {
+        Self::mul_by_generator_vartime(a) + b_point.mul_vartime(b_scalar)
+    }
 }
 
 /// Modular reduction to a non-zero output.
