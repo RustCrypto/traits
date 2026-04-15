@@ -3,7 +3,7 @@
 use crate::{
     Curve, CurveGroup, Error, FieldBytes, Group, NonZeroScalar, PrimeCurve, ScalarValue,
     ctutils::{CtEq, CtSelect},
-    ops::{Invert, LinearCombination, Mul, MulVartime, Reduce},
+    ops::{Invert, LinearCombination, Mul, MulByGeneratorVartime, MulVartime, Reduce},
     point::{AffineCoordinates, NonIdentity},
     scalar::{FromUintUnchecked, IsHigh},
 };
@@ -60,6 +60,7 @@ pub trait CurveArithmetic: Curve {
         + Into<Self::AffinePoint>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar)]>
         + LinearCombination<[(Self::ProjectivePoint, Self::Scalar); 2]>
+        + MulByGeneratorVartime
         + MulVartime<Self::Scalar>
         + for<'a> MulVartime<&'a Self::Scalar>
         + TryInto<NonIdentity<Self::ProjectivePoint>, Error = Error>
