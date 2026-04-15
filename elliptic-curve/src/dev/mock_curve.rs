@@ -11,8 +11,8 @@ use crate::{
     ctutils,
     error::{Error, Result},
     ops::{
-        Add, AddAssign, Invert, LinearCombination, Mul, MulAssign, MulVartime, Neg, Reduce,
-        ShrAssign, Sub, SubAssign,
+        Add, AddAssign, Invert, LinearCombination, Mul, MulAssign, MulByGeneratorVartime,
+        MulVartime, Neg, Reduce, ShrAssign, Sub, SubAssign,
     },
     point::{AffineCoordinates, NonIdentity},
     rand_core::{TryCryptoRng, TryRng},
@@ -962,6 +962,8 @@ impl Mul<&Scalar> for &ProjectivePoint {
         unimplemented!();
     }
 }
+
+impl MulByGeneratorVartime for ProjectivePoint {}
 
 impl MulVartime<Scalar> for ProjectivePoint {
     fn mul_vartime(self, _scalar: Scalar) -> ProjectivePoint {

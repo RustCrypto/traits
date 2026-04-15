@@ -216,15 +216,15 @@ pub trait MulByGeneratorVartime: Group + for<'a> MulVartime<&'a Self::Scalar> {
     }
 
     /// Multiply `a` by the generator of the prime-order subgroup, adding the result to the point
-    /// `B` multiplied by the scalar `b`, i.e. compute `aG + bB`.
+    /// `P` multiplied by the scalar `b`, i.e. compute `aG + bP`.
     ///
     /// This operation is the core of many signature verification algorithms.
     fn mul_by_generator_and_mul_add_point_vartime(
         a: &Self::Scalar,
-        b_scalar: &Self::Scalar,
-        b_point: &Self,
+        b: &Self::Scalar,
+        p: &Self,
     ) -> Self {
-        Self::mul_by_generator_vartime(a) + b_point.mul_vartime(b_scalar)
+        Self::mul_by_generator_vartime(a) + p.mul_vartime(b)
     }
 }
 
