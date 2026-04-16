@@ -293,6 +293,88 @@ where
     }
 }
 
+#[cfg(feature = "pem")]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum PemParseError {
+    ///Indicates invalid PEM string
+    Pem(pem_rfc7468::Error),
+    ///Indicates invalid pkcs8 EC key
+    Pkcs8(::pkcs8::Error),
+    ///Indicates invalid Sec1 EC key
+    Sec1(::sec1::Error),
+    ///Unable to recognize document label
+    UnknownLabel,
+}
+
+#[cfg(feature = "pem")]
+impl From<pem_rfc7468::Error> for PemParseError {
+    #[inline(always)]
+    fn from(error: pem_rfc7468::Error) -> Self {
+        Self::Pem(error)
+    }
+}
+
+#[cfg(feature = "pem")]
+impl From<::pkcs8::Error> for PemParseError {
+    #[inline(always)]
+    fn from(error: ::pkcs8::Error) -> Self {
+        Self::Pkcs8(error)
+    }
+}
+
+#[cfg(feature = "pem")]
+impl From<::sec1::Error> for PemParseError {
+    #[inline(always)]
+    fn from(error: ::sec1::Error) -> Self {
+        Self::Sec1(error)
+    }
+}
+
+#[cfg(feature = "pem")]
+impl fmt::Display for PemParseError {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Pem(error) => fmt.write_fmt(format_args!("Failed to parse PEM: {error}")),
+            Self::UnknownLabel => fmt.write_str("Unrecognized key label"),
+            Self::Pkcs8(error) => fmt.write_fmt(format_args!("Faoled to parse Pkcs8 key: {error}")),
+            Self::Sec1(error) => fmt.write_fmt(format_args!("Faoled to parse SEC1 key: {error}")),
+        }
+    }
+}
+
+#[cfg(feature = "pem")]
+impl core::error::Error for PemParseError {}
+
+#[cfg(feature = "pem")]
+impl<C> SecretKey<C>
+where
+    C: AssociatedOid + Curve + ValidatePublicKey,
+    FieldBytesSize<C>: ModulusSize,
+{
+    /// Parse [`SecretKey`] from PEM-encoded private key.
+    ///
+    /// Supported formats:
+    /// - `SEC1` - requires feature `sec1`
+    /// - `PKCS #8` - requires feature `pkcs8`
+    ///
+    /// # Errors
+    /// - If `pem` is not valid PEM encoded private key
+    /// - If label within `pem` is not known valid label
+    /// - If label is valid, but unable to decode DER content of the PEM file
+    #[cfg(feature = "pem")]
+    pub fn from_pem(pem: &str) -> ::core::result::Result<Self, PemParseError> {
+        let label = pem_rfc7468::decode_label(pem.as_bytes()).map_err(PemParseError::Pem)?;
+
+        if ::pkcs8::PrivateKeyInfoRef::validate_pem_label(label).is_ok() {
+            return ::pkcs8::DecodePrivateKey::from_pkcs8_pem(pem).map_err(PemParseError::Pkcs8);
+        } else if ::sec1::EcPrivateKey::validate_pem_label(label).is_ok() {
+            return ::sec1::DecodeEcPrivateKey::from_sec1_pem(pem).map_err(PemParseError::Sec1);
+        }
+
+        Err(PemParseError::UnknownLabel)
+    }
+}
+
 impl<C> ConstantTimeEq for SecretKey<C>
 where
     C: Curve,
