@@ -365,12 +365,12 @@ where
     pub fn from_pem(pem: &str) -> ::core::result::Result<Self, PemParseError> {
         let (label, document) = der::SecretDocument::from_pem(pem).map_err(PemParseError::Pem)?;
 
-        if ::sec1::EcPrivateKey::validate_pem_label(label).is_ok() {
-            return ::sec1::DecodeEcPrivateKey::from_sec1_der(document.as_bytes())
-                .map_err(PemParseError::Sec1);
-        } else if ::pkcs8::PrivateKeyInfoRef::validate_pem_label(label).is_ok() {
+        if ::pkcs8::PrivateKeyInfoRef::validate_pem_label(label).is_ok() {
             return ::pkcs8::DecodePrivateKey::from_pkcs8_der(document.as_bytes())
                 .map_err(PemParseError::Pkcs8);
+        } else if ::sec1::EcPrivateKey::validate_pem_label(label).is_ok() {
+            return ::sec1::DecodeEcPrivateKey::from_sec1_der(document.as_bytes())
+                .map_err(PemParseError::Sec1);
         }
 
         Err(PemParseError::UnknownLabel)
