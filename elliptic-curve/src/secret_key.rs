@@ -297,7 +297,7 @@ where
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum PemParseError {
     ///Indicates invalid PEM string
-    Pem(pem::Error),
+    Pem(der::Error),
     ///Indicates invalid pkcs8 EC key
     Pkcs8(::pkcs8::Error),
     ///Indicates invalid Sec1 EC key
@@ -307,9 +307,9 @@ pub enum PemParseError {
 }
 
 #[cfg(feature = "pem")]
-impl From<pem::Error> for PemParseError {
+impl From<der::Error> for PemParseError {
     #[inline(always)]
-    fn from(error: pem::Error) -> Self {
+    fn from(error: der::Error) -> Self {
         Self::Pem(error)
     }
 }
@@ -363,13 +363,13 @@ where
     /// - If label is valid, but unable to decode DER content of the PEM file
     #[cfg(feature = "pem")]
     pub fn from_pem(pem: &str) -> ::core::result::Result<Self, PemParseError> {
-        let (label, der_bytes) = pem::decode_vec(pem.as_bytes()).map_err(PemParseError::Pem)?;
+        let (label, document) = der::SecretDocument::from_pem(pem).map_err(PemParseError::Pem)?;
 
-        if label == sec1::EcPrivateKey::PEM_LABEL {
-            return ::sec1::DecodeEcPrivateKey::from_sec1_der(&der_bytes)
+        if ::sec1::EcPrivateKey::validate_pem_label(label).is_ok() {
+            return ::sec1::DecodeEcPrivateKey::from_sec1_der(document.as_bytes())
                 .map_err(PemParseError::Sec1);
         } else if ::pkcs8::PrivateKeyInfoRef::validate_pem_label(label).is_ok() {
-            return ::pkcs8::DecodePrivateKey::from_pkcs8_der(&der_bytes)
+            return ::pkcs8::DecodePrivateKey::from_pkcs8_der(document.as_bytes())
                 .map_err(PemParseError::Pkcs8);
         }
 
