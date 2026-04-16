@@ -1,7 +1,8 @@
 /// Creates a buffered wrapper around block-level "core" type which implements variable output size traits
 /// with output size selected at compile time.
+#[doc(hidden)]
 #[macro_export]
-macro_rules! buffer_ct_variable {
+macro_rules! buffer_ct_variable_internal {
     (
         $(#[$attr:meta])*
         $vis:vis struct $name:ident<$out_size:ident>($core_ty:ty);
@@ -208,4 +209,65 @@ macro_rules! buffer_ct_variable {
             }
         }
     };
+}
+
+#[doc(hidden)]
+#[cfg(not(feature = "zeroize"))]
+#[macro_export]
+macro_rules! buffer_ct_variable_zeroize_on_drop {
+    ($name:ident, $out_size:ident, $max_size:ty) => {};
+}
+
+#[doc(hidden)]
+#[cfg(feature = "zeroize")]
+#[macro_export]
+macro_rules! buffer_ct_variable_zeroize_on_drop {
+    ($name:ident, $out_size:ident, $max_size:ty) => {
+        // While `$name` will not implement `Drop`, it is still `ZeroizeOnDrop` as all its fields
+        // are `ZeroizeOnDrop`. The following ensures this.
+        impl<$out_size> $name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize
+                + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
+        {
+            // This is `pub` to ensure it's actually compiled and not eliminated as dead code
+            #[doc(hidden)]
+            pub fn __ensure_all_fields_impl_zeroize_on_drop(&mut self) {
+                let Self { core, buffer } = self;
+                fn implements_zeroize_on_drop(_value: &mut impl $crate::zeroize::ZeroizeOnDrop) {}
+                implements_zeroize_on_drop(core);
+                implements_zeroize_on_drop(buffer);
+            }
+        }
+
+        impl<$out_size> $crate::zeroize::ZeroizeOnDrop for $name<$out_size> where
+            $out_size: $crate::array::ArraySize
+                + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>
+        {
+        }
+    };
+}
+
+/// Creates a buffered wrapper around block-level "core" type which implements variable output size traits
+/// with output size selected at compile time.
+#[macro_export]
+macro_rules! buffer_ct_variable {
+    (
+        $(#[$attr:meta])*
+        $vis:vis struct $name:ident<$out_size:ident>($core_ty:ty);
+        exclude: SerializableState;
+        // Ideally, we would use `$core_ty::OutputSize`, but unfortunately the compiler
+        // does not accept such code. The likely reason is this issue:
+        // https://github.com/rust-lang/rust/issues/79629
+        max_size: $max_size:ty;
+    ) => {
+        $crate::buffer_ct_variable_internal!(
+            $(#[$attr])*
+            $vis struct $name<$out_size>($core_ty);
+            exclude: SerializableState;
+            max_size: $max_size;
+        );
+
+        $crate::buffer_ct_variable_zeroize_on_drop!($name, $out_size, $max_size);
+    }
 }
