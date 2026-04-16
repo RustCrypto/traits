@@ -342,7 +342,7 @@ impl fmt::Display for PemParseError {
     }
 }
 
-#[cfg(all(feature = "std", feature = "pem"))]
+#[cfg(feature = "pem")]
 impl core::error::Error for PemParseError {}
 
 #[cfg(feature = "pem")]
