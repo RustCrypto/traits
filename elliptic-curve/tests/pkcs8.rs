@@ -23,17 +23,34 @@ const EXAMPLE_SCALAR: [u8; 32] =
     hex!("AABBCCDDEEFF0000000000000000000000000000000000000000000000000001");
 
 /// Example PKCS#8 private key
-fn example_private_key() -> der::SecretDocument {
+fn example_private_key_der() -> der::SecretDocument {
     SecretKey::from_slice(&EXAMPLE_SCALAR)
         .unwrap()
         .to_pkcs8_der()
         .unwrap()
 }
 
+#[cfg(feature = "pem")]
+/// Example PKCS#8 private key
+fn example_private_key_pem() -> impl AsRef<str> {
+    SecretKey::from_slice(&EXAMPLE_SCALAR)
+        .unwrap()
+        .to_pkcs8_pem(Default::default())
+        .unwrap()
+}
+
 #[test]
 fn decode_pkcs8_private_key_from_der() {
-    dbg!(example_private_key().as_bytes());
-    let secret_key = SecretKey::from_pkcs8_der(example_private_key().as_bytes()).unwrap();
+    dbg!(example_private_key_der().as_bytes());
+    let secret_key = SecretKey::from_pkcs8_der(example_private_key_der().as_bytes()).unwrap();
+    assert_eq!(secret_key.to_bytes().as_slice(), &EXAMPLE_SCALAR);
+}
+
+#[cfg(feature = "pem")]
+#[test]
+fn decode_pkcs8_private_key_from_pem() {
+    dbg!(example_private_key_pem().as_ref());
+    let secret_key = SecretKey::from_pem(example_private_key_pem().as_ref()).unwrap();
     assert_eq!(secret_key.to_bytes().as_slice(), &EXAMPLE_SCALAR);
 }
 
