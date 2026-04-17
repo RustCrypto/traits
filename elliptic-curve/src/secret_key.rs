@@ -296,13 +296,13 @@ where
 #[cfg(feature = "pem")]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum PemParseError {
-    ///Indicates invalid PEM string
+    /// Indicates invalid PEM string
     Pem(pem_rfc7468::Error),
-    ///Indicates invalid pkcs8 EC key
+    /// Indicates invalid PKCS#8 EC key
     Pkcs8(::pkcs8::Error),
-    ///Indicates invalid Sec1 EC key
+    /// Indicates invalid SEC1 EC key
     Sec1(::sec1::Error),
-    ///Unable to recognize document label
+    /// Unable to recognize document label
     UnknownLabel,
 }
 
@@ -336,8 +336,8 @@ impl fmt::Display for PemParseError {
         match self {
             Self::Pem(error) => fmt.write_fmt(format_args!("Failed to parse PEM: {error}")),
             Self::UnknownLabel => fmt.write_str("Unrecognized key label"),
-            Self::Pkcs8(error) => fmt.write_fmt(format_args!("Faoled to parse Pkcs8 key: {error}")),
-            Self::Sec1(error) => fmt.write_fmt(format_args!("Faoled to parse SEC1 key: {error}")),
+            Self::Pkcs8(error) => fmt.write_fmt(format_args!("Failed to parse PKCS#8 key: {error}")),
+            Self::Sec1(error) => fmt.write_fmt(format_args!("Failed to parse SEC1 key: {error}")),
         }
     }
 }
@@ -355,7 +355,7 @@ where
     ///
     /// Supported formats:
     /// - `SEC1` - requires feature `sec1`
-    /// - `PKCS #8` - requires feature `pkcs8`
+    /// - `PKCS#8` - requires feature `pkcs8`
     ///
     /// # Errors
     /// - If `pem` is not valid PEM encoded private key
