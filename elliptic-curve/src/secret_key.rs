@@ -336,7 +336,9 @@ impl fmt::Display for PemParseError {
         match self {
             Self::Pem(error) => fmt.write_fmt(format_args!("Failed to parse PEM: {error}")),
             Self::UnknownLabel => fmt.write_str("Unrecognized key label"),
-            Self::Pkcs8(error) => fmt.write_fmt(format_args!("Failed to parse PKCS#8 key: {error}")),
+            Self::Pkcs8(error) => {
+                fmt.write_fmt(format_args!("Failed to parse PKCS#8 key: {error}"))
+            }
             Self::Sec1(error) => fmt.write_fmt(format_args!("Failed to parse SEC1 key: {error}")),
         }
     }
