@@ -1,28 +1,33 @@
-//! Trait for verifying digital signatures
+//! Trait for verifying digital signatures.
 
 use crate::error::Error;
 
 #[cfg(feature = "digest")]
 use crate::digest::Update;
 
-/// Verify the provided message bytestring using `Self` (e.g. a public key)
+/// Verify the provided message bytestring using `Self` (e.g. a public key).
 pub trait Verifier<S> {
-    /// Use `Self` to verify that the provided signature for a given message
-    /// bytestring is authentic.
+    /// Use `Self` (e.g. a verifying key) to verify that the provided `signature` is authentic
+    /// for a given message bytestring.
     ///
-    /// Returns `Error` if it is inauthentic, or otherwise returns `()`.
+    /// Returns `Ok(())` if the `signature` is authentic for the given message.
+    ///
+    /// # Errors
+    /// Returns [`Error`] if the provided `signature` is inauthentic for the given message.
     fn verify(&self, msg: &[u8], signature: &S) -> Result<(), Error>;
 }
 
 /// Equivalent of [`Verifier`] but the message is provided in non-contiguous byte slices.
 pub trait MultipartVerifier<S> {
-    /// Equivalent of [`Verifier::verify()`] but the
-    /// message is provided in non-contiguous byte slices.
+    /// Equivalent of [`Verifier::verify()`] but the message is provided in non-contiguous byte
+    /// slices.
+    ///
+    /// # Errors
+    /// Returns [`Error`] if the provided `signature` is inauthentic for the given message.
     fn multipart_verify(&self, msg: &[&[u8]], signature: &S) -> Result<(), Error>;
 }
 
-/// Verify the provided signature for the given prehashed message `Digest`
-/// is authentic.
+/// Verify the provided signature for the given prehashed message `Digest` is authentic.
 ///
 /// ## Notes
 ///
@@ -44,11 +49,13 @@ pub trait MultipartVerifier<S> {
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 #[cfg(feature = "digest")]
 pub trait DigestVerifier<D: Update, S> {
-    /// Verify the signature against the received `Digest` output,
-    /// by updating it with the message.
+    /// Verify the signature against the received `Digest` output, by updating it with the message.
     ///
-    /// The given function can be invoked multiple times. It is expected that
-    /// in each invocation the `Digest` is updated with the entire equal message.
+    /// The given function can be invoked multiple times. It is expected that in each invocation the
+    /// `Digest` is updated with the entire equal message.
+    ///
+    /// # Errors
+    /// Returns [`Error`] if the provided `signature` is inauthentic for the given message digest.
     fn verify_digest<F: Fn(&mut D) -> Result<(), Error>>(
         &self,
         f: F,

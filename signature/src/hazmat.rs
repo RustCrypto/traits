@@ -1,10 +1,14 @@
 //! Hazardous Materials: low-level APIs which can be insecure if misused.
 //!
-//! The traits in this module are not generally recommended, and should only be
-//! used in special cases where they are specifically needed.
+//! The traits in this module are not generally recommended, and should only be used in special
+//! cases where they are specifically needed.
 //!
-//! Using them incorrectly can introduce security vulnerabilities. Please
-//! carefully read the documentation before attempting to use them.
+//! <div class = "warning">
+//! <b>Security Warning</b>
+//!
+//! Using these traits incorrectly can introduce security vulnerabilities. Please carefully read the
+//! documentation before attempting to use them.
+//! </div>
 
 use crate::Error;
 
@@ -13,36 +17,38 @@ use crate::rand_core::TryCryptoRng;
 
 /// Sign the provided message prehash, returning a digital signature.
 pub trait PrehashSigner<S> {
-    /// Attempt to sign the given message digest, returning a digital signature
-    /// on success, or an error if something went wrong.
+    /// Attempt to sign the given message digest, returning a digital signature on success, or an
+    /// error if something went wrong.
     ///
-    /// The `prehash` parameter should be the output of a secure cryptographic
-    /// hash function.
+    /// The `prehash` parameter should be the output of a secure cryptographic hash function.
     ///
-    /// This API takes a `prehash` byte slice as there can potentially be many
-    /// compatible lengths for the message digest for a given concrete signature
-    /// algorithm.
+    /// This API takes a `prehash` byte slice as there can potentially be many compatible lengths
+    /// for the message digest for a given concrete signature algorithm.
     ///
-    /// Allowed lengths are algorithm-dependent and up to a particular
-    /// implementation to decide.
+    /// Allowed lengths are algorithm-dependent and up to a particular implementation to decide.
+    ///
+    /// # Errors
+    /// Returns [`Error`] in the event `prehash` is an invalid length.
     fn sign_prehash(&self, prehash: &[u8]) -> Result<S, Error>;
 }
 
-/// Sign the provided message prehash using the provided external randomness source, returning a digital signature.
+/// Sign the provided message prehash using the provided external randomness source, returning a
+/// digital signature.
 #[cfg(feature = "rand_core")]
 pub trait RandomizedPrehashSigner<S> {
-    /// Attempt to sign the given message digest, returning a digital signature
-    /// on success, or an error if something went wrong.
+    /// Attempt to sign the given message digest, returning a digital signature on success, or an
+    /// error if something went wrong.
     ///
-    /// The `prehash` parameter should be the output of a secure cryptographic
-    /// hash function.
+    /// The `prehash` parameter should be the output of a secure cryptographic hash function.
     ///
-    /// This API takes a `prehash` byte slice as there can potentially be many
-    /// compatible lengths for the message digest for a given concrete signature
-    /// algorithm.
+    /// This API takes a `prehash` byte slice as there can potentially be many compatible lengths
+    /// for the message digest for a given concrete signature algorithm.
     ///
-    /// Allowed lengths are algorithm-dependent and up to a particular
-    /// implementation to decide.
+    /// Allowed lengths are algorithm-dependent and up to a particular implementation to decide.
+    ///
+    /// # Errors
+    /// Returns [`Error`] in the event `prehash` is an invalid length, or if an internal error
+    /// in the provided `rng` occurs.
     fn sign_prehash_with_rng<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
@@ -52,57 +58,54 @@ pub trait RandomizedPrehashSigner<S> {
 
 /// Verify the provided message prehash using `Self` (e.g. a public key)
 pub trait PrehashVerifier<S> {
-    /// Use `Self` to verify that the provided signature for a given message
-    /// `prehash` is authentic.
+    /// Use `Self` to verify that the provided signature for a given message `prehash` is authentic.
     ///
-    /// The `prehash` parameter should be the output of a secure cryptographic
-    /// hash function.
+    /// The `prehash` parameter MUST be the output of a secure cryptographic hash function.
     ///
-    /// Returns `Error` if it is inauthentic or some other error occurred, or
-    /// otherwise returns `Ok(())`.
+    /// <div class="warning">
+    /// <b>Security Warning</b>
     ///
-    /// # ⚠️ Security Warning
+    /// If `prehash` is something other than the output of a cryptographically secure hash function,
+    /// an attacker can potentially forge signatures by e.g. solving a system of linear equations.
+    /// </div>
     ///
-    /// If `prehash` is something other than the output of a cryptographically
-    /// secure hash function, an attacker can potentially forge signatures by
-    /// solving a system of linear equations.
+    /// Returns `Ok(())` if the signature verified successfully.
+    ///
+    /// # Errors
+    /// Returns [`Error`] in the event the signature fails to verify or if `prehash` is an invalid
+    /// length.
     fn verify_prehash(&self, prehash: &[u8], signature: &S) -> Result<(), Error>;
 }
 
 /// Asynchronously sign the provided message prehash, returning a digital signature.
 #[allow(async_fn_in_trait)]
 pub trait AsyncPrehashSigner<S> {
-    /// Attempt to sign the given message digest, returning a digital signature
-    /// on success, or an error if something went wrong.
+    /// Attempt to sign the given message digest, returning a digital signature on success, or an
+    /// error if something went wrong.
     ///
-    /// The `prehash` parameter should be the output of a secure cryptographic
-    /// hash function.
+    /// The `prehash` parameter should be the output of a secure cryptographic hash function.
     ///
-    /// This API takes a `prehash` byte slice as there can potentially be many
-    /// compatible lengths for the message digest for a given concrete signature
-    /// algorithm.
+    /// This API takes a `prehash` byte slice as there can potentially be many compatible lengths
+    /// for the message digest for a given concrete signature algorithm.
     ///
-    /// Allowed lengths are algorithm-dependent and up to a particular
-    /// implementation to decide.
+    /// Allowed lengths are algorithm-dependent and up to a particular implementation to decide.
     async fn sign_prehash_async(&self, prehash: &[u8]) -> Result<S, Error>;
 }
 
-/// Asynchronously sign the provided message prehash using the provided external randomness source, returning a digital signature.
+/// Asynchronously sign the provided message prehash using the provided external randomness source,
+/// returning a digital signature.
 #[cfg(feature = "rand_core")]
 #[allow(async_fn_in_trait)]
 pub trait AsyncRandomizedPrehashSigner<S> {
-    /// Attempt to sign the given message digest, returning a digital signature
-    /// on success, or an error if something went wrong.
+    /// Attempt to sign the given message digest, returning a digital signature on success, or an
+    /// error if something went wrong.
     ///
-    /// The `prehash` parameter should be the output of a secure cryptographic
-    /// hash function.
+    /// The `prehash` parameter should be the output of a secure cryptographic hash function.
     ///
-    /// This API takes a `prehash` byte slice as there can potentially be many
-    /// compatible lengths for the message digest for a given concrete signature
-    /// algorithm.
+    /// This API takes a `prehash` byte slice as there can potentially be many compatible lengths
+    /// for the message digest for a given concrete signature algorithm.
     ///
-    /// Allowed lengths are algorithm-dependent and up to a particular
-    /// implementation to decide.
+    /// Allowed lengths are algorithm-dependent and up to a particular implementation to decide.
     async fn sign_prehash_with_rng_async<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,

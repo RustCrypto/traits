@@ -20,5 +20,8 @@ rand_core = { version = "0.10", optional = true, default-features = false }
 alloc = []
 rand_core = ["dep:rand_core"]
 
+[lints]
+workspace = true
+
 [package.metadata.docs.rs]
 all-features = true

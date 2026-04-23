@@ -7,15 +7,6 @@
 )]
 #![forbid(unsafe_code)]
 #![allow(async_fn_in_trait)]
-#![warn(
-    clippy::mod_module_files,
-    clippy::unwrap_used,
-    missing_docs,
-    rust_2018_idioms,
-    unused_lifetimes,
-    missing_debug_implementations,
-    unused_qualifications
-)]
 
 //! # Design
 //!

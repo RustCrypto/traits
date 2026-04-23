@@ -30,6 +30,7 @@ pub struct Error {
 
 impl Error {
     /// Create a new error with no associated source
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
@@ -90,6 +91,7 @@ impl core::error::Error for Error {
             None
         }
         #[cfg(feature = "alloc")]
+        #[allow(trivial_casts)]
         {
             self.source
                 .as_ref()
