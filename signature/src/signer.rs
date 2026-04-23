@@ -1,4 +1,4 @@
-//! Traits for generating digital signatures
+//! Traits for generating digital signatures.
 
 use crate::error::Error;
 
@@ -8,50 +8,59 @@ use crate::digest::Update;
 #[cfg(feature = "rand_core")]
 use crate::rand_core::{CryptoRng, TryCryptoRng};
 
-/// Sign the provided message bytestring using `Self` (e.g. a cryptographic key
-/// or connection to an HSM), returning a digital signature.
+/// Sign the provided message bytestring using `Self` (e.g. a cryptographic key or connection to an
+/// HSM), returning a digital signature.
 pub trait Signer<S> {
-    /// Sign the given message and return a digital signature
+    /// Sign the given message and return a digital signature.
     fn sign(&self, msg: &[u8]) -> S {
         self.try_sign(msg).expect("signature operation failed")
     }
 
-    /// Attempt to sign the given message, returning a digital signature on
-    /// success, or an error if something went wrong.
+    /// Attempt to sign the given message, returning a digital signature on success, or an error if
+    /// something went wrong.
     ///
-    /// The main intended use case for signing errors is when communicating
-    /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
+    /// The main intended use case for signing errors is when communicating with external signers,
+    /// e.g. cloud KMS, HSMs, or other hardware tokens.
+    ///
+    /// # Errors
+    /// Returns implementation-specific errors in the event signing failed (e.g. KMS or HSM
+    /// communication error).
     fn try_sign(&self, msg: &[u8]) -> Result<S, Error>;
 }
 
 /// Equivalent of [`Signer`] but the message is provided in non-contiguous byte slices.
 pub trait MultipartSigner<S> {
-    /// Equivalent of [`Signer::sign()`] but the message
-    /// is provided in non-contiguous byte slices.
+    /// Equivalent of [`Signer::sign()`] but the message is provided in non-contiguous byte slices.
     fn multipart_sign(&self, msg: &[&[u8]]) -> S {
         self.try_multipart_sign(msg)
             .expect("signature operation failed")
     }
 
-    /// Equivalent of [`Signer::try_sign()`] but the
-    /// message is provided in non-contiguous byte slices.
+    /// Equivalent of [`Signer::try_sign()`] but the message is provided in non-contiguous byte
+    /// slices.
+    ///
+    /// # Errors
+    /// Returns implementation-specific errors in the event signing failed (e.g. KMS or HSM
+    /// communication error).
     fn try_multipart_sign(&self, msg: &[&[u8]]) -> Result<S, Error>;
 }
 
-/// Sign the provided message bytestring using `&mut Self` (e.g. an evolving
-/// cryptographic key such as a stateful hash-based signature), returning a
-/// digital signature.
+/// Sign the provided message bytestring using `&mut Self` (e.g. an evolving cryptographic key such
+/// as a stateful hash-based signature), returning a digital signature.
 pub trait SignerMut<S> {
     /// Sign the given message, update the state, and return a digital signature.
+    ///
+    /// # Panics
+    /// In the event of a signing error.
     fn sign(&mut self, msg: &[u8]) -> S {
         self.try_sign(msg).expect("signature operation failed")
     }
 
-    /// Attempt to sign the given message, updating the state, and returning a
-    /// digital signature on success, or an error if something went wrong.
+    /// Attempt to sign the given message, updating the state, and returning a digital signature on
+    /// success, or an error if something went wrong.
     ///
-    /// Signing can fail, e.g., if the number of time periods allowed by the
-    /// current key is exceeded.
+    /// # Errors
+    /// Signing can fail, e.g. if the number of time periods allowed by the current key is exceeded.
     fn try_sign(&mut self, msg: &[u8]) -> Result<S, Error>;
 }
 
@@ -59,30 +68,28 @@ pub trait SignerMut<S> {
 ///
 /// ## Notes
 ///
-/// This trait is primarily intended for signature algorithms based on the
-/// [Fiat-Shamir heuristic], a method for converting an interactive
-/// challenge/response-based proof-of-knowledge protocol into an offline
-/// digital signature through the use of a random oracle, i.e. a digest
-/// function.
+/// This trait is primarily intended for signature algorithms based on the [Fiat-Shamir heuristic],
+/// a method for converting an interactive challenge/response-based proof-of-knowledge protocol into
+/// an offline digital signature through the use of a random oracle, i.e. a digest function.
 ///
-/// The security of such protocols critically rests upon the inability of
-/// an attacker to solve for the output of the random oracle, as generally
-/// otherwise such signature algorithms are a system of linear equations and
-/// therefore doing so would allow the attacker to trivially forge signatures.
+/// The security of such protocols critically rests upon the inability of an attacker to solve for
+/// the output of the random oracle, as generally otherwise such signature algorithms are a system
+/// of linear equations and therefore doing so would allow the attacker to trivially forge
+/// signatures.
 ///
-/// To prevent misuse which would potentially allow this to be possible, this
-/// API accepts a `Digest` instance, rather than a raw digest value.
+/// To prevent misuse which would potentially allow this to be possible, this API accepts a `Digest`
+/// instance, rather than a raw digest value.
 ///
 /// [Fiat-Shamir heuristic]: https://en.wikipedia.org/wiki/Fiat%E2%80%93Shamir_heuristic
 #[cfg(feature = "digest")]
 pub trait DigestSigner<D: Update, S> {
-    /// Sign a message by updating the received `Digest` with it,
-    /// returning a signature.
+    /// Sign a message by updating the received `Digest` with it, returning a signature.
     ///
-    /// The given function can be invoked multiple times. It is expected that
-    /// in each invocation the `Digest` is updated with the entire equal message.
+    /// The given function can be invoked multiple times. It is expected that in each invocation the
+    /// `Digest` is updated with the entire equal message.
     ///
-    /// Panics in the event of a signing error.
+    /// # Panics
+    /// In the event of a signing error.
     fn sign_digest<F: Fn(&mut D)>(&self, f: F) -> S {
         self.try_sign_digest(|digest| {
             f(digest);
@@ -91,11 +98,15 @@ pub trait DigestSigner<D: Update, S> {
         .expect("signature operation failed")
     }
 
-    /// Attempt to sign a message by updating the received `Digest` with it,
-    /// returning a digital signature on success, or an error if something went wrong.
+    /// Attempt to sign a message by updating the received `Digest` with it, returning a digital
+    /// signature on success, or an error if something went wrong.
     ///
-    /// The given function can be invoked multiple times. It is expected that
-    /// in each invocation the `Digest` is updated with the entire equal message.
+    /// The given function can be invoked multiple times. It is expected that in each invocation the
+    /// `Digest` is updated with the entire equal message.
+    ///
+    /// # Errors
+    /// Returns implementation-specific errors in the event signing failed (e.g. KMS or HSM
+    /// communication error).
     fn try_sign_digest<F: Fn(&mut D) -> Result<(), Error>>(&self, f: F) -> Result<S, Error>;
 }
 
@@ -108,11 +119,15 @@ pub trait RandomizedSigner<S> {
             .expect("signature operation failed")
     }
 
-    /// Attempt to sign the given message, returning a digital signature on
-    /// success, or an error if something went wrong.
+    /// Attempt to sign the given message, returning a digital signature on success, or an error if
+    /// something went wrong.
     ///
-    /// The main intended use case for signing errors is when communicating
-    /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
+    /// The main intended use case for signing errors is when communicating with external signers,
+    /// e.g. cloud KMS, HSMs, or other hardware tokens.
+    ///
+    /// # Errors
+    /// Returns implementation-specific errors in the event signing failed (e.g. KMS or HSM
+    /// communication error), or if the provided `rng` experiences an internal failure.
     fn try_sign_with_rng<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
@@ -123,15 +138,19 @@ pub trait RandomizedSigner<S> {
 /// Equivalent of [`RandomizedSigner`] but the message is provided in non-contiguous byte slices.
 #[cfg(feature = "rand_core")]
 pub trait RandomizedMultipartSigner<S> {
-    /// Equivalent of [`RandomizedSigner::sign_with_rng()`] but
-    /// the message is provided in non-contiguous byte slices.
+    /// Equivalent of [`RandomizedSigner::sign_with_rng()`] but the message is provided in
+    /// non-contiguous byte slices.
     fn multipart_sign_with_rng<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[&[u8]]) -> S {
         self.try_multipart_sign_with_rng(rng, msg)
             .expect("signature operation failed")
     }
 
-    /// Equivalent of [`RandomizedSigner::try_sign_with_rng()`] but
-    /// the message is provided in non-contiguous byte slices.
+    /// Equivalent of [`RandomizedSigner::try_sign_with_rng()`] but the message is provided in
+    /// non-contiguous byte slices.
+    ///
+    /// # Errors
+    /// Returns implementation-specific errors in the event signing failed (e.g. KMS or HSM
+    /// communication error), or if the provided `rng` experiences an internal failure.
     fn try_multipart_sign_with_rng<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
@@ -139,17 +158,17 @@ pub trait RandomizedMultipartSigner<S> {
     ) -> Result<S, Error>;
 }
 
-/// Combination of [`DigestSigner`] and [`RandomizedSigner`] with support for
-/// computing a signature over a digest which requires entropy from an RNG.
+/// Combination of [`DigestSigner`] and [`RandomizedSigner`] with support for computing a signature
+/// over a digest which requires entropy from an RNG.
 #[cfg(all(feature = "digest", feature = "rand_core"))]
 pub trait RandomizedDigestSigner<D: Update, S> {
-    /// Sign a message by updating the received `Digest` with it,
-    /// returning a signature.
+    /// Sign a message by updating the received `Digest` with it, returning a signature.
     ///
-    /// The given function can be invoked multiple times. It is expected that
-    /// in each invocation the `Digest` is updated with the entire equal message.
+    /// The given function can be invoked multiple times. It is expected that in each invocation the
+    /// `Digest` is updated with the entire equal message.
     ///
-    /// Panics in the event of a signing error.
+    /// # Panics
+    /// In the event of a signing error.
     fn sign_digest_with_rng<R: CryptoRng + ?Sized, F: Fn(&mut D)>(&self, rng: &mut R, f: F) -> S {
         self.try_sign_digest_with_rng(rng, |digest| {
             f(digest);
@@ -158,11 +177,15 @@ pub trait RandomizedDigestSigner<D: Update, S> {
         .expect("signature operation failed")
     }
 
-    /// Attempt to sign a message by updating the received `Digest` with it,
-    /// returning a digital signature on success, or an error if something went wrong.
+    /// Attempt to sign a message by updating the received `Digest` with it, returning a digital
+    /// signature on success, or an error if something went wrong.
     ///
-    /// The given function can be invoked multiple times. It is expected that
-    /// in each invocation the `Digest` is updated with the entire equal message.
+    /// The given function can be invoked multiple times. It is expected that in each invocation the
+    /// `Digest` is updated with the entire equal message.
+    ///
+    /// # Errors
+    /// Returns implementation-specific errors in the event signing failed (e.g. KMS or HSM
+    /// communication error), or if the provided `rng` experiences an internal failure.
     fn try_sign_digest_with_rng<R: TryCryptoRng + ?Sized, F: Fn(&mut D) -> Result<(), Error>>(
         &self,
         rng: &mut R,
@@ -170,22 +193,26 @@ pub trait RandomizedDigestSigner<D: Update, S> {
     ) -> Result<S, Error>;
 }
 
-/// Sign the provided message bytestring using `&mut Self` (e.g. an evolving
-/// cryptographic key such as a stateful hash-based signature), and a per-signature
-/// randomizer, returning a digital signature.
+/// Sign the provided message bytestring using `&mut Self` (e.g. an evolving cryptographic key such
+/// as a stateful hash-based signature), and a per-signature randomizer, returning a digital
+/// signature.
 #[cfg(feature = "rand_core")]
 pub trait RandomizedSignerMut<S> {
     /// Sign the given message, update the state, and return a digital signature.
+    ///
+    /// # Panics
+    /// In the event of a signing error.
     fn sign_with_rng<R: CryptoRng + ?Sized>(&mut self, rng: &mut R, msg: &[u8]) -> S {
         self.try_sign_with_rng(rng, msg)
             .expect("signature operation failed")
     }
 
-    /// Attempt to sign the given message, updating the state, and returning a
-    /// digital signature on success, or an error if something went wrong.
+    /// Attempt to sign the given message, updating the state, and returning a digital signature on
+    /// success, or an error if something went wrong.
     ///
-    /// Signing can fail, e.g., if the number of time periods allowed by the
-    /// current key is exceeded.
+    /// # Errors
+    /// Signing can fail, e.g. if the number of time periods allowed by the current key is exceeded,
+    /// or if the provided `rng` experiences an internal failure.
     fn try_sign_with_rng<R: TryCryptoRng + ?Sized>(
         &mut self,
         rng: &mut R,
@@ -196,15 +223,22 @@ pub trait RandomizedSignerMut<S> {
 /// Equivalent of [`RandomizedSignerMut`] but the message is provided in non-contiguous byte slices.
 #[cfg(feature = "rand_core")]
 pub trait RandomizedMultipartSignerMut<S> {
-    /// Equivalent of [`RandomizedSignerMut::sign_with_rng()`] but
-    /// the message is provided in non-contiguous byte slices.
+    /// Equivalent of [`RandomizedSignerMut::sign_with_rng()`] but the message is provided in
+    /// non-contiguous byte slices.
+    ///
+    /// # Panics
+    /// In the event of a signing error.
     fn multipart_sign_with_rng<R: CryptoRng + ?Sized>(&mut self, rng: &mut R, msg: &[&[u8]]) -> S {
         self.try_multipart_sign_with_rng(rng, msg)
             .expect("signature operation failed")
     }
 
-    /// Equivalent of [`RandomizedSignerMut::try_sign_with_rng()`]
-    /// but the message is provided in non-contiguous byte slices.
+    /// Equivalent of [`RandomizedSignerMut::try_sign_with_rng()`] but the message is provided in
+    /// non-contiguous byte slices.
+    ///
+    /// # Errors
+    /// Signing can fail, e.g. if the number of time periods allowed by the current key is exceeded,
+    /// or if the provided `rng` experiences an internal failure.
     fn try_multipart_sign_with_rng<R: TryCryptoRng + ?Sized>(
         &mut self,
         rng: &mut R,
@@ -224,16 +258,20 @@ impl<S, T: RandomizedSigner<S>> RandomizedSignerMut<S> for T {
     }
 }
 
-/// Asynchronously sign the provided message bytestring using `Self`
-/// (e.g. client for a Cloud KMS or HSM), returning a digital signature.
+/// Asynchronously sign the provided message bytestring using `Self` (e.g. client for a Cloud KMS or
+/// HSM), returning a digital signature.
 ///
 /// This trait is an async equivalent of the [`Signer`] trait.
 pub trait AsyncSigner<S> {
-    /// Attempt to sign the given message, returning a digital signature on
-    /// success, or an error if something went wrong.
+    /// Attempt to sign the given message, returning a digital signature on success, or an error if
+    /// something went wrong.
     ///
-    /// The main intended use case for signing errors is when communicating
-    /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
+    /// The main intended use case for signing errors is when communicating with external signers,
+    /// e.g. cloud KMS, HSMs, or other hardware tokens.
+    ///
+    /// # Errors
+    /// Returns implementation-specific errors in the event signing failed (e.g. KMS or HSM
+    /// communication error).
     async fn sign_async(&self, msg: &[u8]) -> Result<S, Error>;
 }
 
@@ -254,11 +292,15 @@ pub trait AsyncDigestSigner<D, S>
 where
     D: Update,
 {
-    /// Attempt to sign a message by updating the received `Digest` with it,
-    /// returning a digital signature on success, or an error if something went wrong.
+    /// Attempt to sign a message by updating the received `Digest` with it, returning a digital
+    /// signature on success, or an error if something went wrong.
     ///
-    /// The given function can be invoked multiple times. It is expected that
-    /// in each invocation the `Digest` is updated with the entire equal message.
+    /// The given function can be invoked multiple times. It is expected that in each invocation the
+    /// `Digest` is updated with the entire equal message.
+    ///
+    /// # Errors
+    /// Returns implementation-specific errors in the event signing failed (e.g. KMS or HSM
+    /// communication error).
     async fn sign_digest_async<F: AsyncFn(&mut D) -> Result<(), Error>>(
         &self,
         f: F,
@@ -268,18 +310,25 @@ where
 /// Sign the given message using the provided external randomness source.
 #[cfg(feature = "rand_core")]
 pub trait AsyncRandomizedSigner<S> {
-    /// Sign the given message and return a digital signature
+    /// Sign the given message and return a digital signature.
+    ///
+    /// # Panics
+    /// In the event of a signing error.
     async fn sign_with_rng_async<R: CryptoRng + ?Sized>(&self, rng: &mut R, msg: &[u8]) -> S {
         self.try_sign_with_rng_async(rng, msg)
             .await
             .expect("signature operation failed")
     }
 
-    /// Attempt to sign the given message, returning a digital signature on
-    /// success, or an error if something went wrong.
+    /// Attempt to sign the given message, returning a digital signature on success, or an error if
+    /// something went wrong.
     ///
-    /// The main intended use case for signing errors is when communicating
-    /// with external signers, e.g. cloud KMS, HSMs, or other hardware tokens.
+    /// The main intended use case for signing errors is when communicating with external signers,
+    /// e.g. cloud KMS, HSMs, or other hardware tokens.
+    ///
+    /// # Errors
+    /// Returns implementation-specific errors in the event signing failed (e.g. KMS or HSM
+    /// communication error), or if the provided `rng` experiences an internal failure.
     async fn try_sign_with_rng_async<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
