@@ -17,6 +17,9 @@ use crate::rand_core::TryCryptoRng;
 
 /// Sign the provided message prehash, returning a digital signature.
 pub trait PrehashSigner<S> {
+    /// Error type.
+    type Error: core::error::Error + Into<Error>;
+
     /// Attempt to sign the given message digest, returning a digital signature on success, or an
     /// error if something went wrong.
     ///
@@ -28,14 +31,17 @@ pub trait PrehashSigner<S> {
     /// Allowed lengths are algorithm-dependent and up to a particular implementation to decide.
     ///
     /// # Errors
-    /// Returns [`Error`] in the event `prehash` is an invalid length.
-    fn sign_prehash(&self, prehash: &[u8]) -> Result<S, Error>;
+    /// Returns `Self::Error` in the event `prehash` is an invalid length.
+    fn sign_prehash(&self, prehash: &[u8]) -> Result<S, Self::Error>;
 }
 
 /// Sign the provided message prehash using the provided external randomness source, returning a
 /// digital signature.
 #[cfg(feature = "rand_core")]
 pub trait RandomizedPrehashSigner<S> {
+    /// Error type.
+    type Error: core::error::Error + Into<Error>;
+
     /// Attempt to sign the given message digest, returning a digital signature on success, or an
     /// error if something went wrong.
     ///
@@ -47,13 +53,13 @@ pub trait RandomizedPrehashSigner<S> {
     /// Allowed lengths are algorithm-dependent and up to a particular implementation to decide.
     ///
     /// # Errors
-    /// Returns [`Error`] in the event `prehash` is an invalid length, or if an internal error
+    /// Returns `Self::Error` in the event `prehash` is an invalid length, or if an internal error
     /// in the provided `rng` occurs.
     fn sign_prehash_with_rng<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
         prehash: &[u8],
-    ) -> Result<S, Error>;
+    ) -> Result<S, Self::Error>;
 }
 
 /// Verify the provided message prehash using `Self` (e.g. a public key)
@@ -78,8 +84,10 @@ pub trait PrehashVerifier<S> {
 }
 
 /// Asynchronously sign the provided message prehash, returning a digital signature.
-#[allow(async_fn_in_trait)]
 pub trait AsyncPrehashSigner<S> {
+    /// Error type.
+    type Error: core::error::Error + Into<Error>;
+
     /// Attempt to sign the given message digest, returning a digital signature on success, or an
     /// error if something went wrong.
     ///
@@ -89,14 +97,19 @@ pub trait AsyncPrehashSigner<S> {
     /// for the message digest for a given concrete signature algorithm.
     ///
     /// Allowed lengths are algorithm-dependent and up to a particular implementation to decide.
-    async fn sign_prehash_async(&self, prehash: &[u8]) -> Result<S, Error>;
+    ///
+    /// # Errors
+    /// Returns `Self::Error` in the event `prehash` is an invalid length.
+    async fn sign_prehash_async(&self, prehash: &[u8]) -> Result<S, Self::Error>;
 }
 
 /// Asynchronously sign the provided message prehash using the provided external randomness source,
 /// returning a digital signature.
 #[cfg(feature = "rand_core")]
-#[allow(async_fn_in_trait)]
 pub trait AsyncRandomizedPrehashSigner<S> {
+    /// Error type.
+    type Error: core::error::Error + Into<Error>;
+
     /// Attempt to sign the given message digest, returning a digital signature on success, or an
     /// error if something went wrong.
     ///
@@ -106,9 +119,13 @@ pub trait AsyncRandomizedPrehashSigner<S> {
     /// for the message digest for a given concrete signature algorithm.
     ///
     /// Allowed lengths are algorithm-dependent and up to a particular implementation to decide.
+    ///
+    /// # Errors
+    /// Returns `Self::Error` in the event `prehash` is an invalid length, or if `rng` experiences
+    /// an internal failure.
     async fn sign_prehash_with_rng_async<R: TryCryptoRng + ?Sized>(
         &self,
         rng: &mut R,
         prehash: &[u8],
-    ) -> Result<S, Error>;
+    ) -> Result<S, Self::Error>;
 }
