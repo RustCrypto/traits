@@ -205,6 +205,19 @@ pub trait CustomizedInit: Sized {
     fn new_customized(customization: &[u8]) -> Self;
 }
 
+/// Trait for hash functions with customization string for domain separation which place
+/// restrictions on customization strings.
+pub trait TryCustomizedInit: Sized {
+    /// Error returned for invalid customization strings.
+    type Error;
+
+    /// Create new hasher instance with the given customization string.
+    ///
+    /// # Errors
+    /// If the provided customization string is not valid for the hash function.
+    fn try_new_customized(customization: &[u8]) -> Result<Self, Self::Error>;
+}
+
 /// Types with a certain collision resistance.
 pub trait CollisionResistance {
     /// Collision resistance in bytes.
