@@ -479,9 +479,9 @@ dependencies = [
 
 [[package]]
 name = "pkcs8"
-version = "0.11.0-rc.11"
+version = "0.11.0-rc.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12922b6296c06eb741b02d7b5161e3aaa22864af38dfa025a1a3ba3f68c84577"
+checksum = "9d71d6da5a0e652b5c694049095a52f5e564012b8ee5001cf10d84a4ca9a7f9d"
 dependencies = [
  "der",
  "spki",
