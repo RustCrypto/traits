@@ -218,6 +218,14 @@ pub trait TryCustomizedInit: Sized {
     fn try_new_customized(customization: &[u8]) -> Result<Self, Self::Error>;
 }
 
+impl<T: CustomizedInit> TryCustomizedInit for T {
+    type Error = core::convert::Infallible;
+
+    fn try_new_customized(customization: &[u8]) -> Result<Self, Self::Error> {
+        Ok(Self::new_customized(customization))
+    }
+}
+
 /// Types with a certain collision resistance.
 pub trait CollisionResistance {
     /// Collision resistance in bytes.
