@@ -4,23 +4,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 3.0.0 (UNRELEASED)
+## 3.0.0 (2026-05-02)
 ### Added
 - `RandomizedSignerMut` trait ([#1448])
+- `core::error::Error` support ([#1711])
+- Async traits incorporated from the `async-signature` crate ([#1720], [#2288])
+- `MultipartSigner` and `MultipartVerifier` traits ([#1880])
 
 ### Changed
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
+- Use `Fn(&mut D)` for `*DigestSigner`/`*DigestVerifier` ([#2004])
 - Bump `rand_core` to v0.10 ([#2250])
+- Bump `digest` to v0.11 ([#2300])
 
 ### Removed
-- `std` feature - replaced with `core::error::Error`
-- `derive` feature
-- `SignerMut` blanket implementation for `Signer`
-- `PrehashSignature` trait
+- Error source from display message ([#1689])
+- `std` feature ([#1829])
+- `derive` feature ([#1843])
+- `SignerMut` blanket implementation for `Signer` ([#1915])
+- `PrehashSignature` trait ([#1924])
 
 [#1448]: https://github.com/RustCrypto/traits/pull/1448
+[#1689]: https://github.com/RustCrypto/traits/pull/1689
+[#1711]: https://github.com/RustCrypto/traits/pull/1711
+[#1720]: https://github.com/RustCrypto/traits/pull/1720
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
+[#1829]: https://github.com/RustCrypto/traits/pull/1829
+[#1843]: https://github.com/RustCrypto/traits/pull/1843
+[#1880]: https://github.com/RustCrypto/traits/pull/1880
+[#1915]: https://github.com/RustCrypto/traits/pull/1915
+[#1924]: https://github.com/RustCrypto/traits/pull/1924
+[#2004]: https://github.com/RustCrypto/traits/pull/2004
 [#2250]: https://github.com/RustCrypto/traits/pull/2250
+[#2288]: https://github.com/RustCrypto/traits/pull/2288
+[#2300]: https://github.com/RustCrypto/traits/pull/2300
 
 ## 2.2.0 (2023-11-12)
 ### Changed

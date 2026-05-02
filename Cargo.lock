@@ -663,7 +663,7 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "3.0.0-rc.10"
+version = "3.0.0"
 dependencies = [
  "digest",
  "rand_core",
