@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.11.3 (UNRELEASED)
 ### Added
 - `dev::initialized_mac_test` function ([#2367])
+- `TryCustomizedInit` trait ([#2395])
 
 [#2367]: https://github.com/RustCrypto/traits/pull/2367
+[#2395]: https://github.com/RustCrypto/traits/pull/2395
 
 ## 0.11.2 (2026-03-13)
 ### Changed
