@@ -1,0 +1,20 @@
+[package]
+name = "pake"
+version = "0.0.0"
+authors = ["RustCrypto Developers"]
+edition = "2024"
+rust-version = "1.85"
+documentation = "https://docs.rs/pake"
+readme = "README.md"
+repository = "https://github.com/RustCrypto/traits"
+license = "Apache-2.0 OR MIT"
+keywords = ["crypto", "pake"]
+categories = ["cryptography", "no-std"]
+description = """
+Traits which describe the functionality of [Password-Authenticated Key Exchange] (PAKE) algorithms, which can be used to
+establish a shared secret over an insecure channel using only the client's knowledge of a password and the server's
+knowledge of a password hash for authentication, without the client revealing their plaintext password to the server
+"""
+
+[dependencies]
+kdf = "0.1.0-pre.0"
