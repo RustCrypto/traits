@@ -98,6 +98,7 @@ impl<Point, const WINDOW_SIZE: usize> Deref for BasepointTable<Point, WINDOW_SIZ
 #[cfg(feature = "alloc")]
 pub(super) mod vartime {
     use super::LazyLock;
+    use alloc::vec::Vec;
     use core::ops::Mul;
     use group::{Group, WnafBase, WnafScalar};
 
@@ -150,6 +151,36 @@ pub(super) mod vartime {
         /// window table to accelerate the scalar multiplication.
         pub fn mul(&self, scalar: &Point::Scalar) -> Point {
             self.table.mul(&WnafScalar::new(scalar))
+        }
+
+        /// Multiply `Point::generator` by the given scalar in variable-time, then compute a linear
+        /// combination of the remaining points and scalars, i.e.
+        ///
+        /// ```text
+        /// scalar * G + scalars[0] * Points[0] + ...
+        /// ```
+        pub fn lincomb(
+            &self,
+            scalar: &Point::Scalar,
+            points_and_scalars: &[(Point, Point::Scalar)],
+        ) -> Point {
+            let mut bases = Vec::with_capacity(points_and_scalars.len() + 1);
+            bases.push(self.table.clone());
+            bases.extend(
+                points_and_scalars
+                    .iter()
+                    .map(|(point, _)| WnafBase::new(*point)),
+            );
+
+            let mut scalars = Vec::with_capacity(points_and_scalars.len() + 1);
+            scalars.push(WnafScalar::new(scalar));
+            scalars.extend(
+                points_and_scalars
+                    .iter()
+                    .map(|(_, scalar)| WnafScalar::new(scalar)),
+            );
+
+            WnafBase::multiscalar_mul(scalars.iter(), bases.iter())
         }
     }
 
