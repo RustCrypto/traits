@@ -41,6 +41,10 @@ jobs:
           toolchain: ${{ matrix.rust }}
           targets: ${{ matrix.target }}
       - run: cargo build --target ${{ matrix.target }}
+      - run: cargo build --target ${{ matrix.target }} --features alloc
+      - run: cargo build --target ${{ matrix.target }} --features rand_core
+      - run: cargo build --target ${{ matrix.target }} --features zeroize
+      - run: cargo build --target ${{ matrix.target }} --features alloc,rand_core,zeroize
 
   minimal-versions:
     uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master

@@ -7,15 +7,21 @@
 )]
 #![forbid(unsafe_code)]
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 /// Hazardous materials.
 pub mod hazmat;
 
 /// Secure random generation.
 #[cfg(feature = "rand_core")]
 mod generate;
+/// `Box`-like type with `no_alloc` fallback.
+mod maybe_box;
 
 pub use hybrid_array as array;
 pub use hybrid_array::typenum;
+pub use maybe_box::MaybeBox;
 
 #[cfg(feature = "getrandom")]
 pub use getrandom;
