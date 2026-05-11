@@ -16,24 +16,14 @@ use rand_core::{CryptoRng, TryCryptoRng};
 use subtle::{Choice, ConstantTimeEq, CtOption};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
-#[cfg(feature = "arithmetic")]
-use crate::{CurveArithmetic, NonZeroScalar, PublicKey};
-
 #[cfg(feature = "ecdh")]
 use crate::ecdh;
-
+#[cfg(feature = "arithmetic")]
+use crate::{CurveArithmetic, NonZeroScalar, PublicKey};
+#[cfg(all(feature = "arithmetic", feature = "pem"))]
+use alloc::string::String;
 #[cfg(feature = "pem")]
 use pem_rfc7468::{self as pem, PemLabel};
-
-#[cfg(feature = "sec1")]
-use {
-    crate::{
-        FieldBytesSize,
-        sec1::{ModulusSize, Sec1Point, ValidatePublicKey},
-    },
-    sec1::der::{self, Decode, oid::AssociatedOid},
-};
-
 #[cfg(all(feature = "alloc", feature = "arithmetic", feature = "sec1"))]
 use {
     crate::{
@@ -43,9 +33,14 @@ use {
     alloc::vec::Vec,
     sec1::der::Encode,
 };
-
-#[cfg(all(feature = "arithmetic", feature = "pem"))]
-use alloc::string::String;
+#[cfg(feature = "sec1")]
+use {
+    crate::{
+        DecodeError, DecodeResult, FieldBytesSize,
+        sec1::{ModulusSize, Sec1Point, ValidatePublicKey},
+    },
+    sec1::der::{self, Decode, oid::AssociatedOid},
+};
 
 #[cfg(all(doc, feature = "pkcs8"))]
 use {crate::pkcs8::DecodePrivateKey, core::str::FromStr};
@@ -88,7 +83,7 @@ where
     /// Minimum allowed size of an elliptic curve secret key in bytes.
     ///
     /// This provides the equivalent of 96-bits of symmetric security.
-    const MIN_SIZE: usize = 24;
+    pub const MIN_SIZE: usize = 24;
 
     /// Create a new secret key from a scalar value.
     ///
@@ -102,22 +97,22 @@ where
 
     /// Borrow the inner secret [`ScalarValue`] value.
     ///
-    /// # ⚠️ Warning
+    /// <div class="warning">
+    /// <b>Security Warning</b>
     ///
-    /// This value is key material.
-    ///
-    /// Please treat it with the care it deserves!
+    /// This value is key material. Please treat it with the care it deserves!
+    /// </div>
     pub fn as_scalar_value(&self) -> &ScalarValue<C> {
         &self.inner
     }
 
     /// Get the secret [`NonZeroScalar`] value for this key.
     ///
-    /// # ⚠️ Warning
+    /// <div class="warning">
+    /// <b>Security Warning</b>
     ///
-    /// This value is key material.
-    ///
-    /// Please treat it with the care it deserves!
+    /// This value is key material. Please treat it with the care it deserves!
+    /// </div>
     #[cfg(feature = "arithmetic")]
     pub fn to_nonzero_scalar(&self) -> NonZeroScalar<C>
     where
@@ -194,20 +189,87 @@ where
         ecdh::diffie_hellman(self.to_nonzero_scalar(), public_key.as_affine())
     }
 
+    /// Decode [`SecretKey`] from DER-encoded private key.
+    ///
+    /// # Supported formats
+    /// - PKCS#8: requires `pkcs8` feature
+    /// - SEC1: requires `sec1` feature
+    ///
+    /// If you are expecting one format over the other, it's better to use a more specific method:
+    /// - PKCS#8: [`::pkcs8::DecodePrivateKey::from_pkcs8_der`]
+    /// - SEC1: [`::sec1::DecodeEcPrivateKey::from_sec1_der`]
+    ///
+    /// # Errors
+    /// - Returns [`DecodeError::Pkcs8`] if PKCS#8 key could not be decoded
+    /// - Returns [`DecodeError::Sec1`] if SEC1 key could not be decoded
+    #[cfg(any(feature = "pkcs8", feature = "sec1"))]
+    #[allow(clippy::missing_panics_doc, reason = "should not panic")]
+    pub fn from_der(der_bytes: &[u8]) -> DecodeResult<Self>
+    where
+        C: AssociatedOid + Curve + ValidatePublicKey,
+        FieldBytesSize<C>: ModulusSize,
+    {
+        #[allow(unused_assignments)]
+        let mut err: Option<DecodeError> = None;
+
+        #[cfg(feature = "pkcs8")]
+        match ::pkcs8::DecodePrivateKey::from_pkcs8_der(der_bytes) {
+            Ok(sk) => return Ok(sk),
+            Err(e) => err = Some(e.into()),
+        }
+
+        #[cfg(feature = "sec1")]
+        match Self::from_sec1_der(der_bytes) {
+            Ok(sk) => return Ok(sk),
+            Err(e) => {
+                // Insert if we don't already have a PKCS#8 error
+                let _ = err.get_or_insert(e);
+            }
+        }
+
+        Err(err.expect("should be set"))
+    }
+
+    /// Decode [`SecretKey`] from PEM-encoded private key.
+    ///
+    /// If you are expecting one format over the other, it's better to use a more specific method:
+    /// - PKCS#8: [`::pkcs8::DecodePrivateKey::from_pkcs8_pem`]
+    /// - SEC1: [`::sec1::DecodeEcPrivateKey::from_sec1_pem`]
+    ///
+    /// # Errors
+    /// - Returns [`DecodeError::Pem`] if PEM label is invalid or otherwise malformed
+    /// - Returns [`DecodeError::Pkcs8`] if PKCS#8 key detected but could not be decoded
+    /// - Returns [`DecodeError::Sec1`] if SEC1 key detected but could not be decoded
+    #[cfg(feature = "pem")]
+    pub fn from_pem(pem: &str) -> DecodeResult<Self>
+    where
+        C: AssociatedOid + Curve + ValidatePublicKey,
+        FieldBytesSize<C>: ModulusSize,
+    {
+        let label = pem_rfc7468::decode_label(pem.as_bytes()).map_err(DecodeError::Pem)?;
+
+        if ::pkcs8::PrivateKeyInfoRef::validate_pem_label(label).is_ok() {
+            return ::pkcs8::DecodePrivateKey::from_pkcs8_pem(pem).map_err(DecodeError::Pkcs8);
+        } else if ::sec1::EcPrivateKey::validate_pem_label(label).is_ok() {
+            return ::sec1::DecodeEcPrivateKey::from_sec1_pem(pem).map_err(DecodeError::Sec1);
+        }
+
+        Err(pem_rfc7468::Error::Label.into())
+    }
+
     /// Deserialize secret key encoded in the SEC1 ASN.1 DER `ECPrivateKey` format.
     ///
     /// # Errors
     /// - if `der_bytes` does not encode a valid SEC1 private key
     /// - if the contained document does not encode a valid key for this curve
     #[cfg(feature = "sec1")]
-    pub fn from_sec1_der(der_bytes: &[u8]) -> Result<Self>
+    pub fn from_sec1_der(der_bytes: &[u8]) -> DecodeResult<Self>
     where
         C: AssociatedOid + Curve + ValidatePublicKey,
         FieldBytesSize<C>: ModulusSize,
     {
-        sec1::EcPrivateKey::try_from(der_bytes)?
-            .try_into()
-            .map_err(|_| Error)
+        let sec1_key = sec1::EcPrivateKey::try_from(der_bytes)?;
+        Self::try_from(sec1_key).map_err(|e| DecodeError::Sec1(e.into()))
     }
 
     /// Serialize secret key in the SEC1 ASN.1 DER `ECPrivateKey` format.
@@ -249,18 +311,18 @@ where
     /// - if the document cannot be decoded as PEM
     /// - if the PEM document does not encode a valid private key for this curve
     #[cfg(feature = "pem")]
-    pub fn from_sec1_pem(s: &str) -> Result<Self>
+    pub fn from_sec1_pem(s: &str) -> DecodeResult<Self>
     where
         C: AssociatedOid + Curve + ValidatePublicKey,
         FieldBytesSize<C>: ModulusSize,
     {
-        let (label, der_bytes) = pem::decode_vec(s.as_bytes()).map_err(|_| Error)?;
+        let (label, der_bytes) = pem::decode_vec(s.as_bytes()).map_err(DecodeError::Pem)?;
 
         if label != sec1::EcPrivateKey::PEM_LABEL {
-            return Err(Error);
+            return Err(pem_rfc7468::Error::Label.into());
         }
 
-        Self::from_sec1_der(&der_bytes).map_err(|_| Error)
+        Self::from_sec1_der(&der_bytes)
     }
 
     /// Serialize private key as self-zeroizing PEM-encoded SEC1 `ECPrivateKey`
@@ -290,90 +352,6 @@ where
     #[deprecated(since = "0.14.0", note = "use the `Generate` trait instead")]
     pub fn random<R: CryptoRng + ?Sized>(rng: &mut R) -> Self {
         Self::generate_from_rng(rng)
-    }
-}
-
-#[cfg(feature = "pem")]
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum PemParseError {
-    /// Indicates invalid PEM string
-    Pem(pem_rfc7468::Error),
-    /// Indicates invalid PKCS#8 EC key
-    Pkcs8(::pkcs8::Error),
-    /// Indicates invalid SEC1 EC key
-    Sec1(::sec1::Error),
-    /// Unable to recognize document label
-    UnknownLabel,
-}
-
-#[cfg(feature = "pem")]
-impl From<pem_rfc7468::Error> for PemParseError {
-    #[inline(always)]
-    fn from(error: pem_rfc7468::Error) -> Self {
-        Self::Pem(error)
-    }
-}
-
-#[cfg(feature = "pem")]
-impl From<::pkcs8::Error> for PemParseError {
-    #[inline(always)]
-    fn from(error: ::pkcs8::Error) -> Self {
-        Self::Pkcs8(error)
-    }
-}
-
-#[cfg(feature = "pem")]
-impl From<::sec1::Error> for PemParseError {
-    #[inline(always)]
-    fn from(error: ::sec1::Error) -> Self {
-        Self::Sec1(error)
-    }
-}
-
-#[cfg(feature = "pem")]
-impl fmt::Display for PemParseError {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Pem(error) => fmt.write_fmt(format_args!("Failed to parse PEM: {error}")),
-            Self::UnknownLabel => fmt.write_str("Unrecognized key label"),
-            Self::Pkcs8(error) => {
-                fmt.write_fmt(format_args!("Failed to parse PKCS#8 key: {error}"))
-            }
-            Self::Sec1(error) => fmt.write_fmt(format_args!("Failed to parse SEC1 key: {error}")),
-        }
-    }
-}
-
-#[cfg(feature = "pem")]
-impl core::error::Error for PemParseError {}
-
-#[cfg(feature = "pem")]
-impl<C> SecretKey<C>
-where
-    C: AssociatedOid + Curve + ValidatePublicKey,
-    FieldBytesSize<C>: ModulusSize,
-{
-    /// Parse [`SecretKey`] from PEM-encoded private key.
-    ///
-    /// Supported formats:
-    /// - `SEC1` - requires feature `sec1`
-    /// - `PKCS#8` - requires feature `pkcs8`
-    ///
-    /// # Errors
-    /// - If `pem` is not valid PEM encoded private key
-    /// - If label within `pem` is not known valid label
-    /// - If label is valid, but unable to decode DER content of the PEM file
-    #[cfg(feature = "pem")]
-    pub fn from_pem(pem: &str) -> ::core::result::Result<Self, PemParseError> {
-        let label = pem_rfc7468::decode_label(pem.as_bytes()).map_err(PemParseError::Pem)?;
-
-        if ::pkcs8::PrivateKeyInfoRef::validate_pem_label(label).is_ok() {
-            return ::pkcs8::DecodePrivateKey::from_pkcs8_pem(pem).map_err(PemParseError::Pkcs8);
-        } else if ::sec1::EcPrivateKey::validate_pem_label(label).is_ok() {
-            return ::sec1::DecodeEcPrivateKey::from_sec1_pem(pem).map_err(PemParseError::Sec1);
-        }
-
-        Err(PemParseError::UnknownLabel)
     }
 }
 
