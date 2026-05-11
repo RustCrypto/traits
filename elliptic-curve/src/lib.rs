@@ -114,6 +114,8 @@ pub use {
     group::{self, Curve as CurveGroup, Group},
 };
 
+#[cfg(any(feature = "pkcs8", feature = "sec1"))]
+pub use crate::error::{DecodeError, DecodeResult};
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;
 
