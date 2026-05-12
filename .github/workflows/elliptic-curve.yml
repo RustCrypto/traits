@@ -61,13 +61,14 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features arithmetic,serde
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,digest,ecdh,pem,pkcs8,sec1,serde
 
-  # minimal-versions:
-  #   uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
-  #   with:
-  #     working-directory: ${{ github.workflow }}
-  #     stable-cmd: |
-  #       cargo hack check --feature-powerset --no-dev-deps --skip basepoint-table
-  #       cargo check --all-features
+  minimal-versions:
+    if: false
+    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+    with:
+      working-directory: ${{ github.workflow }}
+      stable-cmd: |
+        cargo hack check --feature-powerset --no-dev-deps --skip basepoint-table
+        cargo check --all-features
 
   test:
     runs-on: ubuntu-latest
