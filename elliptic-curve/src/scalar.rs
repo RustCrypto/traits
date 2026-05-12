@@ -21,10 +21,6 @@ use crate::CurveArithmetic;
 #[cfg(feature = "arithmetic")]
 pub type Scalar<C> = <C as CurveArithmetic>::Scalar;
 
-/// Bit representation of a scalar field element of a given curve.
-#[cfg(feature = "bits")]
-pub type ScalarBits<C> = ff::FieldBits<<Scalar<C> as ff::PrimeFieldBits>::ReprBits>;
-
 /// Instantiate a scalar from an unsigned integer without checking for overflow.
 pub trait FromUintUnchecked {
     /// Unsigned integer type (i.e. `Curve::Uint`)
