@@ -31,8 +31,6 @@ use pkcs8::AssociatedOid;
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
-#[cfg(feature = "bits")]
-use ff::PrimeFieldBits;
 
 /// Pseudo-coordinate for fixed-based scalar mult output
 pub const PSEUDO_COORDINATE_FIXED_BASE_MUL: [u8; 32] =
@@ -55,10 +53,6 @@ pub type SecretKey = crate::SecretKey<MockCurve>;
 
 /// Scalar value type.
 pub type ScalarValue = crate::ScalarValue<MockCurve>;
-
-/// Scalar bits.
-#[cfg(feature = "bits")]
-pub type ScalarBits = crate::scalar::ScalarBits<MockCurve>;
 
 /// Mock elliptic curve type useful for writing tests which require a concrete
 /// curve type.
@@ -158,23 +152,6 @@ impl PrimeField for Scalar {
 
     fn is_odd(&self) -> Choice {
         self.0.is_odd()
-    }
-}
-
-#[cfg(feature = "bits")]
-impl PrimeFieldBits for Scalar {
-    #[cfg(target_pointer_width = "32")]
-    type ReprBits = [u32; 8];
-
-    #[cfg(target_pointer_width = "64")]
-    type ReprBits = [u64; 4];
-
-    fn to_le_bits(&self) -> ScalarBits {
-        self.0.as_uint().to_words().into()
-    }
-
-    fn char_le_bits() -> ScalarBits {
-        MockCurve::ORDER.to_words().into()
     }
 }
 

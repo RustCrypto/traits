@@ -36,7 +36,6 @@ pem-rfc7468 = { version = "1", optional = true, features = ["alloc"] }
 pkcs8 = { version = "0.11", optional = true, default-features = false }
 sec1 = { version = "0.8", optional = true, features = ["ctutils", "subtle", "zeroize"] }
 serdect = { version = "0.4", optional = true, default-features = false, features = ["alloc"] }
-tap = { version = "1.0.1", optional = true, default-features = false } # make `bitvec`'s `wyz` work with `minimal-versions`
 
 [dev-dependencies]
 hex-literal = "1"
@@ -62,7 +61,6 @@ std = [
 arithmetic = ["group"]
 basepoint-table = ["arithmetic"]
 critical-section = ["basepoint-table", "once_cell/critical-section"]
-bits = ["dep:tap", "arithmetic", "ff/bits"]
 dev = ["arithmetic", "dep:hex-literal", "pem", "pkcs8"]
 ecdh = ["arithmetic", "digest", "dep:hkdf"]
 getrandom = ["arithmetic", "bigint/getrandom", "common/getrandom"]
