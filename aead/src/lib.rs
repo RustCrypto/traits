@@ -8,15 +8,18 @@
 #![forbid(unsafe_code)]
 
 #[cfg(feature = "alloc")]
+#[macro_use]
 extern crate alloc;
 
 #[cfg(feature = "dev")]
 pub mod dev;
+mod prefix_nonce;
 
 pub use common::{
     self, Key, KeyInit, KeySizeUser,
     array::{self, typenum::consts},
 };
+pub use prefix_nonce::PrefixNonceAead;
 
 #[cfg(feature = "arrayvec")]
 pub use arrayvec;
