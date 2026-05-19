@@ -310,6 +310,22 @@ pub trait IvState: IvSizeUser {
     fn iv_state(&self) -> Iv<Self>;
 }
 
+/// Trait for setting current IV state.
+// TODO: merge with `IvState` in the next breaking release
+pub trait SetIvState: IvState {
+    /// Set IV.
+    fn set_iv(&mut self, iv: &Iv<Self>);
+
+    /// Execute the `f` closure with the current state and reset it back
+    /// to the original state before the method returns.
+    fn peek<T>(&mut self, f: impl FnOnce(&mut Self) -> T) -> T {
+        let iv = self.iv_state();
+        let res = f(self);
+        self.set_iv(&iv);
+        res
+    }
+}
+
 impl<T> KeySizeUser for T
 where
     T: InnerUser,
