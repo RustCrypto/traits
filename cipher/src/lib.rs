@@ -33,7 +33,7 @@ pub use tweak::*;
 
 pub use common::{
     AlgorithmName, Block, BlockSizeUser, InnerIvInit, InvalidLength, Iv, IvSizeUser, IvState, Key,
-    KeyInit, KeyIvInit, KeySizeUser, ParBlocks, ParBlocksSizeUser,
+    KeyInit, KeyIvInit, KeySizeUser, SetIvState, ParBlocks, ParBlocksSizeUser,
     array::{self, Array},
     typenum::{self, consts},
 };
