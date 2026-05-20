@@ -12,6 +12,7 @@ extern crate alloc;
 
 #[cfg(feature = "dev")]
 pub mod dev;
+mod doc;
 
 pub use common::{
     self, Key, KeyInit, KeySizeUser,
