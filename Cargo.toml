@@ -9,6 +9,7 @@ members = [
     "elliptic-curve",
     "kdf",
     "kem",
+    "pake",
     "password-hash",
     "universal-hash",
     "signature",
