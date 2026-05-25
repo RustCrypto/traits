@@ -43,9 +43,6 @@ jobs:
       - run: cargo check --all-features
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features bytes
-      # TODO: re-enable in v0.6.1
-      # - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features heapless
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features rand_core
 
   minimal-versions:
