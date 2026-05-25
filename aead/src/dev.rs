@@ -4,9 +4,7 @@
 #![allow(clippy::missing_panics_doc, reason = "dev module")]
 #![allow(clippy::unwrap_in_result, reason = "dev module")]
 
-use crate::{
-    Aead, AeadInOut, Payload, Tag, TagPosition, array::typenum::Unsigned, inout::InOutBuf,
-};
+use crate::{Aead, Payload, Tag, TagPosition, array::typenum::Unsigned, inout::InOutBuf};
 pub use blobby;
 use common::KeyInit;
 
@@ -27,7 +25,7 @@ pub struct TestVector {
 
 /// Run AEAD test for the provided passing test vector
 #[allow(clippy::cast_possible_truncation)]
-pub fn pass_test<C: AeadInOut + KeyInit>(
+pub fn pass_test<C: Aead + KeyInit>(
     &TestVector {
         key,
         nonce,
@@ -105,7 +103,7 @@ pub fn pass_test<C: AeadInOut + KeyInit>(
 }
 
 /// Run AEAD test for the provided failing test vector
-pub fn fail_test<C: AeadInOut + KeyInit>(
+pub fn fail_test<C: Aead + KeyInit>(
     &TestVector {
         key,
         nonce,

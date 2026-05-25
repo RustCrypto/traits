@@ -7,7 +7,7 @@
 #![allow(clippy::unwrap_used, reason = "tests")]
 
 use aead::{
-    AeadCore, AeadInOut, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag, TagPosition,
+    AeadCore, AeadTagPosition, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag, TagPosition,
     array::Array, consts::U8,
 };
 use core::fmt;
@@ -120,10 +120,7 @@ impl KeyInit for PrefixDummyAead {
 impl AeadCore for PrefixDummyAead {
     type NonceSize = U8;
     type TagSize = U8;
-    const TAG_POSITION: TagPosition = TagPosition::Prefix;
-}
 
-impl AeadInOut for PrefixDummyAead {
     fn encrypt_inout_detached(
         &self,
         nonce: &Nonce<Self>,
@@ -142,6 +139,10 @@ impl AeadInOut for PrefixDummyAead {
     ) -> Result<()> {
         self.0.decrypt_inner(nonce.into(), aad, buffer, tag.into())
     }
+}
+
+impl AeadTagPosition for PrefixDummyAead {
+    const TAG_POSITION: TagPosition = TagPosition::Prefix;
 }
 
 #[derive(Debug)]
@@ -160,10 +161,7 @@ impl KeyInit for PostfixDummyAead {
 impl AeadCore for PostfixDummyAead {
     type NonceSize = U8;
     type TagSize = U8;
-    const TAG_POSITION: TagPosition = TagPosition::Postfix;
-}
 
-impl AeadInOut for PostfixDummyAead {
     fn encrypt_inout_detached(
         &self,
         nonce: &Nonce<Self>,
@@ -184,12 +182,27 @@ impl AeadInOut for PostfixDummyAead {
     }
 }
 
+impl AeadTagPosition for PostfixDummyAead {
+    const TAG_POSITION: TagPosition = TagPosition::Postfix;
+}
+
 #[cfg(feature = "dev")]
 mod tests {
-    use super::{PostfixDummyAead, PrefixDummyAead};
+    use super::{PostfixDummyAead, PrefixDummyAead, U8};
+    use aead::{AeadCore, KeyInit};
 
     aead::new_pass_test!(dummy_prefix_pass, "prefix_pass", PrefixDummyAead);
     aead::new_fail_test!(dummy_prefix_fail, "prefix_fail", PrefixDummyAead);
     aead::new_pass_test!(dummy_postfix_pass, "postfix_pass", PostfixDummyAead);
     aead::new_fail_test!(dummy_postfix_fail, "postfix_fail", PostfixDummyAead);
+
+    #[test]
+    fn aead_core_dyn_compact() {
+        fn take_dyn_aead(_: &dyn AeadCore<TagSize = U8, NonceSize = U8>) {}
+
+        let c = PrefixDummyAead::new(&[0u8; 8].into());
+        take_dyn_aead(&c);
+        let c = PostfixDummyAead::new(&[0u8; 8].into());
+        take_dyn_aead(&c);
+    }
 }

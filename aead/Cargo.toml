@@ -10,22 +10,16 @@ repository = "https://github.com/RustCrypto/traits"
 license = "MIT OR Apache-2.0"
 keywords = ["crypto", "encryption"]
 categories = ["cryptography", "no-std"]
-description = """
-Traits for Authenticated Encryption with Associated Data (AEAD) algorithms,
-such as AES-GCM as ChaCha20Poly1305, which provide a high-level API
-"""
+description = "Traits for Authenticated Encryption with Associated Data (AEAD) algorithms"
 
 [dependencies]
 common = { version = "0.2", package = "crypto-common" }
 inout = "0.2.2"
 
 # optional dependencies
-arrayvec = { version = "0.7", optional = true, default-features = false }
 blobby = { version = "0.4", optional = true }
-bytes = { version = "1.11.1", optional = true, default-features = false }
 
 [features]
-default = ["rand_core"]
 alloc = []
 dev = ["blobby", "alloc"]
 getrandom = ["common/getrandom"]
