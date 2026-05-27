@@ -22,7 +22,7 @@ blobby = { version = "0.4", optional = true }
 [features]
 alloc = []
 dev = ["blobby", "alloc"]
-getrandom = ["common/getrandom"]
+getrandom = ["common/getrandom", "rand_core"]
 rand_core = ["common/rand_core"]
 
 [lints]
