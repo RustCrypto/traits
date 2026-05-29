@@ -7,8 +7,8 @@
 #![allow(clippy::unwrap_used, reason = "tests")]
 
 use aead::{
-    AeadCore, AeadTagPosition, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag, TagPosition,
-    array::Array, consts::U8,
+    Aead, AeadCore, AeadTagPosition, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag,
+    TagPosition, array::Array, consts::U8,
 };
 use core::fmt;
 use inout::InOutBuf;
@@ -186,23 +186,31 @@ impl AeadTagPosition for PostfixDummyAead {
     const TAG_POSITION: TagPosition = TagPosition::Postfix;
 }
 
+#[test]
+fn aead_core_dyn_compact() {
+    fn take_dyn_aead_core(_: &dyn AeadCore<TagSize = U8, NonceSize = U8>) {}
+
+    let c1 = PrefixDummyAead::new(&[0u8; 8].into());
+    let c2 = PostfixDummyAead::new(&[0u8; 8].into());
+
+    take_dyn_aead_core(&c1);
+    take_dyn_aead_core(&c2);
+
+    #[cfg(feature = "alloc")]
+    {
+        fn take_dyn_aead(_: &dyn Aead) {}
+
+        take_dyn_aead(&c1);
+        take_dyn_aead(&c2);
+    }
+}
+
 #[cfg(feature = "dev")]
 mod tests {
-    use super::{PostfixDummyAead, PrefixDummyAead, U8};
-    use aead::{AeadCore, KeyInit};
+    use super::{PostfixDummyAead, PrefixDummyAead};
 
     aead::new_pass_test!(dummy_prefix_pass, "prefix_pass", PrefixDummyAead);
     aead::new_fail_test!(dummy_prefix_fail, "prefix_fail", PrefixDummyAead);
     aead::new_pass_test!(dummy_postfix_pass, "postfix_pass", PostfixDummyAead);
     aead::new_fail_test!(dummy_postfix_fail, "postfix_fail", PostfixDummyAead);
-
-    #[test]
-    fn aead_core_dyn_compact() {
-        fn take_dyn_aead(_: &dyn AeadCore<TagSize = U8, NonceSize = U8>) {}
-
-        let c = PrefixDummyAead::new(&[0u8; 8].into());
-        take_dyn_aead(&c);
-        let c = PostfixDummyAead::new(&[0u8; 8].into());
-        take_dyn_aead(&c);
-    }
 }
