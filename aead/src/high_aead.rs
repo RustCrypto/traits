@@ -1,4 +1,4 @@
-use crate::{AeadCore, AeadTagPosition, Result};
+use crate::{AeadCore, AeadWithTag, Result};
 use alloc::vec::Vec;
 
 /// High-level functionality of Authenticated Encryption with Associated Data (AEAD) algorithms.
@@ -56,7 +56,7 @@ pub trait Aead {
     fn decrypt(&self, payload: Payload<'_>) -> Result<Vec<u8>>;
 }
 
-impl<T: AeadCore + AeadTagPosition> Aead for T {
+impl<T: AeadCore + AeadWithTag> Aead for T {
     #[allow(clippy::unwrap_in_result)]
     fn encrypt(&self, payload: Payload<'_>) -> Result<Vec<u8>> {
         let Payload { nonce, msg, aad } = payload;

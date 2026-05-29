@@ -19,7 +19,7 @@ mod high_aead;
 pub use high_aead::{Aead, Payload};
 
 mod tag_pos;
-pub use tag_pos::{AeadTagPosition, TagPosition};
+pub use tag_pos::{AeadWithTag, TagPosition};
 
 #[cfg(feature = "rand_core")]
 pub use common::{Generate, rand_core};

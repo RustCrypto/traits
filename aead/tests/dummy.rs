@@ -7,8 +7,8 @@
 #![allow(clippy::unwrap_used, reason = "tests")]
 
 use aead::{
-    Aead, AeadCore, AeadTagPosition, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag,
-    TagPosition, array::Array, consts::U8,
+    Aead, AeadCore, AeadWithTag, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag, TagPosition,
+    array::Array, consts::U8,
 };
 use core::fmt;
 use inout::InOutBuf;
@@ -141,7 +141,7 @@ impl AeadCore for PrefixDummyAead {
     }
 }
 
-impl AeadTagPosition for PrefixDummyAead {
+impl AeadWithTag for PrefixDummyAead {
     const TAG_POSITION: TagPosition = TagPosition::Prefix;
 }
 
@@ -182,7 +182,7 @@ impl AeadCore for PostfixDummyAead {
     }
 }
 
-impl AeadTagPosition for PostfixDummyAead {
+impl AeadWithTag for PostfixDummyAead {
     const TAG_POSITION: TagPosition = TagPosition::Postfix;
 }
 

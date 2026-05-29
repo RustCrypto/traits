@@ -13,7 +13,7 @@ pub enum TagPosition {
 
 /// Trait implemented for AEAD modes which specify tag position in ciphertext.
 #[allow(missing_docs, clippy::missing_errors_doc)] // TODO: fix
-pub trait AeadTagPosition: AeadCore {
+pub trait AeadWithTag: AeadCore {
     /// The AEAD tag position.
     const TAG_POSITION: TagPosition;
 
