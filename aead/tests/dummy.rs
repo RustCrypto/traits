@@ -187,12 +187,11 @@ impl AeadTagPosition for PostfixDummyAead {
 }
 
 #[test]
-fn aead_core_dyn_compact() {
-    fn take_dyn_aead_core(_: &dyn AeadCore<TagSize = U8, NonceSize = U8>) {}
-
+fn dyn_compat() {
     let c1 = PrefixDummyAead::new(&[0u8; 8].into());
     let c2 = PostfixDummyAead::new(&[0u8; 8].into());
 
+    fn take_dyn_aead_core(_: &dyn AeadCore<TagSize = U8, NonceSize = U8>) {}
     take_dyn_aead_core(&c1);
     take_dyn_aead_core(&c2);
 

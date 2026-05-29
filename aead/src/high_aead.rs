@@ -1,9 +1,5 @@
-use crate::{
-    AeadCore, AeadTagPosition, Error, InOutBuf, Result,
-    TagPosition::{Postfix, Prefix},
-};
+use crate::{AeadCore, AeadTagPosition, Result};
 use alloc::vec::Vec;
-use common::array::typenum::Unsigned;
 
 /// High-level functionality of Authenticated Encryption with Associated Data (AEAD) algorithms.
 pub trait Aead {
@@ -64,47 +60,13 @@ impl<T: AeadCore + AeadTagPosition> Aead for T {
     #[allow(clippy::unwrap_in_result)]
     fn encrypt(&self, payload: Payload<'_>) -> Result<Vec<u8>> {
         let Payload { nonce, msg, aad } = payload;
-
-        let tag_len = T::TagSize::USIZE;
-        let ct_len = msg.len().checked_add(tag_len).ok_or(Error)?;
-        let mut buffer = alloc::vec![0u8; ct_len];
-
-        let (ct_dst, tag_dst) = match Self::TAG_POSITION {
-            Postfix => buffer.split_at_mut(msg.len()),
-            Prefix => {
-                let (tag_dst, ct_dst) = buffer.split_at_mut(tag_len);
-                (ct_dst, tag_dst)
-            }
-        };
-
-        let buf = InOutBuf::new(msg, ct_dst).expect("`msg` and `ct_dst` have the same length");
-        let tag = self.encrypt_inout_with_var_nonce_detached(nonce, aad, buf)?;
-        tag_dst.copy_from_slice(&tag);
-
-        Ok(buffer)
+        self.encrypt_into_with_var_nonce(nonce, aad, msg, |n| alloc::vec![0u8; n])
     }
 
     #[allow(clippy::unwrap_in_result)]
     fn decrypt(&self, payload: Payload<'_>) -> Result<Vec<u8>> {
         let Payload { nonce, msg, aad } = payload;
-
-        let tag_len = T::TagSize::USIZE;
-        let ct_len = msg.len().checked_sub(tag_len).ok_or(Error)?;
-
-        let (ct, tag) = match Self::TAG_POSITION {
-            Postfix => msg.split_at(ct_len),
-            Prefix => {
-                let (tag, ct) = msg.split_at(tag_len);
-                (ct, tag)
-            }
-        };
-
-        let tag = tag.try_into().expect("`tag` has correct length");
-        let mut pt_dst = alloc::vec![0u8; ct_len];
-        let buf = InOutBuf::new(ct, &mut pt_dst).expect("`ct` and `pt_dst` have the same length");
-        self.decrypt_inout_with_var_nonce_detached(nonce, aad, buf, tag)?;
-
-        Ok(pt_dst)
+        self.decrypt_into_with_var_nonce(nonce, aad, msg, |n| alloc::vec![0u8; n])
     }
 }
 

@@ -18,6 +18,9 @@ mod high_aead;
 #[cfg(feature = "alloc")]
 pub use high_aead::{Aead, Payload};
 
+mod tag_pos;
+pub use tag_pos::{AeadTagPosition, TagPosition};
+
 #[cfg(feature = "rand_core")]
 pub use common::{Generate, rand_core};
 pub use inout;
@@ -28,7 +31,7 @@ pub use common::{
 };
 pub use inout::InOutBuf;
 
-use common::array::{Array, ArraySize};
+use array::{Array, ArraySize};
 use core::fmt;
 
 /// Nonce: single-use value for ensuring ciphertexts are unique.
@@ -228,21 +231,6 @@ pub trait AeadCore {
         let nonce = nonce.try_into().map_err(|_| Error)?;
         self.decrypt_inout_detached(nonce, associated_data, buffer.into(), tag)
     }
-}
-
-/// Enum which specifies tag position used by an AEAD algorithm.
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub enum TagPosition {
-    /// Postfix tag
-    Postfix,
-    /// Prefix tag
-    Prefix,
-}
-
-/// Trait which carries the default tag position.
-pub trait AeadTagPosition: AeadCore {
-    /// The AEAD tag position.
-    const TAG_POSITION: TagPosition;
 }
 
 /// Error type.
