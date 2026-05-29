@@ -118,6 +118,46 @@ pub trait AeadCore {
         tag: &Tag<Self>,
     ) -> Result<()>;
 
+    /// Encrypt the data in the provided [`InOutBuf`] with variable size nonce,
+    /// returning the authentication tag.
+    ///
+    /// # Warning
+    /// Some algorithms support very short nonces. Users should exercise extreme caution
+    /// while using this method since incorrect handling of nonces may defeat security
+    /// provided by the algorithm.
+    ///
+    /// # Errors
+    /// AEAD algorithm implementations may return an error if the plaintext or AAD are too long
+    /// or an invalid nonce is used.
+    fn encrypt_inout_with_var_nonce_detached(
+        &self,
+        nonce: &[u8],
+        associated_data: &[u8],
+        buffer: InOutBuf<'_, '_, u8>,
+    ) -> Result<Tag<Self>> {
+        let nonce = nonce.try_into().map_err(|_| Error)?;
+        self.encrypt_inout_detached(nonce, associated_data, buffer)
+    }
+
+    /// Decrypt the data in the provided [`InOutBuf`] with variable size nonce,
+    /// returning an error in the event the provided authentication tag is invalid
+    /// for the given ciphertext (i.e. ciphertext is modified/unauthentic).
+    ///
+    /// # Errors
+    /// - if the `ciphertext` is inauthentic (i.e. tag verification failure)
+    /// - if the `ciphertext` is too long
+    /// - if the `aad` is too long
+    fn decrypt_inout_with_var_nonce_detached(
+        &self,
+        nonce: &[u8],
+        associated_data: &[u8],
+        buffer: InOutBuf<'_, '_, u8>,
+        tag: &Tag<Self>,
+    ) -> Result<()> {
+        let nonce = nonce.try_into().map_err(|_| Error)?;
+        self.decrypt_inout_detached(nonce, associated_data, buffer, tag)
+    }
+
     /// Encrypt the data in-place in the provided buffer, returning the authentication tag.
     ///
     /// # Errors
@@ -146,6 +186,46 @@ pub trait AeadCore {
         buffer: &mut [u8],
         tag: &Tag<Self>,
     ) -> Result<()> {
+        self.decrypt_inout_detached(nonce, associated_data, buffer.into(), tag)
+    }
+
+    /// Encrypt the data in-place in the provided buffer with variable size nonce,
+    /// returning the authentication tag.
+    ///
+    /// # Warning
+    /// Some algorithms support very short nonces. Users should exercise extreme caution
+    /// while using this method since incorrect handling of nonces may defeat security
+    /// provided by the algorithm.
+    ///
+    /// # Errors
+    /// AEAD algorithm implementations may return an error if the plaintext or AAD are too long
+    /// or if provided nonce size is not supported.
+    fn encrypt_with_var_nonce_detached(
+        &self,
+        nonce: &[u8],
+        associated_data: &[u8],
+        buf: &mut [u8],
+    ) -> Result<Tag<Self>> {
+        let nonce = nonce.try_into().map_err(|_| Error)?;
+        self.encrypt_inout_detached(nonce, associated_data, buf.into())
+    }
+
+    /// Decrypt the data in-place in the provided buffer, returning an error in the event the
+    /// provided authentication tag is invalid for the given ciphertext (i.e. ciphertext
+    /// is modified/unauthentic).
+    ///
+    /// # Errors
+    /// - if the `ciphertext` is inauthentic (i.e. tag verification failure)
+    /// - if the `ciphertext` is too long
+    /// - if the `aad` is too long
+    fn decrypt_with_var_nonce_detached(
+        &self,
+        nonce: &[u8],
+        associated_data: &[u8],
+        buffer: &mut [u8],
+        tag: &Tag<Self>,
+    ) -> Result<()> {
+        let nonce = nonce.try_into().map_err(|_| Error)?;
         self.decrypt_inout_detached(nonce, associated_data, buffer.into(), tag)
     }
 }
