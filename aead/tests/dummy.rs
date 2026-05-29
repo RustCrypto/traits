@@ -7,7 +7,7 @@
 #![allow(clippy::unwrap_used, reason = "tests")]
 
 use aead::{
-    AeadCore, AeadInOut, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag, TagPosition,
+    Aead, AeadCore, AeadWithTag, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag, TagPosition,
     array::Array, consts::U8,
 };
 use core::fmt;
@@ -120,10 +120,7 @@ impl KeyInit for PrefixDummyAead {
 impl AeadCore for PrefixDummyAead {
     type NonceSize = U8;
     type TagSize = U8;
-    const TAG_POSITION: TagPosition = TagPosition::Prefix;
-}
 
-impl AeadInOut for PrefixDummyAead {
     fn encrypt_inout_detached(
         &self,
         nonce: &Nonce<Self>,
@@ -142,6 +139,10 @@ impl AeadInOut for PrefixDummyAead {
     ) -> Result<()> {
         self.0.decrypt_inner(nonce.into(), aad, buffer, tag.into())
     }
+}
+
+impl AeadWithTag for PrefixDummyAead {
+    const TAG_POSITION: TagPosition = TagPosition::Prefix;
 }
 
 #[derive(Debug)]
@@ -160,10 +161,7 @@ impl KeyInit for PostfixDummyAead {
 impl AeadCore for PostfixDummyAead {
     type NonceSize = U8;
     type TagSize = U8;
-    const TAG_POSITION: TagPosition = TagPosition::Postfix;
-}
 
-impl AeadInOut for PostfixDummyAead {
     fn encrypt_inout_detached(
         &self,
         nonce: &Nonce<Self>,
@@ -181,6 +179,28 @@ impl AeadInOut for PostfixDummyAead {
         tag: &Tag<Self>,
     ) -> Result<()> {
         self.0.decrypt_inner(nonce.into(), aad, buffer, tag.into())
+    }
+}
+
+impl AeadWithTag for PostfixDummyAead {
+    const TAG_POSITION: TagPosition = TagPosition::Postfix;
+}
+
+#[test]
+fn dyn_compat() {
+    let c1 = PrefixDummyAead::new(&[0u8; 8].into());
+    let c2 = PostfixDummyAead::new(&[0u8; 8].into());
+
+    fn take_dyn_aead_core(_: &dyn AeadCore<TagSize = U8, NonceSize = U8>) {}
+    take_dyn_aead_core(&c1);
+    take_dyn_aead_core(&c2);
+
+    #[cfg(feature = "alloc")]
+    {
+        fn take_dyn_aead(_: &dyn Aead) {}
+
+        take_dyn_aead(&c1);
+        take_dyn_aead(&c2);
     }
 }
 
