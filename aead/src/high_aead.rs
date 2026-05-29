@@ -116,7 +116,7 @@ impl<T: AeadCore + AeadTagPosition> Aead for T {
 ///
 /// If you don't care about AAD, you can pass an empty slice.
 ///
-/// This type is used to appoximate named function arguments to guard against potential bugs
+/// This type is used to emulate named function arguments to guard against potential bugs
 /// caused by the use of the same type (`&[u8]`) by all payload parts.
 #[derive(Debug)]
 pub struct Payload<'a> {
