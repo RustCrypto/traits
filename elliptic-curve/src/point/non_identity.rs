@@ -111,7 +111,7 @@ where
     }
 
     /// Converts this element into its affine representation.
-    pub fn to_affine(self) -> NonIdentity<P::AffineRepr> {
+    pub fn to_affine(self) -> NonIdentity<P::Affine> {
         NonIdentity {
             point: self.point.to_affine(),
         }
@@ -148,11 +148,11 @@ impl<P> AsRef<P> for NonIdentity<P> {
 
 impl<const N: usize, P> BatchNormalize<[Self; N]> for NonIdentity<P>
 where
-    P: CurveGroup + BatchNormalize<[P; N], Output = [P::AffineRepr; N]>,
+    P: CurveGroup + BatchNormalize<[P; N], Output = [P::Affine; N]>,
 {
-    type Output = [NonIdentity<P::AffineRepr>; N];
+    type Output = [NonIdentity<P::Affine>; N];
 
-    fn batch_normalize(points: &[Self; N]) -> [NonIdentity<P::AffineRepr>; N] {
+    fn batch_normalize(points: &[Self; N]) -> [NonIdentity<P::Affine>; N] {
         let points = Self::array_as_inner::<N>(points);
         let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
         affine_points.map(|point| NonIdentity { point })
@@ -162,11 +162,11 @@ where
 #[cfg(feature = "alloc")]
 impl<P> BatchNormalize<[Self]> for NonIdentity<P>
 where
-    P: CurveGroup + BatchNormalize<[P], Output = Vec<P::AffineRepr>>,
+    P: CurveGroup + BatchNormalize<[P], Output = Vec<P::Affine>>,
 {
-    type Output = Vec<NonIdentity<P::AffineRepr>>;
+    type Output = Vec<NonIdentity<P::Affine>>;
 
-    fn batch_normalize(points: &[Self]) -> Vec<NonIdentity<P::AffineRepr>> {
+    fn batch_normalize(points: &[Self]) -> Vec<NonIdentity<P::Affine>> {
         let points = Self::slice_as_inner(points);
         let affine_points = <P as BatchNormalize<_>>::batch_normalize(points);
         affine_points
