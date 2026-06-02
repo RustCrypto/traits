@@ -102,6 +102,12 @@ pub use rand_core;
 pub use subtle;
 pub use zeroize;
 
+#[cfg(all(feature = "alloc", feature = "arithmetic"))]
+pub use crate::arithmetic::wnaf::{Wnaf, WnafBase, WnafGroup, WnafScalar};
+#[cfg(any(feature = "pkcs8", feature = "sec1"))]
+pub use crate::error::{DecodeError, DecodeResult};
+#[cfg(feature = "pkcs8")]
+pub use pkcs8;
 #[cfg(feature = "arithmetic")]
 pub use {
     crate::{
@@ -113,11 +119,6 @@ pub use {
     ff::{self, Field, PrimeField},
     group::{self, Curve as CurveGroup, CurveAffine, Group},
 };
-
-#[cfg(any(feature = "pkcs8", feature = "sec1"))]
-pub use crate::error::{DecodeError, DecodeResult};
-#[cfg(feature = "pkcs8")]
-pub use pkcs8;
 
 use array::ArraySize;
 use bigint::Odd;
