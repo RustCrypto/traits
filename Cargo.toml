@@ -57,6 +57,3 @@ unused_qualifications = "warn"
 crypto-common = { path = "crypto-common" }
 digest = { path = "digest" }
 signature = { path = "signature" }
-
-rustcrypto-ff = { git = "https://github.com/RustCrypto/ff" }
-rustcrypto-group = { git = "https://github.com/RustCrypto/group" }

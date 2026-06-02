@@ -212,6 +212,8 @@ dependencies = [
  "crypto-bigint",
  "crypto-common",
  "digest",
+ "ff",
+ "group",
  "hex-literal",
  "hkdf",
  "hybrid-array",
@@ -219,8 +221,6 @@ dependencies = [
  "pem-rfc7468",
  "pkcs8",
  "rand_core",
- "rustcrypto-ff",
- "rustcrypto-group",
  "sec1",
  "serdect",
  "subtle",
@@ -232,6 +232,16 @@ name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
+
+[[package]]
+name = "ff"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1f686ab92a9fb0eaf188f6c6c87b89490baa6fdb0db4544ba4dc47f7942489f"
+dependencies = [
+ "rand_core",
+ "subtle",
+]
 
 [[package]]
 name = "foldhash"
@@ -251,6 +261,17 @@ dependencies = [
  "rand_core",
  "wasip2",
  "wasip3",
+]
+
+[[package]]
+name = "group"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fd1a1c7a5206c5b7a3f5a0d7ccd3ff85d0c8f5133d62a02680255b0004af5f4"
+dependencies = [
+ "ff",
+ "rand_core",
+ "subtle",
 ]
 
 [[package]]
@@ -483,25 +504,6 @@ name = "rand_core"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
-
-[[package]]
-name = "rustcrypto-ff"
-version = "0.14.0-rc.1"
-source = "git+https://github.com/RustCrypto/ff#064c5a7418576641bd58ae244a8eea1c9592f577"
-dependencies = [
- "rand_core",
- "subtle",
-]
-
-[[package]]
-name = "rustcrypto-group"
-version = "0.14.0-rc.1"
-source = "git+https://github.com/RustCrypto/group#2f1ea2e4f65d8a117d2445190357f841f9381db9"
-dependencies = [
- "rand_core",
- "rustcrypto-ff",
- "subtle",
-]
 
 [[package]]
 name = "sec1"

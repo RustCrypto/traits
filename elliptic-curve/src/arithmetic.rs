@@ -1,5 +1,8 @@
 //! Elliptic curve arithmetic traits.
 
+#[cfg(feature = "alloc")]
+pub(crate) mod wnaf;
+
 use crate::{
     Curve, CurveAffine, CurveGroup, Error, FieldBytes, Group, NonZeroScalar, PrimeCurve,
     ScalarValue,
