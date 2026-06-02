@@ -487,8 +487,7 @@ checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
 [[package]]
 name = "rustcrypto-ff"
 version = "0.14.0-rc.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd2a8adb347447693cd2ba0d218c4b66c62da9b0a5672b17b981e4291ec65ff6"
+source = "git+https://github.com/RustCrypto/ff#064c5a7418576641bd58ae244a8eea1c9592f577"
 dependencies = [
  "rand_core",
  "subtle",
@@ -497,7 +496,7 @@ dependencies = [
 [[package]]
 name = "rustcrypto-group"
 version = "0.14.0-rc.1"
-source = "git+https://github.com/RustCrypto/group#d5ef2775cb66a10085c9ec48432c51cad4e7b3ee"
+source = "git+https://github.com/RustCrypto/group#2f1ea2e4f65d8a117d2445190357f841f9381db9"
 dependencies = [
  "rand_core",
  "rustcrypto-ff",

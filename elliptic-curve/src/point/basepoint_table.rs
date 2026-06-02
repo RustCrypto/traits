@@ -180,7 +180,7 @@ pub(super) mod vartime {
                     .map(|(_, scalar)| WnafScalar::new(scalar)),
             );
 
-            WnafBase::multiscalar_mul(scalars.iter(), bases.iter())
+            WnafBase::multiscalar_mul(scalars, bases)
         }
     }
 

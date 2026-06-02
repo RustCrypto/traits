@@ -111,7 +111,7 @@ pub use {
         scalar::{NonZeroScalar, Scalar},
     },
     ff::{self, Field, PrimeField},
-    group::{self, Curve as CurveGroup, Group},
+    group::{self, Curve as CurveGroup, CurveAffine, Group},
 };
 
 #[cfg(any(feature = "pkcs8", feature = "sec1"))]

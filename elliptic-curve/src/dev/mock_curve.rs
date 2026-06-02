@@ -5,7 +5,8 @@
 //! generically over curves without having to pull in a complete curve implementation.
 
 use crate::{
-    BatchNormalize, Curve, CurveArithmetic, CurveGroup, FieldBytesEncoding, Generate, PrimeCurve,
+    BatchNormalize, Curve, CurveAffine, CurveArithmetic, CurveGroup, FieldBytesEncoding, Generate,
+    PrimeCurve,
     array::typenum::U32,
     bigint::{Limb, Odd, U256, modular::Retrieve},
     ctutils,
@@ -92,7 +93,7 @@ impl Field for Scalar {
     const ZERO: Self = Self(ScalarValue::ZERO);
     const ONE: Self = Self(ScalarValue::ONE);
 
-    fn try_from_rng<R: TryRng + ?Sized>(rng: &mut R) -> core::result::Result<Self, R::Error> {
+    fn try_random<R: TryRng + ?Sized>(rng: &mut R) -> core::result::Result<Self, R::Error> {
         let mut bytes = FieldBytes::default();
 
         loop {
@@ -464,6 +465,27 @@ impl AffineCoordinates for AffinePoint {
     }
 }
 
+impl CurveAffine for AffinePoint {
+    type Curve = ProjectivePoint;
+    type Scalar = Scalar;
+
+    fn identity() -> Self {
+        Self::Identity
+    }
+
+    fn generator() -> Self {
+        Self::Generator
+    }
+
+    fn is_identity(&self) -> Choice {
+        unimplemented!();
+    }
+
+    fn to_curve(&self) -> ProjectivePoint {
+        unimplemented!();
+    }
+}
+
 impl ConstantTimeEq for AffinePoint {
     fn ct_eq(&self, other: &Self) -> Choice {
         match (self, other) {
@@ -576,6 +598,14 @@ impl Mul<NonZeroScalar> for AffinePoint {
     type Output = AffinePoint;
 
     fn mul(self, _scalar: NonZeroScalar) -> Self {
+        unimplemented!();
+    }
+}
+
+impl Neg for AffinePoint {
+    type Output = Self;
+
+    fn neg(self) -> Self {
         unimplemented!();
     }
 }
@@ -709,7 +739,7 @@ impl TryFrom<ProjectivePoint> for NonIdentity<ProjectivePoint> {
 impl group::Group for ProjectivePoint {
     type Scalar = Scalar;
 
-    fn try_from_rng<R: TryRng + ?Sized>(_rng: &mut R) -> core::result::Result<Self, R::Error> {
+    fn try_random<R: TryRng + ?Sized>(_rng: &mut R) -> core::result::Result<Self, R::Error> {
         unimplemented!();
     }
 
@@ -775,7 +805,7 @@ impl group::GroupEncoding for ProjectivePoint {
 }
 
 impl CurveGroup for ProjectivePoint {
-    type AffineRepr = AffinePoint;
+    type Affine = AffinePoint;
 
     fn to_affine(&self) -> AffinePoint {
         match self {
