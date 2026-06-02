@@ -25,7 +25,6 @@
 //! Ideally we can get everything we need upstream and stop using this vendored copy.
 
 use alloc::vec::Vec;
-use core::iter;
 use core::marker::PhantomData;
 use core::ops::Mul;
 
@@ -98,7 +97,16 @@ impl<'a> LimbBuffer<'a> {
             // There are at least eight bytes in the buffer; read the next u64 limb.
             _ => {
                 let (next_limb, rest) = self.buf.split_at(8);
-                self.next_limb = u64::from_le_bytes(next_limb.try_into().unwrap());
+                self.next_limb = u64::from_le_bytes([
+                    next_limb[0],
+                    next_limb[1],
+                    next_limb[2],
+                    next_limb[3],
+                    next_limb[4],
+                    next_limb[5],
+                    next_limb[6],
+                    next_limb[7],
+                ]);
                 self.buf = rest;
             }
         }
@@ -115,6 +123,7 @@ impl<'a> LimbBuffer<'a> {
 
 /// Replaces the contents of `wnaf` with the w-NAF representation of a little-endian
 /// scalar.
+#[allow(clippy::cast_possible_wrap)]
 pub(crate) fn wnaf_form<S: AsRef<[u8]>>(wnaf: &mut Vec<i64>, c: S, window: usize) {
     // Required by the NAF definition
     debug_assert!(window >= 2);
@@ -165,7 +174,7 @@ pub(crate) fn wnaf_form<S: AsRef<[u8]>>(wnaf: &mut Vec<i64>, c: S, window: usize
                 carry = 1;
                 (window_val as i64).wrapping_sub(width as i64)
             });
-            wnaf.extend(iter::repeat(0).take(window - 1));
+            wnaf.extend(core::iter::repeat_n(0, window - 1));
             pos += window;
         }
     }
@@ -194,6 +203,11 @@ pub(crate) fn wnaf_exp<G: Group>(table: &[G], wnaf: &[i64]) -> G {
 ///
 /// This function must be provided with `tables` and `wnafs` that were constructed with
 /// the same window size; otherwise, it may panic or produce invalid results.
+#[allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_sign_loss
+)]
 pub(crate) fn wnaf_multi_exp<G: Group, T: AsRef<[G]>, W: AsRef<[i64]>>(
     tables: &[T],
     wnafs: &[W],
@@ -316,6 +330,7 @@ impl<G: Group> Default for Wnaf<(), Vec<G>, Vec<i64>> {
 
 impl<G: Group> Wnaf<(), Vec<G>, Vec<i64>> {
     /// Construct a new wNAF context without allocating.
+    #[must_use]
     pub fn new() -> Self {
         Wnaf {
             base: vec![],
@@ -366,6 +381,7 @@ impl<G: WnafGroup> Wnaf<(), Vec<G>, Vec<i64>> {
 impl<'a, G: Group> Wnaf<usize, &'a [G], &'a mut Vec<i64>> {
     /// Constructs new space for the scalar representation while borrowing
     /// the computed window table, for sending the window table across threads.
+    #[must_use]
     pub fn shared(&self) -> Wnaf<usize, &'a [G], Vec<i64>> {
         Wnaf {
             base: self.base,
@@ -379,6 +395,7 @@ impl<'a, G: Group> Wnaf<usize, &'a mut Vec<G>, &'a [i64]> {
     /// Constructs new space for the window table while borrowing
     /// the computed scalar representation, for sending the scalar representation
     /// across threads.
+    #[must_use]
     pub fn shared(&self) -> Wnaf<usize, Vec<G>, &'a [i64]> {
         Wnaf {
             base: vec![],
