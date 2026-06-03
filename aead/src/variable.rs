@@ -49,13 +49,22 @@ pub trait VariableAead: AeadCore {
         &self,
         nonce: &[u8],
         aad: &[u8],
-        buf: InOutBuf<'_, '_, u8>,
+        mut buf: InOutBuf<'_, '_, u8>,
         tag_dst: &mut [u8],
     ) -> Result<()> {
-        let nonce = nonce.try_into().map_err(|_| Error)?;
-        let tag_dst: &mut Tag<Self> = tag_dst.try_into().map_err(|_| Error)?;
-        *tag_dst = self.encrypt_inout_detached(nonce, aad, buf)?;
-        Ok(())
+        match (nonce.try_into(), tag_dst.try_into()) {
+            (Ok(nonce), Ok(tag_dst)) => {
+                let tag_dst: &mut Tag<Self> = tag_dst;
+                self.encrypt_inout_detached(nonce, aad, buf)
+                    .map(|tag| *tag_dst = tag)
+                    .inspect_err(|_| tag_dst.fill(0))
+            }
+            _ => {
+                buf.get_out().fill(0);
+                tag_dst.fill(0);
+                Err(Error)
+            }
+        }
     }
 
     /// Decrypt the data in the provided [`InOutBuf`] with variable nonce and tag sizes,
@@ -71,12 +80,16 @@ pub trait VariableAead: AeadCore {
         &self,
         nonce: &[u8],
         aad: &[u8],
-        buf: InOutBuf<'_, '_, u8>,
+        mut buf: InOutBuf<'_, '_, u8>,
         tag: &[u8],
     ) -> Result<()> {
-        let nonce = nonce.try_into().map_err(|_| Error)?;
-        let tag = tag.try_into().map_err(|_| Error)?;
-        self.decrypt_inout_detached(nonce, aad, buf, tag)
+        match (nonce.try_into(), tag.try_into()) {
+            (Ok(nonce), Ok(tag)) => self.decrypt_inout_detached(nonce, aad, buf, tag),
+            _ => {
+                buf.get_out().fill(0);
+                Err(Error)
+            }
+        }
     }
 
     /// Encrypt the data in-place in the provided buffer with variable nonce and tag sizes,
@@ -225,8 +238,6 @@ pub trait VariableAead: AeadCore {
         };
 
         self.variable_encrypt_inout_detached(nonce, aad, pt.into(), tag_dst)
-            // On failure the `pt` part should be zeroized by the encrypt function
-            .inspect_err(|_| tag_dst.fill(0))
     }
 
     /// Decrypt data in `buf` with variable nonce and tag sizes

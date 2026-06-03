@@ -50,6 +50,20 @@ pub fn pass_test<C: Aead + KeyInit>(
         return Err("decrypted data is different from target plaintext");
     }
 
+    let mut buf = ciphertext.to_vec();
+
+    // Flip one bit
+    buf[0] ^= 1;
+
+    let res = cipher.decrypt_within_vec(nonce, aad, &mut buf);
+
+    if res.is_ok() {
+        return Err("did not detect corrupted ciphertext");
+    }
+    if buf.iter().any(|&b| b != 0) {
+        return Err("the buffer was not zeroized after failure");
+    }
+
     Ok(())
 }
 
@@ -71,10 +85,20 @@ pub fn fail_test<C: Aead + KeyInit>(
 
     let res = cipher.decrypt_into_vec(nonce, aad, ciphertext);
     if res.is_ok() {
-        Err("decryption must return error")
-    } else {
-        Ok(())
+        return Err("decryption must return error");
     }
+
+    let mut buf = ciphertext.to_vec();
+    let res = cipher.decrypt_within_vec(nonce, aad, &mut buf);
+
+    if res.is_ok() {
+        return Err("decryption must return error");
+    }
+    if buf.iter().any(|&b| b != 0) {
+        return Err("the buffer was not zeroized after failure");
+    }
+
+    Ok(())
 }
 
 /// Define AEAD test for passing test vectors
