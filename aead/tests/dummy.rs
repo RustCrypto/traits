@@ -7,8 +7,8 @@
 #![allow(clippy::unwrap_used, reason = "tests")]
 
 use aead::{
-    AeadCore, AeadInOut, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag, TagPosition,
-    array::Array, consts::U8,
+    Aead, AeadCore, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag, TagPosition,
+    VariableAead, array::Array, consts::U8,
 };
 use core::fmt;
 use inout::InOutBuf;
@@ -121,9 +121,7 @@ impl AeadCore for PrefixDummyAead {
     type NonceSize = U8;
     type TagSize = U8;
     const TAG_POSITION: TagPosition = TagPosition::Prefix;
-}
 
-impl AeadInOut for PrefixDummyAead {
     fn encrypt_inout_detached(
         &self,
         nonce: &Nonce<Self>,
@@ -143,6 +141,8 @@ impl AeadInOut for PrefixDummyAead {
         self.0.decrypt_inner(nonce.into(), aad, buffer, tag.into())
     }
 }
+
+impl VariableAead for PrefixDummyAead {}
 
 #[derive(Debug)]
 pub struct PostfixDummyAead(DummyAead);
@@ -161,9 +161,7 @@ impl AeadCore for PostfixDummyAead {
     type NonceSize = U8;
     type TagSize = U8;
     const TAG_POSITION: TagPosition = TagPosition::Postfix;
-}
 
-impl AeadInOut for PostfixDummyAead {
     fn encrypt_inout_detached(
         &self,
         nonce: &Nonce<Self>,
@@ -184,12 +182,27 @@ impl AeadInOut for PostfixDummyAead {
     }
 }
 
+impl VariableAead for PostfixDummyAead {}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn dyn_compat() {
+    let key = &[0u8; 8].into();
+    let c1 = PrefixDummyAead::new(key);
+    let c2 = PostfixDummyAead::new(key);
+
+    fn take_dyn_aead(_: &dyn Aead) {}
+
+    take_dyn_aead(&c1);
+    take_dyn_aead(&c2);
+}
+
 #[cfg(feature = "dev")]
 mod tests {
     use super::{PostfixDummyAead, PrefixDummyAead};
 
-    aead::new_pass_test!(dummy_prefix_pass, "prefix_pass", PrefixDummyAead);
-    aead::new_fail_test!(dummy_prefix_fail, "prefix_fail", PrefixDummyAead);
-    aead::new_pass_test!(dummy_postfix_pass, "postfix_pass", PostfixDummyAead);
-    aead::new_fail_test!(dummy_postfix_fail, "postfix_fail", PostfixDummyAead);
+    aead::new_pass_test!(dummy_aead_prefix_pass, PrefixDummyAead);
+    aead::new_fail_test!(dummy_aead_prefix_fail, PrefixDummyAead);
+    aead::new_pass_test!(dummy_aead_postfix_pass, PostfixDummyAead);
+    aead::new_fail_test!(dummy_aead_postfix_fail, PostfixDummyAead);
 }

@@ -1,13 +1,8 @@
 //! Development-related functionality
 
-#![allow(clippy::missing_errors_doc, reason = "dev module")]
-#![allow(clippy::missing_panics_doc, reason = "dev module")]
-#![allow(clippy::unwrap_in_result, reason = "dev module")]
-
-use crate::{
-    Aead, AeadInOut, Payload, Tag, TagPosition, array::typenum::Unsigned, inout::InOutBuf,
-};
 pub use blobby;
+
+use crate::Aead;
 use common::KeyInit;
 
 /// AEAD test vector
@@ -26,8 +21,11 @@ pub struct TestVector {
 }
 
 /// Run AEAD test for the provided passing test vector
-#[allow(clippy::cast_possible_truncation)]
-pub fn pass_test<C: AeadInOut + KeyInit>(
+///
+/// # Errors
+/// - If the cipher has failed initialization with the provided key.
+/// - If the AEAD mode has failed to pass the test vector.
+pub fn pass_test<C: Aead + KeyInit>(
     &TestVector {
         key,
         nonce,
@@ -36,76 +34,31 @@ pub fn pass_test<C: AeadInOut + KeyInit>(
         ciphertext,
     }: &TestVector,
 ) -> Result<(), &'static str> {
-    let nonce = nonce.try_into().expect("wrong nonce size");
-    let cipher = <C as KeyInit>::new_from_slice(key).expect("failed to initialize the cipher");
+    let cipher: C = KeyInit::new_from_slice(key).map_err(|_| "failed to initialize the cipher")?;
 
     let res = cipher
-        .encrypt(
-            nonce,
-            Payload {
-                aad,
-                msg: plaintext,
-            },
-        )
+        .encrypt_into_vec(nonce, aad, plaintext)
         .map_err(|_| "encryption failure")?;
     if res != ciphertext {
         return Err("encrypted data is different from target ciphertext");
     }
 
     let res = cipher
-        .decrypt(
-            nonce,
-            Payload {
-                aad,
-                msg: ciphertext,
-            },
-        )
+        .decrypt_into_vec(nonce, aad, ciphertext)
         .map_err(|_| "decryption failure")?;
     if res != plaintext {
         return Err("decrypted data is different from target plaintext");
-    }
-
-    let (ct, tag) = match C::TAG_POSITION {
-        TagPosition::Prefix => {
-            let (tag, ct) = ciphertext.split_at(C::TagSize::USIZE);
-            (ct, tag)
-        }
-        TagPosition::Postfix => ciphertext.split_at(plaintext.len()),
-    };
-    let tag: &Tag<C> = tag.try_into().expect("tag has correct length");
-
-    // Fill output buffer with "garbage" to test that its data does not get read during encryption
-    let mut buf: alloc::vec::Vec<u8> = (0..plaintext.len()).map(|i| i as u8).collect();
-    let inout_buf = InOutBuf::new(plaintext, &mut buf).expect("pt and buf have the same length");
-
-    let calc_tag = cipher
-        .encrypt_inout_detached(nonce, aad, inout_buf)
-        .map_err(|_| "encrypt_inout_detached: encryption failure")?;
-    if tag != &calc_tag {
-        return Err("encrypt_inout_detached: tag mismatch");
-    }
-    if ct != buf {
-        return Err("encrypt_inout_detached: ciphertext mismatch");
-    }
-
-    // Fill output buffer with "garbage"
-    buf.iter_mut()
-        .enumerate()
-        .for_each(|(i, v): (usize, &mut u8)| *v = i as u8);
-
-    let inout_buf = InOutBuf::new(ct, &mut buf).expect("ct and buf have the same length");
-    cipher
-        .decrypt_inout_detached(nonce, aad, inout_buf, tag)
-        .map_err(|_| "decrypt_inout_detached: decryption failure")?;
-    if plaintext != buf {
-        return Err("decrypt_inout_detached: plaintext mismatch");
     }
 
     Ok(())
 }
 
 /// Run AEAD test for the provided failing test vector
-pub fn fail_test<C: AeadInOut + KeyInit>(
+///
+/// # Errors
+/// - If the cipher has failed initialization with the provided key.
+/// - If the cipher has passed the test vector.
+pub fn fail_test<C: Aead + KeyInit>(
     &TestVector {
         key,
         nonce,
@@ -114,16 +67,9 @@ pub fn fail_test<C: AeadInOut + KeyInit>(
         ..
     }: &TestVector,
 ) -> Result<(), &'static str> {
-    let nonce = nonce.try_into().expect("wrong nonce size");
-    let cipher = <C as KeyInit>::new_from_slice(key).expect("failed to initialize the cipher");
+    let cipher: C = KeyInit::new_from_slice(key).map_err(|_| "failed to initialize the cipher")?;
 
-    let res = cipher.decrypt(
-        nonce,
-        Payload {
-            aad,
-            msg: ciphertext,
-        },
-    );
+    let res = cipher.decrypt_into_vec(nonce, aad, ciphertext);
     if res.is_ok() {
         Err("decryption must return error")
     } else {
@@ -134,6 +80,9 @@ pub fn fail_test<C: AeadInOut + KeyInit>(
 /// Define AEAD test for passing test vectors
 #[macro_export]
 macro_rules! new_pass_test {
+    ($name:ident, $cipher:ty $(,)?) => {
+        $crate::new_pass_test!($name, stringify!($name), $cipher);
+    };
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
@@ -165,6 +114,9 @@ macro_rules! new_pass_test {
 /// Define AEAD test for failing test vectors
 #[macro_export]
 macro_rules! new_fail_test {
+    ($name:ident, $cipher:ty $(,)?) => {
+        $crate::new_fail_test!($name, stringify!($name), $cipher);
+    };
     ($name:ident, $test_name:expr, $cipher:ty $(,)?) => {
         #[test]
         fn $name() {
