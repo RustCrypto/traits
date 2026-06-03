@@ -40,7 +40,7 @@ pub trait WnafGroup: Group {
 
 /// Replaces the contents of `table` with a w-NAF window table for the given window size.
 pub(crate) fn wnaf_table<G: Group>(table: &mut Vec<G>, mut base: G, window: usize) {
-    table.truncate(0);
+    table.clear();
     table.reserve(1 << (window - 1));
 
     let dbl = base.double();
@@ -132,7 +132,7 @@ pub(crate) fn wnaf_form<S: AsRef<[u8]>>(wnaf: &mut Vec<i64>, c: S, window: usize
 
     let bit_len = c.as_ref().len() * 8;
 
-    wnaf.truncate(0);
+    wnaf.clear();
     wnaf.reserve(bit_len);
 
     // Initialise the current and next limb buffers.
