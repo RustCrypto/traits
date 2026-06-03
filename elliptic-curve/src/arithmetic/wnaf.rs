@@ -446,7 +446,7 @@ impl<F: PrimeField, const WINDOW_SIZE: usize> WnafScalar<F, WINDOW_SIZE> {
         let mut wnaf = vec![];
 
         // Compute the w-NAF form of the scalar.
-        wnaf_form(&mut wnaf, scalar.to_repr(), WINDOW_SIZE);
+        wnaf_form(&mut wnaf, le_repr(scalar), WINDOW_SIZE);
 
         WnafScalar {
             wnaf,
