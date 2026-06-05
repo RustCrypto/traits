@@ -2,7 +2,6 @@ use crate::{
     AeadCore, Error, Result, Tag,
     TagPosition::{Postfix, Prefix},
 };
-use common::typenum::Unsigned;
 use inout::InOutBuf;
 
 /// Functionality of Authenticated Encryption with Associated Data (AEAD) algorithms
@@ -14,30 +13,6 @@ use inout::InOutBuf;
 /// provided by the algorithm.
 /// </div>
 pub trait VariableAead: AeadCore {
-    /// Check if the provided nonce size is supported by the implementation.
-    ///
-    /// # Errors
-    /// If the nonce size is not supported.
-    fn check_nonce_size(nonce_size: usize) -> Result<()> {
-        if nonce_size == Self::NonceSize::USIZE {
-            Ok(())
-        } else {
-            Err(Error)
-        }
-    }
-
-    /// Check if the provided tag size is supported by the implementation.
-    ///
-    /// # Errors
-    /// If the tag size is not supported.
-    fn check_tag_size(tag_size: usize) -> Result<()> {
-        if tag_size == Self::TagSize::USIZE {
-            Ok(())
-        } else {
-            Err(Error)
-        }
-    }
-
     /// Encrypt the data in the provided [`InOutBuf`] with variable nonce and tag sizes,
     /// writing the resulting tag into `tag_dst`.
     ///
