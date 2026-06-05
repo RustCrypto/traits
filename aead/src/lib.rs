@@ -29,12 +29,12 @@ pub use inout;
 pub use common::{
     self, Key, KeyInit, KeySizeUser,
     array::{self, typenum::consts},
-    typenum::Unsigned,
 };
 pub use inout::InOutBuf;
 
 use TagPosition::{Postfix, Prefix};
 use array::{Array, ArraySize};
+use common::typenum::Unsigned;
 use core::fmt;
 
 /// Nonce: single-use value for ensuring ciphertexts are unique.
