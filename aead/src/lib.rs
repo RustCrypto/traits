@@ -102,7 +102,11 @@ pub trait AeadCore {
     /// If tag position is not explicitly specified, we use postfix tags by default.
     const TAG_POSITION: TagPosition;
 
-    /// Encrypt the data in the provided [`InOutBuf`], returning the authentication tag.
+    /// Encrypts the plaintext in the input buffer (i.e. `buf.get_in()`),
+    /// writes the resulting plaintext into the output buffer (i.e. `buf.get_out()`),
+    /// and returs the associated authentication tag.
+    ///
+    /// On error, the contents of the output buffer are zeroized.
     ///
     /// # Errors
     /// AEAD algorithm implementations may return an error if the plaintext or AAD are too long.
@@ -110,12 +114,14 @@ pub trait AeadCore {
         &self,
         nonce: &Nonce<Self>,
         aad: &[u8],
-        buffer: InOutBuf<'_, '_, u8>,
+        buf: InOutBuf<'_, '_, u8>,
     ) -> Result<Tag<Self>>;
 
-    /// Decrypt the data in the provided [`InOutBuf`], returning an error in the event the
-    /// provided authentication tag is invalid for the given ciphertext (i.e. ciphertext
-    /// is modified/unauthentic).
+    /// Verifies the authenticity of the ciphertext in the input buffer (i.e. `buf.get_in()`)
+    /// using the provided `tag`, and on success decrypts it, writing the resulting plaintext
+    /// into the output buffer (i.e. `buf.get_out()`).
+    ///
+    /// On error, contents of the output buffer are zeroized.
     ///
     /// # Errors
     /// - if the `ciphertext` is inauthentic (i.e. tag verification failure)
@@ -125,11 +131,12 @@ pub trait AeadCore {
         &self,
         nonce: &Nonce<Self>,
         aad: &[u8],
-        buffer: InOutBuf<'_, '_, u8>,
+        buf: InOutBuf<'_, '_, u8>,
         tag: &Tag<Self>,
     ) -> Result<()>;
 
-    /// Encrypt data in-place in `buf`, returning the authentication tag.
+    /// Encrypts the plaintext in `buf` in-place, replacing it with the resulting ciphertext,
+    /// and returns the associated authentication tag.
     ///
     /// # Errors
     /// AEAD algorithm implementations may return an error if the plaintext or AAD are too long.
@@ -143,9 +150,10 @@ pub trait AeadCore {
         self.encrypt_inout_detached(nonce, aad, buf.into())
     }
 
-    /// Decrypt the data in-place in the provided buffer, returning an error in the event the
-    /// provided authentication tag is invalid for the given ciphertext (i.e. ciphertext
-    /// is modified/unauthentic).
+    /// Verifies the authenticity of the ciphertext in `buf` using the provided `tag`,
+    /// and on success decrypts in-place, replacing the ciphertext with the resulting plaintext.
+    ///
+    /// On error, the contents of `buf` are zeroized.
     ///
     /// # Errors
     /// - if the `ciphertext` is inauthentic (i.e. tag verification failure)
@@ -156,13 +164,13 @@ pub trait AeadCore {
         &self,
         nonce: &Nonce<Self>,
         aad: &[u8],
-        buffer: &mut [u8],
+        buf: &mut [u8],
         tag: &Tag<Self>,
     ) -> Result<()> {
-        self.decrypt_inout_detached(nonce, aad, buffer.into(), tag)
+        self.decrypt_inout_detached(nonce, aad, buf.into(), tag)
     }
 
-    /// Encrypt `plaintext` into a buffer allocated with `allocate`.
+    /// Encrypts `plaintext` into a buffer allocated with `allocate`.
     ///
     /// # Errors
     /// AEAD algorithm implementations may return an error if the plaintext or AAD are too long.
@@ -203,7 +211,7 @@ pub trait AeadCore {
         Ok(ct_tag)
     }
 
-    /// Decrypt `ciphertext` into a buffer allocated with `allocate`.
+    /// Decrypts `ciphertext` into a buffer allocated with `allocate`.
     ///
     /// # Errors
     /// - if the `ciphertext` is inauthentic (i.e. tag verification failure)
@@ -246,7 +254,7 @@ pub trait AeadCore {
         Ok(pt_dst)
     }
 
-    /// Encrypt data in `buf` extending the buffer with `extend`.
+    /// Encrypts the data in `buf`, extending the buffer with `extend`.
     ///
     /// # Errors
     /// AEAD algorithm implementations may return an error if the plaintext or AAD are too long.
@@ -288,7 +296,7 @@ pub trait AeadCore {
             .inspect_err(|_| tag_dst.fill(0))
     }
 
-    /// Decrypt data in `buf` truncating the buffer with `truncate`.
+    /// Decrypts the data in `buf`, truncating the buffer with `truncate`.
     ///
     /// # Errors
     /// - if the `ciphertext` is inauthentic (i.e. tag verification failure)
