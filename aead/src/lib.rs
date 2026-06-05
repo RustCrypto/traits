@@ -104,7 +104,7 @@ pub trait AeadCore {
 
     /// Encrypts the plaintext in the input buffer (i.e. `buf.get_in()`),
     /// writes the resulting plaintext into the output buffer (i.e. `buf.get_out()`),
-    /// and returs the associated authentication tag.
+    /// and returns the associated authentication tag.
     ///
     /// On error, the contents of the output buffer are zeroized.
     ///
@@ -256,6 +256,8 @@ pub trait AeadCore {
 
     /// Encrypts the data in `buf`, extending the buffer with `extend`.
     ///
+    /// On error, the contents of `buf` are zeroized, but note that it's length may change.
+    ///
     /// # Errors
     /// AEAD algorithm implementations may return an error if the plaintext or AAD are too long.
     ///
@@ -297,6 +299,8 @@ pub trait AeadCore {
     }
 
     /// Decrypts the data in `buf`, truncating the buffer with `truncate`.
+    ///
+    /// On error, the contents of `buf` are zeroized; its length is left unchanged.
     ///
     /// # Errors
     /// - if the `ciphertext` is inauthentic (i.e. tag verification failure)
