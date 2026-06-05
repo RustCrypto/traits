@@ -8,7 +8,7 @@
 
 use aead::{
     Aead, AeadCore, Error, Key, KeyInit, KeySizeUser, Nonce, Result, Tag, TagPosition,
-    VariableAead, array::Array, consts::U8,
+    array::Array, consts::U8,
 };
 use core::fmt;
 use inout::InOutBuf;
@@ -142,8 +142,6 @@ impl AeadCore for PrefixDummyAead {
     }
 }
 
-impl VariableAead for PrefixDummyAead {}
-
 #[derive(Debug)]
 pub struct PostfixDummyAead(DummyAead);
 
@@ -181,8 +179,6 @@ impl AeadCore for PostfixDummyAead {
         self.0.decrypt_inner(nonce.into(), aad, buffer, tag.into())
     }
 }
-
-impl VariableAead for PostfixDummyAead {}
 
 #[cfg(feature = "alloc")]
 #[test]

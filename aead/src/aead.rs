@@ -1,6 +1,5 @@
-use crate::{Result, VariableAead};
+use crate::{AeadCore, Error, Result};
 use alloc::vec::Vec;
-use common::typenum::Unsigned;
 
 /// High-level functionality of Authenticated Encryption with Associated Data (AEAD) algorithms.
 pub trait Aead {
@@ -59,25 +58,29 @@ pub trait Aead {
     }
 }
 
-impl<T: VariableAead> Aead for T {
+impl<T: AeadCore> Aead for T {
     #[inline]
     fn encrypt_into_vec(&self, nonce: &[u8], aad: &[u8], plaintext: &[u8]) -> Result<Vec<u8>> {
-        self.variable_encrypt_into(nonce, aad, plaintext, T::TagSize::USIZE, alloc_vec)
+        let nonce = nonce.try_into().map_err(|_| Error)?;
+        self.encrypt_into(nonce, aad, plaintext, alloc_vec)
     }
 
     #[inline]
     fn decrypt_into_vec(&self, nonce: &[u8], aad: &[u8], ciphertext: &[u8]) -> Result<Vec<u8>> {
-        self.variable_decrypt_into(nonce, aad, ciphertext, T::TagSize::USIZE, alloc_vec)
+        let nonce = nonce.try_into().map_err(|_| Error)?;
+        self.decrypt_into(nonce, aad, ciphertext, alloc_vec)
     }
 
     #[inline]
     fn encrypt_within_vec(&self, nonce: &[u8], aad: &[u8], buf: &mut Vec<u8>) -> Result<()> {
-        self.variable_encrypt_within(nonce, aad, buf, T::TagSize::USIZE, extend_vec)
+        let nonce = nonce.try_into().map_err(|_| Error)?;
+        self.encrypt_within(nonce, aad, buf, extend_vec)
     }
 
     #[inline]
     fn decrypt_within_vec(&self, nonce: &[u8], aad: &[u8], buf: &mut Vec<u8>) -> Result<()> {
-        self.variable_decrypt_within(nonce, aad, buf, T::TagSize::USIZE, Vec::truncate)
+        let nonce = nonce.try_into().map_err(|_| Error)?;
+        self.decrypt_within(nonce, aad, buf, Vec::truncate)
     }
 }
 

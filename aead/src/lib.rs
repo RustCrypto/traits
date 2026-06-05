@@ -18,10 +18,6 @@ mod aead;
 #[cfg(feature = "alloc")]
 pub use aead::Aead;
 
-mod variable;
-
-pub use variable::VariableAead;
-
 #[cfg(feature = "rand_core")]
 pub use common::{Generate, rand_core};
 pub use inout;
