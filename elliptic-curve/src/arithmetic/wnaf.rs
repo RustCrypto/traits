@@ -523,6 +523,28 @@ impl<G: Group, const WINDOW_SIZE: usize> WnafBase<G, WINDOW_SIZE> {
         let tables = bases.into_iter().map(|b| b.table).collect::<Vec<_>>();
         wnaf_multi_exp(tables.as_slice(), wnafs.as_slice())
     }
+
+    /// Perform a multiscalar multiplication over a fixed-size set of scalars and bases.
+    ///
+    /// Computes a sum-of-products `aA + bB + ...` in variable time with w-NAF multi-exponentiation
+    /// using the interleaved window method, also known as Straus' method.
+    ///
+    /// This is a borrowing, fixed-arity counterpart to [`multiscalar_mul`]: it operates on
+    /// `&[_; N]` arrays and borrows the precomputed w-NAF forms and window tables in place,
+    /// avoiding the intermediate heap allocations that the iterator-based version performs. It
+    /// suits hot paths with a statically known number of terms (for example the four sub-scalars
+    /// of a GLV-decomposed `aG + bP`).
+    ///
+    /// [`multiscalar_mul`]: Self::multiscalar_mul
+    #[must_use]
+    pub fn multiscalar_mul_array<const N: usize>(
+        scalars: &[WnafScalar<G::Scalar, WINDOW_SIZE>; N],
+        bases: &[Self; N],
+    ) -> G {
+        let wnafs = scalars.each_ref().map(|s| s.wnaf.as_slice());
+        let tables = bases.each_ref().map(|b| b.table.as_slice());
+        wnaf_multi_exp(&tables, &wnafs)
+    }
 }
 
 impl<G: Group, const WINDOW_SIZE: usize> Mul<&WnafScalar<G::Scalar, WINDOW_SIZE>>
