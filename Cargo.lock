@@ -224,6 +224,7 @@ dependencies = [
  "sec1",
  "serdect",
  "subtle",
+ "wnaf",
  "zeroize",
 ]
 
@@ -794,6 +795,16 @@ dependencies = [
  "serde_json",
  "unicode-xid",
  "wasmparser",
+]
+
+[[package]]
+name = "wnaf"
+version = "0.14.0-pre.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "81b8f9936fa4378fbe26130d702e51a9d723b22a073105500dfd80d9bb508199"
+dependencies = [
+ "ff",
+ "group",
 ]
 
 [[package]]

@@ -4,7 +4,7 @@ mod basepoint_table;
 mod lookup_table;
 mod non_identity;
 
-#[cfg(all(feature = "alloc", feature = "basepoint-table"))]
+#[cfg(all(feature = "basepoint-table", feature = "wnaf"))]
 pub use self::basepoint_table::vartime::{BasepointTableVartime, PointWithBasepointTableVartime};
 #[cfg(feature = "basepoint-table")]
 pub use self::basepoint_table::{BasepointTable, PointWithBasepointTable};

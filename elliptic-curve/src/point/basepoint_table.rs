@@ -95,13 +95,13 @@ impl<Point, const WINDOW_SIZE: usize> Deref for BasepointTable<Point, WINDOW_SIZ
     }
 }
 
-#[cfg(feature = "alloc")]
+#[cfg(feature = "wnaf")]
 pub(super) mod vartime {
     use super::LazyLock;
-    use crate::arithmetic::wnaf::{WnafBase, WnafScalar};
     use alloc::vec::Vec;
     use core::ops::Mul;
     use group::Group;
+    use wnaf::{WnafBase, WnafScalar};
 
     /// Associate a precomputed `BASEPOINT_TABLE_VARTIME` constant with a curve point.
     pub trait PointWithBasepointTableVartime<const WINDOW_SIZE: usize>: Group {
