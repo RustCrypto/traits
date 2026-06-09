@@ -102,12 +102,12 @@ pub use rand_core;
 pub use subtle;
 pub use zeroize;
 
-#[cfg(all(feature = "alloc", feature = "arithmetic"))]
-pub use crate::arithmetic::wnaf::{Wnaf, WnafBase, WnafGroup, WnafScalar};
 #[cfg(any(feature = "pkcs8", feature = "sec1"))]
 pub use crate::error::{DecodeError, DecodeResult};
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;
+#[cfg(feature = "wnaf")]
+pub use wnaf;
 #[cfg(feature = "arithmetic")]
 pub use {
     crate::{
