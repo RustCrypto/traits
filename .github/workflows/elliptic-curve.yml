@@ -46,7 +46,6 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features arithmetic
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features critical-section
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features dev
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features digest
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features ecdh
@@ -54,7 +53,6 @@ jobs:
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features pkcs8
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features sec1
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features serde
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features wnaf
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,arithmetic
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,arithmetic,pkcs8
       - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features alloc,serde
@@ -66,7 +64,7 @@ jobs:
     with:
       working-directory: ${{ github.workflow }}
       stable-cmd: |
-        cargo hack check --feature-powerset --no-dev-deps --skip basepoint-table
+        cargo hack check --feature-powerset --no-dev-deps
         cargo check --all-features
 
   test:
