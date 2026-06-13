@@ -1,18 +1,11 @@
 //! Traits for elliptic curve points.
 
-mod basepoint_table;
-mod lookup_table;
 mod non_identity;
 
-#[cfg(all(feature = "basepoint-table", feature = "wnaf"))]
-pub use self::basepoint_table::vartime::{BasepointTableVartime, PointWithBasepointTableVartime};
-#[cfg(feature = "basepoint-table")]
-pub use self::basepoint_table::{BasepointTable, PointWithBasepointTable};
-
+#[cfg(feature = "arithmetic")]
+pub use self::non_identity::NonIdentity;
 use crate::{Curve, FieldBytes};
 use subtle::{Choice, CtOption};
-#[cfg(feature = "arithmetic")]
-pub use {self::non_identity::NonIdentity, lookup_table::LookupTable};
 
 #[cfg(feature = "arithmetic")]
 use crate::CurveArithmetic;

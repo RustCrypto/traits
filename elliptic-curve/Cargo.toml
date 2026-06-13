@@ -30,12 +30,10 @@ ff = { version = "0.14", optional = true, default-features = false }
 group = { version = "0.14", optional = true, default-features = false }
 hkdf = { version = "0.13", optional = true, default-features = false }
 hex-literal = { version = "1", optional = true }
-once_cell = { version = "1.21", optional = true, default-features = false }
 pem-rfc7468 = { version = "1", optional = true, features = ["alloc"] }
 pkcs8 = { version = "0.11", optional = true, default-features = false }
 sec1 = { version = "0.8", optional = true, features = ["ctutils", "subtle", "zeroize"] }
 serdect = { version = "0.4", optional = true, default-features = false, features = ["alloc"] }
-wnaf = { version = "0.14.0-pre.0", optional = true }
 
 [dev-dependencies]
 hex-literal = "1"
@@ -52,14 +50,11 @@ alloc = [
 ]
 std = [
     "alloc",
-    "once_cell?/std",
     "pkcs8?/std",
     "sec1?/std"
 ]
 
 arithmetic = ["group"]
-basepoint-table = ["arithmetic"]
-critical-section = ["basepoint-table", "once_cell/critical-section"]
 dev = ["arithmetic", "dep:hex-literal", "pem", "pkcs8"]
 ecdh = ["arithmetic", "digest", "dep:hkdf"]
 getrandom = ["arithmetic", "bigint/getrandom", "common/getrandom"]
@@ -67,10 +62,9 @@ group = ["dep:group", "ff"]
 pkcs8 = ["dep:pkcs8", "sec1"]
 pem = ["dep:pem-rfc7468", "alloc", "arithmetic", "pkcs8/pem", "sec1/pem"]
 serde = ["dep:serdect", "alloc", "pkcs8", "sec1/serde"]
-wnaf = ["alloc", "arithmetic", "dep:wnaf"]
 
 [lints]
 workspace = true
 
 [package.metadata.docs.rs]
-features = ["basepoint-table", "bits", "ecdh", "pem", "std"]
+features = ["ecdh", "pem", "serde", "std"]

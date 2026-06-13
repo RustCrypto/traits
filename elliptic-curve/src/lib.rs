@@ -106,8 +106,6 @@ pub use zeroize;
 pub use crate::error::{DecodeError, DecodeResult};
 #[cfg(feature = "pkcs8")]
 pub use pkcs8;
-#[cfg(feature = "wnaf")]
-pub use wnaf;
 #[cfg(feature = "arithmetic")]
 pub use {
     crate::{
