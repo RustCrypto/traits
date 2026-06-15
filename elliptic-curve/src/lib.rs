@@ -118,7 +118,7 @@ pub use {
     group::{self, Curve as CurveGroup, CurveAffine, Group},
 };
 
-use array::ArraySize;
+use array::{ArraySize, sizes::U1};
 use bigint::Odd;
 use core::{
     fmt::Debug,
@@ -140,11 +140,20 @@ pub const ALGORITHM_OID: pkcs8::ObjectIdentifier =
 /// Other traits in this crate which are bounded by [`Curve`] are intended to be impl'd by these
 /// ZSTs, facilitating types which are generic over elliptic curves (e.g. [`SecretKey`]).
 pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sync {
-    /// Size of a serialized field element in bytes.
+    /// Size of a serialized field element in bytes (base field or scalar).
     ///
-    /// This is typically the same as `Self::Uint::ByteSize` but for curves
-    /// with an unusual field modulus (e.g. P-224, P-521) it may be different.
-    type FieldBytesSize: ArraySize + Add + Eq;
+    /// This currently assumes that the base and scalar fields have the same-sized modulus in bytes,
+    /// though that isn't strictly true and will eventually need to be fixed.
+    ///
+    /// This is typically the same as `Self::Uint::ByteSize` but for curves with an unusual field
+    /// modulus (e.g. P-224, P-521) it may be different.
+    ///
+    /// The bounds cover common sizes for tables based on precomputed scalars, and is also useful
+    /// for serialized point sizes for e.g. SEC1 where relevant.
+    type FieldBytesSize: ArraySize<ArrayType<u8>: Copy>
+        + Add<Output: Add<U1, Output: ArraySize<ArrayType<u8>: Copy>>>
+        + Add<U1, Output: ArraySize<ArrayType<u8>: Copy>>
+        + Eq;
 
     /// Integer type used to represent field elements of this elliptic curve.
     type Uint: bigint::ArrayEncoding
