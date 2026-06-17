@@ -28,7 +28,7 @@ bytes = { version = "1.11.1", optional = true, default-features = false }
 default = ["rand_core"]
 alloc = []
 dev = ["blobby", "alloc"]
-getrandom = ["common/getrandom"]
+getrandom = ["common/getrandom, rand_core"]
 rand_core = ["common/rand_core"]
 
 [lints]
