@@ -1,10 +1,11 @@
 //!  Integer values within the range of a given [`Curve`]'s scalar modulus.
 
 use crate::{
-    Curve, Error, FieldBytes, FieldBytesEncoding, Result,
+    Curve, Error, FieldBytes, Result,
     array::Array,
     bigint::{AddMod, ConstOne, ConstZero, Integer, Limb, NegMod, Odd, RandomMod, SubMod, Zero},
     ctutils::{self, CtEq, CtGt, CtLt, CtSelect},
+    field,
     scalar::{FromUintUnchecked, IsHigh},
 };
 use base16ct::HexDisplay;
@@ -74,7 +75,7 @@ where
 
     /// Decode [`ScalarValue`] from a serialized field element
     pub fn from_bytes(bytes: &FieldBytes<C>) -> CtOption<Self> {
-        Self::new(C::Uint::decode_field_bytes(bytes))
+        Self::new(field::bytes_to_uint::<C>(bytes))
     }
 
     /// Decode [`ScalarValue`] from a big endian byte slice.
@@ -114,7 +115,7 @@ where
 
     /// Encode [`ScalarValue`] as a serialized field element.
     pub fn to_bytes(&self) -> FieldBytes<C> {
-        self.inner.encode_field_bytes()
+        field::uint_to_bytes::<C>(&self.inner)
     }
 
     /// Convert to a `C::Uint`.

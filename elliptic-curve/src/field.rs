@@ -1,10 +1,8 @@
-//! Field elements.
+//! Field element encoding support.
 
-use crate::{
-    Curve,
-    bigint::{ArrayEncoding, ByteArray, Integer},
-};
+use crate::Curve;
 use array::{Array, typenum::Unsigned};
+use bigint::{ArrayEncoding, ByteOrder, Encoding};
 
 /// Size of serialized field elements of this elliptic curve.
 pub type FieldBytesSize<C> = <C as Curve>::FieldBytesSize;
@@ -12,40 +10,38 @@ pub type FieldBytesSize<C> = <C as Curve>::FieldBytesSize;
 /// Byte representation of a base/scalar field element of a given curve.
 pub type FieldBytes<C> = Array<u8, FieldBytesSize<C>>;
 
-/// Trait for decoding/encoding `Curve::Uint` from/to [`FieldBytes`] using
-/// curve-specific rules.
+/// Decode the provided [`FieldBytes`] as an integer.
 ///
-/// Namely a curve's modulus may be smaller than the big integer type used to
-/// internally represent field elements (since the latter are multiples of the
-/// limb size), such as in the case of curves like NIST P-224 and P-521, and so
-/// it may need to be padded/truncated to the right length.
+/// Note that the resulting integer is the raw representation of the given `bytes` and is not
+/// reduced by any modulus.
+pub fn bytes_to_uint<C: Curve>(bytes: &FieldBytes<C>) -> C::Uint {
+    C::Uint::from_slice_truncated(bytes, modulus_bits::<C>(), C::FIELD_ENDIANNESS)
+}
+
+/// Encode the provided integer as [`FieldBytes`].
 ///
-/// Additionally, different curves have different endianness conventions, also
-/// captured here.
-pub trait FieldBytesEncoding<C>: ArrayEncoding + Integer
-where
-    C: Curve,
-{
-    /// Decode unsigned integer from serialized field element.
-    ///
-    /// The default implementation assumes a big endian encoding.
-    fn decode_field_bytes(field_bytes: &FieldBytes<C>) -> Self {
-        debug_assert!(field_bytes.len() <= Self::ByteSize::USIZE);
-        let mut byte_array = ByteArray::<Self>::default();
-        let offset = Self::ByteSize::USIZE.saturating_sub(field_bytes.len());
-        byte_array[offset..].copy_from_slice(field_bytes);
-        Self::from_be_byte_array(byte_array)
+/// Note that the output may be truncated if it overflows the width of [`FieldBytes`].
+pub fn uint_to_bytes<C: Curve>(uint: &C::Uint) -> FieldBytes<C> {
+    let field_bytes_len = FieldBytesSize::<C>::USIZE;
+    let uint_bytes_len = <<C as Curve>::Uint as ArrayEncoding>::ByteSize::USIZE;
+    debug_assert!(field_bytes_len <= uint_bytes_len);
+
+    let mut field_bytes = FieldBytes::<C>::default();
+    match C::FIELD_ENDIANNESS {
+        ByteOrder::BigEndian => {
+            let offset = uint_bytes_len.saturating_sub(field_bytes_len);
+            field_bytes.copy_from_slice(&uint.to_be_byte_array()[offset..]);
+        }
+        ByteOrder::LittleEndian => {
+            field_bytes.copy_from_slice(&uint.to_le_byte_array()[..field_bytes_len]);
+        }
     }
 
-    /// Encode unsigned integer into serialized field element.
-    ///
-    /// The default implementation assumes a big endian encoding.
-    fn encode_field_bytes(&self) -> FieldBytes<C> {
-        let mut field_bytes = FieldBytes::<C>::default();
-        debug_assert!(field_bytes.len() <= Self::ByteSize::USIZE);
+    field_bytes
+}
 
-        let offset = Self::ByteSize::USIZE.saturating_sub(field_bytes.len());
-        field_bytes.copy_from_slice(&self.to_be_byte_array()[offset..]);
-        field_bytes
-    }
+// TODO(tarcieri): store full bit precision of the modulus on `Curve`
+#[allow(clippy::cast_possible_truncation)]
+const fn modulus_bits<C: Curve>() -> u32 {
+    (FieldBytesSize::<C>::USIZE * 8) as u32
 }
