@@ -4,154 +4,52 @@ pub use bigint::{Invert, Reduce};
 pub use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Shr, ShrAssign, Sub, SubAssign};
 
 use crate::CurveGroup;
-use core::iter;
 use ff::Field;
 use group::Group;
-use subtle::{Choice, CtOption};
+use subtle::Choice;
 
-#[cfg(feature = "alloc")]
-use alloc::{borrow::ToOwned, vec::Vec};
-
-/// Perform a batched inversion on a sequence of field elements (i.e. base field elements or scalars)
-/// at an amortized cost that should be practically as efficient as a single inversion.
-pub trait BatchInvert<FieldElements: ?Sized> {
-    /// The output of batch inversion. A container of field elements.
-    type Output;
-
+/// Perform a batched inversion on a slice of field elements (i.e. base field elements or scalars)
+/// at an amortized cost that should be practically as efficient as a single inversion, writing
+/// the field element inversions into `element`, and utilizing `scratch` as temporary storage.
+///
+/// # Panics
+/// If `elements` and `scratch` are not the same length.
+pub trait BatchInvert: Field {
     /// Invert a batch of field elements.
-    fn batch_invert(field_elements: FieldElements) -> <Self as BatchInvert<FieldElements>>::Output;
-}
+    ///
+    /// Returns the falsy [`Choice`] in the event any of the elements is `0`.
+    fn batch_invert_in_place(elements: &mut [Self], scratch: &mut [Self]) -> Choice {
+        // Implements "Montgomery's trick", a trick for computing many modular inverses at once.
+        //
+        // "Montgomery's trick" works by reducing the problem of computing `n` inverses
+        // to computing a single inversion, plus some storage and `O(n)` extra multiplications.
+        //
+        // See: https://iacr.org/archive/pkc2004/29470042/29470042.pdf section 2.2.
+        assert_eq!(elements.len(), scratch.len());
 
-impl<const N: usize, T> BatchInvert<[T; N]> for T
-where
-    T: Field,
-{
-    type Output = CtOption<[Self; N]>;
+        let mut acc = Self::ONE;
+        let mut all_nonzero = Choice::from(1u8);
 
-    fn batch_invert(mut field_elements: [Self; N]) -> CtOption<[Self; N]> {
-        let mut field_elements_pad = [Self::default(); N];
-        let inversion_succeeded =
-            invert_batch_internal(&mut field_elements, &mut field_elements_pad, invert);
-
-        CtOption::new(field_elements, inversion_succeeded)
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl<'this, T> BatchInvert<&'this mut [Self]> for T
-where
-    T: Field,
-{
-    type Output = CtOption<&'this mut [Self]>;
-
-    fn batch_invert(field_elements: &'this mut [Self]) -> CtOption<&'this mut [Self]> {
-        let mut field_elements_pad: Vec<Self> = vec![Self::default(); field_elements.len()];
-        let inversion_succeeded =
-            invert_batch_internal(field_elements, &mut field_elements_pad, invert);
-
-        CtOption::new(field_elements, inversion_succeeded)
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl<T> BatchInvert<&[Self]> for T
-where
-    T: Field,
-{
-    type Output = CtOption<Vec<Self>>;
-
-    fn batch_invert(field_elements: &[Self]) -> CtOption<Vec<Self>> {
-        let mut field_elements: Vec<Self> = field_elements.to_owned();
-        let mut field_elements_pad: Vec<Self> = vec![Self::default(); field_elements.len()];
-        let inversion_succeeded =
-            invert_batch_internal(&mut field_elements, &mut field_elements_pad, invert);
-
-        CtOption::new(field_elements, inversion_succeeded)
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl<T> BatchInvert<Vec<Self>> for T
-where
-    T: Field,
-{
-    type Output = CtOption<Vec<Self>>;
-
-    fn batch_invert(mut field_elements: Vec<Self>) -> CtOption<Vec<Self>> {
-        let mut field_elements_pad: Vec<Self> = vec![Self::default(); field_elements.len()];
-        let inversion_succeeded =
-            invert_batch_internal(&mut field_elements, &mut field_elements_pad, invert);
-
-        CtOption::new(field_elements, inversion_succeeded)
-    }
-}
-
-fn invert<T: Field>(scalar: T) -> (T, Choice) {
-    let scalar = scalar.invert();
-    let choice = scalar.is_some();
-    let scalar = scalar.unwrap_or(T::default());
-
-    (scalar, choice)
-}
-
-/// Implements "Montgomery's trick", a trick for computing many modular inverses at once.
-///
-/// "Montgomery's trick" works by reducing the problem of computing `n` inverses
-/// to computing a single inversion, plus some storage and `O(n)` extra multiplications.
-///
-/// See: https://iacr.org/archive/pkc2004/29470042/29470042.pdf section 2.2.
-pub(crate) fn invert_batch_internal<T: Copy + Mul<Output = T> + MulAssign>(
-    field_elements: &mut [T],
-    field_elements_pad: &mut [T],
-    invert: fn(T) -> (T, Choice),
-) -> Choice {
-    let batch_size = field_elements.len();
-    if batch_size != field_elements_pad.len() {
-        return Choice::from(0);
-    }
-    if batch_size == 0 {
-        return Choice::from(1);
-    }
-
-    let mut acc = field_elements[0];
-    field_elements_pad[0] = acc;
-
-    for (field_element, field_element_pad) in field_elements
-        .iter_mut()
-        .zip(field_elements_pad.iter_mut())
-        .skip(1)
-    {
-        // $ a_n = a_{n-1}*x_n $
-        acc *= *field_element;
-        *field_element_pad = acc;
-    }
-
-    let (mut acc, choice) = invert(acc);
-
-    // Shift the iterator by one element back. The one we are skipping is served in `acc`.
-    let field_elements_pad = field_elements_pad
-        .iter()
-        .rev()
-        .skip(1)
-        .map(Some)
-        .chain(iter::once(None));
-
-    for (field_element, field_element_pad) in
-        field_elements.iter_mut().rev().zip(field_elements_pad)
-    {
-        if let Some(field_element_pad) = field_element_pad {
-            // Store in a temporary so we can overwrite `field_element`.
-            // $ a_{n-1} = {a_n}^{-1}*x_n $
-            let tmp = acc * *field_element;
-            // $ {x_n}^{-1} = a_{n}^{-1}*a_{n-1} $
-            *field_element = acc * *field_element_pad;
-            acc = tmp;
-        } else {
-            *field_element = acc;
+        for (tmp, e) in scratch.iter_mut().zip(elements.iter()) {
+            // $ a_n = a_{n-1}*x_n $
+            *tmp = acc;
+            let is_zero = e.ct_eq(&Self::ZERO);
+            all_nonzero &= !is_zero;
+            acc = Self::conditional_select(&(acc * e), &acc, is_zero);
         }
-    }
 
-    choice
+        // `acc` is the product of every nonzero element, so this can't fail.
+        acc = acc.invert().unwrap_or(Self::ONE);
+
+        for (e, tmp) in elements.iter_mut().zip(scratch.iter()).rev() {
+            let is_zero = e.ct_eq(&Self::ZERO);
+            let new_acc = Self::conditional_select(&(acc * *e), &acc, is_zero);
+            *e = Self::conditional_select(&(acc * *tmp), e, is_zero);
+            acc = new_acc;
+        }
+
+        all_nonzero
+    }
 }
 
 /// Linear combination.
