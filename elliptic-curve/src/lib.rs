@@ -64,27 +64,27 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-pub mod field;
-pub mod point;
-pub mod scalar;
-
 #[cfg(feature = "dev")]
 pub mod dev;
 #[cfg(feature = "ecdh")]
 pub mod ecdh;
+pub mod field;
+#[cfg(feature = "arithmetic")]
+pub mod hazmat;
 #[cfg(feature = "arithmetic")]
 pub mod ops;
+pub mod point;
+pub mod scalar;
 #[cfg(feature = "sec1")]
 pub mod sec1;
 
-mod error;
-mod macros;
-mod secret_key;
-
 #[cfg(feature = "arithmetic")]
 mod arithmetic;
+mod error;
+mod macros;
 #[cfg(feature = "arithmetic")]
 mod public_key;
+mod secret_key;
 
 pub use crate::{
     error::{Error, Result},
