@@ -1,6 +1,6 @@
 //! Traits for arithmetic operations on elliptic curve field elements.
 
-pub use bigint::{Invert, Reduce};
+pub use bigint::{Invert, Reduce, modular::Retrieve};
 pub use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Shr, ShrAssign, Sub, SubAssign};
 
 use crate::CurveGroup;
@@ -10,6 +10,9 @@ use group::Group;
 /// Perform a batched inversion on a slice of field elements (i.e. base field elements or scalars)
 /// at an amortized cost that should be practically as efficient as a single inversion, writing
 /// the field element inversions into `element`, and utilizing `scratch` as temporary storage.
+///
+/// Note: the [`ff`] crate also provides [`ff::BatchInvert`], however that trait has a hard
+/// requirement on `alloc` whereas this one is always available, even in `no_alloc` contexts.
 ///
 /// # Panics
 /// If `elements` and `scratch` are not the same length.

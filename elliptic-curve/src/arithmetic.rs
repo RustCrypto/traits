@@ -107,7 +107,6 @@ pub trait CurveArithmetic: Curve {
         + Reduce<FieldBytes<Self>>
         + Retrieve<Output = Self::Uint>
         + TryInto<NonZeroScalar<Self>, Error = Error>
-        + ff::Field
         + ff::PrimeField<Repr = FieldBytes<Self>>;
 }
 
