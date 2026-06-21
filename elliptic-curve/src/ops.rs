@@ -4,9 +4,8 @@ pub use bigint::{Invert, Reduce};
 pub use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Shr, ShrAssign, Sub, SubAssign};
 
 use crate::CurveGroup;
-use ff::Field;
+use ff::{BatchInverter, Field};
 use group::Group;
-use subtle::Choice;
 
 /// Perform a batched inversion on a slice of field elements (i.e. base field elements or scalars)
 /// at an amortized cost that should be practically as efficient as a single inversion, writing
@@ -15,40 +14,17 @@ use subtle::Choice;
 /// # Panics
 /// If `elements` and `scratch` are not the same length.
 pub trait BatchInvert: Field {
-    /// Invert a batch of field elements.
+    /// Inverts each field element in `elements` (when non-zero). Zero-valued elements are
+    /// left as zero.
     ///
-    /// Returns the falsy [`Choice`] in the event any of the elements is `0`.
-    fn batch_invert_in_place(elements: &mut [Self], scratch: &mut [Self]) -> Choice {
-        // Implements "Montgomery's trick", a trick for computing many modular inverses at once.
-        //
-        // "Montgomery's trick" works by reducing the problem of computing `n` inverses
-        // to computing a single inversion, plus some storage and `O(n)` extra multiplications.
-        //
-        // See: https://iacr.org/archive/pkc2004/29470042/29470042.pdf section 2.2.
-        assert_eq!(elements.len(), scratch.len());
-
-        let mut acc = Self::ONE;
-        let mut all_nonzero = Choice::from(1u8);
-
-        for (tmp, e) in scratch.iter_mut().zip(elements.iter()) {
-            // $ a_n = a_{n-1}*x_n $
-            *tmp = acc;
-            let is_zero = e.ct_eq(&Self::ZERO);
-            all_nonzero &= !is_zero;
-            acc = Self::conditional_select(&(acc * e), &acc, is_zero);
-        }
-
-        // `acc` is the product of every nonzero element, so this can't fail.
-        acc = acc.invert().unwrap_or(Self::ONE);
-
-        for (e, tmp) in elements.iter_mut().zip(scratch.iter()).rev() {
-            let is_zero = e.ct_eq(&Self::ZERO);
-            let new_acc = Self::conditional_select(&(acc * *e), &acc, is_zero);
-            *e = Self::conditional_select(&(acc * *tmp), e, is_zero);
-            acc = new_acc;
-        }
-
-        all_nonzero
+    /// `scratch_space` is a slice of field elements that can be freely overwritten.
+    ///
+    /// Returns the inverse of the product of all non-zero field elements.
+    ///
+    /// # Panics
+    /// If `elements.len() != scratch_space.len()`.
+    fn batch_invert_in_place(elements: &mut [Self], scratch_space: &mut [Self]) -> Self {
+        BatchInverter::invert_with_external_scratch(elements, scratch_space)
     }
 }
 
