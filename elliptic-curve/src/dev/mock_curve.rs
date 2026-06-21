@@ -5,8 +5,7 @@
 //! generically over curves without having to pull in a complete curve implementation.
 
 use crate::{
-    BatchNormalize, Curve, CurveAffine, CurveArithmetic, CurveGroup, FieldBytesEncoding, Generate,
-    PrimeCurve,
+    BatchNormalize, Curve, CurveAffine, CurveArithmetic, CurveGroup, Generate, PrimeCurve,
     array::typenum::U32,
     bigint::{Limb, Odd, U256, modular::Retrieve},
     ctutils,
@@ -349,8 +348,6 @@ impl Retrieve for Scalar {
         self.0.to_uint()
     }
 }
-
-impl FieldBytesEncoding<MockCurve> for U256 {}
 
 impl From<u64> for Scalar {
     fn from(n: u64) -> Scalar {

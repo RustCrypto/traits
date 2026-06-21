@@ -64,6 +64,7 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
+pub mod field;
 pub mod point;
 pub mod scalar;
 
@@ -77,7 +78,6 @@ pub mod ops;
 pub mod sec1;
 
 mod error;
-mod field;
 mod macros;
 mod secret_key;
 
@@ -88,14 +88,13 @@ mod public_key;
 
 pub use crate::{
     error::{Error, Result},
-    field::{FieldBytes, FieldBytesEncoding, FieldBytesSize},
+    field::{FieldBytes, FieldBytesSize},
     scalar::ScalarValue,
     secret_key::SecretKey,
 };
 pub use array;
 pub use array::typenum::consts;
-pub use bigint;
-pub use bigint::ctutils;
+pub use bigint::{self, ByteOrder, ctutils};
 pub use common;
 pub use common::Generate;
 pub use rand_core;
@@ -163,11 +162,13 @@ pub trait Curve: 'static + Copy + Clone + Debug + Default + Eq + Ord + Send + Sy
         + bigint::RandomMod
         + bigint::Unsigned
         + zeroize::Zeroize
-        + FieldBytesEncoding<Self>
         + ShrAssign<usize>;
 
     /// Order of this curve's prime order subgroup, i.e. number of elements in the scalar field.
     const ORDER: Odd<Self::Uint>;
+
+    /// Endianness used for serializing field elements of this curve.
+    const FIELD_ENDIANNESS: ByteOrder = ByteOrder::BigEndian;
 }
 
 /// Marker trait for elliptic curves with prime order.

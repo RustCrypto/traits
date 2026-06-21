@@ -141,9 +141,8 @@ dependencies = [
 
 [[package]]
 name = "crypto-bigint"
-version = "0.7.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42a0d26b245348befa0c121944541476763dcc46ede886c88f9d12e1697d27c3"
+version = "0.7.4"
+source = "git+https://github.com/RustCrypto/crypto-bigint#ec6615fad09d26f8518378f1fdfe96a635ddab2d"
 dependencies = [
  "cpubits",
  "ctutils",
