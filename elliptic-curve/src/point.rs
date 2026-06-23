@@ -54,19 +54,6 @@ pub trait BatchNormalize<Points: ?Sized> {
     fn batch_normalize(points: &Points) -> <Self as BatchNormalize<Points>>::Output;
 }
 
-/// Double a point (i.e. add it to itself)
-pub trait Double: Sized {
-    /// Double this point.
-    #[must_use]
-    fn double(&self) -> Self;
-
-    /// Double this point in-place.
-    #[inline]
-    fn double_in_place(&mut self) {
-        *self = self.double();
-    }
-}
-
 /// Decompress an elliptic curve point.
 ///
 /// Point decompression recovers an original curve point from its x-coordinate

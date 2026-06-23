@@ -31,6 +31,19 @@ pub trait BatchInvert: Field {
     }
 }
 
+/// Perform a doubling (i.e. `self + self`).
+pub trait Double: Sized {
+    /// Double this value, returning the doubled result.
+    #[must_use]
+    fn double(&self) -> Self;
+
+    /// Double this value in-place, assigning `self + self` to `self`.
+    #[inline]
+    fn double_in_place(&mut self) {
+        *self = self.double();
+    }
+}
+
 /// Linear combination.
 ///
 /// This trait enables optimized implementations of linear combinations (e.g. Shamir's Trick).
