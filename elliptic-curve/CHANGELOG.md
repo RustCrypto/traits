@@ -4,15 +4,140 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.14.0 (UNRELEASED)
-### Changed
-- Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
-- Accept mixed-case hex-encoded strings in `FromStr` impl for `ScalarValue` ([#2037])
-- Bump `rand_core` to v0.10 ([#2250])
+## 0.14.0 (2026-06-23)
+### Added
+- Implement `PartialEq + Eq` for `NonIdentity` and `NonZeroScalar` ([#1834])
+- Implement `Zeroize` for `NonIdentity` ([#1832])
+- `NonIdentity::mul_by_generator()` ([#1833])
+- Implement `Mul<&NonZeroScalar>` for `NonIdentity` ([#1852])
+- Implement `Mul<NonIdentity>` for `NonZeroScalar` ([#1855])
+- Expose `AffineCoordinates::y` ([#1891])
+- Scalar macros originally from `primeorder` ([#1894])
+- Implement `BatchNormalize` for `NonIdentity` ([#1896])
+- Re-export `group::Curve` as `CurveGroup` ([#1902])
+- `NonIdentity`/`NonZeroScalar` casting methods ([#1903])
+- `AffineCoordinates::from_coordinates` ([#1996])
+- `getrandom` feature ([#2085])
+- `ctutils` traits to `arithmetic` bounds ([#2166])
+- `Retrieve` bound for `C::Scalar` ([#2169])
+- `crypto_common::Generate` support ([#2173], [#2208])
+- Implement `crypto_common::TryKeyInit` for `SecretKey<C>` ([#2174])
+- `dev::bench_projective!` macro ([#2177])
+- Provide `Sec1Point::from/to_sec1_bytes` ([#2221])
+- Implement `From<SecretKey<C>>` for `PublicKey<C>` ([#2247])
+- `SecretKey::diffie_hellman` ([#2248])
+- `LinearCombination::lincomb_vartime` method ([#2286])
+- `ops::MulVartime` trait and bound `Scalar` ([#2379])
+- `ops::MulByGeneratorVartime` trait ([#2381])
+- `SecretKey::from_pem` ([#2387])
+- `SecretKey::from_der` ([#2408])
+- `hazmat` module with `FieldArithmetic` trait ([#2458])
+- `Double::double_in_place` ([#2464])
 
+### Changed
+- Migrate from `generic-array` to `hybrid-array` ([#1462])
+- Rename `LinearCombinationExt` => `LinearCombination`; replacing old trait ([#1501])
+- Edition changed to 2024 and MSRV bumped to 1.85 ([#1759])
+- Make `SecretKey::new` fallible ([#1804])
+- Replace `ops::Invert` trait with `crypto_bigint::Invert` ([#1839])
+- Rename `SecretKey::new` => `::from_scalar` ([#1893])
+- Replace `Reduce` trait with `crypto_bigint::Reduce` ([#1949])
+- Bump `serdect` dependency to v0.4 ([#1978])
+- Use `crypto_bigint::Odd` to represent `Curve::ORDER` ([#2006])
+- Bound `Curve::Uint` on `Unsigned` ([#2007])
+- Rename `ScalarPrimitive` => `ScalarValue` ([#2008])
+- Accept mixed-case hex-encoded strings in `FromStr` impl for `ScalarValue` ([#2037])
+- Deprecate `SecretKey::random` ([#2086])
+- Move `MockCurve` to `dev::mock_curve` ([#2176])
+- Bump `rand_core` to v0.10 ([#2250])
+- Rename `EncodedPoint` => `Sec1Point` ([#2264])
+- Bump `crypto-bigint` to v0.7 ([#2330])
+- Bump `digest` to v0.11 ([#2331])
+- Bump `sec1` to v0.8 ([#2339])
+- Bump `hkdf` dependency to v0.13 ([#2349])
+- Use `*Vartime` as a suffix in names ([#2378])
+- Bump `pkcs8` to v0.11 ([#2397])
+- Bump `ff` and `group` to v0.14 ([#2430], [#2431])
+- Simplify `BatchInvert` trait ([#2455])
+- Replace `FieldBytesEncoding` trait with `C::FIELD_ENDIANNESS` constant ([#2457])
+- Move `Double` to `ops` ([#2465])
+
+### Removed
+- `hazmat` feature ([#1599])
+- `hash2curve` and `oprf` modules: these are now their own crates ([#1929])
+- PKCS#8 blanket impls for SEC1 private key traits ([#1930])
+- `ShrAssign` bound on `Scalar`s ([#1938])
+- JWK support - migrated to `jose-jwk` crate ([#1963])
+- `weierstrass` module ([#2005])
+- `bits` feature ([#2417])
+
+### Fixed
+- Include curve OID in SEC1 private keys ([#1707], [#1933])
+
+[#1462]: https://github.com/RustCrypto/traits/pull/1462
+[#1501]: https://github.com/RustCrypto/traits/pull/1501
+[#1599]: https://github.com/RustCrypto/traits/pull/1599
+[#1707]: https://github.com/RustCrypto/traits/pull/1707
 [#1759]: https://github.com/RustCrypto/traits/pull/1759
+[#1804]: https://github.com/RustCrypto/traits/pull/1804
+[#1832]: https://github.com/RustCrypto/traits/pull/1832
+[#1833]: https://github.com/RustCrypto/traits/pull/1833
+[#1834]: https://github.com/RustCrypto/traits/pull/1834
+[#1839]: https://github.com/RustCrypto/traits/pull/1839
+[#1852]: https://github.com/RustCrypto/traits/pull/1852
+[#1855]: https://github.com/RustCrypto/traits/pull/1855
+[#1891]: https://github.com/RustCrypto/traits/pull/1891
+[#1893]: https://github.com/RustCrypto/traits/pull/1893
+[#1894]: https://github.com/RustCrypto/traits/pull/1894
+[#1896]: https://github.com/RustCrypto/traits/pull/1896
+[#1902]: https://github.com/RustCrypto/traits/pull/1902
+[#1903]: https://github.com/RustCrypto/traits/pull/1903
+[#1929]: https://github.com/RustCrypto/traits/pull/1929
+[#1930]: https://github.com/RustCrypto/traits/pull/1930
+[#1933]: https://github.com/RustCrypto/traits/pull/1933
+[#1938]: https://github.com/RustCrypto/traits/pull/1938
+[#1949]: https://github.com/RustCrypto/traits/pull/1949
+[#1963]: https://github.com/RustCrypto/traits/pull/1963
+[#1978]: https://github.com/RustCrypto/traits/pull/1978
+[#1996]: https://github.com/RustCrypto/traits/pull/1996
+[#2005]: https://github.com/RustCrypto/traits/pull/2005
+[#2006]: https://github.com/RustCrypto/traits/pull/2006
+[#2007]: https://github.com/RustCrypto/traits/pull/2007
+[#2008]: https://github.com/RustCrypto/traits/pull/2008
 [#2037]: https://github.com/RustCrypto/traits/pull/2037
+[#2085]: https://github.com/RustCrypto/traits/pull/2085
+[#2086]: https://github.com/RustCrypto/traits/pull/2086
+[#2166]: https://github.com/RustCrypto/traits/pull/2166
+[#2169]: https://github.com/RustCrypto/traits/pull/2169
+[#2173]: https://github.com/RustCrypto/traits/pull/2173
+[#2174]: https://github.com/RustCrypto/traits/pull/2174
+[#2176]: https://github.com/RustCrypto/traits/pull/2176
+[#2177]: https://github.com/RustCrypto/traits/pull/2177
+[#2208]: https://github.com/RustCrypto/traits/pull/2208
+[#2221]: https://github.com/RustCrypto/traits/pull/2221
+[#2247]: https://github.com/RustCrypto/traits/pull/2247
+[#2248]: https://github.com/RustCrypto/traits/pull/2248
 [#2250]: https://github.com/RustCrypto/traits/pull/2250
+[#2264]: https://github.com/RustCrypto/traits/pull/2264
+[#2286]: https://github.com/RustCrypto/traits/pull/2286
+[#2330]: https://github.com/RustCrypto/traits/pull/2330
+[#2331]: https://github.com/RustCrypto/traits/pull/2331
+[#2339]: https://github.com/RustCrypto/traits/pull/2339
+[#2349]: https://github.com/RustCrypto/traits/pull/2349
+[#2379]: https://github.com/RustCrypto/traits/pull/2379
+[#2381]: https://github.com/RustCrypto/traits/pull/2381
+[#2378]: https://github.com/RustCrypto/traits/pull/2378
+[#2387]: https://github.com/RustCrypto/traits/pull/2387
+[#2397]: https://github.com/RustCrypto/traits/pull/2397
+[#2408]: https://github.com/RustCrypto/traits/pull/2408
+[#2417]: https://github.com/RustCrypto/traits/pull/2417
+[#2430]: https://github.com/RustCrypto/traits/pull/2430
+[#2431]: https://github.com/RustCrypto/traits/pull/2431
+[#2455]: https://github.com/RustCrypto/traits/pull/2455
+[#2457]: https://github.com/RustCrypto/traits/pull/2457
+[#2458]: https://github.com/RustCrypto/traits/pull/2458
+[#2464]: https://github.com/RustCrypto/traits/pull/2464
+[#2465]: https://github.com/RustCrypto/traits/pull/2465
 
 ## 0.13.8 (2023-11-18)
 ### Changed

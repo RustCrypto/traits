@@ -61,8 +61,6 @@
 #[allow(unused_imports)]
 #[macro_use]
 extern crate alloc;
-#[cfg(feature = "std")]
-extern crate std;
 
 #[cfg(feature = "dev")]
 pub mod dev;
