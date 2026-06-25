@@ -51,7 +51,20 @@ pub trait BatchNormalize<Points: ?Sized> {
     /// Perform a batched conversion to affine representation on a sequence of projective points
     /// at an amortized cost that should be practically as efficient as a single conversion.
     /// Internally, implementors should rely upon `InvertBatch`.
-    fn batch_normalize(points: &Points) -> <Self as BatchNormalize<Points>>::Output;
+    fn batch_normalize(points: &Points) -> Self::Output;
+
+    /// Perform a batched conversion to affine representation on a sequence of projective points
+    /// in variable-time.
+    ///
+    /// <div class="warning">
+    /// <b>Security Warning</b>
+    ///
+    /// This should NOT be used on points which represent secrets!
+    /// </b>
+    fn batch_normalize_vartime(points: &Points) -> Self::Output {
+        // Call the constant-time implementation by default
+        Self::batch_normalize(points)
+    }
 }
 
 /// Decompress an elliptic curve point.
