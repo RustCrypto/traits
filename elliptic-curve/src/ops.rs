@@ -29,6 +29,18 @@ pub trait BatchInvert: Field {
     fn batch_invert_in_place(elements: &mut [Self], scratch_space: &mut [Self]) -> Self {
         BatchInverter::invert_with_external_scratch(elements, scratch_space)
     }
+
+    /// Variable-time batch inversion.
+    ///
+    /// <div class="warning">
+    /// <b>Security Warning</b>
+    ///
+    /// This should NOT be used on secret values!
+    /// </b>
+    fn batch_invert_in_place_vartime(elements: &mut [Self], scratch_space: &mut [Self]) -> Self {
+        // Call the constant-time implementation by default
+        Self::batch_invert_in_place(elements, scratch_space)
+    }
 }
 
 /// Perform a doubling (i.e. `self + self`).
