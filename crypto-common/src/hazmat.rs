@@ -162,7 +162,7 @@ macro_rules! impl_serializable_state_u64_array {
 macro_rules! impl_serializable_state_u128_array {
     ($($n: ident),*) => {
         $(
-            impl_serializable_state_type_array!(u128, U8, $n);
+            impl_serializable_state_type_array!(u128, U16, $n);
         )*
     };
 }
