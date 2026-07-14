@@ -68,6 +68,7 @@ impl<D: FixedOutput + Default + Update + HashMarker> Digest for D {
         Self: Default + Sized,
     {
         let mut h = Self::default();
+        h.update(&(data.as_ref().len() as u64).to_be_bytes());
         h.update(data.as_ref());
         h
     }
