@@ -1,5 +1,11 @@
 /// Creates a buffered wrapper around block-level "core" type which implements variable output size traits
 /// with output size selected at compile time.
+///
+/// Additional traits can be implemented for the generated type by listing them in the optional
+/// trailing `impl: ...;` section, in the same way as it is done by the `buffer_fixed!` macro.
+/// The section must be the last one, i.e. it goes after the `max_size:` section. Currently, the
+/// only supported trait is `CustomizedInit`; it requires the "core" type to implement the
+/// `VariableOutputCoreCustomized` trait.
 #[macro_export]
 macro_rules! buffer_ct_variable {
     (
@@ -207,5 +213,82 @@ macro_rules! buffer_ct_variable {
                 Ok(Self { core, buffer })
             }
         }
+    };
+
+    // Same as the `exclude: SerializableState;` arm above, but additionally implements
+    // the traits listed in the `impl:` section.
+    (
+        $(#[$attr:meta])*
+        $vis:vis struct $name:ident<$out_size:ident>($core_ty:ty);
+        exclude: SerializableState;
+        max_size: $max_size:ty;
+        impl: $($trait_name:ident)*;
+    ) => {
+        $crate::buffer_ct_variable!(
+            $(#[$attr])*
+            $vis struct $name<$out_size>($core_ty);
+            exclude: SerializableState;
+            max_size: $max_size;
+        );
+
+        $crate::buffer_ct_variable!(
+            impl_inner: $name<$out_size>($core_ty);
+            max_size: $max_size;
+            $($trait_name)*;
+        );
+    };
+
+    // Same as the `max_size:`-only arm above, but additionally implements
+    // the traits listed in the `impl:` section.
+    (
+        $(#[$attr:meta])*
+        $vis:vis struct $name:ident<$out_size:ident>($core_ty:ty);
+        max_size: $max_size:ty;
+        impl: $($trait_name:ident)*;
+    ) => {
+        $crate::buffer_ct_variable!(
+            $(#[$attr])*
+            $vis struct $name<$out_size>($core_ty);
+            max_size: $max_size;
+        );
+
+        $crate::buffer_ct_variable!(
+            impl_inner: $name<$out_size>($core_ty);
+            max_size: $max_size;
+            $($trait_name)*;
+        );
+    };
+
+    // Terminates `impl_inner` sequences.
+    (
+        impl_inner: $name:ident<$out_size:ident>($core_ty:ty);
+        max_size: $max_size:ty;
+        ;
+    ) => {};
+
+    // Implements `CustomizedInit`
+    (
+        impl_inner: $name:ident<$out_size:ident>($core_ty:ty);
+        max_size: $max_size:ty;
+        CustomizedInit $($trait_name:ident)*;
+    ) => {
+        impl<$out_size> $crate::CustomizedInit for $name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
+        {
+            #[inline]
+            fn new_customized(customization: &[u8]) -> Self {
+                Self {
+                    core: $crate::CustomizedInit::new_customized(customization),
+                    buffer: Default::default(),
+                }
+            }
+        }
+
+        $crate::buffer_ct_variable!(
+            impl_inner: $name<$out_size>($core_ty);
+            max_size: $max_size;
+            $($trait_name)*;
+        );
     };
 }
