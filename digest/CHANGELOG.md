@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.11.4 (UNRELEASED)
 ### Added
-- Optional `impl:` section in the `buffer_ct_variable!` macro with support for `CustomizedInit` ([#NNNN])
+- Optional `impl:` section in the `buffer_ct_variable!` macro with support for `CustomizedInit` ([#2477])
 
-[#NNNN]: https://github.com/RustCrypto/traits/pull/NNNN
+[#2477]: https://github.com/RustCrypto/traits/pull/2477
 
 ## 0.11.3 (2026-04-03)
 ### Added
