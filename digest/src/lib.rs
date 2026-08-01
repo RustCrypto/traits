@@ -55,6 +55,8 @@ mod buffer_macros;
 mod digest;
 #[cfg(feature = "mac")]
 mod mac;
+#[cfg(feature = "multi")]
+pub mod multi;
 mod xof_fixed;
 
 #[cfg(feature = "block-api")]
