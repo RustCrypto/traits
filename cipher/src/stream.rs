@@ -289,7 +289,8 @@ pub trait SeekNum: Sized {
     /// the keystream-buffer convention described above).
     ///
     /// # Errors
-    /// Returns [`OverflowError`] in the event of a counter overflow.
+    /// Returns [`OverflowError`] when the computed position overflows `Self`, when
+    /// `byte > bs`, or when `block` cannot be converted into `Self`.
     fn from_block_byte<T: StreamCipherCounter>(
         block: T,
         byte: u8,
@@ -304,8 +305,12 @@ pub trait SeekNum: Sized {
     /// the encoding accepted by [`from_block_byte`][SeekNum::from_block_byte], so the two
     /// methods are not inverses of each other.
     ///
+    /// # Panics
+    /// Panics when `bs` is `0` (division by zero).
+    ///
     /// # Errors
-    /// Returns [`OverflowError`] in the event of a counter overflow.
+    /// Returns [`OverflowError`] when the block number does not fit into the counter type
+    /// `T`.
     fn into_block_byte<T: StreamCipherCounter>(self, bs: u8) -> Result<(T, u8), OverflowError>;
 }
 
