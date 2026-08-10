@@ -156,14 +156,11 @@ mod tests {
     extern crate std;
 
     #[test]
-    fn scoped_full_result_zeroizes_on_return() {
+    fn scoped_full_result_zeroizes_on_return_and_unwind() {
         SCOPED_FULL_RESULT_DROPS.store(0, Ordering::SeqCst);
         drop(ScopedFullResult::<U32>::default());
         assert_eq!(SCOPED_FULL_RESULT_DROPS.load(Ordering::SeqCst), 1);
-    }
 
-    #[test]
-    fn scoped_full_result_zeroizes_on_unwind() {
         SCOPED_FULL_RESULT_DROPS.store(0, Ordering::SeqCst);
         let result = std::panic::catch_unwind(|| {
             let _result = ScopedFullResult::<U32>::default();
