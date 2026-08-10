@@ -13,6 +13,30 @@ use common::{
 };
 use core::{fmt, marker::PhantomData};
 
+#[cfg(feature = "zeroize")]
+struct ScopedFullResult<Size: ArraySize>(Array<u8, Size>);
+
+#[cfg(feature = "zeroize")]
+impl<Size: ArraySize> Default for ScopedFullResult<Size> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl<Size: ArraySize> Drop for ScopedFullResult<Size> {
+    fn drop(&mut self) {
+        use zeroize::Zeroize;
+        self.0.as_mut_slice().zeroize();
+        #[cfg(test)]
+        SCOPED_FULL_RESULT_DROPS.fetch_add(1, core::sync::atomic::Ordering::SeqCst);
+    }
+}
+
+#[cfg(all(test, feature = "zeroize"))]
+static SCOPED_FULL_RESULT_DROPS: core::sync::atomic::AtomicUsize =
+    core::sync::atomic::AtomicUsize::new(0);
+
 /// Wrapper around [`VariableOutputCore`] which selects output size at compile time.
 pub struct CtOutWrapper<T, OutSize>
 where
@@ -105,14 +129,48 @@ where
         buffer: &mut Buffer<Self>,
         out: &mut Array<u8, Self::OutputSize>,
     ) {
+        #[cfg(feature = "zeroize")]
+        let mut scoped_full_res = ScopedFullResult::<T::OutputSize>::default();
+        #[cfg(feature = "zeroize")]
+        let full_res = &mut scoped_full_res.0;
+        #[cfg(not(feature = "zeroize"))]
         let mut full_res = Default::default();
-        self.inner.finalize_variable_core(buffer, &mut full_res);
+        #[cfg(not(feature = "zeroize"))]
+        let full_res = &mut full_res;
+        self.inner.finalize_variable_core(buffer, full_res);
         let n = out.len();
         let m = full_res.len() - n;
         match T::TRUNC_SIDE {
             TruncSide::Left => out.copy_from_slice(&full_res[..n]),
             TruncSide::Right => out.copy_from_slice(&full_res[m..]),
         }
+    }
+}
+
+#[cfg(all(test, feature = "zeroize"))]
+mod tests {
+    use super::{SCOPED_FULL_RESULT_DROPS, ScopedFullResult};
+    use common::typenum::U32;
+    use core::sync::atomic::Ordering;
+
+    extern crate std;
+
+    #[test]
+    fn scoped_full_result_zeroizes_on_return() {
+        SCOPED_FULL_RESULT_DROPS.store(0, Ordering::SeqCst);
+        drop(ScopedFullResult::<U32>::default());
+        assert_eq!(SCOPED_FULL_RESULT_DROPS.load(Ordering::SeqCst), 1);
+    }
+
+    #[test]
+    fn scoped_full_result_zeroizes_on_unwind() {
+        SCOPED_FULL_RESULT_DROPS.store(0, Ordering::SeqCst);
+        let result = std::panic::catch_unwind(|| {
+            let _result = ScopedFullResult::<U32>::default();
+            panic!("test-only finalization unwind");
+        });
+        assert!(result.is_err());
+        assert_eq!(SCOPED_FULL_RESULT_DROPS.load(Ordering::SeqCst), 1);
     }
 }
 
