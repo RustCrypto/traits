@@ -49,8 +49,8 @@ pub trait StreamCipher {
 
     /// Apply keystream to `inout` without checking for keystream repetition.
     ///
-    /// <div><class = "warning">
-    /// <b>WARNING<b>
+    /// <div class="warning">
+    /// <b>WARNING</b>
     ///
     /// This method should be used with extreme caution! Triggering keystream repetition can expose
     /// the stream cipher to chosen plaintext attacks.
@@ -59,8 +59,8 @@ pub trait StreamCipher {
 
     /// Apply keystream to `buf` without checking for keystream repetition.
     ///
-    /// <div><class = "warning">
-    /// <b>WARNING<b>
+    /// <div class="warning">
+    /// <b>WARNING</b>
     ///
     /// This method should be used with extreme caution! Triggering keystream repetition can expose
     /// the stream cipher to chosen plaintext attacks.
@@ -69,8 +69,8 @@ pub trait StreamCipher {
 
     /// Apply keystream to data behind `buf` without checking for keystream repetition.
     ///
-    /// <div><class = "warning">
-    /// <b>WARNING<b>
+    /// <div class="warning">
+    /// <b>WARNING</b>
     ///
     /// This method should be used with extreme caution! Triggering keystream repetition can expose
     /// the stream cipher to chosen plaintext attacks.
@@ -88,8 +88,8 @@ pub trait StreamCipher {
     /// # Errors
     /// Returns [`NotEqualError`] if the `input` and `output` buffers have different lengths.
     ///
-    /// <div><class = "warning">
-    /// <b>WARNING<b>
+    /// <div class="warning">
+    /// <b>WARNING</b>
     ///
     /// This method should be used with extreme caution! Triggering keystream repetition can expose
     /// the stream cipher to chosen plaintext attacks.
