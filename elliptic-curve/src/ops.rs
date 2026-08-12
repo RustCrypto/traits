@@ -36,7 +36,8 @@ pub trait BatchInvert: Field {
     /// <b>Security Warning</b>
     ///
     /// This should NOT be used on secret values!
-    /// </b>
+    ///
+    /// </div>
     fn batch_invert_in_place_vartime(elements: &mut [Self], scratch_space: &mut [Self]) -> Self {
         // Call the constant-time implementation by default
         Self::batch_invert_in_place(elements, scratch_space)
@@ -95,6 +96,7 @@ where
 ///
 /// Variable-time operations should only be used on non-secret values, and may potentially leak
 /// secret values!
+///
 /// </div>
 pub trait MulVartime<Rhs = Self>: Mul<Rhs> {
     /// Multiply `self` by `rhs` in variable-time.

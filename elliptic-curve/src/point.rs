@@ -60,7 +60,8 @@ pub trait BatchNormalize<Points: ?Sized> {
     /// <b>Security Warning</b>
     ///
     /// This should NOT be used on points which represent secrets!
-    /// </b>
+    ///
+    /// </div>
     fn batch_normalize_vartime(points: &Points) -> Self::Output {
         // Call the constant-time implementation by default
         Self::batch_normalize(points)
