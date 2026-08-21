@@ -58,7 +58,7 @@ Users should migrate to `cipher` v0.5.1 and `crypto-common` v0.2.1 using `cargo 
 ### Removed
 - `std` feature ([#1691])
 - `BlockCipherEncrypt::encrypt_padded*` and `BlockCipherDecrypt::decrypt_padded*` methods.
-  Users of the ECB mode should use the `ecb-mode` crate instead. ([#2245])
+  Users of the ECB mode should use the `ecb` crate instead. ([#2245])
 - `AsyncStreamCipher` trait ([#2280])
 
 [#1358]: https://github.com/RustCrypto/traits/pull/1358
