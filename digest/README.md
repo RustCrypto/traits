@@ -68,6 +68,39 @@ let hash = Sha256::digest(b"my message");
 println!("Result: {:?}", hash);
 ```
 
+### Format as hexadecimal string
+
+Using the [`base16ct`] crate, you can quickly format the hash as a string. Let us demonstrate once again using Sha256.
+
+Add the `base16ct` and `sha2` crates to your `Cargo.toml`:
+
+```toml
+[dependencies]
+base16ct = "1.0.0"
+sha2 = "0.11"
+```
+
+The struct [`HexDisplay`] accepts type [`&Array<u8, U32>`][2], while implementing [`Display`](core::fmt::Display), [`LowerHex`](core::fmt::LowerHex), and [`UpperHex`](core::fmt::UpperHex).
+
+Now you can write the following code:
+
+```rust
+use base16ct::HexDisplay;
+use sha2::{Sha256, Digest};
+
+let hash = Sha256::digest(b"my message");
+let hash_hex_string = HexDisplay(&hash);
+
+assert_eq!(
+    &format!("{:x}", hash_hex_string),
+    "ea38e30f75767d7e6c21eba85b14016646a3b60ade426ca966dac940a5db1bab"
+);
+assert_eq!(
+    &format!("{:X}", hash_hex_string),
+    "EA38E30F75767D7E6C21EBA85B14016646A3B60ADE426CA966DAC940A5DB1BAB"
+);
+```
+
 ### Generic code
 
 You can write generic code over `Digest` (or other traits from `digest` crate)
@@ -126,6 +159,8 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
+[`base16ct`]: https://docs.rs/base16ct
+[`HexDisplay`]: https://docs.rs/base16ct/latest/base16ct/struct.HexDisplay.html
 [0]: https://en.wikipedia.org/wiki/Cryptographic_hash_function
 [1]: https://github.com/RustCrypto/hashes
 [2]: https://docs.rs/hybrid-array

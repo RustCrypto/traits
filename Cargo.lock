@@ -177,6 +177,7 @@ dependencies = [
 name = "digest"
 version = "0.11.3"
 dependencies = [
+ "base16ct",
  "blobby",
  "block-buffer",
  "const-oid",
