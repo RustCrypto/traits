@@ -5,12 +5,6 @@
 
 pub mod mock_curve;
 
-#[deprecated(
-    since = "0.14.0",
-    note = "import these types from the `dev::mock_curves` module"
-)]
-pub use mock_curve::*;
-
 /// Write a series of `criterion`-based benchmarks for arithmetic on a projective curve point.
 #[macro_export]
 macro_rules! bench_projective {
