@@ -8,7 +8,7 @@
 #[cfg(all(feature = "pkcs8", feature = "sec1"))]
 mod pkcs8;
 
-use crate::{Curve, Error, FieldBytes, Result, ScalarValue};
+use crate::{Curve, Error, FieldBytes, Result, ScalarValue, bigint::ByteOrder};
 use array::typenum::Unsigned;
 use common::{Generate, InvalidKey, KeySizeUser, TryKeyInit};
 use core::fmt::{self, Debug};
@@ -148,10 +148,11 @@ where
 
     /// Deserialize secret key from an encoded secret scalar passed as a byte slice.
     ///
-    /// The slice is expected to be a minimum of 24-bytes (192-bytes) and at most
+    /// The slice is expected to be a minimum of 24 bytes (192 bits) and at most
     /// `C::FieldBytesSize` bytes in length.
     ///
-    /// Byte slices shorter than the field size are handled by zero padding the input.
+    /// Byte slices shorter than the field size are padded with zeros at the most-significant end,
+    /// according to [`Curve::FIELD_ENDIANNESS`].
     ///
     /// NOTE: this function is variable-time with respect to the input length. To avoid a timing
     /// sidechannel, always ensure that the input has been pre-padded to `C::FieldBytesSize`.
@@ -165,15 +166,22 @@ where
             Self::from_bytes(field_bytes)
         } else if (Self::MIN_SIZE..C::FieldBytesSize::USIZE).contains(&slice.len()) {
             let mut bytes = Zeroizing::new(FieldBytes::<C>::default());
-            let offset = C::FieldBytesSize::USIZE.saturating_sub(slice.len());
-            bytes[offset..].copy_from_slice(slice);
+
+            match C::FIELD_ENDIANNESS {
+                ByteOrder::BigEndian => {
+                    let offset = C::FieldBytesSize::USIZE - slice.len();
+                    bytes[offset..].copy_from_slice(slice);
+                }
+                ByteOrder::LittleEndian => bytes[..slice.len()].copy_from_slice(slice),
+            }
+
             Self::from_bytes(&bytes)
         } else {
             Err(Error)
         }
     }
 
-    /// Serialize raw secret scalar as a big endian integer.
+    /// Serialize the raw secret scalar using the curve's configured field endianness.
     pub fn to_bytes(&self) -> FieldBytes<C> {
         self.inner.to_bytes()
     }
