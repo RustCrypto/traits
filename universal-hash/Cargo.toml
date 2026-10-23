@@ -3,7 +3,7 @@ name = "universal-hash"
 version = "0.6.1"
 authors = ["RustCrypto Developers"]
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.87"
 documentation = "https://docs.rs/universal-hash"
 readme = "README.md"
 repository = "https://github.com/RustCrypto/traits"
@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Traits which describe the functionality of universal hash functions (UHFs)"
 
 [dependencies]
-ctutils = "0.4"
+ctutils = "0.4.5"
 common = { version = "0.2", package = "crypto-common" }
 
 [lints]
