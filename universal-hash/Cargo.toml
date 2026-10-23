@@ -13,7 +13,7 @@ categories = ["cryptography", "no-std"]
 description = "Traits which describe the functionality of universal hash functions (UHFs)"
 
 [dependencies]
-ctutils = "0.4"
+ctutils = "0.4.5"
 common = { version = "0.2", package = "crypto-common" }
 
 [lints]

@@ -19,7 +19,7 @@ common = { version = "0.2", package = "crypto-common" }
 block-buffer = { version = "0.12", optional = true }
 blobby = { version = "0.4", optional = true }
 const-oid = { version = "0.10", optional = true }
-ctutils = { version = "0.4", optional = true }
+ctutils = { version = "0.4.5", optional = true }
 zeroize = { version = "1.7", optional = true, default-features = false }
 
 [dev-dependencies]
