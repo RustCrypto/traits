@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.14.3 (2026-10-25)
+### Changed
+- Bump `crypto-bigint` to v0.7.8 ([#2502])
+
+[#2502]: https://github.com/RustCrypto/traits/pull/2502
+
 ## 0.14.2 (2026-10-24)
 ### Changed
 - Bump `crypto-bigint`/`ctutils`; MSRV 1.87 ([#2500])
