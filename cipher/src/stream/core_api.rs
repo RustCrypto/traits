@@ -275,11 +275,13 @@ impl<BS: ArraySize> StreamCipherClosure for ApplyBlocksCtx<'_, '_, BS> {
                 chunk.xor_in2out(&tmp);
             }
             let n = tail.len();
-            let mut buf = Array::<_, B::ParBlocksSize>::default();
-            let ks = &mut buf[..n];
-            backend.gen_tail_blocks(ks);
-            for i in 0..n {
-                tail.get(i).xor_in2out(&ks[i]);
+            if n != 0 {
+                let mut buf = Array::<_, B::ParBlocksSize>::default();
+                let ks = &mut buf[..n];
+                backend.gen_tail_blocks(ks);
+                for i in 0..n {
+                    tail.get(i).xor_in2out(&ks[i]);
+                }
             }
         } else {
             for mut block in self.blocks {

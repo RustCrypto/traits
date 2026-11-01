@@ -98,7 +98,9 @@ where
         let (blocks, mut tail) = data.into_chunks();
 
         head.xor_in2out(head_ks);
-        self.core.apply_keystream_blocks_inout(blocks);
+        if !blocks.is_empty() {
+            self.core.apply_keystream_blocks_inout(blocks);
+        }
 
         self.buffer.write_block(
             tail.len(),
@@ -117,7 +119,9 @@ where
         let (blocks, tail) = Array::slice_as_chunks_mut(data);
 
         head.copy_from_slice(head_ks);
-        self.core.write_keystream_blocks(blocks);
+        if !blocks.is_empty() {
+            self.core.write_keystream_blocks(blocks);
+        }
 
         self.buffer.write_block(
             tail.len(),
