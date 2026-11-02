@@ -120,11 +120,11 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
             self.apply_keystream_blocks_inout(blocks);
             buf = tail;
         }
-        let n = buf.len();
-        if n == 0 {
+        if buf.is_empty() {
             return Ok(());
         }
         let mut block = Block::<Self>::default();
+        let n = buf.len();
         block[..n].copy_from_slice(buf.get_in());
         let t = InOutBuf::from_mut(&mut block);
         self.apply_keystream_blocks_inout(t);
@@ -229,7 +229,9 @@ impl<BS: ArraySize> StreamCipherClosure for WriteBlocksCtx<'_, BS> {
             for chunk in chunks {
                 backend.gen_par_ks_blocks(chunk);
             }
-            backend.gen_tail_blocks(tail);
+            if !tail.is_empty() {
+                backend.gen_tail_blocks(tail);
+            }
         } else {
             for block in self.blocks {
                 backend.gen_ks_block(block);
@@ -274,12 +276,13 @@ impl<BS: ArraySize> StreamCipherClosure for ApplyBlocksCtx<'_, '_, BS> {
                 backend.gen_par_ks_blocks(&mut tmp);
                 chunk.xor_in2out(&tmp);
             }
-            let n = tail.len();
-            let mut buf = Array::<_, B::ParBlocksSize>::default();
-            let ks = &mut buf[..n];
-            backend.gen_tail_blocks(ks);
-            for i in 0..n {
-                tail.get(i).xor_in2out(&ks[i]);
+            if !tail.is_empty() {
+                let mut buf = Array::<_, B::ParBlocksSize>::default();
+                let ks = &mut buf[..tail.len()];
+                backend.gen_tail_blocks(ks);
+                for i in 0..tail.len() {
+                    tail.get(i).xor_in2out(&ks[i]);
+                }
             }
         } else {
             for mut block in self.blocks {
