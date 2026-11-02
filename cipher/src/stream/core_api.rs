@@ -267,17 +267,15 @@ impl<BS: ArraySize> BlockSizeUser for ApplyBlocksCtx<'_, '_, BS> {
 
 impl<BS: ArraySize> StreamCipherClosure for ApplyBlocksCtx<'_, '_, BS> {
     #[inline(always)]
-    #[allow(clippy::needless_range_loop)]
     fn call<B: StreamCipherBackend<BlockSize = BS>>(self, backend: &mut B) {
         if B::ParBlocksSize::USIZE > 1 {
             let (chunks, mut tail) = self.blocks.into_chunks::<B::ParBlocksSize>();
+            let mut buf = ParBlocks::<B>::default();
             for mut chunk in chunks {
-                let mut tmp = Default::default();
-                backend.gen_par_ks_blocks(&mut tmp);
-                chunk.xor_in2out(&tmp);
+                backend.gen_par_ks_blocks(&mut buf);
+                chunk.xor_in2out(&buf);
             }
             if !tail.is_empty() {
-                let mut buf = Array::<_, B::ParBlocksSize>::default();
                 let ks = &mut buf[..tail.len()];
                 backend.gen_tail_blocks(ks);
                 for i in 0..tail.len() {
@@ -285,8 +283,8 @@ impl<BS: ArraySize> StreamCipherClosure for ApplyBlocksCtx<'_, '_, BS> {
                 }
             }
         } else {
+            let mut t = Block::<B>::default();
             for mut block in self.blocks {
-                let mut t = Default::default();
                 backend.gen_ks_block(&mut t);
                 block.xor_in2out(&t);
             }
