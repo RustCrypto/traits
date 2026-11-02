@@ -28,7 +28,7 @@ macro_rules! block_encryptor_bench {
     };
     ($init:block, $cipher:ty, $block_name:ident, $blocks_name:ident $(,)? ) => {
         #[bench]
-        pub fn $block_name(bh: &mut test::Bencher) {
+        fn $block_name(bh: &mut test::Bencher) {
             #[allow(unused)]
             use $crate::{BlockCipherEncrypt, BlockModeEncrypt};
 
@@ -45,7 +45,7 @@ macro_rules! block_encryptor_bench {
         }
 
         #[bench]
-        pub fn $blocks_name(bh: &mut test::Bencher) {
+        fn $blocks_name(bh: &mut test::Bencher) {
             #[allow(unused)]
             use $crate::{BlockCipherEncrypt, BlockModeEncrypt};
 
@@ -91,7 +91,7 @@ macro_rules! block_decryptor_bench {
     };
     ($init:block, $cipher:ty, $block_name:ident, $blocks_name:ident $(,)? ) => {
         #[bench]
-        pub fn $block_name(bh: &mut test::Bencher) {
+        fn $block_name(bh: &mut test::Bencher) {
             #[allow(unused)]
             use $crate::{BlockCipherDecrypt, BlockModeDecrypt};
 
@@ -108,7 +108,7 @@ macro_rules! block_decryptor_bench {
         }
 
         #[bench]
-        pub fn $blocks_name(bh: &mut test::Bencher) {
+        fn $blocks_name(bh: &mut test::Bencher) {
             #[allow(unused)]
             use $crate::{BlockCipherDecrypt, BlockModeDecrypt};
 
