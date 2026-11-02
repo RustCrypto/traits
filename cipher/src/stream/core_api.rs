@@ -1,3 +1,5 @@
+use core::marker::PhantomData;
+
 use super::StreamCipherError;
 use crate::{
     array::{Array, ArraySize},
@@ -101,7 +103,7 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
     #[inline]
     fn try_apply_keystream_partial(
         mut self,
-        mut buf: InOutBuf<'_, '_, u8>,
+        buf: InOutBuf<'_, '_, u8>,
     ) -> Result<(), StreamCipherError> {
         if let Some(rem_blocks) = self.remaining_blocks() {
             // Note that if `rem_blocks` is equal to zero, it means that
@@ -115,20 +117,11 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
             }
         }
 
-        if buf.len() > Self::BlockSize::USIZE {
-            let (blocks, tail) = buf.into_chunks();
-            self.apply_keystream_blocks_inout(blocks);
-            buf = tail;
-        }
-        if buf.is_empty() {
-            return Ok(());
-        }
-        let mut block = Block::<Self>::default();
-        let n = buf.len();
-        block[..n].copy_from_slice(buf.get_in());
-        let t = InOutBuf::from_mut(&mut block);
-        self.apply_keystream_blocks_inout(t);
-        buf.get_out().copy_from_slice(&block[..n]);
+        self.process_with_backend(ApplyPartialCtx {
+            buf,
+            _pd: PhantomData,
+        });
+
         Ok(())
     }
 
@@ -143,7 +136,7 @@ pub trait StreamCipherCore: BlockSizeUser + Sized {
     #[inline]
     fn apply_keystream_partial(self, buf: InOutBuf<'_, '_, u8>) {
         self.try_apply_keystream_partial(buf)
-            .expect("number of remaining blocks insufficient");
+            .expect("insufficient number of remaining keystream blocks");
     }
 }
 
@@ -288,6 +281,50 @@ impl<BS: ArraySize> StreamCipherClosure for ApplyBlocksCtx<'_, '_, BS> {
                 backend.gen_ks_block(&mut t);
                 block.xor_in2out(&t);
             }
+        }
+    }
+}
+
+struct ApplyPartialCtx<'inp, 'out, BS: ArraySize> {
+    buf: InOutBuf<'inp, 'out, u8>,
+    _pd: PhantomData<BS>,
+}
+
+impl<BS: ArraySize> BlockSizeUser for ApplyPartialCtx<'_, '_, BS> {
+    type BlockSize = BS;
+}
+
+impl<BS: ArraySize> StreamCipherClosure for ApplyPartialCtx<'_, '_, BS> {
+    #[inline(always)]
+    fn call<B: StreamCipherBackend<BlockSize = BS>>(self, backend: &mut B) {
+        let (blocks, mut tail) = self.buf.into_chunks();
+
+        if B::ParBlocksSize::USIZE > 1 {
+            let (chunks, mut tail_blocks) = blocks.into_chunks::<B::ParBlocksSize>();
+            let mut buf = ParBlocks::<B>::default();
+            for mut chunk in chunks {
+                backend.gen_par_ks_blocks(&mut buf);
+                chunk.xor_in2out(&buf);
+            }
+            if !tail_blocks.is_empty() {
+                let ks = &mut buf[..tail_blocks.len()];
+                backend.gen_tail_blocks(ks);
+                for i in 0..tail_blocks.len() {
+                    tail_blocks.get(i).xor_in2out(&ks[i]);
+                }
+            }
+        } else {
+            let mut t = Block::<B>::default();
+            for mut block in blocks {
+                backend.gen_ks_block(&mut t);
+                block.xor_in2out(&t);
+            }
+        }
+
+        if !tail.is_empty() {
+            let mut block = Block::<Self>::default();
+            backend.gen_ks_block(&mut block);
+            tail.xor_in2out(&block[..tail.len()]);
         }
     }
 }
