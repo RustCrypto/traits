@@ -229,7 +229,9 @@ impl<BS: ArraySize> StreamCipherClosure for WriteBlocksCtx<'_, BS> {
             for chunk in chunks {
                 backend.gen_par_ks_blocks(chunk);
             }
-            backend.gen_tail_blocks(tail);
+            if !tail.is_empty() {
+                backend.gen_tail_blocks(tail);
+            }
         } else {
             for block in self.blocks {
                 backend.gen_ks_block(block);
