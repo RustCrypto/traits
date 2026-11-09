@@ -156,6 +156,32 @@ macro_rules! buffer_ct_variable {
                 $crate::Reset::reset(self);
             }
         }
+
+        // Verify that `core` and `buffer` fields implement `ZeroizeOnDrop`, so the
+        // marker impl below is a sound assertion rather than a false claim.
+        #[cfg(feature = "zeroize")]
+        const _: () = {
+            fn check_core<$out_size>(v: &$crate::block_api::CtOutWrapper<$core_ty, $out_size>)
+            where
+                $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
+            {
+                v as &dyn $crate::zeroize::ZeroizeOnDrop;
+            }
+
+            fn check_buffer<$out_size>(v: &$crate::block_api::Buffer<$core_ty>)
+            where
+                $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
+            {
+                v as &dyn $crate::zeroize::ZeroizeOnDrop;
+            }
+        };
+
+        #[cfg(feature = "zeroize")]
+        impl<$out_size> $crate::zeroize::ZeroizeOnDrop for $name<$out_size>
+        where
+            $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
+        {
+        }
     };
     (
         $(#[$attr:meta])*
