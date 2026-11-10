@@ -1,4 +1,4 @@
-use crate::{FixedOutputReset, Mac, common::KeyInit};
+use crate::{FixedOutputReset, Mac, MacError, Output, common::KeyInit};
 
 /// Tag truncation side used in MAC tests
 #[derive(Clone, Copy, Debug)]
@@ -71,7 +71,14 @@ pub fn initialized_mac_test<M: Mac + Clone>(
         }
     }
 
-    Ok(())
+    // test verification over the whole message, including empty inputs
+    let mut mac = mac0.clone();
+    mac.update(input);
+    if verify(mac, tag, trunc_side).is_err() {
+        return Err("whole message verification");
+    }
+
+    check_wrong_tags(&mac0, input, tag, trunc_side)
 }
 
 /// Run resettable MAC test
@@ -123,6 +130,42 @@ pub fn reset_mac_test<M: Mac + KeyInit + FixedOutputReset + Clone>(
         }
     }
 
+    check_wrong_tags(&mac0, input, tag, trunc_side)
+}
+
+/// Verify `tag` with the method that matches `trunc_side`.
+fn verify<M: Mac>(mac: M, tag: &[u8], trunc_side: MacTruncSide) -> Result<(), MacError> {
+    match trunc_side {
+        MacTruncSide::Left => mac.verify_truncated_left(tag),
+        MacTruncSide::Right => mac.verify_truncated_right(tag),
+        MacTruncSide::None => mac.verify_slice(tag),
+    }
+}
+
+/// Check that `tag` with its first or its last byte changed is rejected.
+fn check_wrong_tags<M: Mac + Clone>(
+    mac0: &M,
+    input: &[u8],
+    tag: &[u8],
+    trunc_side: MacTruncSide,
+) -> Result<(), &'static str> {
+    let n = tag.len();
+    if n == 0 {
+        return Ok(());
+    }
+    // The callers have already compared `tag` with the output, so `n` is at most the output size.
+    let mut buf = Output::<M>::default();
+    let wrong_tag = &mut buf[..n];
+    wrong_tag.copy_from_slice(tag);
+    for i in [0, n - 1] {
+        wrong_tag[i] ^= 1;
+        let mut mac = mac0.clone();
+        Mac::update(&mut mac, input);
+        if verify(mac, wrong_tag, trunc_side).is_ok() {
+            return Err("wrong tag accepted");
+        }
+        wrong_tag[i] ^= 1;
+    }
     Ok(())
 }
 
