@@ -125,10 +125,64 @@ pub fn fail_test<C: AeadInOut + KeyInit>(
         },
     );
     if res.is_ok() {
-        Err("decryption must return error")
-    } else {
-        Ok(())
+        return Err("decryption must return error");
     }
+
+    let mut buf = ciphertext.to_vec();
+    if cipher.decrypt_in_place(nonce, aad, &mut buf).is_ok() {
+        return Err("decrypt_in_place: decryption must return error");
+    }
+    if buf.len() != ciphertext.len() {
+        return Err("decrypt_in_place: buffer length changed on failure");
+    }
+
+    // An incomplete tag is rejected before authentication, and cannot be used with the
+    // detached API. Only check clearing when the input contains a complete tag.
+    let Some(tagless_len) = ciphertext.len().checked_sub(C::TagSize::USIZE) else {
+        return Ok(());
+    };
+    let msg_range = match C::TAG_POSITION {
+        TagPosition::Prefix => C::TagSize::USIZE..ciphertext.len(),
+        TagPosition::Postfix => 0..tagless_len,
+    };
+    if buf[msg_range].iter().any(|&b| b != 0) {
+        return Err("decrypt_in_place: output buffer was not zeroed");
+    }
+
+    let (ct, tag) = match C::TAG_POSITION {
+        TagPosition::Prefix => {
+            let (tag, ct) = ciphertext.split_at(C::TagSize::USIZE);
+            (ct, tag)
+        }
+        TagPosition::Postfix => ciphertext.split_at(tagless_len),
+    };
+    let tag: &Tag<C> = tag.try_into().expect("tag has correct length");
+
+    let mut buf = ct.to_vec();
+    if cipher
+        .decrypt_inout_detached(nonce, aad, buf.as_mut_slice().into(), tag)
+        .is_ok()
+    {
+        return Err("decrypt_inout_detached (in-place): decryption must return error");
+    }
+    if buf.iter().any(|&b| b != 0) {
+        return Err("decrypt_inout_detached (in-place): output buffer was not zeroed");
+    }
+
+    // Start with nonzero bytes so that leaving the output untouched cannot pass.
+    buf.fill(0xa5);
+    let inout_buf = InOutBuf::new(ct, &mut buf).expect("ct and buf have the same length");
+    if cipher
+        .decrypt_inout_detached(nonce, aad, inout_buf, tag)
+        .is_ok()
+    {
+        return Err("decrypt_inout_detached: decryption must return error");
+    }
+    if buf.iter().any(|&b| b != 0) {
+        return Err("decrypt_inout_detached: output buffer was not zeroed");
+    }
+
+    Ok(())
 }
 
 /// Define AEAD test for passing test vectors
