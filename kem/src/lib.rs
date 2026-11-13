@@ -123,6 +123,7 @@ pub trait Kem: Copy + Clone + Debug + Default + Eq + Ord + Send + Sync + 'static
 
     /// Generate a random KEM keypair using the system's secure RNG.
     #[cfg(feature = "getrandom")]
+    #[must_use]
     fn generate_keypair() -> (DecapsulationKey<Self>, EncapsulationKey<Self>) {
         Self::generate_keypair_from_rng(&mut UnwrapErr(SysRng))
     }
@@ -198,6 +199,10 @@ pub trait TryDecapsulate: Decapsulator {
     type Error: core::error::Error;
 
     /// Decapsulates the given [`Ciphertext`] a.k.a. "encapsulated key".
+    ///
+    /// # Errors
+    /// Returns an algorithm-specific associated `Error` type in the event decapsulation fails,
+    /// e.g. invalid `Ciphertext`.
     fn try_decapsulate(
         &self,
         ct: &Ciphertext<Self::Kem>,

@@ -31,6 +31,10 @@ pub trait Kdf {
     ///   accomplishes this purpose, sometimes called "salt", "info", "context", or "customization".
     ///   See algorithm-specific documentation for the specific input this maps to for the specific
     ///   impls for a given algorithm. For KDFs marked [`Pbkdf`] this is always the salt.
+    ///
+    /// # Errors
+    /// Returns [`Error`] in the event of algorithm-specific errors, such as `secret`, `non_secret`,
+    /// or `out` being too large for the algorithm to support.
     fn derive_key(&self, secret: &[u8], non_secret: &[u8], out: &mut [u8]) -> Result<()>;
 }
 

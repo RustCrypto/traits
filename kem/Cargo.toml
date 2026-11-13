@@ -23,5 +23,8 @@ rand_core = "0.10"
 [features]
 getrandom = ["common/getrandom"]
 
+[lints]
+workspace = true
+
 [package.metadata.docs.rs]
 all-features = true
