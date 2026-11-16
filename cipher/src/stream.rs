@@ -276,8 +276,21 @@ pub trait SeekNum: Sized {
     /// Try to get position for block number `block`, byte position inside
     /// block `byte`, and block size `bs`.
     ///
+    /// `block` and `byte` follow the keystream-buffer convention used by
+    /// `StreamCipherCoreWrapper`: `block` is the number of
+    /// the *next* keystream block to be generated, and `byte` (in range `1..=bs`) is the
+    /// number of bytes of the current keystream block that have been consumed, i.e. the
+    /// computed position is `block * bs - (bs - byte)`. Note that this is *not* the encoding
+    /// produced by [`into_block_byte`][SeekNum::into_block_byte], so the two methods are not
+    /// inverses of each other.
+    ///
+    /// # Panics
+    /// If debug assertions are enabled, panics when `byte` is `0` (a value never produced by
+    /// the keystream-buffer convention described above).
+    ///
     /// # Errors
-    /// Returns [`OverflowError`] in the event of a counter overflow.
+    /// Returns [`OverflowError`] when the computed position overflows `Self`, when
+    /// `byte > bs`, or when `block` cannot be converted into `Self`.
     fn from_block_byte<T: StreamCipherCounter>(
         block: T,
         byte: u8,
@@ -286,8 +299,18 @@ pub trait SeekNum: Sized {
 
     /// Try to get block number and bytes position for given block size `bs`.
     ///
+    /// The returned pair follows the position-division convention: `block` is the number of
+    /// the keystream block containing the position (`self / bs`) and `byte` (in range
+    /// `0..bs`) is the byte offset within that block (`self % bs`). Note that this is *not*
+    /// the encoding accepted by [`from_block_byte`][SeekNum::from_block_byte], so the two
+    /// methods are not inverses of each other.
+    ///
+    /// # Panics
+    /// Panics when `bs` is `0` (division by zero).
+    ///
     /// # Errors
-    /// Returns [`OverflowError`] in the event of a counter overflow.
+    /// Returns [`OverflowError`] when the block number does not fit into the counter type
+    /// `T`.
     fn into_block_byte<T: StreamCipherCounter>(self, bs: u8) -> Result<(T, u8), OverflowError>;
 }
 
